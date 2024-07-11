@@ -1,6 +1,6 @@
 # About this repository
 
-Work in progress for the creation of OpenBSD ports for privacy and security focused software. Any contribution is appreciated.
+Work in progress for the creation of OpenBSD ports for privacy and security focused software. Any contribution is highly appreciated.
 
 # Software to be ported to OpenBSD
 

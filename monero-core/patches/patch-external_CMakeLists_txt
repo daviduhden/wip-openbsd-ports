@@ -1,0 +1,22 @@
+Index: external/CMakeLists.txt
+--- external/CMakeLists.txt.orig
++++ external/CMakeLists.txt
+@@ -35,6 +35,7 @@
+ # ...except for FreeBSD, because FreeBSD is a special case that doesn't play well with
+ # others.
+ 
++if(FALSE)
+ find_package(Miniupnpc REQUIRED)
+ 
+ message(STATUS "Using in-tree miniupnpc")
+@@ -50,8 +51,9 @@ endif()
+ if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
+ 	set_property(TARGET libminiupnpc-static APPEND_STRING PROPERTY COMPILE_FLAGS " -D_NETBSD_SOURCE")
+ endif()
++endif()
+ 
+-set(UPNP_LIBRARIES "libminiupnpc-static" PARENT_SCOPE)
++find_library(UPNP_LIBRARIES miniupnpc REQUIRED)
+ 
+ find_package(Unbound)
+ 

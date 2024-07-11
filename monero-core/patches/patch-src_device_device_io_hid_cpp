@@ -1,0 +1,15 @@
+Index: src/device/device_io_hid.cpp
+--- src/device/device_io_hid.cpp.orig
++++ src/device/device_io_hid.cpp
+@@ -32,6 +32,11 @@
+ #include "log.hpp"
+ #include "device_io_hid.hpp"
+ 
++/* comms/libhidapi/Makefile:
++Any consumer should be patched to use hidapi_hid_init() instead of
++hid_init(3) to avoid conflict with base usbhid(3). */
++#define hid_init hidapi_hid_init
++
+ namespace hw {
+   namespace io {
+  

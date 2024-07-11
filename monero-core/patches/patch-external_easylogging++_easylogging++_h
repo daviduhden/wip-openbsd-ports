@@ -1,0 +1,12 @@
+Index: external/easylogging++/easylogging++.h
+--- external/easylogging++/easylogging++.h.orig
++++ external/easylogging++/easylogging++.h
+@@ -264,7 +264,7 @@ ELPP_INTERNAL_DEBUGGING_OUT_INFO << ELPP_INTERNAL_DEBU
+ #else
+ #  define STRTOK(a, b, c) strtok(a, b)
+ #  define STRERROR(a, b, c) strerror(c)
+-#  define STRCAT(a, b, len) strcat(a, b)
++#  define STRCAT(a, b, len) strlcat(a, b, len)
+ #  define STRCPY(a, b, len) strcpy(a, b)
+ #endif
+ // Compiler specific support evaluations

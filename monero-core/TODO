@@ -1,0 +1,3 @@
+- pledge(2)
+- unveil(2)
+- too many open files during build

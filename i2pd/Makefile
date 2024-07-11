@@ -18,6 +18,13 @@ COMPILER =	base-clang ports-gcc
 MODULES =	devel/cmake
 LIB_DEPENDS =	devel/boost
 
+FLAVORS+= upnp
+
+.if ${FLAVOR:Mupnp}
+LIB_DEPENDS +=	net/miniupnp/miniupnpc
+CONFIGURE_ARGS += -DCMAKE_WITH_UPNP=ON
+.endif
+
 # for tests
 USE_GMAKE =	Yes
 

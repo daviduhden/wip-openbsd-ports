@@ -8,7 +8,7 @@ EXTRACT_SUFX=	.tar.bz2
 
 CATEGORIES=	net
 
-# BSD-3-Clause and MIT
+# BSD
 PERMIT_PACKAGE=	Yes
 
 WANTLIB=	c

@@ -30,15 +30,3 @@ echo "Configuring the ports system in /etc/mk.conf..."
 } >> /etc/mk.conf
 
 echo "Configuration complete. The ports tree has been installed and configured successfully."
-
-# Removing the default i2pd port
-if [ -d "/usr/ports/net/i2pd" ]; then
-    echo "Removing the default i2pd port..."
-    rm -rf /usr/ports/net/i2pd
-fi
-
-# Installing the new ports in /usr/ports/net/
-echo "Installing the new ports in /usr/ports/net/..."
-find . -maxdepth 2 ! -name ".*" ! -name "*.sh" -print | cpio -pdm /usr/ports/net/
-
-echo "The new ports have been installed successfully."

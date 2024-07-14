@@ -1,3 +1,5 @@
 - pledge(2)
 - unveil(2)
 - Too many open files during build
+- Create RC script
+- See if the patches work

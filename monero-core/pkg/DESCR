@@ -1,10 +1,27 @@
-Monero is the leading cryptocurrency focused on
-private and censorship-resistant transactions.
+Monero is a private, secure, untraceable, decentralised digital currency. You 
+are your bank, you control your funds, and nobody can trace your transfers 
+unless you allow them to do so.
 
-The majority of existing cryptocurrencies, including Bitcoin and Ethereum,
-have transparent blockchains. Transactions can be verified and/or traced
-by anyone in the world. This means that the sending and receiving addresses
-of these transactions could potentially be linked to real-world identities.
+Privacy: Monero uses a cryptographically sound system to allow you to send and 
+receive funds without your transactions being easily revealed on the blockchain 
+(the ledger of transactions that everyone has). This ensures that your 
+purchases, receipts, and all transfers remain private by default.
 
-Monero, on the other hand, uses various privacy-enhancing technologies
-to ensure the anonymity of its users.
+Security: Using the power of a distributed peer-to-peer consensus network, 
+every transaction on the network is cryptographically secured. Individual 
+wallets have a 25-word mnemonic seed that is only displayed once and can be 
+written down to backup the wallet. Wallet files should be encrypted with a 
+strong passphrase to ensure they are useless if ever stolen.
+
+Untraceability: By taking advantage of ring signatures, a special property of a 
+certain type of cryptography, Monero is able to ensure that transactions are 
+not only untraceable but have an optional measure of ambiguity that ensures 
+that transactions cannot easily be tied back to an individual user or computer.
+
+Decentralization: The utility of Monero depends on its decentralised 
+peer-to-peer consensus network - anyone should be able to run the monero 
+software, validate the integrity of the blockchain, and participate in all 
+aspects of the monero network using consumer-grade commodity hardware. 
+Decentralization of the monero network is maintained by software development 
+that minimizes the costs of running the monero software and inhibits the 
+proliferation of specialized, non-commodity hardware.

@@ -40,6 +40,6 @@ fi
 # Installing new ports in /usr/ports/
 echo "Installing new ports in /usr/ports/..."
 cp -r ./i2pd /usr/ports/net/
-cp -r /monero-core /usr/ports/net/
+cp -r ./monero-core /usr/ports/net/
 
 echo "The new ports have been installed successfully."

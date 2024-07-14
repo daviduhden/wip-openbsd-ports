@@ -20,7 +20,8 @@ LIB_DEPENDS =	devel/boost
 
 CONFIGURE_ARGS += -DCMAKE_BUILD_TYPE=Release
 
-FLAVORS+= upnp
+FLAVORS+= no_upnp upnp
+FLAVOR?= no_upnp
 
 .if ${FLAVOR:Mupnp}
 LIB_DEPENDS +=	net/miniupnp/miniupnpc

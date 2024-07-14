@@ -42,4 +42,4 @@ echo "Installing new ports in /usr/ports/..."
 cp -r ./i2pd /usr/ports/net/
 cp -r /monero-core /usr/ports/net/
 
-echo "The ports have been installed successfully."
+echo "The new ports have been installed successfully."

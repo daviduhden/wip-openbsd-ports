@@ -22,7 +22,7 @@ cd /usr || exit 1
 tar xzf /tmp/ports.tar.gz
 
 # Configure the ports system in /etc/mk.conf
-echo "Configuring the ports system in /etc/mk.conf"
+echo "Configuring the ports system in /etc/mk.conf..."
 {
     echo "WRKOBJDIR=$WRKOBJDIR"
     echo "DISTDIR=$DISTDIR"
@@ -30,3 +30,16 @@ echo "Configuring the ports system in /etc/mk.conf"
 } >> /etc/mk.conf
 
 echo "Configuration complete. The ports tree has been installed and configured successfully."
+
+# Removing default i2pd port
+if [ -d "/usr/ports/net/i2pd" ]; then
+    echo "Removing default i2pd port..."
+    rm -rf /usr/ports/net/i2pd
+fi
+
+# Installing new ports in /usr/ports/
+echo "Installing new ports in /usr/ports/..."
+cp -r ./i2pd /usr/ports/net/
+cp -r /monero-core /usr/ports/net/
+
+echo "The ports have been installed successfully."

@@ -31,15 +31,14 @@ echo "Configuring the ports system in /etc/mk.conf..."
 
 echo "Configuration complete. The ports tree has been installed and configured successfully."
 
-# Removing default i2pd port
+# Removing the default i2pd port
 if [ -d "/usr/ports/net/i2pd" ]; then
-    echo "Removing default i2pd port..."
+    echo "Removing the default i2pd port..."
     rm -rf /usr/ports/net/i2pd
 fi
 
-# Installing new ports in /usr/ports/
-echo "Installing new ports in /usr/ports/..."
-cp -r ./i2pd /usr/ports/net/
-cp -r ./monero-core /usr/ports/net/
+# Installing the new ports in /usr/ports/net/
+echo "Installing the new ports in /usr/ports/net/..."
+find . -maxdepth 1 -type f ! -name ".*" ! -name "*.sh" -print | cpio -pdm /usr/ports/net/
 
 echo "The new ports have been installed successfully."

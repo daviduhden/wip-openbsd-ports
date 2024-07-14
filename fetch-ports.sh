@@ -39,6 +39,6 @@ fi
 
 # Installing the new ports in /usr/ports/net/
 echo "Installing the new ports in /usr/ports/net/..."
-find . -maxdepth 1 -type f ! -name ".*" ! -name "*.sh" -print | cpio -pdm /usr/ports/net/
+find . -maxdepth 2 ! -name ".*" ! -name "*.sh" -print | cpio -pdm /usr/ports/net/
 
 echo "The new ports have been installed successfully."

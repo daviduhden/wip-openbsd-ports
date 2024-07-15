@@ -1,4 +1,4 @@
-COMMENT=		the secure, private and untraceable cryptocurrency 
+COMMENT=		secure, private and untraceable cryptocurrency 
 
 GH_ACCOUNT =	monero-project
 GH_PROJECT =	monero

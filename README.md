@@ -12,6 +12,6 @@ Work in progress for the creation of OpenBSD ports and flavors for privacy and s
 - [simplex-chat-cli](https://github.com/simplex-chat/simplex-chat/tree/stable/apps/simplex-chat)
 - [simplexmq](https://github.com/simplex-chat/simplexmq)
 
-## Flavors to be added
+# Flavors to be added
 
 - [i2pd](https://github.com/openbsd/ports/tree/master/net/i2pd) flavor with [UPnP support](https://i2pd.readthedocs.io/en/latest/devs/building/unix/)

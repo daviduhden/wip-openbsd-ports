@@ -1,2 +1,2 @@
-.include PLIST
+.include "PLIST"
 include/i2pd/UPnP.h

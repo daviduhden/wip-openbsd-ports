@@ -3,6 +3,11 @@
 @rcscript ${RCDIR}/i2pd
 @bin bin/i2pd
 include/i2pd/
+include/i2pd/Daemon.h
+include/i2pd/HTTPServer.h
+include/i2pd/HTTPServerResources.h
+include/i2pd/I2PControl.h
+include/i2pd/I2PControlHandlers.h
 include/i2pd/AddressBook.h
 include/i2pd/BOB.h
 include/i2pd/Base.h

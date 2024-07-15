@@ -1,11 +1,14 @@
-i2pd is a full featured client for the I2P network written in C++.
+I2Pd is a full featured client for the I2P network written in C++.
 
-I2P (Invisible Internet Project) is a universal anonymous network layer.
-All communications over I2P are anonymous and end-to-end encrypted.
-Participants don't reveal their real IP address to each other. Peer to
-peer (cryptocorruencies, file sharing) and client-to-server applications
-(websites, instant messengers, chat servers) are supported.
+I2P (Invisible Internet Project) is a universal anonymous network layer. All 
+communications over I2P are anonymous and end-to-end encrypted. Participants 
+don't reveal their real IP address to each other. Peer to peer 
+(cryptocorruencies, file sharing) and client-to-server applications (websites, 
+instant messengers, chat servers) are supported.
 
 I2P allows people from all around the world to communicate and share 
 information without restrictions.
 
+Flavors:
+	upnp     - Built in support for UPnP. This allows I2Pd to 
+                   automatically open ports on the router.

@@ -1,37 +1,37 @@
-COMMENT =	client for the I2P anonymous network
+COMMENT=client for the I2P anonymous network
 
-GH_ACCOUNT = PurpleI2P
-GH_PROJECT = i2pd
-GH_TAGNAME = 2.52.0
+GH_ACCOUNT=PurpleI2P
+GH_PROJECT=i2pd
+GH_TAGNAME=2.52.0
 
-CATEGORIES = net
-HOMEPAGE = https://i2pd.website
+CATEGORIES=net
+HOMEPAGE=https://i2pd.website
 
 # BSD
-PERMIT_PACKAGE = Yes
+PERMIT_PACKAGE=Yes
 
-WANTLIB += ${COMPILER_LIBCXX} boost_atomic-mt boost_date_time-mt
-WANTLIB += boost_filesystem-mt boost_program_options-mt boost_system-mt
-WANTLIB += c crypto m ssl z
+WANTLIB+=${COMPILER_LIBCXX} boost_atomic-mt boost_date_time-mt
+WANTLIB+=boost_filesystem-mt boost_program_options-mt boost_system-mt
+WANTLIB+=c crypto m ssl z
 
-COMPILER = base-clang ports-gcc
-MODULES = devel/cmake
-LIB_DEPENDS = devel/boost
+COMPILER=base-clang ports-gcc
+MODULES=devel/cmake
+LIB_DEPENDS=devel/boost
 
-CONFIGURE_ARGS += -DCMAKE_BUILD_TYPE=Release
+CONFIGURE_ARGS+=-DCMAKE_BUILD_TYPE=Release
 
-FLAVORS += upnp
-FLAVOR ?=
+FLAVORS+=upnp
+FLAVOR?=
 
 .if ${FLAVOR:Mupnp}
-PLIST = ${PKGDIR}/PLIST-upnp
-LIB_DEPENDS +=	net/miniupnp/miniupnpc
-CONFIGURE_ARGS += -DCMAKE_WITH_UPNP=ON
+PLIST=${PKGDIR}/PLIST-upnp
+LIB_DEPENDS+=net/miniupnp/miniupnpc
+CONFIGURE_ARGS+=-DCMAKE_WITH_UPNP=ON
 .endif
 
-USE_GMAKE = Yes
+USE_GMAKE=Yes
 
-WRKSRC = ${WRKDIST}/build
+WRKSRC=${WRKDIST}/build
 
 post-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/include/i2pd

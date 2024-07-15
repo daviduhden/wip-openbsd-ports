@@ -24,6 +24,7 @@ FLAVORS += upnp
 FLAVOR ?=
 
 .if ${FLAVOR:Mupnp}
+PLIST = ${PKGDIR}/PLIST-upnp
 LIB_DEPENDS +=	net/miniupnp/miniupnpc
 CONFIGURE_ARGS += -DCMAKE_WITH_UPNP=ON
 .endif

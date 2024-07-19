@@ -6,6 +6,7 @@ Work in progress for the creation of OpenBSD ports and flavors for privacy and s
 
 - [monero-core](https://github.com/monero-project/monero)
 - [feather-wallet](https://github.com/feather-wallet/feather)
+- [xmrig](https://github.com/xmrig/xmrig)
 - [p2pool](https://github.com/SChernykh/p2pool)
 - [simplex-chat-cli](https://github.com/simplex-chat)
 - [simplexmq](https://github.com/simplex-chat/simplexmq)

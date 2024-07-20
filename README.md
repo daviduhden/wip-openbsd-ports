@@ -1,6 +1,6 @@
 # About this repository
 
-Work in progress for the creation of OpenBSD ports and flavors for privacy and security focused software. Any contribution is highly appreciated.
+Work in progress for the creation of [OpenBSD ports](https://github.com/openbsd/ports) and flavors for privacy and security focused software. Any contribution is highly appreciated.
 
 # Software to be ported
 

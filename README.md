@@ -13,4 +13,4 @@ Work in progress for the creation of [OpenBSD ports](https://github.com/openbsd/
 
 # Flavors to be added
 
-- [i2pd](https://github.com/openbsd/ports/tree/master/net/i2pd) flavor with [UPnP support](https://i2pd.readthedocs.io/en/latest/devs/building/unix/)
+- [i2pd](https://github.com/PurpleI2P/i2pd) flavor with [UPnP support](https://i2pd.readthedocs.io/en/latest/devs/building/unix/)

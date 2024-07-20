@@ -1,2 +1,7 @@
-- Too many open files during build
-- Create a RC script
+There is a problem when compiling Monero as a normal user due to many files being opened during compilation.
+
+LLVM ERROR: out of memory
+c++: error: unable to execute command: Abort trap (core dumped)
+
+You need to increase the data ulimit size to 2GB: ulimit -d 2000000
+

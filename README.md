@@ -8,7 +8,7 @@ Work in progress for the creation of [OpenBSD ports](https://github.com/openbsd/
 - [feather-wallet](https://github.com/feather-wallet/feather)
 - [xmrig](https://github.com/xmrig/xmrig)
 - [p2pool](https://github.com/SChernykh/p2pool)
-- [simplex-chat-cli](https://github.com/simplex-chat)
+- [simplex-chat-cli](https://github.com/simplex-chat/simplex-chat)
 - [simplexmq](https://github.com/simplex-chat/simplexmq)
 
 # Flavors to be added

@@ -36,8 +36,6 @@ post-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/include/i2pd
 	${INSTALL_DATA} ${WRKDIST}/libi2pd{,_client}/*.h \
 		${PREFIX}/include/i2pd
-	${INSTALL_DATA} ${WRKDIST}/daemon/*.h \
-		${PREFIX}/include/i2pd
 .for dir in family reseed
 	${INSTALL_DATA_DIR} ${PREFIX}/share/examples/i2pd/certificates/${dir}
 	${INSTALL_DATA} ${WRKDIST}/contrib/certificates/${dir}/* \

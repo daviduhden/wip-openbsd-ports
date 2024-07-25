@@ -1,4 +1,7 @@
-#!/bin/sh
+#!/bin/ksh
+
+# Remove the ports directory
+rm -rf /usr/ports
 
 # Fetch the OpenBSD version
 VERSION=$(uname -r)
@@ -20,6 +23,12 @@ signify -Cp "/etc/signify/openbsd-$SHORT_VERSION-base.pub" -x SHA256.sig ports.t
 # Extract the ports tree into /usr
 cd /usr || exit 1
 tar xzf /tmp/ports.tar.gz
+
+# Remove the contents of the /usr/ports/net/i2pd directory
+rm -rf /usr/ports/net/i2pd
+
+# Copy the contents of the current directory's net directory to /usr/ports/net
+cp -R net/* /usr/ports/net/
 
 # Configure the ports system in /etc/mk.conf
 echo "Configuring the ports system in /etc/mk.conf..."

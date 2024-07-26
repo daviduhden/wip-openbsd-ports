@@ -10,6 +10,7 @@ Work in progress for the creation of [OpenBSD ports](https://github.com/openbsd/
 - [p2pool](https://github.com/SChernykh/p2pool)
 - [simplex-chat-cli](https://github.com/simplex-chat/simplex-chat)
 - [simplexmq](https://github.com/simplex-chat/simplexmq)
+- [xd-torrent](https://github.com/majestrate/XD)
 
 # Flavors to be added
 

@@ -28,7 +28,7 @@ tar xzf /tmp/ports.tar.gz
 rm -rf /usr/ports/net/i2pd
 
 # Copy the contents of the current directory's net directory to /usr/ports/net
-cp -R ./ /usr/ports/net/
+cp -R ./net /usr/ports/net/
 
 # Configure the ports system in /etc/mk.conf
 echo "Configuring the ports system in /etc/mk.conf..."

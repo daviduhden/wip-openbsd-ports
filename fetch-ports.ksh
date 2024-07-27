@@ -5,7 +5,7 @@ rm -rf /usr/ports
 
 # Fetch the OpenBSD version
 VERSION=$(uname -r)
-SHORT_VERSION=$(echo $VERSION | cut -c 1,3)
+SHORT_VERSION=$(echo "$VERSION" | cut -c 1,3)
 
 # Directories for ports configuration
 WRKOBJDIR="/usr/obj/ports"

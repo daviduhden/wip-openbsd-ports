@@ -27,8 +27,16 @@ tar xzf /tmp/ports.tar.gz
 # Remove the contents of the /usr/ports/net/i2pd directory
 rm -rf /usr/ports/net/i2pd
 
+# Move to the wip-openbsd-ports directory
+wip_openbsd_ports_dir=$(find / -type d -name "wip-openbsd-ports" 2>/dev/null | head -n 1)
+if [ -z "$wip_openbsd_ports_dir" ]; then
+    echo "wip-openbsd-ports directory not found."
+    exit 1
+fi
+cd "$wip_openbsd_ports_dir" || exit 1
+
 # Copy the contents of the current directory's net directory to /usr/ports/net
-cp -R ./net /usr/ports/net/
+cp -R ./* /usr/ports/net/
 
 # Configure the ports system in /etc/mk.conf
 echo "Configuring the ports system in /etc/mk.conf..."

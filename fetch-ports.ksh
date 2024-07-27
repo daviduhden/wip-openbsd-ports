@@ -1,5 +1,9 @@
 #!/bin/ksh
 
+# Remove ports tree files
+rm -f /tmp/ports.tar.gz
+rm -f /tmp/SHA256.sig
+
 # Remove the ports directory
 rm -rf /usr/ports
 

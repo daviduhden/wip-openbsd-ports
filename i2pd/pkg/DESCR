@@ -10,5 +10,4 @@ I2P allows people from all around the world to communicate and share
 information without restrictions.
 
 Flavors:
-	upnp     - Built in support for UPnP. This allows I2Pd to 
-                   automatically open ports on the router.
+    upnp       - Built with UPnP support

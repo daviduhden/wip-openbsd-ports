@@ -40,7 +40,8 @@ fi
 cd "$wip_openbsd_ports_dir" || exit 1
 
 # Copy the contents of the current directory's net directory to /usr/ports/net
-cp -R ./* /usr/ports/net/
+mkdir -p /usr/ports/mystuff/net
+cp -R ./* /usr/ports/mystuff/net/
 
 # Remove the mk.conf file
 rm -f /etc/mk.conf

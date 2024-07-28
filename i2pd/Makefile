@@ -18,8 +18,6 @@ COMPILER=base-clang ports-gcc
 MODULES=devel/cmake
 LIB_DEPENDS=devel/boost
 
-CONFIGURE_ARGS+=-DCMAKE_BUILD_TYPE=Release
-
 FLAVORS+=upnp
 FLAVOR?=
 

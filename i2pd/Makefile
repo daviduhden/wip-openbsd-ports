@@ -15,7 +15,7 @@ WANTLIB+=boost_filesystem-mt boost_program_options-mt boost_system-mt
 WANTLIB+=c crypto m ssl z
 
 COMPILER=base-clang ports-gcc
-MODULES=devel/cmake lang/python
+MODULES=devel/cmake
 LIB_DEPENDS=devel/boost
 
 USE_GMAKE=Yes

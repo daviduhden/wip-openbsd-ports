@@ -28,9 +28,6 @@ signify -Cp "/etc/signify/openbsd-$SHORT_VERSION-base.pub" -x SHA256.sig ports.t
 cd /usr || exit 1
 tar xzf /tmp/ports.tar.gz
 
-# Remove the contents of the /usr/ports/net/i2pd directory
-rm -rf /usr/ports/net/i2pd
-
 # Move to the wip-openbsd-ports directory
 wip_openbsd_ports_dir=$(find / -type d -name "wip-openbsd-ports" 2>/dev/null | head -n 1)
 if [ -z "$wip_openbsd_ports_dir" ]; then

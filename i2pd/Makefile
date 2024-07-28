@@ -18,15 +18,15 @@ COMPILER=base-clang ports-gcc
 MODULES=devel/cmake lang/python
 LIB_DEPENDS=devel/boost
 
+USE_GMAKE=Yes
+
 FLAVORS+=upnp
 FLAVOR?=
 
 .if ${FLAVOR:Mupnp}
 LIB_DEPENDS+=net/miniupnp/miniupnpc
-CONFIGURE_ARGS=-DCMAKE_WITH_UPNP=ON
+CONFIGURE_ARGS+=-DCMAKE_WITH_UPNP=ON
 .endif
-
-USE_GMAKE=Yes
 
 WRKSRC=${WRKDIST}/build
 

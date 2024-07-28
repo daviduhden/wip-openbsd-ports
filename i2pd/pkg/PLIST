@@ -13,7 +13,6 @@ include/i2pd/ClientContext.h
 include/i2pd/Config.h
 include/i2pd/Crypto.h
 include/i2pd/CryptoKey.h
-include/i2pd/Daemon.h
 include/i2pd/Datagram.h
 include/i2pd/Destination.h
 include/i2pd/ECIESX25519AEADRatchetSession.h
@@ -26,12 +25,8 @@ include/i2pd/Gost.h
 include/i2pd/Gzip.h
 include/i2pd/HTTP.h
 include/i2pd/HTTPProxy.h
-include/i2pd/HTTPServer.h
-include/i2pd/HTTPServerResources.h
 include/i2pd/I2CP.h
 include/i2pd/I2NPProtocol.h
-include/i2pd/I2PControl.h
-include/i2pd/I2PControlHandlers.h
 include/i2pd/I2PEndian.h
 include/i2pd/I2PService.h
 include/i2pd/I2PTunnel.h
@@ -69,7 +64,6 @@ include/i2pd/TunnelEndpoint.h
 include/i2pd/TunnelGateway.h
 include/i2pd/TunnelPool.h
 include/i2pd/UDPTunnel.h
-include/i2pd/UPnP.h
 include/i2pd/api.h
 include/i2pd/util.h
 include/i2pd/version.h

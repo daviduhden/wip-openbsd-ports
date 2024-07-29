@@ -12,14 +12,19 @@ PERMIT_PACKAGE=Yes
 
 WANTLIB+=${COMPILER_LIBCXX} boost_atomic-mt boost_date_time-mt
 WANTLIB+=boost_filesystem-mt boost_program_options-mt boost_system-mt
-WANTLIB+=c crypto m ssl z
+WANTLIB+=c m z
 
 COMPILER=base-clang ports-gcc
 MODULES=devel/cmake
 LIB_DEPENDS=devel/boost
 
 # LibreSSL support has been removed in version 2.53.0
-BUILD_DEPENDS=security/openssl/3.2
+BUILD_DEPENDS+=security/openssl/3.2
+# Linked statically to avoid conflicts with shared libcrypto from the base OS
+CONFIGURE_ARGS+=-DWITH_STATIC=ON
+MAKE_CCARGS+=	-I${LOCALBASE}/include/eopenssl32
+MAKE_AUXLIBS+=	${LOCALBASE}/lib/eopenssl32/libssl.a \
+				${LOCALBASE}/lib/eopenssl32/libcrypto.a
 
 USE_GMAKE=Yes
 

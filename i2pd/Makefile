@@ -24,8 +24,9 @@ BUILD_DEPENDS+=security/openssl/3.2
 CONFIGURE_ARGS+=-DWITH_STATIC=ON
 MAKE_CCARGS+=-I${LOCALBASE}/include/eopenssl32
 MAKE_AUXLIBS+=${LOCALBASE}/lib/eopenssl32/libssl.a \
-			${LOCALBASE}/lib/eopenssl32/libcrypto.a
-WANTLIB+=lib/eopenssl32/crypto lib/eopenssl32/ssl
+		${LOCALBASE}/lib/eopenssl32/libcrypto.a
+WANTLIB+=${LOCALBASE}/lib/eopenssl32/libssl.a \
+		${LOCALBASE}/lib/eopenssl32/libcrypto.a
 
 USE_GMAKE=Yes
 

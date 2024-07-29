@@ -22,9 +22,7 @@ LIB_DEPENDS=devel/boost
 BUILD_DEPENDS+=security/openssl/3.2
 # Linked statically to avoid conflicts with shared libcrypto from the base OS
 CONFIGURE_ARGS+=-DWITH_STATIC=ON
-MAKE_CCARGS+=	-I${LOCALBASE}/include/eopenssl32
-MAKE_AUXLIBS+=	${LOCALBASE}/lib/eopenssl32/libssl.a \
-				${LOCALBASE}/lib/eopenssl32/libcrypto.a
+WANTLIB+=lib/eopenssl32/crypto lib/eopenssl32/ssl
 
 USE_GMAKE=Yes
 

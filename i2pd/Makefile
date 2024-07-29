@@ -19,16 +19,11 @@ MODULES=devel/cmake
 LIB_DEPENDS=devel/boost
 
 # LibreSSL support has been removed in version 2.53.0
-BUILD_DEPENDS+=security/openssl/3.2
+LIB_DEPENDS+=security/openssl/3.2
 # Linked statically to avoid conflicts with shared libcrypto from the base OS
 CONFIGURE_ARGS+=-DWITH_STATIC=ON
 MAKE_AUXLIBS+=lib/eopenssl32/crypto lib/eopenssl32/ssl
 WANTLIB+=lib/eopenssl32/crypto lib/eopenssl32/ssl
-
-MAKE_AUXLIBS+=${LOCALBASE}/lib/eopenssl32/libssl.a \
-		${LOCALBASE}/lib/eopenssl32/libcrypto.a
-WANTLIB+=${LOCALBASE}/lib/eopenssl32/libssl.a \
-		${LOCALBASE}/lib/eopenssl32/libcrypto.a
 
 USE_GMAKE=Yes
 

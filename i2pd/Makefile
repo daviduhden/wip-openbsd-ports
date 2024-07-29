@@ -19,7 +19,7 @@ MODULES=devel/cmake
 LIB_DEPENDS=devel/boost
 
 # LibreSSL support has been removed in version 2.53.0
-LIB_DEPENDS+=security/openssl/3.3
+BUILD_DEPENDS=security/openssl/3.2
 
 USE_GMAKE=Yes
 

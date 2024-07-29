@@ -18,6 +18,9 @@ COMPILER=base-clang ports-gcc
 MODULES=devel/cmake
 LIB_DEPENDS=devel/boost
 
+# LibreSSL support has been removed in version 2.53.0
+LIB_DEPENDS+=security/openssl/3.3
+
 USE_GMAKE=Yes
 
 FLAVORS+=upnp

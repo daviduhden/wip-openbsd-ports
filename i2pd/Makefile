@@ -21,6 +21,14 @@ LIB_DEPENDS =	devel/boost
 # for tests
 USE_GMAKE =	Yes
 
+FLAVORS+=upnp
+FLAVOR?=
+
+.if ${FLAVOR:Mupnp}
+LIB_DEPENDS+=net/miniupnp/miniupnpc
+CONFIGURE_ARGS+=-DWITH_UPNP=ON
+.endif
+
 WRKSRC =	${WRKDIST}/build
 
 post-install:

@@ -51,4 +51,4 @@ fi
 
 # Display the results
 echo "SHA256: $SHA256SUM"
-echo "Size in bytes: $SIZE"
+echo "SIZE: $SIZE"

@@ -49,6 +49,9 @@ else
   exit 1
 fi
 
+# Get the filename
+FILENAME=$(basename "$1")
+
 # Display the results
-echo "SHA256: $SHA256SUM"
-echo "SIZE: $SIZE"
+echo "SHA256 ($FILENAME) = $SHA256SUM"
+echo "SIZE ($FILENAME) = $SIZE"

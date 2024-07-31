@@ -14,33 +14,21 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Remove ports tree files
-rm -f /tmp/ports.tar.gz
-rm -f /tmp/SHA256.sig
-
-# Remove the ports directory
-rm -rf /usr/ports
-
-# Fetch the OpenBSD version
-VERSION=$(uname -r)
-SHORT_VERSION=$(echo "$VERSION" | cut -c 1,3)
-
 # Directories for ports configuration
 WRKOBJDIR="/usr/obj/ports"
 DISTDIR="/usr/distfiles"
 PACKAGE_REPOSITORY="/usr/packages"
 
-# Fetch ports tree files from mirrors
-cd /tmp || exit 1
-ftp "https://cdn.openbsd.org/pub/OpenBSD/$VERSION/ports.tar.gz"
-ftp "https://cdn.openbsd.org/pub/OpenBSD/$VERSION/SHA256.sig"
-
-# Verify the integrity of the ports.tar.gz file
-signify -Cp "/etc/signify/openbsd-$SHORT_VERSION-base.pub" -x SHA256.sig ports.tar.gz
-
-# Extract the ports tree into /usr
-cd /usr || exit 1
-tar xzf /tmp/ports.tar.gz
+# Check if the ports directory exists
+if [ -d /usr/ports ]; then
+	echo "/usr/ports directory exists. Updating the repository with CVS."
+	cd /usr/ports || exit 1
+	cvs -q up -Pd -A
+else
+	# Checkout the ports tree using CVS
+	cd /usr || exit 1
+	cvs -qd anoncvs@anoncvs.eu.openbsd.org:/cvs checkout -P ports
+fi
 
 # Move to the wip-openbsd-ports directory
 wip_openbsd_ports_dir=$(find / -type d -name "wip-openbsd-ports" 2>/dev/null | head -n 1)
@@ -82,8 +70,8 @@ list_ports_subdirectories() {
 copy_directory() {
 	TARGET_DIR="$SUBDIRECTORY/$DIRECTORY"
 	if [ -d "$TARGET_DIR" ]; then
-		echo "Directory $TARGET_DIR already exists. Replacing it."
-		rm -rf "$TARGET_DIR"
+		echo "Directory $TARGET_DIR already exists. Removing files except 'CVS' directory."
+		find "$TARGET_DIR" -mindepth 1 ! -name "CVS" -exec rm -rf {} +
 	fi
 	cp -R "$DIRECTORY" "$SUBDIRECTORY/"
 	echo "Directory $DIRECTORY copied to $SUBDIRECTORY/"

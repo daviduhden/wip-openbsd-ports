@@ -14,11 +14,19 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Set CVSROOT environment variable
-export CVSROOT="anoncvs@anoncvs.eu.openbsd.org:/cvs"
-echo "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" >> ~/.profile
+# Remove the ports directory
+rm -rf /usr/ports
 
-# Directories for ports configuration
+# Set CVSROOT environment variable permanently if not already set
+if ! grep -q "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" ~/.profile; then
+    echo "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" >> ~/.profile
+    echo "CVSROOT variable added to ~/.profile"
+else
+    echo "CVSROOT variable already exists in ~/.profile"
+fi
+export CVSROOT="anoncvs@anoncvs.eu.openbsd.org:/cvs"
+
+# Directories for building ports
 WRKOBJDIR="/usr/obj/ports"
 DISTDIR="/usr/distfiles"
 PACKAGE_REPOSITORY="/usr/packages"

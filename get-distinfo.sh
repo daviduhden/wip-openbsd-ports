@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/ksh
 
 # Copyright (c) 2024 David Uhden Collado <david@uhden.dev>
 #
@@ -16,14 +16,14 @@
 
 # Check that an argument was provided
 if [ "$#" -ne 1 ]; then
-  echo "Usage: $0 file"
-  exit 1
+	echo "Usage: $0 file"
+	exit 1
 fi
 
 # Check that the file exists
 if [ ! -f "$1" ]; then
-  echo "The file $1 does not exist."
-  exit 1
+	echo "The file $1 does not exist."
+	exit 1
 fi
 
 # Determine the operating system
@@ -31,22 +31,22 @@ OS=$(uname)
 
 # Calculate the SHA256 of the file
 if [ "$OS" = "Linux" ]; then
-  SHA256SUM=$(sha256sum "$1" | awk '{print $1}')
+	SHA256SUM=$(sha256sum "$1" | awk '{print $1}')
 elif [ "$OS" = "OpenBSD" ]; then
-  SHA256SUM=$(sha256 -q "$1")
+	SHA256SUM=$(sha256 -q "$1")
 else
-  echo "Unsupported operating system: $OS"
-  exit 1
+	echo "Unsupported operating system: $OS"
+	exit 1
 fi
 
 # Get the file size in bytes
 if [ "$OS" = "Linux" ]; then
-  SIZE=$(stat -c%s "$1")
+	SIZE=$(stat -c%s "$1")
 elif [ "$OS" = "OpenBSD" ]; then
-  SIZE=$(stat -f%z "$1")
+	SIZE=$(stat -f%z "$1")
 else
-  echo "Unsupported operating system: $OS"
-  exit 1
+	echo "Unsupported operating system: $OS"
+	exit 1
 fi
 
 # Get the filename

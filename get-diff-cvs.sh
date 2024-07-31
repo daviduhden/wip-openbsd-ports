@@ -39,8 +39,8 @@ diff_entire_history() {
     echo "Diff for the entire history saved in ${DIRECTORY}_diff_entire_history.diff"
 }
 
-# Function to generate diff between two commits
-diff_between_commits() {
+# Function to generate diff between two revisions
+diff_between_revisions() {
     echo "Enter the tag of the first revision:"
     read REVISION1
     echo "Enter the tag of the second revision:"
@@ -60,7 +60,7 @@ case $OPTION in
         diff_entire_history
         ;;
     2)
-        diff_between_commits
+        diff_between_revisions
         ;;
     *)
         echo "Invalid option"

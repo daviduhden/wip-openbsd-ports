@@ -29,7 +29,7 @@ check_cvs_installed() {
 }
 
 # Define CVSROOT
-CVSROOT="anoncvs@anoncvs.eu.openbsd.org:/cvs"
+CVSROOT="anoncvs@anoncvs.fr.openbsd.org:/cvs"
 export CVSROOT
 
 # Clone the ports repository
@@ -65,6 +65,22 @@ list_ports_subdirectories() {
 	done
 }
 
+# Ensure the target directory exists in CVS and add it if necessary
+ensure_directory_in_cvs() {
+	dir="$1"
+	IFS='/'
+	set -- $dir
+	path=""
+	for part; do
+		path="$path/$part"
+		if [ ! -d "$path" ]; then
+			mkdir -p "$path"
+			(cd "$(dirname "$path")" && cvs add "$(basename "$path")")
+		fi
+	done
+	IFS=' '
+}
+
 # Copy the selected directory to ports
 copy_directory() {
 	TARGET_DIR="$SUBDIRECTORY/$DIRECTORY"
@@ -79,9 +95,11 @@ copy_directory() {
 # Add the copied directory to CVS and generate a diff of the changes
 generate_diff() {
 	cd ports
-	cvs add "$SUBDIRECTORY/$DIRECTORY"
-	find "$SUBDIRECTORY/$DIRECTORY" -type f -exec cvs add {} \;
-	cvs diff -u "$SUBDIRECTORY/$DIRECTORY" > "../${DIRECTORY}_diff.diff"
+	ensure_directory_in_cvs "$SUBDIRECTORY"
+	ensure_directory_in_cvs "$TARGET_DIR"
+	find "$TARGET_DIR" -type d -exec cvs add {} \;
+	find "$TARGET_DIR" -type f -exec cvs add {} \;
+	cvs diff -u "$TARGET_DIR" > "../${DIRECTORY}_diff.diff"
 	cd ..
 	echo "Diff of the changes saved in ${DIRECTORY}_diff.diff"
 }

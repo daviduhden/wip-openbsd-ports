@@ -29,7 +29,7 @@ check_cvs_installed() {
 }
 
 # Define CVSROOT
-CVSROOT=":pserver:anoncvs@anoncvs.eu.openbsd.org:/cvs"
+CVSROOT="anoncvs@anoncvs.eu.openbsd.org:/cvs"
 export CVSROOT
 
 # Clone the ports repository

@@ -42,9 +42,6 @@ signify -Cp "/etc/signify/openbsd-$SHORT_VERSION-base.pub" -x SHA256.sig ports.t
 cd /usr || exit 1
 tar xzf /tmp/ports.tar.gz
 
-# Remove the contents of the /usr/ports/net/i2pd directory
-rm -rf /usr/ports/net/i2pd
-
 # Move to the wip-openbsd-ports directory
 wip_openbsd_ports_dir=$(find / -type d -name "wip-openbsd-ports" 2>/dev/null | head -n 1)
 if [ -z "$wip_openbsd_ports_dir" ]; then
@@ -53,8 +50,54 @@ if [ -z "$wip_openbsd_ports_dir" ]; then
 fi
 cd "$wip_openbsd_ports_dir" || exit 1
 
-# Copy the contents of the current directory's net directory to /usr/ports/net
-cp -R ./* /usr/ports/net/
+# List directories in the current directory
+list_directories() {
+    echo "Select a directory to copy:"
+    select DIRECTORY in */; do
+        if [ -n "$DIRECTORY" ]; then
+            echo "You selected $DIRECTORY"
+            DIRECTORY=${DIRECTORY%/}  # Remove trailing slash
+            break
+        else
+            echo "Invalid selection. Please try again."
+        fi
+    done
+}
+
+# List subdirectories in /usr/ports
+list_ports_subdirectories() {
+    echo "Select a subdirectory in /usr/ports where the directory will be copied:"
+    select SUBDIRECTORY in /usr/ports/*/; do
+        if [ -n "$SUBDIRECTORY" ]; then
+            echo "You selected $SUBDIRECTORY"
+            SUBDIRECTORY=${SUBDIRECTORY%/}  # Remove trailing slash
+            break
+        else
+            echo "Invalid selection. Please try again."
+        fi
+    done
+}
+
+# Copy the selected directory to the chosen subdirectory in /usr/ports
+copy_directory() {
+    TARGET_DIR="$SUBDIRECTORY/$DIRECTORY"
+    if [ -d "$TARGET_DIR" ]; then
+        echo "Directory $TARGET_DIR already exists. Replacing it."
+        rm -rf "$TARGET_DIR"
+    fi
+    cp -R "$DIRECTORY" "$SUBDIRECTORY/"
+    echo "Directory $DIRECTORY copied to $SUBDIRECTORY/"
+}
+
+# Main function
+main() {
+    list_directories
+    list_ports_subdirectories
+    copy_directory
+}
+
+# Run the main function
+main
 
 # Remove the mk.conf file
 rm -f /etc/mk.conf

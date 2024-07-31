@@ -85,23 +85,28 @@ ensure_directory_in_cvs() {
 copy_directory() {
 	TARGET_DIR="$SUBDIRECTORY/$DIRECTORY"
 	if [ -d "$TARGET_DIR" ]; then
-		echo "Directory $TARGET_DIR already exists. Replacing it."
-		rm -rf "$TARGET_DIR"
+		echo "Directory $TARGET_DIR already exists. Updating it."
+		cp -r "$DIRECTORY"/* "$TARGET_DIR/"
+	else
+		cp -r "$DIRECTORY" "$SUBDIRECTORY/"
+		echo "Directory $DIRECTORY copied to $SUBDIRECTORY/"
 	fi
-	cp -r "$DIRECTORY" "$SUBDIRECTORY/"
-	echo "Directory $DIRECTORY copied to $SUBDIRECTORY/"
 }
 
-# Add the copied directory to CVS and generate a diff of the changes
+# Add the copied directory to CVS and generate diffs of the changes for each file
 generate_diff() {
 	cd ports
 	ensure_directory_in_cvs "$SUBDIRECTORY"
 	ensure_directory_in_cvs "$TARGET_DIR"
 	find "$TARGET_DIR" -type d -exec cvs add {} \;
 	find "$TARGET_DIR" -type f -exec cvs add {} \;
-	cvs diff -u "$TARGET_DIR" > "../${DIRECTORY}_diff.diff"
+
+	mkdir -p "../diffs"
+	for file in $(find "$TARGET_DIR" -type f); do
+		cvs diff -u "$file" > "../diffs/$(basename "$file").diff"
+	done
 	cd ..
-	echo "Diff of the changes saved in ${DIRECTORY}_diff.diff"
+	echo "Diffs of the changes saved in the diffs directory."
 }
 
 # Main function

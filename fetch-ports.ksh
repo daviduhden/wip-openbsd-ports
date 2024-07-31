@@ -14,6 +14,10 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+# Set CVSROOT environment variable
+export CVSROOT="anoncvs@anoncvs.eu.openbsd.org:/cvs"
+echo "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" >> ~/.profile
+
 # Directories for ports configuration
 WRKOBJDIR="/usr/obj/ports"
 DISTDIR="/usr/distfiles"

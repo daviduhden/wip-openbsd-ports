@@ -31,16 +31,9 @@ WRKOBJDIR="/usr/obj/ports"
 DISTDIR="/usr/distfiles"
 PACKAGE_REPOSITORY="/usr/packages"
 
-# Check if the ports directory exists
-if [ -d /usr/ports ]; then
-	echo "/usr/ports directory exists. Updating the repository with CVS."
-	cd /usr/ports || exit 1
-	cvs -q up -Pd -A
-else
-	# Checkout the ports tree using CVS
-	cd /usr || exit 1
-	cvs -qd anoncvs@anoncvs.eu.openbsd.org:/cvs checkout -P ports
-fi
+# Checkout the ports tree using CVS
+cd /usr || exit 1
+cvs -qd anoncvs@anoncvs.eu.openbsd.org:/cvs checkout -P ports
 
 # Move to the wip-openbsd-ports directory
 wip_openbsd_ports_dir=$(find / -type d -name "wip-openbsd-ports" 2>/dev/null | head -n 1)

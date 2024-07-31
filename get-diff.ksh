@@ -28,9 +28,13 @@ check_cvs_installed() {
 	fi
 }
 
+# Define CVSROOT
+CVSROOT=":pserver:anoncvs@anoncvs.eu.openbsd.org:/cvs"
+export CVSROOT
+
 # Clone the ports repository
 clone_repository() {
-	cvs -qd anoncvs@anoncvs.fr.openbsd.org:/cvs checkout -P ports
+    cvs -qd $CVSROOT checkout -P ports
 }
 
 # List directories in the current directory
@@ -72,12 +76,14 @@ copy_directory() {
 	echo "Directory $DIRECTORY copied to $SUBDIRECTORY/"
 }
 
-# Generate a diff of the changes
+# Add the copied directory to CVS and generate a diff of the changes
 generate_diff() {
-	cd ports
-	cvs diff -u > "../${DIRECTORY}_diff.diff"
-	cd ..
-	echo "Diff of the changes saved in ${DIRECTORY}_diff.diff"
+    cd ports
+    cvs add "$SUBDIRECTORY/$DIRECTORY"
+    find "$SUBDIRECTORY/$DIRECTORY" -type f -exec cvs add {} \;
+    cvs diff -u "$SUBDIRECTORY/$DIRECTORY" > "../${DIRECTORY}_diff.diff"
+    cd ..
+    echo "Diff of the changes saved in ${DIRECTORY}_diff.diff"
 }
 
 # Main function

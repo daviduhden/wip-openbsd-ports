@@ -1,8 +1,8 @@
-COMMENT=secure, private and untraceable cryptocurrency 
+COMMENT=secure, private and untraceable cryptocurrency
 
 GH_ACCOUNT=monero-project
 GH_PROJECT=monero
-GH_TAGNAME=v0.18.3.3 
+GH_TAGNAME=v0.18.3.3
 
 CATEGORIES=net
 HOMEPAGE=https://getmonero.org
@@ -17,6 +17,7 @@ MODULES=devel/cmake
 CONFIGURE_ARGS+=-DCMAKE_BUILD_TYPE=Release
 
 BUILD_DEPENDS=devel/boost net/zeromq net/libunbound converters/libiconv
+RUN_DEPENDS=devel/boost net/zeromq net/libunbound converters/libiconv
 
 # Optional
 BUILD_DEPENDS+=devel/doxygen math/graphviz www/py-requests
@@ -24,7 +25,10 @@ BUILD_DEPENDS+=devel/doxygen math/graphviz www/py-requests
 USE_GMAKE=Yes
 
 do-install:
-	${INSTALL_DATA_DIR} ${PREFIX}/share/doc
-	cp -r ${WRKSRC}/docs ${PREFIX}/share/doc/${PKGNAME}
+	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/monero
+	${INSTALL_DATA} ${WRKSRC}/README.md ${PREFIX}/share/doc/monero
+	${INSTALL_PROGRAM} ${WRKSRC}/bin/monerod ${PREFIX}/bin/
+	${INSTALL_PROGRAM} ${WRKSRC}/bin/monero-wallet-cli ${PREFIX}/bin/
+	${INSTALL_DATA_DIR} ${PREFIX}/etc/monero
+	${INSTALL_DATA} ${WRKSRC}/monero.conf ${PREFIX}/etc/monero/
 
-.include <bsd.port.mk>

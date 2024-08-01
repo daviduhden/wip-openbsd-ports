@@ -14,7 +14,6 @@ WANTLIB=c
 
 COMPILER=base-clang ports-gcc
 MODULES=devel/cmake
-CONFIGURE_ARGS+=-DCMAKE_BUILD_TYPE=Release
 
 BUILD_DEPENDS=devel/boost net/zeromq net/libunbound converters/libiconv
 RUN_DEPENDS=devel/boost net/zeromq net/libunbound converters/libiconv

@@ -31,3 +31,4 @@ do-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/etc/monero
 	${INSTALL_DATA} ${WRKSRC}/monero.conf ${PREFIX}/etc/monero/
 
+.include <bsd.port.mk>

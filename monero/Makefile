@@ -18,14 +18,11 @@ MODULES=devel/cmake
 BUILD_DEPENDS=devel/boost net/zeromq net/libunbound converters/libiconv
 RUN_DEPENDS=devel/boost net/zeromq net/libunbound converters/libiconv
 
-# Optional
-BUILD_DEPENDS+=devel/doxygen math/graphviz www/py-requests
-
 USE_GMAKE=Yes
 
-do-install:
-	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/monero
-	${INSTALL_DATA} ${WRKSRC}/README.md ${PREFIX}/share/doc/monero
+post-install:
+	${INSTALL_DATA_DIR} ${PREFIX}/share/doc
+	cp -r ${WRKSRC}/docs ${PREFIX}/share/doc/${PKGNAME}
 	${INSTALL_PROGRAM} ${WRKSRC}/bin/monerod ${PREFIX}/bin/
 	${INSTALL_PROGRAM} ${WRKSRC}/bin/monero-wallet-cli ${PREFIX}/bin/
 	${INSTALL_DATA_DIR} ${PREFIX}/etc/monero

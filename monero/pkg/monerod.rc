@@ -1,13 +1,15 @@
 #!/bin/ksh
 
 daemon="${TRUEPREFIX}/bin/monerod"
-daemon_timeout="300"
 daemon_user="_monerod"
-data_dir="${LOCALSTATEDIR}/monero"
-daemon_flags="--non-interactive --config-file ${SYSCONFDIR}/monero.conf --data-dir ${DATA_DIR}"
+daemon_flags="--non-interactive --config-file ${SYSCONFDIR}/monero/monero.conf --data-dir ${LOCALSTATEDIR}/monero"
+daemon_timeout=30
+daemon_logger="daemon"
 
 . /etc/rc.d/rc.subr
 
+pexp="monerod"
+rc_bg=YES
 rc_reload=NO
 
 rc_cmd $1

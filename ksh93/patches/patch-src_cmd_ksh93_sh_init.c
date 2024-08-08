@@ -1,7 +1,7 @@
 Index: src/cmd/ksh93/sh/init.c
 --- src/cmd/ksh93/sh/init.c
 +++ src/cmd/ksh93/sh/init.c
-@@ -1258,7 +1258,10 @@
+@@ -1228,7 +1228,10 @@
  		s++;
  		t |= SH_TYPE_SH;
  		if ((t & SH_TYPE_KSH) && *s == '9' && *(s+1) == '3')
@@ -12,10 +12,10 @@ Index: src/cmd/ksh93/sh/init.c
  #if _WINIX
  		if (*s == '.' && *(s+1) == 'e' && *(s+2) == 'x' && *(s+3) == 'e')
  			s += 4;
-@@ -1375,9 +1378,12 @@
+@@ -1346,9 +1348,12 @@
  	}
- 	/* read the environment */
- 	env_init();
+	/* read the environment; don't import attributes yet, but save pointer to them */
+	save_envmarker = env_init();
 +#if SHOPT_SYSRC
 +	sh.sysrc = type & SH_TYPE_KSH93 ? e_sysrc93 : e_sysrc;
 +#endif

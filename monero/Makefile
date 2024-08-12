@@ -24,11 +24,10 @@ RUN_DEPENDS=devel/boost net/zeromq net/libunbound converters/libiconv
 USE_GMAKE=Yes
 
 do-install:
-	${INSTALL_DATA_DIR} ${PREFIX}/share/doc
-	cp -r ${WRKSRC}/docs ${PREFIX}/share/doc/${PKGNAME}
-	${INSTALL_PROGRAM} ${WRKSRC}/build/release/monerod ${PREFIX}/bin/
-	${INSTALL_PROGRAM} ${WRKSRC}/build/release/monero-wallet-cli ${PREFIX}/bin/
+	${INSTALL_PROGRAM} ${WRKSRC}/bin/* ${PREFIX}/bin/
 	${INSTALL_DATA_DIR} ${PREFIX}/etc/monero
 	${INSTALL_DATA} ${WRKSRC}/utils/conf/monerod.conf ${PREFIX}/etc/monero/
+	${INSTALL_DATA_DIR} ${PREFIX}/share/doc
+	cp -r ${WRKSRC}/docs ${PREFIX}/share/doc/${PKGNAME}
 
 .include <bsd.port.mk>

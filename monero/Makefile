@@ -1,8 +1,10 @@
 COMMENT=secure, private and untraceable cryptocurrency
 
-GH_ACCOUNT=monero-project
-GH_PROJECT=monero
-GH_TAGNAME=v0.18.3.3
+VERSION=0.18.3.3
+PKGNAME=monero-${VERSION}
+DISTNAME=monero-source-v${VERSION}
+SITES=https://downloads.getmonero.org/cli/
+EXTRACT_SUFX=.tar.bz2
 
 CATEGORIES=net
 HOMEPAGE=https://getmonero.org

@@ -25,9 +25,9 @@ FLAVORS+=upnp
 FLAVOR?=
 
 .if ${FLAVOR:Mupnp}
-LIB_DEPENDS+=net/miniupnp/miniupnpc
-WANTLIB+=miniupnpc
-CONFIGURE_ARGS+=-DWITH_UPNP=ON
+LIB_DEPENDS+=	net/miniupnp/miniupnpc
+WANTLIB+=	miniupnpc
+CONFIGURE_ARGS+=	-DWITH_UPNP=ON
 .endif
 
 WRKSRC =	${WRKDIST}/build

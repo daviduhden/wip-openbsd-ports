@@ -22,7 +22,7 @@ RUN_DEPENDS=devel/boost net/zeromq net/libunbound converters/libiconv
 
 USE_GMAKE=Yes
 
-post-install:
+do-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/share/doc
 	cp -r ${WRKSRC}/docs ${PREFIX}/share/doc/${PKGNAME}
 	${INSTALL_PROGRAM} ${WRKSRC}/build/release/monerod ${PREFIX}/bin/

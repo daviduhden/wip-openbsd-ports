@@ -1,4 +1,4 @@
-COMMENT=secure, private and untraceable cryptocurrency
+COMMENT=secure, private and untraceable digital currency
 
 VERSION=0.18.3.3
 PKGNAME=monero-${VERSION}
@@ -16,6 +16,7 @@ WANTLIB=c
 
 COMPILER=base-clang ports-gcc
 MODULES=devel/cmake
+CONFIGURE_ARGS+=-DMANUAL_SUBMODULES=1 -Wno-dev
 
 BUILD_DEPENDS=devel/boost net/zeromq net/libunbound converters/libiconv
 RUN_DEPENDS=devel/boost net/zeromq net/libunbound converters/libiconv

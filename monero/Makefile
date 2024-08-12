@@ -28,6 +28,6 @@ post-install:
 	${INSTALL_PROGRAM} ${WRKSRC}/bin/monerod ${PREFIX}/bin/
 	${INSTALL_PROGRAM} ${WRKSRC}/bin/monero-wallet-cli ${PREFIX}/bin/
 	${INSTALL_DATA_DIR} ${PREFIX}/etc/monero
-	${INSTALL_DATA} ${WRKSRC}/monero.conf ${PREFIX}/etc/monero/
+	${INSTALL_DATA} ${WRKSRC}/monerod.conf ${PREFIX}/etc/monero/
 
 .include <bsd.port.mk>

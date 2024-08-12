@@ -24,7 +24,7 @@ RUN_DEPENDS=devel/boost net/zeromq net/libunbound converters/libiconv
 USE_GMAKE=Yes
 
 do-install:
-	${INSTALL_PROGRAM} ${WRKSRC}/bin/* ${PREFIX}/bin/
+	${INSTALL_PROGRAM} ${WRKBUILD}/bin/* ${PREFIX}/bin/
 	${INSTALL_DATA_DIR} ${PREFIX}/etc/monero
 	${INSTALL_DATA} ${WRKSRC}/utils/conf/monerod.conf ${PREFIX}/etc/monero/
 	${INSTALL_DATA_DIR} ${PREFIX}/share/doc

@@ -12,7 +12,11 @@ HOMEPAGE=https://getmonero.org
 # BSD
 PERMIT_PACKAGE=Yes
 
-WANTLIB=c
+WANTLIB += c ${COMPILER_LIBCXX} boost_chrono-mt boost_date_time-mt
+WANTLIB += boost_filesystem-mt boost_locale-mt boost_program_options-mt
+WANTLIB += boost_regex-mt boost_serialization-mt boost_system-mt
+WANTLIB += boost_thread-mt crypto execinfo m readline sodium ssl
+WANTLIB += unbound zmq
 
 COMPILER=base-clang ports-gcc
 MODULES=devel/cmake

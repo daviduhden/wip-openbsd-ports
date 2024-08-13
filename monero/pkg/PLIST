@@ -1,3 +1,5 @@
+@newgroup _monerod:900
+@newuser _monerod:900:900::monerod account:${LOCALSTATEDIR}/lib/monero:/sbin/nologin
 @rcscript ${RCDIR}/monerod
 @bin bin/monero-blockchain-ancestry
 @bin bin/monero-blockchain-depth
@@ -13,19 +15,24 @@
 @bin bin/monero-wallet-cli
 @bin bin/monero-wallet-rpc
 @bin bin/monerod
-etc/
-etc/monero/
-etc/monero/monerod.conf
-share/doc/monero/
-share/doc/monero/ANONYMITY_NETWORKS.md
-share/doc/monero/COMPILING_DEBUGGING_TESTING.md
-share/doc/monero/CONTRIBUTING.md
-share/doc/monero/LEVIN_PROTOCOL.md
-share/doc/monero/PORTABLE_STORAGE.md
-share/doc/monero/README.i18n.md
-share/doc/monero/RELEASE_CHECKLIST.md
-share/doc/monero/ZMQ.md
-share/doc/monero/images/
-share/doc/monero/images/storage_binary_example.png
-share/examples/login.conf.d/monero
+@owner _monerod
+@group _monerod
+@sample ${SYSCONFDIR}etc/monero/
+@sample ${SYSCONFDIR}etc/monero/monerod.conf
+@sample ${DATADIR}lib/monero/
+@sample ${DATADIR}log/monero/
+@sample ${LOCALSTATEDIR}share/doc/monero/
+@sample ${LOCALSTATEDIR}share/doc/monero/ANONYMITY_NETWORKS.md
+@sample ${LOCALSTATEDIR}share/doc/monero/COMPILING_DEBUGGING_TESTING.md
+@sample ${LOCALSTATEDIR}share/doc/monero/CONTRIBUTING.md
+@sample ${LOCALSTATEDIR}share/doc/monero/LEVIN_PROTOCOL.md
+@sample ${LOCALSTATEDIR}share/doc/monero/PORTABLE_STORAGE.md
+@sample ${LOCALSTATEDIR}share/doc/monero/README.i18n.md
+@sample ${LOCALSTATEDIR}share/doc/monero/RELEASE_CHECKLIST.md
+@sample ${LOCALSTATEDIR}share/doc/monero/ZMQ.md
+@sample ${LOCALSTATEDIR}share/doc/monero/images/
+@sample ${LOCALSTATEDIR}share/doc/monero/images/storage_binary_example.png
+@sample ${LOCALSTATEDIR}share/examples/login.conf.d/monero
+@owner
+@group
 @sample ${SYSCONFDIR}/login.conf.d/monero

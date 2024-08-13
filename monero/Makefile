@@ -27,9 +27,6 @@ RUN_DEPENDS=devel/boost net/zeromq net/libunbound converters/libiconv
 
 USE_GMAKE=Yes
 
-USERS = _monerod
-GROUPS = _monerod
-
 do-install:
 	${INSTALL_PROGRAM} ${WRKBUILD}/bin/* ${PREFIX}/bin/
 	${INSTALL_DATA_DIR} ${PREFIX}/etc/monero
@@ -38,7 +35,7 @@ do-install:
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/log/monero
 	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/monero
 	cp -r ${WRKSRC}/docs/* ${PREFIX}/share/doc/monero/
-	${INSTALL_SCRIPT} ${FILESDIR}/monerod.rc ${RCDIR}/monerod
+	${INSTALL_SCRIPT} ${PKGDIR}/monerod.rc ${RCDIR}/monerod
 
 post-install:
 	chown -R _monerod:_monerod ${LOCALSTATEDIR}/lib/monero

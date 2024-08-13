@@ -17,22 +17,18 @@
 @bin bin/monerod
 @owner _monerod
 @group _monerod
-@sample ${SYSCONFDIR}etc/monero/
-@sample ${SYSCONFDIR}etc/monero/monerod.conf
-@sample ${DATADIR}lib/monero/
-@sample ${DATADIR}log/monero/
-@sample ${LOCALSTATEDIR}share/doc/monero/
-@sample ${LOCALSTATEDIR}share/doc/monero/ANONYMITY_NETWORKS.md
-@sample ${LOCALSTATEDIR}share/doc/monero/COMPILING_DEBUGGING_TESTING.md
-@sample ${LOCALSTATEDIR}share/doc/monero/CONTRIBUTING.md
-@sample ${LOCALSTATEDIR}share/doc/monero/LEVIN_PROTOCOL.md
-@sample ${LOCALSTATEDIR}share/doc/monero/PORTABLE_STORAGE.md
-@sample ${LOCALSTATEDIR}share/doc/monero/README.i18n.md
-@sample ${LOCALSTATEDIR}share/doc/monero/RELEASE_CHECKLIST.md
-@sample ${LOCALSTATEDIR}share/doc/monero/ZMQ.md
-@sample ${LOCALSTATEDIR}share/doc/monero/images/
-@sample ${LOCALSTATEDIR}share/doc/monero/images/storage_binary_example.png
-@sample ${LOCALSTATEDIR}share/examples/login.conf.d/monero
+@sample ${SYSCONFDIR}/monero/monerod.conf
+@sample ${LOCALSTATEDIR}/lib/monero/
+@sample ${LOCALSTATEDIR}/log/monero/
+@sample ${LOCALSTATEDIR}/share/doc/monero/ANONYMITY_NETWORKS.md
+@sample ${LOCALSTATEDIR}/share/doc/monero/COMPILING_DEBUGGING_TESTING.md
+@sample ${LOCALSTATEDIR}/share/doc/monero/CONTRIBUTING.md
+@sample ${LOCALSTATEDIR}/share/doc/monero/LEVIN_PROTOCOL.md
+@sample ${LOCALSTATEDIR}/share/doc/monero/PORTABLE_STORAGE.md
+@sample ${LOCALSTATEDIR}/share/doc/monero/README.i18n.md
+@sample ${LOCALSTATEDIR}/share/doc/monero/RELEASE_CHECKLIST.md
+@sample ${LOCALSTATEDIR}/share/doc/monero/ZMQ.md
+@sample ${LOCALSTATEDIR}/share/doc/monero/images/storage_binary_example.png
+@sample ${SYSCONFDIR}/login.conf.d/monero
 @owner
 @group
-@sample ${SYSCONFDIR}/login.conf.d/monero

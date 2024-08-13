@@ -1,5 +1,5 @@
 @newgroup _monerod:900
-@newuser _monerod:900:900::monero account:${LOCALSTATEDIR}/lib/monero:/sbin/nologin
+@newuser _monerod:900:900::monerod account:${LOCALSTATEDIR}/lib/monero:/sbin/nologin
 @rcscript ${RCDIR}/monerod
 @bin bin/monero-blockchain-ancestry
 @bin bin/monero-blockchain-depth

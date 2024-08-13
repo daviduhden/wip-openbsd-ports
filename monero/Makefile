@@ -31,7 +31,7 @@ do-install:
 	${INSTALL_PROGRAM} ${WRKBUILD}/bin/* ${PREFIX}/bin/
 	${INSTALL_DATA_DIR} ${PREFIX}/etc/monero
 	${INSTALL_DATA} ${WRKSRC}/utils/conf/monerod.conf ${PREFIX}/etc/monero/
-	${INSTALL_DATA_DIR} ${PREFIX}/share/doc
-	cp -r ${WRKSRC}/docs ${PREFIX}/share/doc/${PKGNAME}
+	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/monero
+	cp -r ${WRKSRC}/docs/* ${PREFIX}/share/doc/monero/
 
 .include <bsd.port.mk>

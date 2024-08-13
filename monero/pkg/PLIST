@@ -15,20 +15,19 @@
 @bin bin/monero-wallet-cli
 @bin bin/monero-wallet-rpc
 @bin bin/monerod
-@owner _monerod
-@group _monerod
-@sample ${SYSCONFDIR}/monero/monerod.conf
-@sample ${LOCALSTATEDIR}/lib/monero/
-@sample ${LOCALSTATEDIR}/log/monero/
-@sample ${LOCALSTATEDIR}/share/doc/monero/ANONYMITY_NETWORKS.md
-@sample ${LOCALSTATEDIR}/share/doc/monero/COMPILING_DEBUGGING_TESTING.md
-@sample ${LOCALSTATEDIR}/share/doc/monero/CONTRIBUTING.md
-@sample ${LOCALSTATEDIR}/share/doc/monero/LEVIN_PROTOCOL.md
-@sample ${LOCALSTATEDIR}/share/doc/monero/PORTABLE_STORAGE.md
-@sample ${LOCALSTATEDIR}/share/doc/monero/README.i18n.md
-@sample ${LOCALSTATEDIR}/share/doc/monero/RELEASE_CHECKLIST.md
-@sample ${LOCALSTATEDIR}/share/doc/monero/ZMQ.md
-@sample ${LOCALSTATEDIR}/share/doc/monero/images/storage_binary_example.png
+etc/
+etc/monero/
+etc/monero/monerod.conf
+share/doc/monero/
+share/doc/monero/ANONYMITY_NETWORKS.md
+share/doc/monero/COMPILING_DEBUGGING_TESTING.md
+share/doc/monero/CONTRIBUTING.md
+share/doc/monero/LEVIN_PROTOCOL.md
+share/doc/monero/PORTABLE_STORAGE.md
+share/doc/monero/README.i18n.md
+share/doc/monero/RELEASE_CHECKLIST.md
+share/doc/monero/ZMQ.md
+share/doc/monero/images/
+share/doc/monero/images/storage_binary_example.png
+share/examples/login.conf.d/monero
 @sample ${SYSCONFDIR}/login.conf.d/monero
-@owner
-@group

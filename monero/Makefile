@@ -43,16 +43,5 @@ do-install:
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/log/monero/
 	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/monero
 	cp -r ${WRKSRC}/docs/* ${PREFIX}/share/doc/monero/
-	if ! getent group _monerod >/dev/null; then \
-		groupadd -g 900 _monerod; \
-	fi
-	if ! id _monerod >/dev/null 2>&1; then \
-		useradd -u 900 -g _monerod -c "monerod account" \
-		-d ${LOCALSTATEDIR}/lib/monero/ -s /sbin/nologin _monerod; \
-	fi
-	chown -R _monerod:_monerod ${LOCALSTATEDIR}/lib/monero/
-	chown -R _monerod:_monerod ${LOCALSTATEDIR}/log/monero/
-	chmod 750 ${LOCALSTATEDIR}/lib/monero/
-	chmod 750 ${LOCALSTATEDIR}/log/monero/
 
 .include <bsd.port.mk>

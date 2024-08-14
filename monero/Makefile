@@ -37,19 +37,19 @@ do-install:
 	${INSTALL_PROGRAM} ${WRKBUILD}/bin/* ${PREFIX}/bin/
 	${INSTALL_DATA_DIR} ${SYSCONFDIR}/monero
 	${INSTALL_DATA} ${WRKSRC}/utils/conf/monerod.conf ${SYSCONFDIR}/monero/
-	${INSTALL_DATA_DIR} ${VARBASE}/monero/lib
-	${INSTALL_DATA_DIR} ${VARBASE}/monero/log
+	${INSTALL_DATA_DIR} ${PREFIX}/monero/lib
+	${INSTALL_DATA_DIR} ${PREFIX}/monero/log
 	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/monero
 	cp -r ${WRKSRC}/docs/* ${PREFIX}/share/doc/monero/
 	if ! getent group _monerod >/dev/null; then \
 		groupadd -g 900 _monerod; \
 	fi
 	if ! id _monerod >/dev/null 2>&1; then \
-		useradd -u 900 -g _monerod -c "monerod account" -d ${VARBASE}/monero/lib -s /sbin/nologin _monerod; \
+		useradd -u 900 -g _monerod -c "monerod account" -d ${PREFIX}/monero/lib -s /sbin/nologin _monerod; \
 	fi
-	chown -R _monerod:_monerod ${VARBASE}/monero/lib
-	chown -R _monerod:_monerod ${VARBASE}/monero/log
-	chmod 750 ${VARBASE}/monero/lib
-	chmod 750 ${VARBASE}/monero/log
+	chown -R _monerod:_monerod ${PREFIX}/monero/lib
+	chown -R _monerod:_monerod ${PREFIX}/monero/log
+	chmod 750 ${PREFIX}/monero/lib
+	chmod 750 ${PREFIX}/monero/log
 
 .include <bsd.port.mk>

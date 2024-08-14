@@ -13,9 +13,6 @@
 @bin bin/monero-wallet-cli
 @bin bin/monero-wallet-rpc
 @bin bin/monerod
-etc/
-etc/monero/
-etc/monero/monerod.conf
 share/doc/monero/
 share/doc/monero/ANONYMITY_NETWORKS.md
 share/doc/monero/COMPILING_DEBUGGING_TESTING.md
@@ -29,8 +26,3 @@ share/doc/monero/images/
 share/doc/monero/images/storage_binary_example.png
 share/examples/login.conf.d/monerod
 @sample ${SYSCONFDIR}/login.conf.d/monerod
-var/
-var/lib/
-var/lib/monero/
-var/log/
-var/log/monero/

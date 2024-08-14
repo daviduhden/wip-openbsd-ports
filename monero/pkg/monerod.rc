@@ -1,6 +1,6 @@
 #!/bin/ksh
 
-daemon="${PREFIX}/bin/monerod"
+daemon="${PREFIX}/usr/local/bin/monerod"
 daemon_user="_monerod"
 daemon_flags="--non-interactive --config-file ${PREFIX}/etc/monero/monero.conf"
 daemon_timeout=30

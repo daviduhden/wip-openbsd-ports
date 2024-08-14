@@ -34,13 +34,13 @@ RUN_DEPENDS=	devel/boost \
 USE_GMAKE=	Yes
 
 do-install:
-	${INSTALL_PROGRAM} ${WRKBUILD}/bin/* ${PREFIX}/bin/
+	${INSTALL_PROGRAM} ${WRKBUILD}/bin/* ${PREFIX}/usr/local/bin/
 	${INSTALL_DATA_DIR} ${PREFIX}/etc/monero
 	${INSTALL_DATA} ${WRKSRC}/utils/conf/monerod.conf ${PREFIX}/etc/monero
 	${INSTALL_DATA_DIR} ${PREFIX}/var/lib/monero/
 	${INSTALL_DATA_DIR} ${PREFIX}/var/log/monero/
 	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/monero
-	cp -r ${WRKSRC}/docs/* ${PREFIX}/share/doc/monero/
+	cp -r ${WRKSRC}/docs/* ${PREFIX}/usr/local/share/doc/monero/
 	if ! getent group _monerod >/dev/null; then \
 		groupadd -g 900 _monerod; \
 	fi

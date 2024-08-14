@@ -46,11 +46,11 @@ do-install:
 	fi
 	if ! id _monerod >/dev/null 2>&1; then \
 		useradd -u 900 -g _monerod -c "monerod account" \
-		-d ${PREFIX}/monero/lib -s /sbin/nologin _monerod; \
+		-d ${PREFIX}/var/lib/monero/ -s /sbin/nologin _monerod; \
 	fi
 	chown -R _monerod:_monerod ${PREFIX}/var/lib/monero/
 	chown -R _monerod:_monerod ${PREFIX}/var/log/monero/
-	chmod 750 ${PREFIX}/monero/lib
-	chmod 750 ${PREFIX}/monero/log
+	chmod 750 ${PREFIX}/var/lib/monero/
+	chmod 750 ${PREFIX}/var/log/monero/
 
 .include <bsd.port.mk>

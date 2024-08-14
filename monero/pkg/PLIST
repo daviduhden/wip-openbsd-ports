@@ -1,0 +1,36 @@
+@rcscript ${RCDIR}/monerod
+@bin bin/monero-blockchain-ancestry
+@bin bin/monero-blockchain-depth
+@bin bin/monero-blockchain-export
+@bin bin/monero-blockchain-import
+@bin bin/monero-blockchain-mark-spent-outputs
+@bin bin/monero-blockchain-prune
+@bin bin/monero-blockchain-prune-known-spent-data
+@bin bin/monero-blockchain-stats
+@bin bin/monero-blockchain-usage
+@bin bin/monero-gen-ssl-cert
+@bin bin/monero-gen-trusted-multisig
+@bin bin/monero-wallet-cli
+@bin bin/monero-wallet-rpc
+@bin bin/monerod
+etc/
+etc/monero/
+etc/monero/monerod.conf
+share/doc/monero/
+share/doc/monero/ANONYMITY_NETWORKS.md
+share/doc/monero/COMPILING_DEBUGGING_TESTING.md
+share/doc/monero/CONTRIBUTING.md
+share/doc/monero/LEVIN_PROTOCOL.md
+share/doc/monero/PORTABLE_STORAGE.md
+share/doc/monero/README.i18n.md
+share/doc/monero/RELEASE_CHECKLIST.md
+share/doc/monero/ZMQ.md
+share/doc/monero/images/
+share/doc/monero/images/storage_binary_example.png
+share/examples/login.conf.d/monerod
+@sample ${SYSCONFDIR}/login.conf.d/monerod
+var/
+var/lib/
+var/lib/monero/
+var/log/
+var/log/monero/

@@ -20,7 +20,7 @@ WANTLIB += unbound zmq
 
 COMPILER=	base-clang ports-gcc
 MODULES=	devel/cmake
-CONFIGURE_ARGS+=-DMANUAL_SUBMODULES=1 -Wno-dev
+CONFIGURE_ARGS += -DMANUAL_SUBMODULES=1 -Wno-dev
 
 # Dependencias necesarias para la compilación y la ejecución
 BUILD_DEPENDS=	devel/boost \

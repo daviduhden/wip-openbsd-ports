@@ -18,6 +18,9 @@
 etc/
 etc/monero/
 etc/monero/monerod.conf
+lib/monero/
+log/
+log/monero/
 share/doc/monero/
 share/doc/monero/ANONYMITY_NETWORKS.md
 share/doc/monero/COMPILING_DEBUGGING_TESTING.md
@@ -29,5 +32,5 @@ share/doc/monero/RELEASE_CHECKLIST.md
 share/doc/monero/ZMQ.md
 share/doc/monero/images/
 share/doc/monero/images/storage_binary_example.png
-share/examples/login.conf.d/monero
-@sample ${SYSCONFDIR}/login.conf.d/monero
+share/examples/login.conf.d/monerod
+@sample ${SYSCONFDIR}/login.conf.d/monerod

@@ -36,7 +36,7 @@ RUN_DEPENDS=	devel/boost \
 USE_GMAKE=	Yes
 
 do-install:
-	${INSTALL_PROGRAM} ${WRKBUILD}/bin/* ${PREFIX}/usr/local/bin/
+	${INSTALL_PROGRAM} ${WRKBUILD}/bin/* ${PREFIX}/bin/
 	${INSTALL_DATA_DIR} ${SYSCONFDIR}/monero
 	${INSTALL_DATA} ${WRKSRC}/utils/conf/monerod.conf ${SYSCONFDIR}/monero
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/lib/monero/

@@ -6,6 +6,8 @@ DISTNAME=	monero-source-v${VERSION}
 SITES=		https://downloads.getmonero.org/cli/
 EXTRACT_SUFX=	.tar.bz2
 
+EPOCH=		0
+
 CATEGORIES=	net
 HOMEPAGE=	https://getmonero.org
 

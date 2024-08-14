@@ -42,8 +42,12 @@ do-install:
 	${INSTALL_DATA_DIR} ${VARBASE}/monero/log
 	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/monero
 	cp -r ${WRKSRC}/docs/* ${PREFIX}/share/doc/monero/
-	@${MODGID} _monerod || groupadd -g 900 _monerod
-	@${MODUID} _monerod || useradd -u 900 -g _monerod -c "monerod account" -d ${VARBASE}/monero/lib -s /sbin/nologin _monerod
+	@if ! getent group _monerod >/dev/null; then \
+		groupadd -g 900 _monerod; \
+	fi
+	@if ! id _monerod >/dev/null 2>&1; then \
+		useradd -u 900 -g _monerod -c "monerod account" -d ${VARBASE}/monero/lib -s /sbin/nologin _monerod; \
+	fi
 	chown -R _monerod:_monerod ${VARBASE}/monero/lib
 	chown -R _monerod:_monerod ${VARBASE}/monero/log
 	chmod 750 ${VARBASE}/monero/lib

@@ -2,7 +2,7 @@
 
 daemon="${TRUEPREFIX}/bin/monerod"
 daemon_user="_monerod"
-daemon_flags="--non-interactive --config-file ${SYSCONFDIR}/monero/monero.conf"
+daemon_flags="--non-interactive --config-file ${SYSCONFDIR}/monero/monerod.conf"
 daemon_timeout=30
 daemon_logger="daemon.info"
 

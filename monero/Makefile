@@ -9,7 +9,7 @@ EXTRACT_SUFX=	.tar.bz2
 CATEGORIES=	net
 HOMEPAGE=	https://getmonero.org
 
-# Licencia BSD, permite distribución
+# BSD
 PERMIT_PACKAGE=	Yes
 
 WANTLIB += c ${COMPILER_LIBCXX} boost_chrono-mt boost_date_time-mt
@@ -22,7 +22,6 @@ COMPILER=	base-clang ports-gcc
 MODULES=	devel/cmake
 CONFIGURE_ARGS += -DMANUAL_SUBMODULES=1 -Wno-dev
 
-# Dependencias necesarias para la compilación y la ejecución
 BUILD_DEPENDS=	devel/boost \
 		net/zeromq \
 		net/libunbound \

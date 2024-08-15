@@ -408,4 +408,4 @@ id  user		group		port
 897 _croc		_croc		sysutils/croc
 898 _icingadb		_icingadb	net/icinga/icingadb
 899 _openhab		_openhab	misc/openhab
-900 _monerod        _monerod    net/monero
+900 _monerod		_monerod	net/monero

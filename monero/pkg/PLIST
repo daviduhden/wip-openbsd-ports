@@ -15,6 +15,7 @@
 @bin bin/monero-wallet-cli
 @bin bin/monero-wallet-rpc
 @bin bin/monerod
+@static-lib lib/libwallet.a
 share/doc/monero/
 share/doc/monero/ANONYMITY_NETWORKS.md
 share/doc/monero/COMPILING_DEBUGGING_TESTING.md

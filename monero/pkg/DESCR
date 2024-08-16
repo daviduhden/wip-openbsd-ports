@@ -16,9 +16,6 @@ Bootstrap Node: Start using Monero right away with a remote node while your
 local blockchain syncs in the background, switching to it once fully 
 synchronized.
 
-Hardware Wallet Compatibility: Supports popular hardware wallets like Trezor 
-and Ledger for secure storage.
-
 RPC Wallet and Daemon: Both are included for easy setup and management.
 
 Blockchain Pruning: Limited disk space? Prune the blockchain to download only a 

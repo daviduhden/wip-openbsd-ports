@@ -24,9 +24,6 @@ COMPILER =	base-clang ports-gcc
 MODULES =	devel/cmake
 CONFIGURE_ARGS += -DMANUAL_SUBMODULES=1 -Wno-dev
 
-FLAVORS =	hardware
-FLAVOR ?=
-
 BUILD_DEPENDS =	devel/boost \
 		net/zeromq \
 		net/libunbound \
@@ -37,16 +34,6 @@ RUN_DEPENDS =	devel/boost \
 		converters/libiconv
 
 USE_GMAKE=	Yes
-
-.if ${FLAVOR:Mhardware}
-WANTLIB += 
-BUILD_DEPENDS +=	devel/libusb1 \
-		comms/libhidapi \
-		devel/protobuf
-RUN_DEPENDS +=	devel/libusb1 \
-		comms/libhidapi \
-		devel/protobuf
-.endif
 
 do-install:
 	${INSTALL_PROGRAM} ${WRKBUILD}/bin/* ${PREFIX}/bin/

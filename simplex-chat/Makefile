@@ -60,4 +60,8 @@ MODCABAL_MANIFEST =	\
 pre-install:
 	cp ${WRKSRC}/scripts/cabal.project.local.linux ${WRKSRC}/cabal.project.local
 
+post-install:
+	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/simplex-chat/
+	${INSTALL_DATA} ${WRKSRC}/LICENSE ${PREFIX}/share/doc/simplex-chat/
+
 .include <bsd.port.mk>

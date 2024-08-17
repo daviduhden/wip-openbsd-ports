@@ -1,18 +1,18 @@
 COMMENT =	secure, private and untraceable digital currency
 
 VERSION =	0.18.3.3
+REVISION =	0
 PKGNAME =	monero-${VERSION}
 DISTNAME =	monero-source-v${VERSION}
 SITES =		https://downloads.getmonero.org/cli/
 EXTRACT_SUFX =	.tar.bz2
-
-REVISION =	0
 
 CATEGORIES =	net
 HOMEPAGE =	https://getmonero.org
 
 # BSD
 PERMIT_PACKAGE =	Yes
+ONLY_FOR_ARCHS =	amd64 arm64 armv7 i386 riscv64
 
 WANTLIB += c ${COMPILER_LIBCXX} boost_chrono-mt boost_date_time-mt
 WANTLIB += boost_filesystem-mt boost_locale-mt boost_program_options-mt

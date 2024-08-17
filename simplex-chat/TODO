@@ -1,0 +1,5 @@
+The port cannot be created at the moment because simplex-chat is not registered 
+in hackage. This is because the cabal module that is used in the creation of 
+haskell ports makes use of hackage.
+
+https://man.openbsd.org/cabal-module.5

@@ -16,17 +16,6 @@
 @bin bin/monero-wallet-rpc
 @bin bin/monerod
 @static-lib lib/libwallet.a
-share/doc/monero/
-share/doc/monero/ANONYMITY_NETWORKS.md
-share/doc/monero/COMPILING_DEBUGGING_TESTING.md
-share/doc/monero/CONTRIBUTING.md
-share/doc/monero/LEVIN_PROTOCOL.md
-share/doc/monero/PORTABLE_STORAGE.md
-share/doc/monero/README.i18n.md
-share/doc/monero/RELEASE_CHECKLIST.md
-share/doc/monero/ZMQ.md
-share/doc/monero/images/
-share/doc/monero/images/storage_binary_example.png
 share/examples/login.conf.d/monerod
 @sample ${SYSCONFDIR}/login.conf.d/monerod
 @owner _monerod

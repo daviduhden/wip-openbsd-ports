@@ -10,28 +10,33 @@ EXTRACT_SUFX =	.tar.bz2
 CATEGORIES =	net
 HOMEPAGE =	https://getmonero.org
 
+MAINTAINER =
+
 # BSD
 PERMIT_PACKAGE =	Yes
 ONLY_FOR_ARCHS =	amd64 arm64 armv7 i386 riscv64
 
-WANTLIB += c ${COMPILER_LIBCXX} boost_chrono-mt boost_date_time-mt
+WANTLIB += ${COMPILER_LIBCXX} boost_chrono-mt boost_date_time-mt
 WANTLIB += boost_filesystem-mt boost_locale-mt boost_program_options-mt
 WANTLIB += boost_regex-mt boost_serialization-mt boost_system-mt
-WANTLIB += boost_thread-mt crypto execinfo m readline sodium ssl
-WANTLIB += unbound zmq
+WANTLIB += boost_thread-mt c crypto ereadline execinfo hidapi-libusb
+WANTLIB += m sodium ssl unbound zmq
 
 COMPILER =	base-clang ports-gcc
 MODULES =	devel/cmake
-CONFIGURE_ARGS += -DMANUAL_SUBMODULES=1 -Wno-dev
+CONFIGURE_ARGS += -Wno-dev \
+		-DMANUAL_SUBMODULES=ON \
+		-DBUILD_DOCUMENTATION=OFF
 
-BUILD_DEPENDS =	devel/boost \
+LIB_DEPENDS =	devel/boost \
+		devel/protobuf \
+		devel/readline \
 		net/zeromq \
 		net/libunbound \
-		converters/libiconv
-RUN_DEPENDS =	devel/boost \
-		net/zeromq \
-		net/libunbound \
-		converters/libiconv
+		converters/libiconv \
+		comms/libhidapi \
+		net/miniupnp/miniupnpc
+
 
 USE_GMAKE=	Yes
 
@@ -42,7 +47,5 @@ do-install:
 	${INSTALL_DATA} ${WRKSRC}/utils/conf/monerod.conf ${SYSCONFDIR}/monero
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/lib/monero/
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/log/monero/
-	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/monero
-	cp -r ${WRKSRC}/docs/* ${PREFIX}/share/doc/monero/
 
 .include <bsd.port.mk>

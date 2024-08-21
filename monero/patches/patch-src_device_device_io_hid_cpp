@@ -1,0 +1,14 @@
+Our libhidapi renames hid_init to avoid a conflict with usbhid.h .
+
+Index: src/device/device_io_hid.cpp
+--- src/device/device_io_hid.cpp.orig
++++ src/device/device_io_hid.cpp
+@@ -92,7 +92,7 @@ namespace hw {
+  
+     void device_io_hid::init() {
+       int r;
+-      r = hid_init();
++      r = hidapi_hid_init();
+       ASSERT_X(r>=0, "Unable to init hidapi library. Error "+std::to_string(r)+": "+safe_hid_error(this->usb_device));
+     }
+ 

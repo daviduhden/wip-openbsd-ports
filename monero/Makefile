@@ -1,6 +1,6 @@
 COMMENT =	secure, private and untraceable digital currency
 
-VERSION =	0.18.3.3
+VERSION =	0.18.3.4
 REVISION =	0
 PKGNAME =	monero-${VERSION}
 DISTNAME =	monero-source-v${VERSION}
@@ -9,8 +9,6 @@ EXTRACT_SUFX =	.tar.bz2
 
 CATEGORIES =	net
 HOMEPAGE =	https://getmonero.org
-
-MAINTAINER =
 
 # BSD
 PERMIT_PACKAGE =	Yes

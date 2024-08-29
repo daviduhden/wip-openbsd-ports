@@ -12,6 +12,7 @@ Work in progress for the creation of [OpenBSD ports](https://github.com/openbsd/
 - [p2pool](https://github.com/SChernykh/p2pool)
 - [simplex-chat-cli](https://github.com/simplex-chat/simplex-chat)
 - [simplexmq](https://github.com/simplex-chat/simplexmq)
+- [mat2](https://0xacab.org/jvoisin/mat2)
 
 # Flavors to be added
 

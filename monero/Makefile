@@ -44,8 +44,8 @@ do-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/include/wallet/
 	${INSTALL_DATA_DIR} ${PREFIX}/include/wallet/api/
 	${INSTALL_DATA} ${WRKSRC}/src/wallet/api/wallet2_api.h ${PREFIX}/include/wallet/api/
-	${INSTALL_DATA_DIR} ${SYSCONFDIR}/monero
-	${INSTALL_DATA} ${WRKSRC}/utils/conf/monerod.conf ${SYSCONFDIR}/monero
+	${INSTALL_DATA_DIR} ${SYSCONFDIR}/monero/
+	${INSTALL_DATA} ${WRKSRC}/utils/conf/monerod.conf ${SYSCONFDIR}/monero/
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/lib/monero/
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/log/monero/
 

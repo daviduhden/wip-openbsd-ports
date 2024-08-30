@@ -12,7 +12,7 @@ HOMEPAGE =	https://getmonero.org
 
 # BSD
 PERMIT_PACKAGE =	Yes
-ONLY_FOR_ARCHS =	amd64 arm64 armv7 i386 riscv64
+ONLY_FOR_ARCHS =	amd64 i386 arm64 armv7 riscv64
 
 WANTLIB += ${COMPILER_LIBCXX} boost_chrono-mt boost_date_time-mt
 WANTLIB += boost_filesystem-mt boost_locale-mt boost_program_options-mt

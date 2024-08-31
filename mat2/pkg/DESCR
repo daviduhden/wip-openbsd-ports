@@ -1,0 +1,5 @@
+mat2 is a metadata removal tool, supporting a wide range of commonly used file 
+formats, written in python3: at its core, it's a library, used by an eponymous 
+command-line interface, as well as several file manager extensions.
+
+

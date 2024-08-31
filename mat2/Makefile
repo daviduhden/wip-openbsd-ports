@@ -20,13 +20,13 @@ MODULES =	lang/python
 
 MODPY_SETUPTOOLS =	Yes
 
-BUILD_DEPENDS=		devel/py-gobject3${MODPY_FLAVOR}
-
-LIB_DEPENDS =	audio/py-mutagen${MODPY_FLAVOR} \
-				graphics/py-cairo${MODPY_FLAVOR} \
-				print/poppler \
-				graphics/gdk-pixbuf2 \
-				graphics/ffmpeg \
-				graphics/p5-Image-ExifTool
+LIB_DEPENDS =	devel/py-gobject3${MODPY_FLAVOR} \
+		audio/py-mutagen${MODPY_FLAVOR} \
+		graphics/py-cairo${MODPY_FLAVOR} \
+		print/poppler \
+		graphics/gdk-pixbuf2 \
+		graphics/ffmpeg \
+		graphics/p5-Image-ExifTool \
+		x11/gnome/librsvg
 
 .include <bsd.port.mk>

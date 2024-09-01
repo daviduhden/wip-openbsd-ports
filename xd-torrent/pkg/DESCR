@@ -1,0 +1,5 @@
+XD is a BitTorrent client written in Go that operates exclusively on the I2P 
+network, ensuring no cross-network contamination and protecting the user's IP 
+address from exposure. XD allows users to download and manage torrents using 
+Magnet URIs and is compatible with both net/i2pd and net/i2p ports via the SAM 
+API.

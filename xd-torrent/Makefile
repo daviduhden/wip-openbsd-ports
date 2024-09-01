@@ -32,7 +32,5 @@ do-install:
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/xd/downloads
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/xd/seeding
 
-
-
 .include "modules.inc"
 .include <bsd.port.mk>

@@ -21,16 +21,14 @@ SEPARATE_BUILD=		Yes
 
 do-install:
 	${INSTALL_PROGRAM} ${MODGO_WORKSPACE}/bin/XD ${PREFIX}/bin
+	ln -s ${TRUEPREFIX}/bin/XD ${TRUEPREFIX}/bin/XD-CLI
+	chmod 755 ${TRUEPREFIX}/bin/XD-CLI
 	${INSTALL_DATA_DIR} ${SYSCONFDIR}/xd
 	${INSTALL_DATA} ${FILESDIR}/*.ini ${SYSCONFDIR}/xd/
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/xd
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/xd/metadata
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/xd/downloads
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/xd/seeding
-
-post-install:
-	ln -s ${PREFIX}/bin/XD ${PREFIX}/bin/XD-CLI
-	chmod 755 ${PREFIX}/bin/XD-CLI
 
 .include "modules.inc"
 .include <bsd.port.mk>

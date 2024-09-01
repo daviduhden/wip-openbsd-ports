@@ -39,7 +39,7 @@ GO = go
 XD ?= XD$(BINEXT)
 CLI ?= XD-CLI$(BINEXT)
 
-build: $(CLI)
+do-build: $(CLI)
 
 
 $(XD): $(WEBUI_CORE)

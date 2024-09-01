@@ -1,0 +1,13 @@
+#!/bin/ksh
+
+daemon="${TRUEPREFIX}/bin/XD"
+daemon_user="_xd"
+daemon_flags="${SYSCONFDIR}/etc/xd/torrents.ini"
+
+. /etc/rc.d/rc.subr
+
+rc_bg=YES
+rc_reload=NO
+rc_stop_signal=KILL
+
+rc_cmd $1

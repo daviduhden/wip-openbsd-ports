@@ -1,0 +1,11 @@
+@newgroup _xd:900
+@newuser _xd:900:900::xd account:${LOCALSTATEDIR}/xd:/sbin/nologin
+@owner _xd
+@group _xd
+@sample ${SYSCONFDIR}/xd
+@sample ${SYSCONFDIR}/xd/torrents.ini
+@sample ${SYSCONFDIR}/xd/trackers.ini
+@sample ${LOCALSTATEDIR}/xd
+@sample ${LOCALSTATEDIR}/xd/metadata
+@sample ${LOCALSTATEDIR}/xd/downloads
+@sample ${LOCALSTATEDIR}/xd/seeding

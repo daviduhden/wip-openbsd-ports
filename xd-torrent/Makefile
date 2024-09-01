@@ -1,7 +1,7 @@
 COMMENT =	i2p-only BitTorrent client written in Go
 
 MODGO_MODNAME =	github.com/majestrate/XD
-MODGO_VERSION =	0.4.6
+MODGO_VERSION =	v0.4.6
 
 DISTNAME =	xd-torrent-${MODGO_VERSION}
 

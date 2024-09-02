@@ -6,7 +6,7 @@ daemon_flags="${SYSCONFDIR}/xd/torrents.ini > ${LOCALSTATEDIR}/run/xd/daemon.log
 
 . /etc/rc.d/rc.subr
 
-rc_bg=NO
+rc_bg=YES
 rc_reload=NO
 rc_stop_signal=KILL
 

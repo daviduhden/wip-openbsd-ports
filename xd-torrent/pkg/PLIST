@@ -12,4 +12,3 @@ bin/XD-CLI
 @sample ${LOCALSTATEDIR}/xd/metadata
 @sample ${LOCALSTATEDIR}/xd/downloads
 @sample ${LOCALSTATEDIR}/xd/seeding
-@sample ${LOCALSTATEDIR}/log/xd

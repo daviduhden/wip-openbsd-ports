@@ -26,7 +26,6 @@ do-install:
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/xd/metadata
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/xd/downloads
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/xd/seeding
-	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/log/xd
 
 post-install:
 	ln -s XD ${PREFIX}/bin/XD-CLI

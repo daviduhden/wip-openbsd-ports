@@ -2,11 +2,11 @@
 
 daemon="${TRUEPREFIX}/bin/XD"
 daemon_user="_xd"
-daemon_flags="${SYSCONFDIR}/xd/torrents.ini"
+daemon_flags="${SYSCONFDIR}/xd/torrents.ini > ${LOCALSTATEDIR}/run/xd/daemon.log 2>&1"
 
 . /etc/rc.d/rc.subr
 
-rc_bg=YES
+rc_bg=NO
 rc_reload=NO
 rc_stop_signal=KILL
 

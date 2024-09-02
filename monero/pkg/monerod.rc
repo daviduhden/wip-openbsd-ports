@@ -3,8 +3,6 @@
 daemon="${TRUEPREFIX}/bin/monerod"
 daemon_user="_monerod"
 daemon_flags="--detach --config-file=${SYSCONFDIR}/monero/monerod.conf"
-daemon_timeout=30
-daemon_logger="daemon.info"
 
 . /etc/rc.d/rc.subr
 

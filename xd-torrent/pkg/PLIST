@@ -5,10 +5,10 @@
 bin/XD-CLI
 @owner _xd
 @group _xd
-@sample ${SYSCONFDIR}/xd
+@dir ${SYSCONFDIR}/xd
 @sample ${SYSCONFDIR}/xd/torrents.ini
 @sample ${SYSCONFDIR}/xd/trackers.ini
-@sample ${LOCALSTATEDIR}/xd
-@sample ${LOCALSTATEDIR}/xd/metadata
-@sample ${LOCALSTATEDIR}/xd/downloads
-@sample ${LOCALSTATEDIR}/xd/seeding
+@dir ${LOCALSTATEDIR}/xd
+@dir ${LOCALSTATEDIR}/xd/metadata
+@dir ${LOCALSTATEDIR}/xd/downloads
+@dir ${LOCALSTATEDIR}/xd/seeding

@@ -3,11 +3,11 @@
 @rcscript ${RCDIR}/xd
 @bin bin/XD
 bin/XD-CLI
-@owner _xd
-@group _xd
 @sample ${SYSCONFDIR}/xd/
 @sample ${SYSCONFDIR}/xd/torrents.ini
 @sample ${SYSCONFDIR}/xd/trackers.ini
+@owner _xd
+@group _xd
 @sample ${LOCALSTATEDIR}/xd/
 @sample ${LOCALSTATEDIR}/xd/metadata/
 @sample ${LOCALSTATEDIR}/xd/downloads/

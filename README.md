@@ -14,6 +14,6 @@ Work in progress for the creation of [OpenBSD ports](https://github.com/openbsd/
 
 # Flavors to be added
 
--
+- ...
 
 **Note:** Completed ports or flavors will be crossed out in this list.

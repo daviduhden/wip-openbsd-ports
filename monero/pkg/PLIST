@@ -15,6 +15,9 @@
 @bin bin/monero-wallet-cli
 @bin bin/monero-wallet-rpc
 @bin bin/monerod
+include/wallet/
+include/wallet/api/
+include/wallet/api/wallet2_api.h
 @static-lib lib/libwallet.a
 share/examples/login.conf.d/monerod
 @sample ${SYSCONFDIR}/login.conf.d/monerod

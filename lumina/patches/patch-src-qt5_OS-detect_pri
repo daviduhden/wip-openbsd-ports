@@ -2,7 +2,6 @@ Index: src-qt5/OS-detect.pri
 --- src-qt5/OS-detect.pri.orig
 +++ src-qt5/OS-detect.pri
 @@ -47,7 +47,8 @@
- 
    }else : openbsd-*{
 -    isEmpty(PREFIX){ PREFIX=/usr/local }
 +    isEmpty(L_ETCDIR){ L_ETCDIR=!!SYSCONFDIR!! }

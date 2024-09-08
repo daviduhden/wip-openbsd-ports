@@ -3,7 +3,7 @@ COMMENT=		Lumina Desktop Environment
 GH_ACCOUNT=		lumina-desktop
 GH_PROJECT=		lumina
 GH_TAGNAME=		v1.6.2
-PKGNAME=		lumina-${GH_TAGNAME}
+DISTNAME=		lumina-${GH_TAGNAME}
 REVISION=		0
 
 CATEGORIES=		x11

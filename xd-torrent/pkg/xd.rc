@@ -8,6 +8,9 @@ daemon_flags="${SYSCONFDIR}/xd/torrents.ini"
 
 rc_bg=NO
 rc_reload=NO
-rc_stop_signal=KILL
+
+rc_start() {
+	rc_exec "${daemon} ${daemon_flags} > /dev/null 2>&1 &"
+}
 
 rc_cmd $1

@@ -75,7 +75,7 @@ list_ports_subdirectories() {
 copy_directory() {
 	TARGET_DIR="$SUBDIRECTORY/$DIRECTORY"
 	if [ -d "$TARGET_DIR" ]; then
-		echo "Directory $TARGET_DIR already exists. Removing files except 'CVS' directory."
+		echo "Directory $TARGET_DIR already exists. Removing files except 'CVS' directories."
 		find "$TARGET_DIR" -mindepth 1 ! -name "CVS" -exec rm -rf {} +
 	fi
 	cp -R "$DIRECTORY" "$SUBDIRECTORY/"

@@ -14,8 +14,7 @@ PERMIT_PACKAGE =	Yes
 
 MODULES =		lang/go
 
-do-install:
-	${INSTALL_PROGRAM} ${WRKDIST}/XD ${PREFIX}/bin/
+WRKDIST =		${WRKSRC}
 
 post-install:
 	ln -s XD ${PREFIX}/bin/XD-CLI

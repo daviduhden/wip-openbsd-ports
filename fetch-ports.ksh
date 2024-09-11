@@ -129,7 +129,6 @@ echo "Configuring the ports system in /etc/mk.conf..."
 	echo "WRKOBJDIR=$WRKOBJDIR"
 	echo "DISTDIR=$DISTDIR"
 	echo "PACKAGE_REPOSITORY=$PACKAGE_REPOSITORY"
-	echo "PORTS_PRIVSEP=Yes"
 	echo "SUDO=doas"
 } >> /etc/mk.conf
 

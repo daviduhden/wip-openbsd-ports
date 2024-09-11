@@ -89,7 +89,10 @@ create_user_with_random_password() {
 	
 	# Create the user with a home directory and set the password
 	useradd -m -s /bin/ksh user
-	echo "user:$PASSWORD" | chpass
+	
+	# Encrypt the password and set it using usermod
+	ENCRYPTED_PASSWORD=$(encrypt -b 6 "$PASSWORD")
+	usermod -p "$ENCRYPTED_PASSWORD" user
 	
 	echo "User 'user' created with password: $PASSWORD"
 }

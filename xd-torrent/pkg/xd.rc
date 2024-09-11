@@ -2,7 +2,7 @@
 
 daemon="${TRUEPREFIX}/bin/XD"
 daemon_user="_xd"
-daemon_flags="${SYSCONFDIR}/xd/torrents.ini"
+daemon_flags="${LOCALSTATEDIR}/xd/torrents.ini"
 
 . /etc/rc.d/rc.subr
 

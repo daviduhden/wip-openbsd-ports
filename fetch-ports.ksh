@@ -19,10 +19,10 @@ rm -rf /usr/ports
 
 # Set CVSROOT environment variable permanently if not already set
 if ! grep -q "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" ~/.profile; then
-    echo "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" >> ~/.profile
-    echo "CVSROOT variable added to ~/.profile"
+	echo "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" >> ~/.profile
+	echo "CVSROOT variable added to ~/.profile"
 else
-    echo "CVSROOT variable already exists in ~/.profile"
+	echo "CVSROOT variable already exists in ~/.profile"
 fi
 export CVSROOT="anoncvs@anoncvs.eu.openbsd.org:/cvs"
 
@@ -82,11 +82,36 @@ copy_directory() {
 	echo "Directory $DIRECTORY copied to $SUBDIRECTORY/"
 }
 
+# Create a user 'user' with a random password
+create_user_with_random_password() {
+	# Generate a random password
+	PASSWORD=$(openssl rand -base64 12)
+	
+	# Create the user with a home directory and set the password
+	useradd -m -s /bin/ksh user
+	echo "user:$PASSWORD" | chpass
+	
+	echo "User 'user' created with password: $PASSWORD"
+}
+
+# Configure doas
+configure_doas() {
+	# Copy the example doas.conf to /etc/
+	cp /etc/examples/doas.conf /etc/doas.conf
+	
+	# Add the required line to /etc/doas.conf
+	echo "permit keepenv persist user" >> /etc/doas.conf
+	
+	echo "doas configured successfully. /etc/doas.conf updated."
+}
+
 # Main function
 main() {
 	list_directories
 	list_ports_subdirectories
 	copy_directory
+	create_user_with_random_password
+	configure_doas
 }
 
 # Run the main function
@@ -101,6 +126,7 @@ echo "Configuring the ports system in /etc/mk.conf..."
 	echo "WRKOBJDIR=$WRKOBJDIR"
 	echo "DISTDIR=$DISTDIR"
 	echo "PACKAGE_REPOSITORY=$PACKAGE_REPOSITORY"
+	echo "SUDO=doas"
 } >> /etc/mk.conf
 
 echo "Configuration complete. The ports tree has been installed and configured successfully."

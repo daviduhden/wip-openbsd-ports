@@ -18,7 +18,7 @@ WANTLIB += GL Qt5Concurrent Qt5Core Qt5DBus Qt5Gui Qt5Multimedia
 WANTLIB += Qt5MultimediaWidgets Qt5Network Qt5PrintSupport Qt5Svg
 WANTLIB += Qt5Widgets Qt5X11Extras Xdamage c glib-2.0 intl m
 WANTLIB += poppler-qt5 pulse pulse-mainloop-glib xcb xcb-composite
-WANTLIB += xcb-damage xcb-ewmh xcb-icccm xcb-image xcb-util
+WANTLIB += xcb-damage xcb-ewmh xcb-icccm xcb-image xcb-util Xcursor
 
 MODULES=		x11/qt5
 

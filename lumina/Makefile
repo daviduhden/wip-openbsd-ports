@@ -54,5 +54,6 @@ post-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/share/examples/lumina
 	mv ${WRKINST}/etc/luminaDesktop.conf.dist \
 		${PREFIX}/share/examples/lumina/luminaDesktop.conf
+	gunzip ${PREFIX}/man/man{1,8}/*.gz
 
 .include <bsd.port.mk>

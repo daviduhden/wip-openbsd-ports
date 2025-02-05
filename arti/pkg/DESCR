@@ -1,1 +1,3 @@
-Arti is an implementation of Tor anonymity protocols, written in Rust.
+Arti is a project to produce an embeddable, production-quality 
+implementation of the Tor anonymity protocols in the Rust programming 
+language.

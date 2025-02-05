@@ -19,6 +19,7 @@ SITES =			https://crates.io/api/v1/crates/
 
 MODULES =		devel/cargo
 LIB_DEPENDS =		archivers/xz \
+			archivers/zstd \
 			databases/sqlite3 \
 			security/rust-ring
 CONFIGURE_STYLE =	cargo

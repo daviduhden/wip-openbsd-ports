@@ -13,8 +13,6 @@ CATEGORIES =		net
 
 HOMEPAGE =		https://gitlab.torproject.org/tpo/core/arti
 
-MAINTAINER =		Pascal Stumpf <pascal@stumpf.co>
-
 # MIT or Apache 2.0
 PERMIT_PACKAGE =	Yes
 

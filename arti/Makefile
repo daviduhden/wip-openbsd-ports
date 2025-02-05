@@ -1,6 +1,3 @@
-# ring-v0.16.20 does not support those archs
-NOT_FOR_ARCHS =		powerpc64 riscv64 sparc64
-
 COMMENT =		onion routing service, written in Rust
 
 DISTFILES =		${PKGNAME}${EXTRACT_SUFX}{${CRATE}/${V}/download}
@@ -18,11 +15,12 @@ PERMIT_PACKAGE =	Yes
 
 WANTLIB += c c++abi crypto lzma m pthread sqlite3 ssl
 
-MASTER_SITES =		https://crates.io/api/v1/crates/
+SITES =			https://crates.io/api/v1/crates/
 
 MODULES =		devel/cargo
 LIB_DEPENDS =		archivers/xz \
-			databases/sqlite3
+			databases/sqlite3 \
+			security/rust-ring
 CONFIGURE_STYLE =	cargo
 SEPARATE_BUILD =	Yes
 

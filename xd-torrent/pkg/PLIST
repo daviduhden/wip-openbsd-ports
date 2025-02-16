@@ -2,13 +2,11 @@
 @newuser _xd:900:900::xd-torrent account:${LOCALSTATEDIR}/xd:/sbin/nologin
 @rcscript ${RCDIR}/xd
 @bin bin/XD
-@bin bin/XD-CLI
+bin/XD-CLI
 @owner _xd
 @group _xd
-@sample ${SYSCONFDIR}/xd/torrents.ini
-@sample ${SYSCONFDIR}/xd/trackers.ini
-@dir ${LOCALSTATEDIR}/xd
-@dir ${LOCALSTATEDIR}/xd/downloads
-@dir ${LOCALSTATEDIR}/xd/metadata
-@dir ${LOCALSTATEDIR}/xd/seeding
-@dir ${LOCALSTATEDIR}/xd/storage
+@sample ${LOCALSTATEDIR}/xd/
+@sample ${LOCALSTATEDIR}/xd/downloads/
+@sample ${LOCALSTATEDIR}/xd/metadata/
+@sample ${LOCALSTATEDIR}/xd/seeding/
+@sample ${LOCALSTATEDIR}/xd/storage/

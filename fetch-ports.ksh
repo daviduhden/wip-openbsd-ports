@@ -100,15 +100,17 @@ copy_directory() {
 
 # Function to create the user 'user' with a random password
 create_user_with_random_password() {
+    USER_TO_CREATE="user"
+
     # Generate a random password
     PASSWORD=$(openssl rand -base64 12)
     
     # Create the user with a home directory and set the shell to /bin/ksh
-    useradd -m -s /bin/ksh user
+    useradd -m -s /bin/ksh "$USER_TO_CREATE"
     
     # Encrypt the password and set it using usermod
-    ENCRYPTED_PASSWORD=$(encrypt -b 6 "$PASSWORD")
-    usermod -p "$ENCRYPTED_PASSWORD" user
+    ENCRYPTED_PASSWORD=$(openssl passwd -6 "$PASSWORD")
+    usermod -p "$ENCRYPTED_PASSWORD" "$USER_TO_CREATE"
     
     print "User 'user' created with password: $PASSWORD"
 }

@@ -4,7 +4,6 @@ GH_ACCOUNT=		lumina-desktop
 GH_PROJECT=		lumina
 GH_TAGNAME=		v1.6.2
 PKGNAME=		lumina-1.6.2
-REVISION=		0
 
 CATEGORIES=		x11
 

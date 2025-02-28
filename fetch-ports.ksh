@@ -109,7 +109,7 @@ create_user_with_random_password() {
     useradd -m -s /bin/ksh "$USER_TO_CREATE"
     
     # Encrypt the password and set it using usermod
-    ENCRYPTED_PASSWORD=$(openssl passwd -6 "$PASSWORD")
+    ENCRYPTED_PASSWORD=$(openssl passwd -1 "$PASSWORD")
     usermod -p "$ENCRYPTED_PASSWORD" "$USER_TO_CREATE"
     
     print "User 'user' created with password: $PASSWORD"

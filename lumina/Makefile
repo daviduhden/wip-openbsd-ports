@@ -36,7 +36,7 @@ LIB_DEPENDS=		print/poppler,-qt5 \
 			x11/qt5/qtx11extras
 
 MAKE_FLAGS=		LIBLuminaUtils_VERSION=${LIBLuminaUtils_VERSION}
-FAKE_FLAGS=		INSTALL_ROOT=${PREFIX}/
+FAKE_FLAGS=		INSTALL_ROOT=${WRKINST}/
 
 NO_TEST=		Yes
 

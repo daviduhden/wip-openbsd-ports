@@ -28,7 +28,7 @@ RUN_DEPENDS=		devel/desktop-file-utils \
 			x11/fluxbox \
 			x11/numlockx \
 			x11/xscreensaver \
-			x11/gtk+4
+			x11/gtk+4,-guic
 
 LIB_DEPENDS=		print/poppler,-qt5 \
 			x11/qt5/qtmultimedia \

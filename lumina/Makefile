@@ -51,7 +51,7 @@ do-configure:
 
 post-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/share/examples/lumina
-	mv ${WRKINST}/etc/luminaDesktop.conf.dist \
+	mv ${WRKINST}/usr/local/etc/luminaDesktop.conf.dist \
 		${PREFIX}/share/examples/lumina/luminaDesktop.conf
 	gunzip ${WRKINST}/usr/local/man/man{1,8}/*.gz
 

@@ -3,11 +3,12 @@ COMMENT=		Lumina Desktop Environment
 GH_ACCOUNT=		lumina-desktop
 GH_PROJECT=		lumina
 GH_TAGNAME=		v1.6.2
-PKGNAME=		lumina-1.6.2
 
 CATEGORIES=		x11
 
 HOMEPAGE=		https://lumina-desktop.org/
+
+MAINTAINER=		Bryan C. Everly <bryan@bceassociates.com>
 
 # BSD
 PERMIT_PACKAGE=	Yes
@@ -36,7 +37,7 @@ LIB_DEPENDS=		print/poppler,-qt5 \
 			x11/qt5/qtx11extras
 
 MAKE_FLAGS=		LIBLuminaUtils_VERSION=${LIBLuminaUtils_VERSION}
-FAKE_FLAGS=		INSTALL_ROOT=${WRKINST}/usr/local/
+FAKE_FLAGS=		INSTALL_ROOT=${WRKINST}${TRUEPREFIX}
 
 NO_TEST=		Yes
 
@@ -51,7 +52,7 @@ do-configure:
 
 post-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/share/examples/lumina
-	mv ${WRKINST}/usr/local/etc/luminaDesktop.conf.dist \
+	mv ${PREFIX}/etc/luminaDesktop.conf.dist \
 		${PREFIX}/share/examples/lumina/luminaDesktop.conf
 	gunzip ${WRKINST}/usr/local/man/man{1,8}/*.gz
 

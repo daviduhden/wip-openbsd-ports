@@ -1,5 +1,3 @@
-@pkgpath x11/lumina/i18n
-@pkgpath x11/lumina/lumina
 bin/lte
 @bin bin/lthemeengine
 @bin bin/lthemeengine-sstest
@@ -19,6 +17,9 @@ bin/lte
 @bin bin/lumina-xconfig
 @bin bin/start-lumina-desktop
 @comment etc/
+@so lib/qt5/plugins/platformthemes/liblthemeengine.so
+lib/qt5/plugins/styles/
+@so lib/qt5/plugins/styles/liblthemeengine-style.so
 @man man/man1/lumina-archiver.1
 @man man/man1/lumina-config.1
 @man man/man1/lumina-desktop.1
@@ -49,7 +50,6 @@ share/applications/lumina-textedit.desktop
 share/applications/lumina-xconfig.desktop
 share/examples/lumina/
 share/examples/lumina/luminaDesktop.conf
-@sample ${SYSCONFDIR}/luminaDesktop.conf
 share/icons/hicolor/scalable/apps/Insight-FileManager.svg
 share/icons/hicolor/scalable/apps/Lumina-DE.svg
 share/icons/lumina-icons/
@@ -2683,15 +2683,11 @@ share/lumina-desktop/themes/Lumina-default.qss.template
 share/lumina-desktop/themes/None.qss.template
 share/xsessions/
 share/xsessions/Lumina-DE.desktop
-lib/
-lib/qt5/
-lib/qt5/plugins/
-lib/qt5/plugins/platformthemes/
-@so lib/qt5/plugins/platformthemes/liblthemeengine.so
-lib/qt5/plugins/styles/
-@so lib/qt5/plugins/styles/liblthemeengine-style.so
-@tag gtk-update-icon-cache %D/share/icons/lumina-icons
-@tag gtk-update-icon-cache %D/share/icons/hicolor
-@tag gtk-update-icon-cache %D/share/icons/material-design-dark
+@comment usr/
+@comment usr/local/
+@comment usr/local/lib/
 @tag gtk-update-icon-cache %D/share/icons/material-design-light
+@tag gtk-update-icon-cache %D/share/icons/material-design-dark
+@tag gtk-update-icon-cache %D/share/icons/lumina-icons
 @tag update-desktop-database
+@tag gtk-update-icon-cache %D/share/icons/hicolor

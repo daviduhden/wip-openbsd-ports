@@ -18,6 +18,7 @@ bin/lte
 @bin bin/lumina-textedit
 @bin bin/lumina-xconfig
 @bin bin/start-lumina-desktop
+@comment etc/
 @man man/man1/lumina-archiver.1
 @man man/man1/lumina-config.1
 @man man/man1/lumina-desktop.1
@@ -2682,6 +2683,13 @@ share/lumina-desktop/themes/Lumina-default.qss.template
 share/lumina-desktop/themes/None.qss.template
 share/xsessions/
 share/xsessions/Lumina-DE.desktop
+lib/
+lib/qt5/
+lib/qt5/plugins/
+lib/qt5/plugins/platformthemes/
+@so lib/qt5/plugins/platformthemes/liblthemeengine.so
+lib/qt5/plugins/styles/
+@so lib/qt5/plugins/styles/liblthemeengine-style.so
 @tag gtk-update-icon-cache %D/share/icons/lumina-icons
 @tag gtk-update-icon-cache %D/share/icons/hicolor
 @tag gtk-update-icon-cache %D/share/icons/material-design-dark

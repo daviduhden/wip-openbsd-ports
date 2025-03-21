@@ -3,7 +3,7 @@ COMMENT =		onion routing service, written in Rust
 DISTFILES =		${PKGNAME}${EXTRACT_SUFX}{${CRATE}/${V}/download}
 
 CRATE =			arti
-V =			1.3.2
+V =			1.4.1
 PKGNAME =		${CRATE}-$V
 
 CATEGORIES =		net

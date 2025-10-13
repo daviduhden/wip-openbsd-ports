@@ -1,4 +1,4 @@
-$OpenBSD: user.list,v 1.461 2025/03/19 11:30:19 sthen Exp $
+$OpenBSD: user.list,v 1.471 2025/09/07 22:28:35 danj Exp $
 
 This file lists all users and groups that are created by ports. All
 ports' users/groups have to start with an underscore and have to use
@@ -89,7 +89,7 @@ id  user		group		port
 578 _mrtg		_mrtg		net/mrtg
 579 _hiawatha		_hiawatha	www/hiawatha
 580 _puppet		_puppet		sysutils/ruby-puppet
-#581 _gonzui		_gonzui		textproc/gonzui
+581 _piknik		_piknik		sysutils/piknik
 582 _tabled		_tabled		sysutils/tabled
 #583			_kdesud		x11/kde/base3
 584 _wstunnel		_wstunnel	net/wstunnel
@@ -101,14 +101,14 @@ id  user		group		port
 590 _smsd		_smsd		comms/smstools
 591 _bacula		_bacula		sysutils/bacula
 592 _imapproxy		_imapproxy	mail/imapproxy
-#593 _nginx		_nginx		www/nginx
+593 _gotwebd		_gotwebd	devel/got,-webd
 594 _ejabberd		_ejabberd	net/ejabberd
 595 _poppassd		_poppassd	sysutils/openpoppassd
 #596 _heartbeat		_heartbeat	sysutils/heartbeat
 597 _spotifyd		_spotifyd	audio/spotifyd
 598 _iodine		_iodine		net/iodine
 599 _bacula-sd				sysutils/bacula
-#600 _ntlmaps		_ntlmaps	www/ntlmaps
+600 _gotsysd		_gotsysd	devel/got,-sysd
 601 _pfresolved		_pfresolved	net/pfresolved
 602 _havp		_havp		www/havp
 603 _argus		_argus		net/argus
@@ -227,8 +227,8 @@ id  user		group		port
 716 _c-icap		_c-icap		www/c-icap/c-icap
 717 _uptimed		_uptimed	sysutils/uptimed
 718 _stuntman		_stuntman	telephony/stuntman
-719 _puppetdb		_puppetdb	databases/puppetdb/7
-720 _lldpd		_lldpd		net/lldpd
+719 _puppetdb		_puppetdb	databases/puppetdb/8
+#720 _lldpd		_lldpd		net/lldpd
 721 _dkimproxy		_dkimproxy	mail/dkimproxy
 722 _salt		_salt		sysutils/salt
 723 _barman		_barman		databases/barman
@@ -241,7 +241,7 @@ id  user		group		port
 #730 _kdm		_kdm		x11/kde4/workspace
 731 _geoclue		_geoclue	geo/geoclue2
 732 _unifi		_unifi		net/unifi
-733 _pop3d		_pop3d		mail/pop3d
+#733 _pop3d		_pop3d		mail/pop3d
 734 _taskd		_taskd		productivity/taskd
 735 			_wireshark	net/wireshark
 736 _conserver		_conserver	comms/conserver
@@ -322,7 +322,7 @@ id  user		group		port
 811 			_openvpnusers	net/openvpn_bsdauth
 812 _mactelnet		_mactelnet	net/mac-telnet
 813 _bitcoind		_bitcoind	net/bitcoin
-814 _fastnetmon		_fastnetmon	net/fastnetmon
+#814 _fastnetmon		_fastnetmon	net/fastnetmon
 815 _osrm_routed	_osrm_routed	geo/osrm-backend
 816 			_libpostal	geo/libpostal
 #817 _netshot		_netshot	sysutils/netshot
@@ -388,7 +388,7 @@ id  user		group		port
 877 _znc		_znc		net/znc
 878 _gmid		_gmid		net/gmid
 879 _vaultwarden	_vaultwarden	security/vaultwarden
-880 _gotosocial		_gotosocial	www/gotosocial
+#880 _gotosocial		_gotosocial	www/gotosocial
 881 _opensearch		_opensearch	textproc/opensearch
 882 _opensearch-dashboards _opensearch-dashboards www/opensearch-dashboards
 883 _step-ca		_step-ca	security/step-ca
@@ -396,7 +396,7 @@ id  user		group		port
 885 _mycorrhiza		_mycorrhiza	www/mycorrhiza
 886 _eduvpn		_eduvpn		net/eduvpn
 887 _endlessh		_endlessh	net/endlessh
-888 _epmd		_epmd		lang/erlang/{25,26}
+888 _epmd		_epmd		lang/erlang/26
 889 _gromox		_gromox		mail/grommunio/gromox
 890 _grommunio		_grommunio	mail/grommunio/admin-api
 891 _kiwix-serve	_kiwix-serve	www/kiwix/kiwix-tools

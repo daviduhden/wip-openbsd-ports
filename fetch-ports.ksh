@@ -22,11 +22,6 @@ check_root() {
     fi
 }
 
-# Function to remove the ports directory
-remove_ports_directory() {
-    rm -rf /usr/ports
-}
-
 # Function to permanently set the CVSROOT environment variable if not already set
 set_cvsroot() {
     if ! grep -q "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" ~/.profile; then
@@ -38,15 +33,28 @@ set_cvsroot() {
     export CVSROOT="anoncvs@anoncvs.eu.openbsd.org:/cvs"
 }
 
-# Directories for building ports
-WRKOBJDIR="/usr/obj/ports"
-DISTDIR="/usr/distfiles"
-PACKAGE_REPOSITORY="/usr/packages"
+# Function to remove the ports directory
+remove_ports_directory() {
+    rm -rf /usr/ports
+}
 
-# Function to checkout the ports tree using CVS
+# Function to checkout the ports tree using CVS (removes old tree first)
 checkout_ports_tree() {
     cd /usr || exit 1
+    remove_ports_directory
     cvs -qd anoncvs@anoncvs.eu.openbsd.org:/cvs checkout -P ports
+}
+
+# Ask if user wants to copy from wip-openbsd-ports (optional)
+ask_copy_from_wip() {
+    print "Do you want to copy a directory from 'wip-openbsd-ports' into /usr/ports?"
+    select ANSWER in "Yes" "No"; do
+        case "$ANSWER" in
+            Yes) DO_COPY=1; break ;;
+            No)  DO_COPY=0; break ;;
+            *)   print "Invalid selection. Please try again." ;;
+        esac
+    done
 }
 
 # Function to change directory to the wip-openbsd-ports directory
@@ -59,9 +67,9 @@ move_to_wip_openbsd_ports() {
     cd "$wip_openbsd_ports_dir" || exit 1
 }
 
-# Function to list directories in the current directory and select one
+# Function to list directories in wip-openbsd-ports and select one
 list_directories() {
-    print "Select a directory to copy:"
+    print "Select a directory to copy from wip-openbsd-ports:"
     select DIRECTORY in */; do
         if [ -n "$DIRECTORY" ]; then
             print "You selected $DIRECTORY"
@@ -73,10 +81,29 @@ list_directories() {
     done
 }
 
-# Function to list subdirectories in /usr/ports and select one
-list_ports_subdirectories() {
-    print "Select a subdirectory in /usr/ports where the directory will be copied:"
-    select SUBDIRECTORY in /usr/ports/*/; do
+# Function to choose the target tree (mirrors your style; here only /usr/ports)
+choose_target_tree() {
+    options=""
+    [ -d /usr/ports ] && options="$options /usr/ports"
+    if [ -z "$options" ]; then
+        print "No destination trees available under /usr."
+        exit 1
+    fi
+    print "Select the target tree for the copy:"
+    select TARGET_TREE in $options; do
+        if [ -n "$TARGET_TREE" ]; then
+            print "You selected $TARGET_TREE"
+            break
+        else
+            print "Invalid selection. Please try again."
+        fi
+    done
+}
+
+# Function to list subdirectories (categories) in the chosen tree and select one
+list_tree_subdirectories() {
+    print "Select a subdirectory in $TARGET_TREE where the directory will be copied:"
+    select SUBDIRECTORY in "$TARGET_TREE"/*/; do
         if [ -n "$SUBDIRECTORY" ]; then
             print "You selected $SUBDIRECTORY"
             SUBDIRECTORY=${SUBDIRECTORY%/}  # Remove the trailing slash
@@ -87,7 +114,7 @@ list_ports_subdirectories() {
     done
 }
 
-# Function to copy the selected directory to the chosen subdirectory in /usr/ports
+# Function to copy the selected directory to the chosen subdirectory in target tree
 copy_directory() {
     TARGET_DIR="$SUBDIRECTORY/$DIRECTORY"
     if [ -d "$TARGET_DIR" ]; then
@@ -104,14 +131,14 @@ create_user_with_random_password() {
 
     # Generate a random password
     PASSWORD=$(openssl rand -base64 12)
-    
+
     # Create the user with a home directory and set the shell to /bin/ksh
     useradd -m -s /bin/ksh "$USER_TO_CREATE"
-    
+
     # Encrypt the password and set it using usermod
     ENCRYPTED_PASSWORD=$(openssl passwd -1 "$PASSWORD")
     usermod -p "$ENCRYPTED_PASSWORD" "$USER_TO_CREATE"
-    
+
     print "User 'user' created with password: $PASSWORD"
 }
 
@@ -121,6 +148,11 @@ configure_doas() {
     print "permit keepenv persist user" >> /etc/doas.conf
     print "doas configured successfully. /etc/doas.conf updated."
 }
+
+# Ports build configuration
+WRKOBJDIR="/usr/obj/ports"
+DISTDIR="/usr/distfiles"
+PACKAGE_REPOSITORY="/usr/packages"
 
 # Function to configure the ports system in /etc/mk.conf
 configure_ports_system() {
@@ -138,13 +170,18 @@ configure_ports_system() {
 # Main function
 main() {
     check_root
-    remove_ports_directory
     set_cvsroot
     checkout_ports_tree
-    move_to_wip_openbsd_ports
-    list_directories
-    list_ports_subdirectories
-    copy_directory
+    ask_copy_from_wip
+    if [ "${DO_COPY:-0}" -eq 1 ]; then
+        move_to_wip_openbsd_ports
+        list_directories
+        choose_target_tree
+        list_tree_subdirectories
+        copy_directory
+    else
+        print "Skipping copy from wip-openbsd-ports."
+    fi
     create_user_with_random_password
     configure_doas
     configure_ports_system

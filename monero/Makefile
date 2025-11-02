@@ -1,6 +1,6 @@
 COMMENT =	secure, private and untraceable digital currency
 
-VERSION =	0.18.3.4
+VERSION =	0.18.4.3
 PKGNAME =	monero-${VERSION}
 DISTNAME =	monero-source-v${VERSION}
 SITES =		https://downloads.getmonero.org/cli/

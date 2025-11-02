@@ -21,6 +21,8 @@ WANTLIB += m sodium ssl unbound zmq
 
 COMPILER =	base-clang ports-gcc
 MODULES =	devel/cmake
+BUILD_DEPENDS =	devel/ninja
+
 CONFIGURE_ARGS += -Wno-dev \
 		-DMANUAL_SUBMODULES=ON \
 		-DBUILD_DOCUMENTATION=OFF

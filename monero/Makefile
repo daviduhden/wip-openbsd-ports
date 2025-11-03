@@ -23,11 +23,11 @@ MODULES =	devel/cmake
 BUILD_DEPENDS =	devel/ninja
 
 CONFIGURE_ARGS += -Wno-dev \
-		-DMANUAL_SUBMODULES=ON \
-		-DBUILD_DOCUMENTATION=OFF \
-		-DReadline_INCLUDE_DIR=${LOCALBASE}/include/ereadline \
-		-DReadline_ROOT_DIR=${LOCALBASE}/lib \
-		-DReadline_LIBRARY=ereadline
+		  -DMANUAL_SUBMODULES=ON \
+		  -DBUILD_DOCUMENTATION=OFF \
+		  -DReadline_INCLUDE_DIR=${LOCALBASE}/include/ereadline \
+		  -DReadline_ROOT_DIR=${LOCALBASE}/lib \
+		  -DReadline_LIBRARY=ereadline
 
 LIB_DEPENDS =	devel/boost \
 		devel/protobuf \

@@ -15,8 +15,8 @@ ONLY_FOR_ARCHS =	amd64 i386 arm64 armv7 riscv64
 
 WANTLIB += ${COMPILER_LIBCXX} boost_chrono-mt boost_date_time-mt
 WANTLIB += boost_filesystem-mt boost_locale-mt boost_program_options-mt
-WANTLIB += boost_serialization-mt boost_thread-mt c crypto ereadline
-WANTLIB += execinfo hidapi-libusb m sodium ssl unbound zmq
+WANTLIB += boost_serialization-mt boost_thread-mt c crypto curses
+WANTLIB += ereadline execinfo hidapi-libusb m sodium ssl unbound zmq
 
 COMPILER =	base-clang ports-gcc
 MODULES =	devel/cmake

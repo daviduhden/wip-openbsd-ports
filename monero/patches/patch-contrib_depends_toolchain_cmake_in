@@ -4,7 +4,8 @@ Use curses for terminfo.
 Index: contrib/depends/toolchain.cmake.in
 --- contrib/depends/toolchain.cmake.in.orig
 +++ contrib/depends/toolchain.cmake.in
-@@ -18,7 +18,7 @@ SET(ENV{PKG_CONFIG_PATH} @prefix@/lib/pkgconfig)
+@@ -21,9 +21,9 @@ SET(ENV{PKG_CONFIG_PATH} @prefix@/lib/pkgconfig)
+ 
  SET(Readline_ROOT_DIR @prefix@)
 -SET(Readline_INCLUDE_DIR @prefix@/include)
 -SET(Readline_LIBRARY @prefix@/lib/libreadline.a)

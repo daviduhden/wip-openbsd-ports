@@ -36,6 +36,7 @@ LIB_DEPENDS =	devel/boost \
 		comms/libhidapi \
 		net/miniupnp/miniupnpc
 
+TEST_DEPENDS =	lang/python/3
 
 USE_GMAKE=	Yes
 

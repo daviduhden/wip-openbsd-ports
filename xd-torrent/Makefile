@@ -18,6 +18,7 @@ WANTLIB += c pthread
 MODULES =		lang/go
 
 LIB_DEPENDS =		archivers/unzip
+RUN_DEPENDS =		net/i2pd
 
 WRKDIST =		${WRKSRC}
 

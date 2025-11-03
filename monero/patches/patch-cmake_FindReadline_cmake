@@ -1,4 +1,4 @@
-Broken display with base readline; prefer devel/readline.
+Use devel/readline instead of readline in the base system.
 
 Index: cmake/FindReadline.cmake
 --- cmake/FindReadline.cmake.orig

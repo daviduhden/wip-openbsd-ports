@@ -1,0 +1,16 @@
+Use devel/readline instead of readline in the base system.
+Use curses for terminfo.
+
+Index: contrib/depends/toolchain.cmake.in
+--- contrib/depends/toolchain.cmake.in.orig
++++ contrib/depends/toolchain.cmake.in
+@@ -18,7 +18,7 @@ SET(ENV{PKG_CONFIG_PATH} @prefix@/lib/pkgconfig)
+ SET(Readline_ROOT_DIR @prefix@)
+-SET(Readline_INCLUDE_DIR @prefix@/include)
+-SET(Readline_LIBRARY @prefix@/lib/libreadline.a)
+-SET(Terminfo_LIBRARY @prefix@/lib/libtinfo.a)
++SET(Readline_INCLUDE_DIR @prefix@/include/ereadline)
++SET(Readline_LIBRARY @prefix@/lib/libereadline.so)
++SET(Terminfo_LIBRARY /usr/lib/libcurses.so)
+ SET(UNBOUND_INCLUDE_DIR @prefix@/include)
+ SET(UNBOUND_LIBRARIES @prefix@/lib/libunbound.a)

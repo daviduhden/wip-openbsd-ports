@@ -26,6 +26,9 @@ CONFIGURE_ARGS += -Wno-dev \
 		-DMANUAL_SUBMODULES=ON \
 		-DBUILD_DOCUMENTATION=OFF
 
+CONFIGURE_ENV =	Readline_LIBRARY="ereadline" \
+		CPPFLAGS="-I${LOCALBASE}/include/ereadline"
+
 LIB_DEPENDS =	devel/boost \
 		devel/protobuf \
 		devel/readline \

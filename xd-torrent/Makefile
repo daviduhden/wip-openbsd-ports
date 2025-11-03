@@ -11,8 +11,13 @@ HOMEPAGE =	https://xd-torrent.github.io/
 
 # MIT
 PERMIT_PACKAGE =	Yes
+ONLY_FOR_ARCHS =	${GO_ARCHS}
+
+WANTLIB += c pthread
 
 MODULES =		lang/go
+
+LIB_DEPENDS =	archivers/unzip
 
 WRKDIST =		${WRKSRC}
 

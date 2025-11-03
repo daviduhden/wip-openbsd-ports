@@ -14,7 +14,7 @@ Index: CMakeLists.txt
  endif()
  
  # BUILD_TAG is used to select the build type to check for a new version
-@@ -1178,11 +1178,11 @@ elseif(USE_READLINE AND DEPENDS AND NOT MINGW)
+@@ -1178,11 +1178,11 @@ if(USE_READLINE AND NOT DEPENDS)
 -  find_path(Readline_INCLUDE_PATH readline/readline.h)
 -  find_library(Readline_LIBRARY readline)
 -  find_library(Terminfo_LIBRARY tinfo)
@@ -26,3 +26,5 @@ Index: CMakeLists.txt
    add_definitions(-DHAVE_READLINE)
    set(EPEE_READLINE epee_readline)
  endif()
+ 
+if(ANDROID)

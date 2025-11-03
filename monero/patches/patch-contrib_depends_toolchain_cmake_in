@@ -12,5 +12,7 @@ Index: contrib/depends/toolchain.cmake.in
 +SET(Readline_INCLUDE_DIR @prefix@/include/ereadline)
 +SET(Readline_LIBRARY @prefix@/lib/libereadline.so)
 +SET(Terminfo_LIBRARY /usr/lib/libcurses.so)
+ 
  SET(UNBOUND_INCLUDE_DIR @prefix@/include)
  SET(UNBOUND_LIBRARIES @prefix@/lib/libunbound.a)
+ 

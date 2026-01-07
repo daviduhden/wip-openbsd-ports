@@ -1,22 +1,5 @@
 #!/bin/ksh
 
-# If we are NOT already running under ksh93, try to re-exec with ksh93.
-# If ksh93 is not available, fall back to the base ksh (OpenBSD /bin/ksh).
-case "${KSH_VERSION-}" in
-*93*) : ;; # already ksh93
-*)
-	if command -v ksh93 >/dev/null 2>&1; then
-		exec ksh93 "$0" "$@"
-	elif [ -x /usr/local/bin/ksh93 ]; then
-		exec /usr/local/bin/ksh93 "$0" "$@"
-	elif command -v ksh >/dev/null 2>&1; then
-		exec ksh "$0" "$@"
-	elif [ -x /bin/ksh ]; then
-		exec /bin/ksh "$0" "$@"
-	fi
-	;;
-esac
-
 # Copyright (c) 2024-2025 David Uhden Collado <david@uhden.dev>
 #
 # Permission to use, copy, modify, and distribute this software for any

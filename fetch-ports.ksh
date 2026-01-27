@@ -60,6 +60,7 @@ checkout_ports_tree() {
 	remove_ports_directory
 	log "Checking out ports tree from anoncvs..."
 	cvs -qd anoncvs@anoncvs.eu.openbsd.org:/cvs checkout -P ports
+	pkg_add pkglocatedb
 }
 
 # Ask if user wants to copy from wip-openbsd-ports (optional)

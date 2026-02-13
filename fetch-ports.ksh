@@ -49,15 +49,15 @@ set_cvsroot() {
 	export CVSROOT="anoncvs@anoncvs.eu.openbsd.org:/cvs"
 }
 
-# Function to remove the ports directory
-remove_ports_directory() {
-	rm -rf /usr/ports
+# Function to remove the ports content
+remove_ports_content() {
+	rm -rf /usr/ports/*
 }
 
 # Function to checkout the ports tree using CVS (removes old tree first)
 checkout_ports_tree() {
 	cd /usr || exit 1
-	remove_ports_directory
+	remove_ports_content
 	log "Checking out ports tree from anoncvs..."
 	cvs -qd anoncvs@anoncvs.eu.openbsd.org:/cvs checkout -P ports
 	pkg_add pkglocatedb

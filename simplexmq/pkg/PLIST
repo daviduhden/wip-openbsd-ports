@@ -1,0 +1,6 @@
+@comment $OpenBSD$
+bin/smp-server
+bin/xftp
+bin/xftp-server
+share/examples/simplexmq/
+@sample share/examples/simplexmq/smp-server

@@ -1,0 +1,36 @@
+$OpenBSD$
+
+1. Bump index-state 2023->2025 for GHC 9.10 os-string compatibility.
+2. Add allow-newer for core GHC packages (removes need for --allow-newer flag).
+3. Remove warp/warp-tls source-repository-packages (Reaper API change).
+
+--- cabal.project.orig
++++ cabal.project
+@@ -13,7 +13,9 @@
+    -- coverage: False
+    -- library-coverage: False
+
+-index-state: 2023-12-12T00:00:00Z
++index-state: 2025-06-01T00:00:00Z
++
++allow-newer: ghc-prim, base, bytestring, text, template-haskell
+
+ package cryptostore
+     flags: +use_crypton
+@@ -38,16 +38,3 @@
+     location: https://github.com/simplex-chat/sqlcipher-simple.git
+     tag: a46bd361a19376c5211f1058908fc0ae6bf42446
+
+--- waiting for published warp-tls-3.4.7
+-source-repository-package
+-    type: git
+-    location: https://github.com/yesodweb/wai.git
+-    tag: ec5e017d896a78e787a5acea62b37a4e677dec2e
+-    subdir: warp-tls
+-
+--- backported fork due http-5.0
+-source-repository-package
+-    type: git
+-    location: https://github.com/simplex-chat/wai.git
+-    tag: 2f6e5aa5f05ba9140ac99e195ee647b4f7d926b0
+-    subdir: warp

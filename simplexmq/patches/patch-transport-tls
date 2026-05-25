@@ -1,0 +1,25 @@
+$OpenBSD$
+
+Fix TLS VerifyData type change in tls >= 2.1.
+tls-2.1.x changed getFinished/getPeerFinished return type
+from ByteString to VerifyData. VerifyData is a fully opaque
+newtype in tls-2.1.10 (constructor, module, and re-export
+all hidden; no ByteArrayAccess instance).
+Use unsafeCoerce — safe because VerifyData is a newtype
+over ByteString at runtime.
+
+--- src/Simplex/Messaging/Transport.hs.orig
++++ src/Simplex/Messaging/Transport.hs
+@@ -378,8 +378,10 @@
+     >>= maybe (closeTLS cxt >> ioe_EOF) f
+   where
+     cxtFinished = case sTransportPeer @p of
+-      STServer -> T.getPeerFinished
+-      STClient -> T.getFinished
++      STServer -> coerceV . T.getPeerFinished
++      STClient -> coerceV . T.getFinished
++    coerceV :: IO (Maybe a) -> IO (Maybe ByteString)
++    coerceV = unsafeCoerce
+
+ closeTLS :: T.Context -> IO ()
+ closeTLS ctx =

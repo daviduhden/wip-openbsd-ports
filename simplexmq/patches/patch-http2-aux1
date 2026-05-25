@@ -1,0 +1,13 @@
+$OpenBSD$
+
+client handler receives Aux parameter in http2-5.x.
+
+--- src/Simplex/Messaging/Transport/HTTP2/Client.hs.orig
++++ src/Simplex/Messaging/Transport/HTTP2/Client.hs
+@@ -149,5 +149,5 @@
+-    client c cVar tls sendReq = do
++    client c cVar tls sendReq _aux = do
+       sessionTs <- getCurrentTime
+       let c' =
+             HTTP2Client
+               { action = Nothing,

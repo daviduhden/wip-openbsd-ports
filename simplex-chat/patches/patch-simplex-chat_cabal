@@ -1,0 +1,39 @@
+$OpenBSD$
+
+Relax bytestring and template-haskell version bounds for GHC >= 9.10.
+OpenBSD 7.9 ships GHC 9.10.2 with base-4.20.2.0 and ghc-prim-0.12.0.
+The existing constraints (bytestring ==0.11.*, template-haskell ==2.20.*)
+are too strict for GHC 9.10 which ships bytestring 0.12 and TH 2.22.
+
+--- simplex-chat.cabal.orig
++++ simplex-chat.cabal
+@@ -350,9 +350,9 @@
+       , sqlcipher-simple ==0.4.*
+   if impl(ghc >= 9.6.2)
+     build-depends:
+-        bytestring ==0.11.*
++        bytestring >=0.11 && <0.13
+       , process ==1.6.*
+-      , template-haskell ==2.20.*
++      , template-haskell >=2.20 && <2.23
+       , text >=2.0.1 && <2.2
+   if impl(ghc < 9.6.2)
+     build-depends:
+@@ -532,7 +532,7 @@
+         sqlcipher-simple ==0.4.*
+   if impl(ghc >= 9.6.2)
+     build-depends:
+-        bytestring ==0.11.*
++        bytestring >=0.11 && <0.13
+       , text >=2.0.1 && <2.2
+   if impl(ghc < 9.6.2)
+     build-depends:
+@@ -661,7 +661,7 @@
+         sqlcipher-simple ==0.4.*
+   if impl(ghc >= 9.6.2)
+     build-depends:
+-        bytestring ==0.11.*
++        bytestring >=0.11 && <0.13
+       , hspec ==2.11.*
+       , process ==1.6.*
+       , text >=2.0.1 && <2.2

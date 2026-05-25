@@ -1,0 +1,9 @@
+Instructions for running the SMP server as a system daemon:
+
+# Copy the rc.d script
+# doas cp /usr/local/share/examples/simplexmq/smp-server /etc/rc.d/smp-server
+# doas chmod +x /etc/rc.d/smp-server
+
+# Start at boot
+# doas rcctl enable smp_server
+# doas rcctl start smp_server

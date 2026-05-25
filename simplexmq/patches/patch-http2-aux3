@@ -1,0 +1,14 @@
+$OpenBSD$
+
+process handler receives Aux parameter in http2-5.x.
+
+--- src/Simplex/Messaging/Transport/HTTP2/Client.hs.orig
++++ src/Simplex/Messaging/Transport/HTTP2/Client.hs
+@@ -168,6 +168,6 @@
+
+     process :: HTTP2Client -> H.Client HTTP2Response
+-    process HTTP2Client {client_ = HClient {reqQ}} sendReq = forever $ do
++    process HTTP2Client {client_ = HClient {reqQ}} sendReq _aux = forever $ do
+       (req, respVar) <- atomically $ readTBQueue reqQ
+       sendReq req $ \r -> do
+         respBody <- getHTTP2Body r (bodyHeadSize config)

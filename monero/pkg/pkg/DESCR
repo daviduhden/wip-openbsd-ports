@@ -1,0 +1,28 @@
+An open source command line interface (CLI) wallet for the Monero (XMR) digital 
+currency, completely free to use and ideal for developers, intermediate and 
+advanced users. The CLI wallet provides full control over your Monero node and 
+funds, extensive customization options, and an HTTP RPC and ZMQ interface for 
+seamless integration.
+
+Key Features:
+
+- Local or Remote Node: Choose between running your own blockchain copy or 
+connecting to a publicly available node.
+
+- Transactions via Tor/I2P: Enhance your privacy by routing transactions through 
+Tor or I2P networks.
+
+- Bootstrap Node: Start using Monero right away with a remote node while your 
+local blockchain syncs in the background, switching to it once fully 
+synchronized.
+
+- Hardware Wallet Compatibility: Supports popular hardware wallets like Trezor 
+and Ledger for secure storage.
+
+- RPC Wallet and Daemon: Both are included for easy setup and management.
+
+- Blockchain Pruning: Limited disk space? Prune the blockchain to download only a 
+third of the data.
+
+- Pay-for-RPC: This new feature allows node operators to earn rewards when their 
+node is used.

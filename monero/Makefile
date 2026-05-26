@@ -1,6 +1,6 @@
 COMMENT =	secure, private and untraceable digital currency
 
-VERSION =	0.18.4.5
+VERSION =	0.18.5.0
 PKGNAME =	monero-${VERSION}
 DISTNAME =	monero-source-v${VERSION}
 SITES =		https://downloads.getmonero.org/cli/
@@ -23,6 +23,7 @@ MODULES =	devel/cmake
 BUILD_DEPENDS =	devel/ninja
 
 CONFIGURE_ARGS += -Wno-dev \
+		  -DDEPENDS=ON \
 		  -DMANUAL_SUBMODULES=ON \
 		  -DBUILD_DOCUMENTATION=OFF
 
@@ -32,8 +33,7 @@ LIB_DEPENDS =	devel/boost \
 		net/zeromq \
 		net/libunbound \
 		converters/libiconv \
-		comms/libhidapi \
-		net/miniupnp/miniupnpc
+		comms/libhidapi
 
 TEST_DEPENDS =	lang/python/3
 

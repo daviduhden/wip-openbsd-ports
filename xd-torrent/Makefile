@@ -1,7 +1,7 @@
 COMMENT =	i2p-only BitTorrent client written in Go
 
 MODGO_MODNAME =	github.com/majestrate/XD
-MODGO_VERSION =	v0.4.7
+MODGO_VERSION =	v0.4.8
 
 DISTNAME =	xd-torrent-${MODGO_VERSION}
 
@@ -17,7 +17,6 @@ WANTLIB += c pthread
 
 MODULES =		lang/go
 
-LIB_DEPENDS =		archivers/unzip
 RUN_DEPENDS =		net/i2pd
 
 WRKDIST =		${WRKSRC}

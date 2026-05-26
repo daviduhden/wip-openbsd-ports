@@ -1,4 +1,4 @@
-$OpenBSD: user.list,v 1.487 2026/04/16 11:56:14 danj Exp $
+$OpenBSD: user.list,v 1.488 2026/05/26 12:22:17 sthen Exp $
 
 This file lists all users and groups that are created by ports. All
 ports' users/groups have to start with an underscore and have to use
@@ -414,3 +414,5 @@ id  user		group		port
 903 _iaxmodem		_iaxmodem	telephony/iaxmodem
 904 _neighbot		_neighbot	net/neighbot
 905 _pgweb		_pgweb		www/pgweb
+906 _monerod		_monerod	net/monero
+907 _xd			_xd		net/xd-torrent

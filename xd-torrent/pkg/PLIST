@@ -1,5 +1,5 @@
-@newgroup _xd:733
-@newuser _xd:733:733::xd-torrent account:${LOCALSTATEDIR}/xd:/sbin/nologin
+@newgroup _xd:907
+@newuser _xd:907:907::xd-torrent account:${LOCALSTATEDIR}/xd:/sbin/nologin
 @rcscript ${RCDIR}/xd
 @bin bin/XD
 bin/XD-CLI

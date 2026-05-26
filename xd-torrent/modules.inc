@@ -7,11 +7,11 @@ MODGO_MODULES =	\
 	github.com/stretchr/objx		 v0.1.0 \
 	github.com/stretchr/testify		 v1.7.0 \
 	github.com/zeebo/bencode		 v1.0.0 \
-	golang.org/x/crypto			 v0.35.0 \
-	golang.org/x/net			 v0.21.0 \
-	golang.org/x/sys			 v0.30.0 \
-	golang.org/x/term			 v0.29.0 \
-	golang.org/x/text			 v0.22.0 \
+	golang.org/x/crypto			 v0.45.0 \
+	golang.org/x/net			 v0.47.0 \
+	golang.org/x/sys			 v0.38.0 \
+	golang.org/x/term			 v0.37.0 \
+	golang.org/x/text			 v0.31.0 \
 	golang.org/x/tools			 v0.0.0-20180917221912-90fa682c2a6e \
 	gopkg.in/check.v1			 v0.0.0-20161208181325-20d25e280405 \
 	gopkg.in/leonelquinteros/gotext.v1	 v1.3.1 \
@@ -26,3 +26,4 @@ MODGO_MODFILES =	\
 	golang.org/x/sys	 v0.0.0-20211216021012-1d35b9e2eb4e \
 	golang.org/x/term	 v0.0.0-20201126162022-7de9c90e9dd1 \
 	golang.org/x/text	 v0.3.6
+

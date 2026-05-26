@@ -23,7 +23,6 @@ MODULES =	devel/cmake
 BUILD_DEPENDS =	devel/ninja
 
 CONFIGURE_ARGS += -Wno-dev \
-		  -DDEPENDS=ON \
 		  -DMANUAL_SUBMODULES=ON \
 		  -DBUILD_DOCUMENTATION=OFF
 

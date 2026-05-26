@@ -5,7 +5,7 @@ Use curses for terminfo.
 Index: CMakeLists.txt
 --- CMakeLists.txt.orig
 +++ CMakeLists.txt
-@@ -343,7 +343,7 @@ endif()
+@@ -338,7 +338,7 @@ endif()
  if(WIN32 OR ARM OR PPC64LE OR PPC64 OR PPC)
    set(OPT_FLAGS_RELEASE "-O2")
  else()
@@ -14,7 +14,7 @@ Index: CMakeLists.txt
  endif()
  
  # BUILD_TAG is used to select the build type to check for a new version
-@@ -1182,10 +1182,10 @@ endif()
+@@ -1177,10 +1177,10 @@ endif()
  elseif(USE_READLINE AND DEPENDS AND NOT MINGW)
 -  find_path(Readline_INCLUDE_PATH readline/readline.h)
 -  find_library(Readline_LIBRARY readline)

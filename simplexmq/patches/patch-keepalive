@@ -1,17 +1,22 @@
 $OpenBSD$
 
-Hardcode TCP keepalive constants, skip CApiFFI on OpenBSD.
-GHC 9.10 foreign import capi generates broken C code on OpenBSD.
-Values from <netinet/tcp.h>: TCP_KEEPIDLE=0x100, TCP_KEEPINTVL=0x200, TCP_KEEPCNT=0x300.
+OpenBSD: hardcode TCP keepalive constants, disable function.
+GHC 9.10 CApiFFI generates broken C wrapper code for netinet/tcp.h.
+Kernel does not support TCP_KEEPIDLE/TCP_KEEPINTVL/TCP_KEEPCNT (ENOPROTOOPT).
+Hardcode values and make setSocketKeepAlive a no-op.
 
 --- src/Simplex/Messaging/Transport/KeepAlive.hs.orig
 +++ src/Simplex/Messaging/Transport/KeepAlive.hs
-@@ -50,12 +50,16 @@
+@@ -49,25 +49,38 @@
+ _TCP_KEEPCNT = 16
+
  #else
- -- Mac/Linux
+--- Mac/Linux
++-- Mac/Linux/BSD
 
 -#if defined(darwin_HOST_OS)
 +#if defined(openbsd_HOST_OS)
++-- OpenBSD: hardcoded constants, functional CApiFFI fails with GHC 9.10
 +_TCP_KEEPIDLE :: CInt
 +_TCP_KEEPIDLE = 0x100
 +_TCP_KEEPINTVL :: CInt
@@ -20,13 +25,29 @@ Values from <netinet/tcp.h>: TCP_KEEPIDLE=0x100, TCP_KEEPINTVL=0x200, TCP_KEEPCN
 +_TCP_KEEPCNT = 0x300
 +#elif defined(darwin_HOST_OS)
  foreign import capi "netinet/tcp.h value TCP_KEEPALIVE" _TCP_KEEPIDLE :: CInt
++foreign import capi "netinet/tcp.h value TCP_KEEPINTVL" _TCP_KEEPINTVL :: CInt
++foreign import capi "netinet/tcp.h value TCP_KEEPCNT" _TCP_KEEPCNT :: CInt
  #else
  foreign import capi "netinet/tcp.h value TCP_KEEPIDLE" _TCP_KEEPIDLE :: CInt
 -#endif
 -
--foreign import capi "netinet/tcp.h value TCP_KEEPINTVL" _TCP_KEEPINTVL :: CInt
+ foreign import capi "netinet/tcp.h value TCP_KEEPINTVL" _TCP_KEEPINTVL :: CInt
 -
--foreign import capi "netinet/tcp.h value TCP_KEEPCNT" _TCP_KEEPCNT :: CInt
-+foreign import capi "netinet/tcp.h value TCP_KEEPINTVL" _TCP_KEEPINTVL :: CInt
-+foreign import capi "netinet/tcp.h value TCP_KEEPCNT" _TCP_KEEPCNT :: CInt
+ foreign import capi "netinet/tcp.h value TCP_KEEPCNT" _TCP_KEEPCNT :: CInt
 +#endif
+
+ #endif
+
++#if defined(openbsd_HOST_OS)
++setSocketKeepAlive :: Socket -> KeepAliveOpts -> IO ()
++setSocketKeepAlive _ _ = pure ()
++#else
+ setSocketKeepAlive :: Socket -> KeepAliveOpts -> IO ()
+ setSocketKeepAlive sock KeepAliveOpts {keepCnt, keepIdle, keepIntvl} = do
+   setSocketOption sock KeepAlive 1
+   setSocketOption sock (SockOpt _SOL_TCP _TCP_KEEPIDLE) keepIdle
+   setSocketOption sock (SockOpt _SOL_TCP _TCP_KEEPINTVL) keepIntvl
+   setSocketOption sock (SockOpt _SOL_TCP _TCP_KEEPCNT) keepCnt
++#endif
+
+ $(J.deriveJSON defaultJSON ''KeepAliveOpts)

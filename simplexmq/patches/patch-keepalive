@@ -1,35 +1,25 @@
 $OpenBSD$
 
-Restructure TCP keepalive constants for OpenBSD support.
-GHC 9.10 CApiFFI can't resolve netinet/tcp.h macros on OpenBSD.
-Create proper OpenBSD/Darwin/else branches, each with all 3 constants.
+Disable TCP keepalive tuning on OpenBSD.
+OpenBSD kernel does not support TCP_KEEPIDLE/TCP_KEEPINTVL/TCP_KEEPCNT
+socket options. The constants exist in <netinet/tcp.h> but setsockopt
+returns ENOPROTOOPT for all of them. Make setSocketKeepAlive a no-op.
 
 --- src/Simplex/Messaging/Transport/KeepAlive.hs.orig
 +++ src/Simplex/Messaging/Transport/KeepAlive.hs
-@@ -50,14 +50,22 @@
- #else
- -- Mac/Linux
+@@ -54,8 +54,13 @@
+ #endif
 
--#if defined(darwin_HOST_OS)
 +#if defined(openbsd_HOST_OS)
-+-- GHC 9.10 CApiFFI can't resolve netinet/tcp.h macros
-+_TCP_KEEPIDLE :: CInt
-+_TCP_KEEPIDLE = 0x100
-+_TCP_KEEPINTVL :: CInt
-+_TCP_KEEPINTVL = 0x200
-+_TCP_KEEPCNT :: CInt
-+_TCP_KEEPCNT = 0x300
-+#elif defined(darwin_HOST_OS)
- foreign import capi "netinet/tcp.h value TCP_KEEPALIVE" _TCP_KEEPIDLE :: CInt
-+foreign import capi "netinet/tcp.h value TCP_KEEPINTVL" _TCP_KEEPINTVL :: CInt
-+foreign import capi "netinet/tcp.h value TCP_KEEPCNT" _TCP_KEEPCNT :: CInt
- #else
- foreign import capi "netinet/tcp.h value TCP_KEEPIDLE" _TCP_KEEPIDLE :: CInt
--#endif
--
- foreign import capi "netinet/tcp.h value TCP_KEEPINTVL" _TCP_KEEPINTVL :: CInt
--
- foreign import capi "netinet/tcp.h value TCP_KEEPCNT" _TCP_KEEPCNT :: CInt
++setSocketKeepAlive :: Socket -> KeepAliveOpts -> IO ()
++setSocketKeepAlive _ _ = pure ()
++#else
+ setSocketKeepAlive :: Socket -> KeepAliveOpts -> IO ()
+ setSocketKeepAlive sock KeepAliveOpts {keepCnt, keepIdle, keepIntvl} = do
+   setSocketOption sock KeepAlive 1
+   setSocketOption sock (SockOpt _SOL_TCP _TCP_KEEPIDLE) keepIdle
+   setSocketOption sock (SockOpt _SOL_TCP _TCP_KEEPINTVL) keepIntvl
+   setSocketOption sock (SockOpt _SOL_TCP _TCP_KEEPCNT) keepCnt
 +#endif
 
- #endif
+ $(J.deriveJSON defaultJSON ''KeepAliveOpts)

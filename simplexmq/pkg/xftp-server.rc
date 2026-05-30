@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# $OpenBSD$
+#
+# PROVIDE: xftp_server
+# REQUIRE: DAEMON
+# KEYWORD: shutdown
+
+daemon="${TRUEPREFIX}/bin/xftp-server"
+daemon_user="_simplexmq"
+daemon_flags="start"
+daemon_logger="daemon.info"
+
+. /etc/rc.d/rc.subr
+
+rc_bg=YES
+pexp="xftp-server:.*"
+
+rc_cmd $1

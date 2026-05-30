@@ -1,6 +1,2 @@
 @comment $OpenBSD$
 bin/simplex-chat
-bin/simplex-bot
-bin/simplex-bot-advanced
-bin/simplex-broadcast-bot
-bin/simplex-directory-service

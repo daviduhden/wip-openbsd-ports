@@ -1,13 +1,9 @@
-$OpenBSD$
-
-Fix missing Default instance for IO [FailedReason] in GHC 9.10.
-Newer data-default-class removes Default instance for IO.
-Replace 'def' with explicit 'pure []' (empty validation errors
-means the certificate chain is valid - no reasons to reject).
+Fix default certificate validation fallback for GHC 9.10.
 
 --- src/Simplex/Messaging/Transport/Client.hs.orig
 +++ src/Simplex/Messaging/Transport/Client.hs
-@@ -301,7 +301,7 @@
+@@ -306,7 +306,7 @@
+   where
      p = B.pack port
      onServerCert _ _ _ cc = do
 -      errs <- maybe def (\ca -> validateCertificateChain ca host p cc) cafp_

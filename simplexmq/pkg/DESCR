@@ -2,7 +2,6 @@ SimpleXMQ is a message broker for the SimpleX Chat protocol. It provides:
 
 - SMP server - the core message broker
 - XFTP server - file transfer server
-- XFTP client - file transfer client
 - A library for building messaging applications
 
 SimpleXMQ uses the SMP (SimpleX Messaging Protocol) which provides

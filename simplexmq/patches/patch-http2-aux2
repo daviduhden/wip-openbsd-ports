@@ -5,7 +5,6 @@ process call site passes _aux through in http2-5.x.
 --- src/Simplex/Messaging/Transport/HTTP2/Client.hs.orig
 +++ src/Simplex/Messaging/Transport/HTTP2/Client.hs
 @@ -165,5 +165,5 @@
-         putTMVar cVar (Right c')
 -      process c' sendReq `E.finally` disconnected
 +      process c' sendReq _aux `E.finally` disconnected
 

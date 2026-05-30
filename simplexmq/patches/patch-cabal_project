@@ -1,34 +1,41 @@
 $OpenBSD$
 
 1. Bump index-state 2023->2025 for GHC 9.10 os-string compatibility.
-2. Add allow-newer for core GHC packages (removes need for --allow-newer flag).
-3. Remove warp/warp-tls source-repository-packages (Reaper API change).
+2. Remove old aeson, warp, and warp-tls source-repository-packages.
 
 --- cabal.project.orig
 +++ cabal.project
-@@ -13,7 +13,9 @@
+@@ -13,18 +13,13 @@
     -- coverage: False
     -- library-coverage: False
 
 -index-state: 2023-12-12T00:00:00Z
 +index-state: 2025-06-01T00:00:00Z
-+
-+allow-newer: ghc-prim, base, bytestring, text, template-haskell
 
  package cryptostore
      flags: +use_crypton
-@@ -38,16 +38,3 @@
-     location: https://github.com/simplex-chat/sqlcipher-simple.git
+
+ source-repository-package
+     type: git
+-    location: https://github.com/simplex-chat/aeson.git
+-    tag: aab7b5a14d6c5ea64c64dcaee418de1bb00dcc2b
+-
+-source-repository-package
+-    type: git
+     location: https://github.com/simplex-chat/hs-socks.git
+     tag: a30cc7a79a08d8108316094f8f2f82a0c5e1ac51
+
+@@ -39,15 +34,4 @@
      tag: a46bd361a19376c5211f1058908fc0ae6bf42446
 
---- waiting for published warp-tls-3.4.7
+ -- waiting for published warp-tls-3.4.7
 -source-repository-package
 -    type: git
 -    location: https://github.com/yesodweb/wai.git
 -    tag: ec5e017d896a78e787a5acea62b37a4e677dec2e
 -    subdir: warp-tls
 -
---- backported fork due http-5.0
+ -- backported fork due http-5.0
 -source-repository-package
 -    type: git
 -    location: https://github.com/simplex-chat/wai.git

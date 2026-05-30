@@ -1,0 +1,15 @@
+$OpenBSD$
+
+Remove aeson 2.2 removed nullaryToObject option.
+
+--- src/Simplex/RemoteControl/Types.hs.orig
++++ src/Simplex/RemoteControl/Types.hs
+@@ -155,7 +155,7 @@
+ data RCCtrlHello = RCCtrlHello {}
+   deriving (Show)
+
+-$(JQ.deriveJSON defaultJSON {J.nullaryToObject = True} ''RCCtrlHello)
++$(JQ.deriveJSON defaultJSON ''RCCtrlHello)
+
+ -- | Long-term part of controller (desktop) connection to host (mobile)
+ data RCHostPairing = RCHostPairing

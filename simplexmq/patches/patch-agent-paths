@@ -1,0 +1,17 @@
+$OpenBSD$
+
+Use OpenBSD-style agent certificate paths.
+
+--- src/Simplex/Messaging/Agent/Env/SQLite.hs.orig
++++ src/Simplex/Messaging/Agent/Env/SQLite.hs
+@@ -247,8 +247,8 @@
+       -- CA certificate private key is not needed for initialization
+       -- ! we do not generate these
+       caCertificateFile = "/etc/opt/simplex-agent/ca.crt",
+-      privateKeyFile = "/etc/opt/simplex-agent/agent.key",
+-      certificateFile = "/etc/opt/simplex-agent/agent.crt",
++      privateKeyFile = "/etc/simplex-agent/agent.key",
++      certificateFile = "/etc/simplex-agent/agent.crt",
+       rcvExpireCount = 8,
+       rcvExpireInterval = nominalDay,
+       e2eEncryptVRange = supportedE2EEncryptVRange,

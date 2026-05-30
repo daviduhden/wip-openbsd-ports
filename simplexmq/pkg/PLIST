@@ -1,6 +1,20 @@
-@comment $OpenBSD$
-bin/smp-server
-bin/xftp
-bin/xftp-server
-share/examples/simplexmq/
-@sample share/examples/simplexmq/smp-server
+@newgroup _simplexmq:906
+@newuser _simplexmq:906:906::SimpleXMQ daemon:${VARBASE}/empty:/sbin/nologin
+@rcscript ${RCDIR}/smp-server
+@rcscript ${RCDIR}/xftp-server
+@mode 755
+@owner _simplexmq
+@group _simplexmq
+@sample ${SYSCONFDIR}/simplex/
+@sample ${SYSCONFDIR}/simplex/smp-server/
+@sample ${SYSCONFDIR}/simplex/xftp-server/
+@sample ${LOCALSTATEDIR}/simplex/
+@sample ${LOCALSTATEDIR}/simplex/smp-server/
+@sample ${LOCALSTATEDIR}/simplex/xftp-server/
+@mode
+@owner
+@group
+@bin bin/smp-server
+@bin bin/xftp
+@bin bin/xftp-server
+share/doc/pkg-readmes/${PKGSTEM}

@@ -1,0 +1,24 @@
+$OpenBSD$
+
+OpenBSD: allow more time for XFTP upload cleanup during the test suite.
+
+--- tests/XFTPAgent.hs.orig
++++ tests/XFTPAgent.hs
+@@ -450,7 +450,7 @@
+       ("", sfId', SFPROG _ _) <- sfGet sndr'
+       liftIO $ sfId' `shouldBe` sfId
+ 
+-  threadDelay 200000
++  threadDelay 1000000
+ 
+   withXFTPServerStoreLogOn $ \_ -> do
+     -- send file - should continue uploading with server up
+@@ -464,7 +464,7 @@
+       pure rfd1
+ 
+     -- prefix path should be removed after sending file
+-    threadDelay 500000
++    threadDelay 2000000
+     doesDirectoryExist prefixPath `shouldReturn` False
+     doesFileExist encPath `shouldReturn` False
+

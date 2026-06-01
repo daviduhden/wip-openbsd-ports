@@ -35,6 +35,23 @@ RUN_DEPENDS =		databases/sqlcipher \
 			archivers/zstd \
 			simplexmq->=6.5.2.0:net/simplexmq
 
+TEST_ENV =		HOME=${WRKSRC} \
+			XDG_CACHE_HOME=${WRKSRC}/.cache \
+			CABAL_DIR=${WRKSRC}/.cabal
+
+ENTROPY_SRC =		${WRKSRC}/.entropy/entropy-0.4.1.11
+
+pre-build pre-test:
+	env HOME=${WRKSRC} XDG_CACHE_HOME=${WRKSRC}/.cache \
+		CABAL_DIR=${WRKSRC}/.cabal cabal update && \
+	if [ ! -f ${ENTROPY_SRC}/Setup.hs ]; then \
+		mkdir -p ${WRKSRC}/.entropy && \
+		ftp -o ${WRKSRC}/.entropy/entropy-0.4.1.11.tar.gz \
+			https://hackage.haskell.org/package/entropy-0.4.1.11/entropy-0.4.1.11.tar.gz && \
+		cd ${WRKSRC}/.entropy && tar -xzf entropy-0.4.1.11.tar.gz; \
+		cd ${ENTROPY_SRC} && patch -N --batch -p0 -F0 < ${.CURDIR}/../simplexmq/files/entropy-setup-openbsd.patch; \
+	fi
+
 post-patch:
 	cd ${WRKDIR}/simplexmq && patch -N --batch -p0 -F0 < ${FILESDIR}/simplexmq.cabal.patch
 	cd ${WRKDIR}/simplexmq && patch -N --batch -p0 -F0 < ${FILESDIR}/simplexmq-keepalive.patch
@@ -49,11 +66,20 @@ post-extract:
 	mv ${WRKDIR}/direct-sqlcipher-* ${WRKDIR}/direct-sqlcipher
 	mv ${WRKDIR}/sqlcipher-simple-* ${WRKDIR}/sqlcipher-simple
 
+pre-test:
+	cp ${WRKSRC}/scripts/cabal.project.local.linux ${WRKSRC}/cabal.project.local
+	printf '%s\n' "packages: ./.entropy/entropy-0.4.1.11" >> ${WRKSRC}/cabal.project.local
+
 do-build:
 	cd ${WRKSRC} && env HOME=${WRKSRC} XDG_CACHE_HOME=${WRKSRC}/.cache \
 		CABAL_DIR=${WRKSRC}/.cabal cabal update && \
 		env HOME=${WRKSRC} XDG_CACHE_HOME=${WRKSRC}/.cache \
 		CABAL_DIR=${WRKSRC}/.cabal cabal build -j exe:simplex-chat
+
+do-test:
+	cd ${WRKSRC} && env ${TEST_ENV} cabal update && \
+	env ${TEST_ENV} cabal build -j simplex-chat-test && \
+	env ${TEST_ENV} cabal test simplex-chat-test
 
 do-install:
 	chat=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/simplex-chat/build/simplex-chat/simplex-chat' | head -n 1); \

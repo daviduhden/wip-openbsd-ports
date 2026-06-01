@@ -1,0 +1,30 @@
+$OpenBSD$
+
+OpenBSD: restrict HTTP/2 transport TLS 1.3 to avoid test handshake failures.
+
+--- src/Simplex/Messaging/Transport/HTTP2.hs.orig
++++ src/Simplex/Messaging/Transport/HTTP2.hs
+@@ -1,4 +1,5 @@
+ {-# LANGUAGE NamedFieldPuns #-}
++{-# LANGUAGE CPP #-}
+ {-# LANGUAGE OverloadedStrings #-}
+ 
+ module Simplex.Messaging.Transport.HTTP2
+@@ -54,10 +55,17 @@
+ http2TLSParams :: T.Supported
+ http2TLSParams =
+   def
++#if defined(openbsd_HOST_OS)
++    { T.supportedVersions = [T.TLS12],
++      T.supportedCiphers = TE.ciphersuite_strong_det,
++      T.supportedSecureRenegotiation = False
++    }
++#else
+     { T.supportedVersions = [T.TLS13, T.TLS12],
+       T.supportedCiphers = TE.ciphersuite_strong_det,
+       T.supportedSecureRenegotiation = False
+     }
++#endif
+ 
+ data HTTP2Body = HTTP2Body
+   { bodyHead :: ByteString,

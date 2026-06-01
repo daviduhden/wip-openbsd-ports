@@ -1,5 +1,9 @@
 Use the upstream dependency set and local source trees for SimpleX Chat.
 
+ $OpenBSD$
+
+Use the upstream dependency set and local source trees for SimpleX Chat.
+
 --- cabal.project.orig
 +++ cabal.project
 @@ -1,4 +1,4 @@

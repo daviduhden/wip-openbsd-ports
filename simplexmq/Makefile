@@ -28,6 +28,25 @@ LIB_DEPENDS =		databases/sqlcipher \
 RUN_DEPENDS =		databases/sqlcipher \
 			archivers/zstd
 
+TEST_ENV =		HOME=${WRKSRC} \
+			XDG_CACHE_HOME=${WRKSRC}/.cache \
+			CABAL_DIR=${WRKSRC}/.cabal
+
+ENTROPY_SRC =		${WRKSRC}/.entropy/entropy-0.4.1.11
+
+pre-build pre-test:
+	env HOME=${WRKSRC} XDG_CACHE_HOME=${WRKSRC}/.cache \
+		CABAL_DIR=${WRKSRC}/.cabal cabal update && \
+	if [ ! -f ${ENTROPY_SRC}/Setup.hs ]; then \
+		mkdir -p ${WRKSRC}/.entropy && \
+		ftp -o ${WRKSRC}/.entropy/entropy-0.4.1.11.tar.gz \
+			https://hackage.haskell.org/package/entropy-0.4.1.11/entropy-0.4.1.11.tar.gz && \
+		cd ${WRKSRC}/.entropy && tar -xzf entropy-0.4.1.11.tar.gz; \
+		cd ${ENTROPY_SRC} && patch -N --batch -p0 -F0 < ${FILESDIR}/entropy-setup-openbsd.patch; \
+	fi
+	cp ${FILESDIR}/cabal.project.local ${WRKSRC}/cabal.project.local
+	printf '%s\n' "packages: ./.entropy/entropy-0.4.1.11" >> ${WRKSRC}/cabal.project.local
+
 post-extract:
 	mkdir -p ${WRKSRC}/apps/common/Web/static/.well-known
 
@@ -37,6 +56,11 @@ do-build:
 		CABAL_DIR=${WRKSRC}/.cabal cabal update && \
 		env HOME=${WRKSRC} XDG_CACHE_HOME=${WRKSRC}/.cache \
 		CABAL_DIR=${WRKSRC}/.cabal cabal build -j exe:smp-server exe:xftp exe:xftp-server
+
+do-test:
+	cd ${WRKSRC} && env ${TEST_ENV} cabal update && \
+	env ${TEST_ENV} cabal build -j simplexmq-test && \
+	env ${TEST_ENV} cabal test simplexmq-test
 
 do-install:
 	smp=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/smp-server/build/smp-server/smp-server' | head -n 1); \

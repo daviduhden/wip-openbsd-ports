@@ -1,5 +1,9 @@
 Use OpenBSD-style config and data paths for the XFTP server.
 
+ $OpenBSD$
+
+Use OpenBSD-style config and data paths for the XFTP server.
+
 --- apps/xftp-server/Main.hs.orig
 +++ apps/xftp-server/Main.hs
 @@ -6,11 +6,11 @@

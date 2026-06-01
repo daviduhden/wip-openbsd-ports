@@ -1,0 +1,15 @@
+$OpenBSD$
+
+Fix default certificate validation fallback for GHC 9.10.
+
+--- src/Simplex/Messaging/Transport/Client.hs.orig
++++ src/Simplex/Messaging/Transport/Client.hs
+@@ -301,7 +301,7 @@
+   where
+     p = B.pack port
+     onServerCert _ _ _ cc = do
+-      errs <- maybe def (\ca -> validateCertificateChain ca host p cc) cafp_
++      errs <- maybe (pure []) (\ca -> validateCertificateChain ca host p cc) cafp_
+       atomically $ putTMVar serverCerts $ if null errs then Just cc else Nothing
+       pure errs
+     onCertRequest = case clientCreds_ of

@@ -1,5 +1,9 @@
 Use OpenBSD-style config and data paths for the SMP server.
 
+ $OpenBSD$
+
+Use OpenBSD-style config and data paths for the SMP server.
+
 --- apps/smp-server/Main.hs.orig
 +++ apps/smp-server/Main.hs
 @@ -6,11 +6,11 @@

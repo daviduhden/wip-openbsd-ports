@@ -1,7 +1,9 @@
+$OpenBSD$
+
 Preserve parser compatibility with single-field object encoding.
 
---- src/Simplex/Messaging/Parsers.hs	Thu May 21 08:10:25 2026
-+++ src/Simplex/Messaging/Parsers.hs.new	Sat May 30 19:26:11 2026
+--- src/Simplex/Messaging/Parsers.hs.orig
++++ src/Simplex/Messaging/Parsers.hs
 @@ -1,156 +1,154 @@
  {-# LANGUAGE CPP #-}
  {-# LANGUAGE LambdaCase #-}

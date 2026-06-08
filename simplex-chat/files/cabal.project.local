@@ -60,6 +60,7 @@ packages: ../transformers-compat-0.7.2
 packages: ../QuickCheck-2.15.0.1
 packages: ../random-1.2.1.3
 packages: splitmix-0.1.3.1
+packages: ../strict-0.5.1
 packages: ../containers-0.6.8
 packages: ../network-3.1.4.0
 packages: ../text-2.1.3
@@ -113,6 +114,7 @@ constraints: transformers-compat == 0.7.2
 constraints: QuickCheck == 2.15.0.1
 constraints: random == 1.2.1.3
 constraints: splitmix == 0.1.3.1
+constraints: strict == 0.5.1
 constraints: containers == 0.6.8
 constraints: network == 3.1.4.0
 constraints: text == 2.1.3

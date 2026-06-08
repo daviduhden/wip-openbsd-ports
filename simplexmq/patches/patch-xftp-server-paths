@@ -1,8 +1,7 @@
-Use OpenBSD-style config and data paths for the XFTP server.
-
- $OpenBSD$
+$OpenBSD$
 
 Use OpenBSD-style config and data paths for the XFTP server.
+This keeps XFTP state under /etc/simplex and /var/simplex.
 
 --- apps/xftp-server/Main.hs.orig
 +++ apps/xftp-server/Main.hs

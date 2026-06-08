@@ -415,4 +415,5 @@ id  user		group		port
 904 _neighbot		_neighbot	net/neighbot
 905 _pgweb		_pgweb		www/pgweb
 906 _monerod		_monerod	net/monero
-907 _xd			_xd		net/xd-torrent
+907 _simplexmq		_simplexmq	net/simplexmq
+908 _xd			_xd		net/xd-torrent

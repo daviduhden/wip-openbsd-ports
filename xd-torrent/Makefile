@@ -8,6 +8,7 @@ DISTNAME =	xd-torrent-${MODGO_VERSION}
 CATEGORIES =	net
 
 HOMEPAGE =	https://xd-torrent.github.io/
+MAINTAINER =	David Uhden Collado <daviduhden@gmail.com>
 
 # MIT
 PERMIT_PACKAGE =	Yes

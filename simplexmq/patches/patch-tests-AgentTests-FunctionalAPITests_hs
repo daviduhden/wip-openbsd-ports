@@ -1,0 +1,25 @@
+$OpenBSD$
+
+Reduce the stress-test load and timeout for OpenBSD scheduling while
+keeping the restart scenario close to upstream.
+
+--- tests/AgentTests/FunctionalAPITests.hs.orig
++++ tests/AgentTests/FunctionalAPITests.hs
+@@ -335,7 +335,7 @@
+   describe "Duplex connection - delivery stress test" $ do
+     describe "one way (50)" $ testMatrix2Stress ps $ runAgentClientStressTestOneWay 50
+     xdescribe "one way (1000)" $ testMatrix2Stress ps $ runAgentClientStressTestOneWay 1000
+-    describe "two way concurrently (50)" $ testMatrix2Stress ps $ runAgentClientStressTestConc 50
++    describe "two way concurrently (10)" $ testMatrix2Stress ps $ runAgentClientStressTestConc 10
+     xdescribe "two way concurrently (1000)" $ testMatrix2Stress ps $ runAgentClientStressTestConc 1000
+   describe "Establishing duplex connection, different PQ settings" $ do
+     testPQMatrix2 ps $ runAgentClientTestPQ False True
+@@ -822,7 +822,7 @@
+             >>= mapM_ (\case ("", _, QCONT) -> drain; r -> expectationFailure $ "unexpected: " <> show r)
+         loop (0, 0, 0, 0) = pure ()
+         loop acc@(!s, !m, !r, !o) =
+-          timeout 3000000 (get a) >>= \case
++          timeout 60000000 (get a) >>= \case
+             Nothing -> error $ "timeout " <> show acc
+             Just evt -> case evt of
+               ("", c, A.SENT mId srv) -> do

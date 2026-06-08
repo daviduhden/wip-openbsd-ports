@@ -1,0 +1,16 @@
+--- src/Simplex/Messaging/Transport.hs.orig
++++ src/Simplex/Messaging/Transport.hs
+@@ -373,12 +373,8 @@
+ 
+ withTlsUnique :: forall c p. TransportPeerI p => T.Context -> (ByteString -> IO (c p)) -> IO (c p)
+ withTlsUnique cxt f =
+-  cxtFinished cxt
++  T.getTLSUnique cxt
+     >>= maybe (closeTLS cxt >> ioe_EOF) f
+-  where
+-    cxtFinished = case sTransportPeer @p of
+-      STServer -> T.getPeerFinished
+-      STClient -> T.getFinished
+ 
+ closeTLS :: T.Context -> IO ()
+ closeTLS ctx =

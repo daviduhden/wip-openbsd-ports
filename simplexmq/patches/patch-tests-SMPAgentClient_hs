@@ -1,0 +1,36 @@
+--- tests/SMPAgentClient.hs	Sun Jun  7 08:03:49 2026
++++ tests/SMPAgentClient.hs	Sun Jun  7 08:07:23 2026
+@@ -47,16 +47,16 @@
+ #endif
+ 
+ testSMPServer :: SMPServer
+-testSMPServer = "smp://LcJUMfVhwD8yxjAiSaDzzGF3-kLG4Uh0Fl_ZIjrRwjI=@localhost:5001"
++testSMPServer = "smp://evk6yvqIaOtOVWfFhXQTdQRtlKeDy_4MXsJDYh2agys=@localhost:5001"
+ 
+ testSMPServer2 :: SMPServer
+-testSMPServer2 = "smp://LcJUMfVhwD8yxjAiSaDzzGF3-kLG4Uh0Fl_ZIjrRwjI=@127.0.0.1:5002"
++testSMPServer2 = "smp://evk6yvqIaOtOVWfFhXQTdQRtlKeDy_4MXsJDYh2agys=@127.0.0.1:5002"
+ 
+ testNtfServer :: NtfServer
+-testNtfServer = "ntf://LcJUMfVhwD8yxjAiSaDzzGF3-kLG4Uh0Fl_ZIjrRwjI=@localhost:6001"
++testNtfServer = "ntf://evk6yvqIaOtOVWfFhXQTdQRtlKeDy_4MXsJDYh2agys=@localhost:6001"
+ 
+ testNtfServer2 :: NtfServer
+-testNtfServer2 = "ntf://LcJUMfVhwD8yxjAiSaDzzGF3-kLG4Uh0Fl_ZIjrRwjI=@localhost:6002"
++testNtfServer2 = "ntf://evk6yvqIaOtOVWfFhXQTdQRtlKeDy_4MXsJDYh2agys=@localhost:6002"
+ 
+ initAgentServers :: InitialAgentServers
+ initAgentServers =
+@@ -92,9 +92,9 @@
+       ntfCfg = defaultNTFClientConfig {qSize = 1, defaultTransport = (ntfTestPort, transport @TLS), networkConfig},
+       reconnectInterval = fastRetryInterval,
+       persistErrorInterval = 1,
+-      caCertificateFile = "tests/fixtures/ca.crt",
+-      privateKeyFile = "tests/fixtures/server.key",
+-      certificateFile = "tests/fixtures/server.crt"
++      caCertificateFile = "tests/fixtures/ed25519/ca.crt",
++      privateKeyFile = "tests/fixtures/ed25519/server.key",
++      certificateFile = "tests/fixtures/ed25519/server.crt"
+     }
+   where
+     networkConfig = defaultNetworkConfig {tcpConnectTimeout = NetworkTimeout 1_000000 1_000000, tcpTimeout = NetworkTimeout 2_000000 2_000000}

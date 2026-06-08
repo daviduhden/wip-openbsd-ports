@@ -1,0 +1,37 @@
+--- tests/SMPClient.hs	Sun Jun  7 08:03:49 2026
++++ tests/SMPClient.hs	Sun Jun  7 08:07:41 2026
+@@ -80,7 +80,7 @@
+ ntfTestPort2 = "6002"
+ 
+ testKeyHash :: C.KeyHash
+-testKeyHash = "LcJUMfVhwD8yxjAiSaDzzGF3-kLG4Uh0Fl_ZIjrRwjI="
++testKeyHash = "evk6yvqIaOtOVWfFhXQTdQRtlKeDy_4MXsJDYh2agys="
+ 
+ testStoreLogFile :: FilePath
+ testStoreLogFile = "tests/tmp/smp-server-store.log"
+@@ -184,9 +184,9 @@
+ ntfTestServerCredentials :: ServerCredentials
+ ntfTestServerCredentials =
+   ServerCredentials
+-    { caCertificateFile = Just "tests/fixtures/ca.crt",
+-      privateKeyFile = "tests/fixtures/server.key",
+-      certificateFile = "tests/fixtures/server.crt"
++    { caCertificateFile = Just "tests/fixtures/ed25519/ca.crt",
++      privateKeyFile = "tests/fixtures/ed25519/server.key",
++      certificateFile = "tests/fixtures/ed25519/server.crt"
+     }
+ 
+ cfg :: AServerConfig
+@@ -243,9 +243,9 @@
+       ntfDeliveryInterval = 200000,
+       smpCredentials =
+         ServerCredentials
+-          { caCertificateFile = Just "tests/fixtures/ca.crt",
+-            privateKeyFile = "tests/fixtures/server.key",
+-            certificateFile = "tests/fixtures/server.crt"
++          { caCertificateFile = Just "tests/fixtures/ed25519/ca.crt",
++            privateKeyFile = "tests/fixtures/ed25519/server.key",
++            certificateFile = "tests/fixtures/ed25519/server.crt"
+           },
+       httpCredentials = Nothing,
+       smpServerVRange = supportedServerSMPRelayVRange,

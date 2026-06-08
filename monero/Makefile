@@ -8,6 +8,7 @@ EXTRACT_SUFX =	.tar.bz2
 
 CATEGORIES =	net
 HOMEPAGE =	https://getmonero.org
+MAINTAINER =	David Uhden Collado <daviduhden@gmail.com>
 
 # BSD
 PERMIT_PACKAGE =	Yes

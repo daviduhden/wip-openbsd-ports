@@ -1,0 +1,63 @@
+$OpenBSD$
+
+Retry temporary SMP client connect failures using the agent reconnect
+interval before surfacing them to the caller.
+
+--- src/Simplex/Messaging/Client/Agent.hs.orig
++++ src/Simplex/Messaging/Client/Agent.hs
+@@ -217,29 +217,32 @@
+ 
+     newSMPClient :: SMPClientVar -> IO (Either SMPClientError (OwnServer, SMPClient))
+     newSMPClient v = do
+-      r <- connectClient ca srv v `E.catch` (pure . Left . PCEIOError)
+-      case r of
+-        Right smp -> do
+-          logInfo . decodeUtf8 $ "Agent connected to " <> showServer srv
+-          let !owned = isOwnServer ca srv
+-              !c = (owned, smp)
+-          atomically $ do
+-            putTMVar (sessionVar v) (Right c)
+-            TM.insert (sessionId $ thParams smp) c smpSessions
+-          let serviceId_ = (\THClientService {serviceId} -> serviceId) <$> smpClientService smp
+-          notify ca $ CAConnected srv serviceId_
+-          pure $ Right c
+-        Left e -> do
+-          let ei = persistErrorInterval agentCfg
+-          if ei == 0
+-            then atomically $ do
+-              putTMVar (sessionVar v) (Left (e, Nothing))
+-              removeSessVar v srv smpClients
+-            else do
+-              ts <- addUTCTime ei <$> liftIO getCurrentTime
+-              atomically $ putTMVar (sessionVar v) (Left (e, Just ts))
+-          reconnectClient ca srv
+-          pure $ Left e
++      withRetryInterval (reconnectInterval agentCfg) $ \_ loop -> do
++        r <- connectClient ca srv v `E.catch` (pure . Left . PCEIOError)
++        case r of
++          Right smp -> do
++            logInfo . decodeUtf8 $ "Agent connected to " <> showServer srv
++            let !owned = isOwnServer ca srv
++                !c = (owned, smp)
++            atomically $ do
++              putTMVar (sessionVar v) (Right c)
++              TM.insert (sessionId $ thParams smp) c smpSessions
++            let serviceId_ = (\THClientService {serviceId} -> serviceId) <$> smpClientService smp
++            notify ca $ CAConnected srv serviceId_
++            pure $ Right c
++          Left e
++            | temporaryClientError e -> loop
++            | otherwise -> do
++                let ei = persistErrorInterval agentCfg
++                if ei == 0
++                  then atomically $ do
++                    putTMVar (sessionVar v) (Left (e, Nothing))
++                    removeSessVar v srv smpClients
++                  else do
++                    ts <- addUTCTime ei <$> liftIO getCurrentTime
++                    atomically $ putTMVar (sessionVar v) (Left (e, Just ts))
++                reconnectClient ca srv
++                pure $ Left e
+ 
+ isOwnServer :: SMPClientAgent p -> SMPServer -> OwnServer
+ isOwnServer SMPClientAgent {agentCfg} ProtocolServer {host} =

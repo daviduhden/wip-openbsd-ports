@@ -1,6 +1,7 @@
 $OpenBSD$
 
-OpenBSD: reduce SMP proxy stress-test load so the suite is stable on this platform.
+Reduce the SMP proxy stress-test load for OpenBSD.
+The upstream load is too heavy for the local test environment.
 
 --- tests/SMPProxyTests.hs.orig
 +++ tests/SMPProxyTests.hs

@@ -1,0 +1,22 @@
+--- src/Simplex/Messaging/Parsers.hs.orig
++++ src/Simplex/Messaging/Parsers.hs
+@@ -124,7 +124,6 @@
+       J.tagSingleConstructors = True,
+       J.constructorTagModifier = tagModifier,
+       J.allNullaryToStringTag = False,
+-      J.nullaryToObject = True,
+       J.omitNothingFields = True
+     }
+
+@@ -141,11 +140,10 @@
+ singleFieldJSON_ :: Maybe String -> (String -> String) -> J.Options
+ singleFieldJSON_ objectTag tagModifier =
+   J.defaultOptions
+-    { J.sumEncoding = J.ObjectWithSingleField objectTag,
++    { J.sumEncoding = J.ObjectWithSingleField,
+       J.tagSingleConstructors = True,
+       J.constructorTagModifier = tagModifier,
+       J.allNullaryToStringTag = False,
+-      J.nullaryToObject = True,
+       J.omitNothingFields = True
+     }

@@ -1,0 +1,15 @@
+--- tests/CoreTests/BatchingTests.hs	Sun Jun  7 08:03:49 2026
++++ tests/CoreTests/BatchingTests.hs	Sun Jun  7 08:06:13 2026
+@@ -427,9 +427,9 @@
+ testTHandleAuth :: VersionSMP -> TVar ChaChaDRG -> C.APublicAuthKey -> IO (Maybe (THandleAuth 'TClient))
+ testTHandleAuth v g (C.APublicAuthKey a peerServerPubKey) = case a of
+   C.SX25519 | v >= authCmdsSMPVersion -> do
+-    ca <- head <$> XS.readCertificates "tests/fixtures/ca.crt"
+-    serverCert <- head <$> XS.readCertificates "tests/fixtures/server.crt"
+-    serverKey <- head <$> XF.readKeyFile "tests/fixtures/server.key"
++    ca <- head <$> XS.readCertificates "tests/fixtures/ed25519/ca.crt"
++    serverCert <- head <$> XS.readCertificates "tests/fixtures/ed25519/server.crt"
++    serverKey <- head <$> XF.readKeyFile "tests/fixtures/ed25519/server.key"
+     signKey <- either error pure $ C.x509ToPrivate (serverKey, []) >>= C.privKey @C.APrivateSignKey
+     (serverAuthPub, _) <- atomically $ C.generateKeyPair @'C.X25519 g
+     let peerServerCertKey = CertChainPubKey (X.CertificateChain [serverCert, ca]) (C.signX509 signKey $ C.toPubKey C.publicToX509 serverAuthPub)

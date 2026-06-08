@@ -1,6 +1,7 @@
 $OpenBSD$
 
-OpenBSD: relax retry-interval expectations to account for local timing jitter.
+Relax the retry-interval test to allow local timing jitter.
+The upstream exact sequence is too strict for OpenBSD scheduling.
 
 --- tests/CoreTests/RetryIntervalTests.hs.orig
 +++ tests/CoreTests/RetryIntervalTests.hs

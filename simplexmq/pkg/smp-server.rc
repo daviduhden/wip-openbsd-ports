@@ -8,8 +8,8 @@
 
 daemon="${TRUEPREFIX}/bin/smp-server"
 daemon_user="_simplexmq"
-daemon_flags="start"
 daemon_logger="daemon.info"
+rc_env="SMP_SERVER_CFG_PATH=/etc/simplex/smp-server SMP_SERVER_LOG_PATH=/var/simplex/smp-server"
 
 . /etc/rc.d/rc.subr
 

@@ -1,0 +1,11 @@
+--- prettyprinter-1.7.2/misc/version-compatibility-macros.h.orig	Sat Jan  1 00:00:00 2000
++++ prettyprinter-1.7.2/misc/version-compatibility-macros.h	Fri Jun  5 00:00:00 2026
+@@ -8,7 +8,7 @@
+ -- These macros allow writing CPP compatibility hacks in a way that makes their
+ -- purpose much clearer than just demanding a specific version of a library.
+ 
+-#define FOLDABLE_TRAVERSABLE_IN_PRELUDE !defined(__MHS__)
++#define FOLDABLE_TRAVERSABLE_IN_PRELUDE MIN_VERSION_base(4,8,0)
+ 
+ #define LIFTA2_IN_PRELUDE               MIN_VERSION_base(4,18,0)
+ 

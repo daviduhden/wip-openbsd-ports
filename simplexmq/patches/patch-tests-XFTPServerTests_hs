@@ -1,0 +1,44 @@
+--- tests/XFTPServerTests.hs	Sun Jun  7 08:03:49 2026
++++ tests/XFTPServerTests.hs	Sun Jun  7 08:07:41 2026
+@@ -446,7 +446,7 @@
+ testNoSNICertSelection :: Expectation
+ testNoSNICertSelection =
+   withXFTPServerSNI $ \_ -> do
+-    Fingerprint fpXFTP <- loadFileFingerprint "tests/fixtures/ca.crt"
++    Fingerprint fpXFTP <- loadFileFingerprint "tests/fixtures/ed25519/ca.crt"
+     let caXFTP = C.KeyHash fpXFTP
+         cfg = defaultTransportClientConfig {clientALPN = Just ["xftp/1"], useSNI = False}
+     runTLSTransportClient defaultSupportedParams Nothing cfg Nothing "localhost" xftpTestPort (Just caXFTP) $ \(tls :: TLS 'TClient) -> do
+@@ -489,7 +489,7 @@
+ testNoCORSWithoutSNI :: Expectation
+ testNoCORSWithoutSNI =
+   withXFTPServerSNI $ \_ -> do
+-    Fingerprint fpXFTP <- loadFileFingerprint "tests/fixtures/ca.crt"
++    Fingerprint fpXFTP <- loadFileFingerprint "tests/fixtures/ed25519/ca.crt"
+     let caXFTP = C.KeyHash fpXFTP
+         cfg = defaultTransportClientConfig {clientALPN = Just ["xftp/1"], useSNI = False}
+     runTLSTransportClient defaultSupportedParams Nothing cfg Nothing "localhost" xftpTestPort (Just caXFTP) $ \(tls :: TLS 'TClient) -> do
+@@ -507,7 +507,7 @@
+ testWebHandshake =
+   withXFTPServerSNI $ \_ -> do
+     Fingerprint fpWeb <- loadFileFingerprint "tests/fixtures/web_ca.crt"
+-    Fingerprint fpXFTP <- loadFileFingerprint "tests/fixtures/ca.crt"
++    Fingerprint fpXFTP <- loadFileFingerprint "tests/fixtures/ed25519/ca.crt"
+     let webCaHash = C.KeyHash fpWeb
+         keyHash = C.KeyHash fpXFTP
+         cfg = defaultTransportClientConfig {clientALPN = Just ["h2"], useSNI = True}
+@@ -549,7 +549,7 @@
+ testWebReHandshake =
+   withXFTPServerSNI $ \_ -> do
+     Fingerprint fpWeb <- loadFileFingerprint "tests/fixtures/web_ca.crt"
+-    Fingerprint fpXFTP <- loadFileFingerprint "tests/fixtures/ca.crt"
++    Fingerprint fpXFTP <- loadFileFingerprint "tests/fixtures/ed25519/ca.crt"
+     let webCaHash = C.KeyHash fpWeb
+         keyHash = C.KeyHash fpXFTP
+         cfg = defaultTransportClientConfig {clientALPN = Just ["h2"], useSNI = True}
+@@ -597,5 +597,4 @@
+       B.length respBody `shouldBe` xftpBlockSize
+       decoded <- either (error . show) pure $ C.unPad respBody
+       decoded `shouldBe` smpEncode SESSION
+-
+ 

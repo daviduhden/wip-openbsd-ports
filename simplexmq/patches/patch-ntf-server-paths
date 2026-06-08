@@ -1,6 +1,7 @@
 $OpenBSD$
 
 Use OpenBSD-style config and data paths for the notification server.
+This keeps the runtime state under /etc/simplex and /var/simplex.
 
 --- apps/ntf-server/Main.hs.orig
 +++ apps/ntf-server/Main.hs

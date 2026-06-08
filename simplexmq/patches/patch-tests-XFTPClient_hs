@@ -1,0 +1,28 @@
+--- tests/XFTPClient.hs	Sun Jun  7 08:03:49 2026
++++ tests/XFTPClient.hs	Sun Jun  7 08:07:23 2026
+@@ -146,10 +146,10 @@
+ testXFTPServer2 = fromString testXFTPServerStr2
+ 
+ testXFTPServerStr :: String
+-testXFTPServerStr = "xftp://LcJUMfVhwD8yxjAiSaDzzGF3-kLG4Uh0Fl_ZIjrRwjI=@localhost:8000"
++testXFTPServerStr = "xftp://evk6yvqIaOtOVWfFhXQTdQRtlKeDy_4MXsJDYh2agys=@localhost:8000"
+ 
+ testXFTPServerStr2 :: String
+-testXFTPServerStr2 = "xftp://LcJUMfVhwD8yxjAiSaDzzGF3-kLG4Uh0Fl_ZIjrRwjI=@localhost:8001"
++testXFTPServerStr2 = "xftp://evk6yvqIaOtOVWfFhXQTdQRtlKeDy_4MXsJDYh2agys=@localhost:8001"
+ 
+ xftpServerFiles :: FilePath
+ xftpServerFiles = "tests/tmp/xftp-server-files"
+@@ -186,9 +186,9 @@
+       inactiveClientExpiration = Just defaultInactiveClientExpiration,
+       xftpCredentials =
+         ServerCredentials
+-          { caCertificateFile = Just "tests/fixtures/ca.crt",
+-            privateKeyFile = "tests/fixtures/server.key",
+-            certificateFile = "tests/fixtures/server.crt"
++          { caCertificateFile = Just "tests/fixtures/ed25519/ca.crt",
++            privateKeyFile = "tests/fixtures/ed25519/server.key",
++            certificateFile = "tests/fixtures/ed25519/server.crt"
+           },
+       httpCredentials = Nothing,
+       xftpServerVRange = supportedFileServerVRange,

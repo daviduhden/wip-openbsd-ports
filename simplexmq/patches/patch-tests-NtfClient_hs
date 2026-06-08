@@ -1,0 +1,33 @@
+--- tests/NtfClient.hs	Sun Jun  7 08:03:49 2026
++++ tests/NtfClient.hs	Sun Jun  7 08:07:41 2026
+@@ -68,7 +68,7 @@
+ apnsTestPort = "6010"
+ 
+ testKeyHash :: C.KeyHash
+-testKeyHash = "LcJUMfVhwD8yxjAiSaDzzGF3-kLG4Uh0Fl_ZIjrRwjI="
++testKeyHash = "evk6yvqIaOtOVWfFhXQTdQRtlKeDy_4MXsJDYh2agys="
+ 
+ ntfTestStoreLogFile :: FilePath
+ ntfTestStoreLogFile = "tests/tmp/ntf-server-store.log"
+@@ -139,7 +139,7 @@
+       apnsConfig =
+         defaultAPNSPushClientConfig
+           { apnsPort = apnsTestPort,
+-            caStoreFile = "tests/fixtures/ca.crt"
++            caStoreFile = "tests/fixtures/ed25519/ca.crt"
+           },
+       subsBatchSize = 900,
+       inactiveClientExpiration = Just defaultInactiveClientExpiration,
+@@ -234,9 +234,9 @@
+       serverSupported = http2TLSParams,
+       https2Credentials =
+         ServerCredentials
+-          { caCertificateFile = Just "tests/fixtures/ca.crt",
+-            privateKeyFile = "tests/fixtures/server.key",
+-            certificateFile = "tests/fixtures/server.crt"
++          { caCertificateFile = Just "tests/fixtures/ed25519/ca.crt",
++            privateKeyFile = "tests/fixtures/ed25519/server.key",
++            certificateFile = "tests/fixtures/ed25519/server.crt"
+           },
+       transportConfig = mkTransportServerConfig True Nothing False
+     }

@@ -1,6 +1,7 @@
 $OpenBSD$
 
-Use project-relative file-embed paths so cabal install can compile xftp web assets.
+Use project-relative `file-embed` paths for the XFTP web assets.
+The build should embed the bundled static tree from the extracted sources.
 
 --- apps/xftp-server/XFTPWeb.hs.orig
 +++ apps/xftp-server/XFTPWeb.hs

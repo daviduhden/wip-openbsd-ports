@@ -1,0 +1,16 @@
+--- tests/CoreTests/CryptoTests.hs	Sun Jun  7 08:03:49 2026
++++ tests/CoreTests/CryptoTests.hs	Sun Jun  7 08:06:13 2026
+@@ -236,11 +236,11 @@
+   let checkChain = validateCertificateChain SMPClient.testKeyHash "localhost" "5223" . X.CertificateChain
+   checkChain [] `shouldReturn` [XV.EmptyChain]
+ 
+-  caCreds <- XS.readCertificates "tests/fixtures/ca.crt"
++  caCreds <- XS.readCertificates "tests/fixtures/ed25519/ca.crt"
+   caCreds `shouldNotBe` []
+   let ca = head caCreds
+ 
+-  serverCreds <- XS.readCertificates "tests/fixtures/server.crt"
++  serverCreds <- XS.readCertificates "tests/fixtures/ed25519/server.crt"
+   serverCreds `shouldNotBe` []
+   let server = head serverCreds
+   checkChain [server, ca] `shouldReturn` []

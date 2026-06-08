@@ -1,13 +1,22 @@
 Instructions for running the SimpleXMQ servers as system daemons:
 
-# Enable both rc.d scripts
-# doas rcctl enable smp_server
-# doas rcctl enable xftp_server
+The package installs rc.d scripts for both daemons:
 
-# Start at boot
-# doas rcctl enable smp_server
-# doas rcctl enable xftp_server
+- `smp-server`
+- `xftp-server`
 
-# Start now
-# doas rcctl start smp_server
-# doas rcctl start xftp_server
+The first start requires initializing each server once so that its
+configuration, certificates, and state directories are created.
+
+Example:
+
+```sh
+doas rcctl enable smp-server xftp-server
+doas -u _simplexmq /usr/local/bin/smp-server init
+doas -u _simplexmq /usr/local/bin/xftp-server init
+doas rcctl start smp-server
+doas rcctl start xftp-server
+```
+
+The servers store their configuration under `/etc/simplex/` and runtime data
+under `/var/simplex/`.

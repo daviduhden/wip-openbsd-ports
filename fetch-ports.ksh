@@ -40,8 +40,8 @@ check_root() {
 
 # Function to permanently set the CVSROOT environment variable if not already set
 set_cvsroot() {
-	if ! grep -q "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" ~/.profile; then
-		print "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" >>~/.profile
+	if [ ! -f "$HOME/.profile" ] || ! grep -Fq "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" "$HOME/.profile"; then
+		print "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" >>"$HOME/.profile"
 		log "CVSROOT variable added to ~/.profile"
 	else
 		log "CVSROOT variable already exists in ~/.profile"
@@ -81,9 +81,31 @@ ask_copy_from_wip() {
 	done
 }
 
+# Resolve local wip-openbsd-ports path before expensive filesystem search.
+resolve_wip_openbsd_ports_dir() {
+	if [ -n "${WIP_OPENBSD_PORTS_DIR:-}" ] && [ -d "$WIP_OPENBSD_PORTS_DIR" ]; then
+		print "$WIP_OPENBSD_PORTS_DIR"
+		return 0
+	fi
+
+	SCRIPT_DIR=$(unset CDPATH; cd -- "$(dirname -- "$0")" && pwd -P)
+	if [ "$(basename "$SCRIPT_DIR")" = "wip-openbsd-ports" ] && [ -d "$SCRIPT_DIR/.git" ]; then
+		print "$SCRIPT_DIR"
+		return 0
+	fi
+
+	if [ -d "$PWD/wip-openbsd-ports" ]; then
+		print "$PWD/wip-openbsd-ports"
+		return 0
+	fi
+
+	warn "Falling back to full filesystem search for wip-openbsd-ports."
+	find / -type d -name "wip-openbsd-ports" 2>/dev/null | head -n 1
+}
+
 # Function to change directory to the wip-openbsd-ports directory
 move_to_wip_openbsd_ports() {
-	wip_openbsd_ports_dir=$(find / -type d -name "wip-openbsd-ports" 2>/dev/null | head -n 1)
+	wip_openbsd_ports_dir=$(resolve_wip_openbsd_ports_dir)
 	if [ -z "$wip_openbsd_ports_dir" ]; then
 		error "wip-openbsd-ports directory not found."
 		exit 1

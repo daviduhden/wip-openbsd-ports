@@ -81,7 +81,7 @@ do-install:
 	install -m 755 "$$smp" ${PREFIX}/bin/smp-server; \
 	install -m 755 "$$xftp_server" ${PREFIX}/bin/xftp-server
 
-	.include "simplexmq.inc"
+.include "simplexmq.inc"
 .include "simplexmq.distfiles.inc"
 
 .include <bsd.port.mk>

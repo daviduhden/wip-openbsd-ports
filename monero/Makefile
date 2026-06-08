@@ -62,7 +62,7 @@ post-build:
 		-DMONERO_SOURCE_DIR=${WRKSRC} \
 		-DMONERO_BUILD_DIR=${WRKBUILD}
 	cmake --build ${LWS_WRKBUILD}
-	.endif
+.endif
 
 do-install:
 	${INSTALL_PROGRAM} ${WRKBUILD}/bin/* ${PREFIX}/bin/
@@ -81,6 +81,6 @@ do-install:
 	${INSTALL_DATA_DIR} ${SYSCONFDIR}/monero-lws
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/lib/monero-lws
 	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/log/monero-lws
-	.endif
+.endif
 
 .include <bsd.port.mk>

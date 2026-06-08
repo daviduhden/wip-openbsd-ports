@@ -25,5 +25,5 @@ WRKDIST = ${WRKSRC}
 post-install:
 	ln -s XD ${PREFIX}/bin/XD-CLI
 
-	.include "modules.inc"
+.include "modules.inc"
 .include <bsd.port.mk>

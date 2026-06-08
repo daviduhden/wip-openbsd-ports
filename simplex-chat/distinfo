@@ -10,6 +10,8 @@ SHA256 (case-insensitive-1.2.1.0.tar.gz) = KW3BfgxfPfs9gs7YPkycRMM47N50myeLbq5RL
 SHA256 (data-array-byte-0.1.0.2.tar.gz) = VfXZcKrif0VFXldm0HO78NDmF6j41C3Jlm5o6oVYNL0=
 SHA256 (data-fix-0.3.4.tar.gz) = jfBS0YwEernpIAU2qHmbWvOZfr7Luwkac4S2voQWqzc=
 SHA256 (direct-sqlcipher-f814ee68b16a9447fbb467ccc8f29bdd3546bfd9.tar.gz) = vC+/7O4ZuLo85AlJTWE0XPNnKSW+ktRVzMm9fUN9WMY=
+SHA256 (dlist-1.0-rev2.cabal) = hUcnWUxagWqz0Q8VsbxP7a+eP30e9Reiu5AR8puiYdI=
+SHA256 (dlist-1.0.tar.gz) = Fz1jcyi7Fz/MNl8w0p/0qUKSoeDlVYrrPfwR3oFRARU=
 SHA256 (foldable1-classes-compat-0.1.3.tar.gz) = dwHcocz+t6IKF2k5VFCPHmxzl00bWfsXldoHQvsa6Pk=
 SHA256 (generically-0.1.1-rev5.cabal) = f+QVI01FXrWEAkd4mayWnkY3TQuqsJ6N3TGfY5Sko2k=
 SHA256 (generically-0.1.1.tar.gz) = BMWkNr7EsEH3GnM/VqG9f0NfY93o0+tcH0jVW028Q88=
@@ -77,6 +79,8 @@ SIZE (case-insensitive-1.2.1.0.tar.gz) = 53609
 SIZE (data-array-byte-0.1.0.2.tar.gz) = 6927
 SIZE (data-fix-0.3.4.tar.gz) = 5992
 SIZE (direct-sqlcipher-f814ee68b16a9447fbb467ccc8f29bdd3546bfd9.tar.gz) = 2451897
+SIZE (dlist-1.0-rev2.cabal) = 3942
+SIZE (dlist-1.0.tar.gz) = 18667
 SIZE (foldable1-classes-compat-0.1.3.tar.gz) = 10358
 SIZE (generically-0.1.1-rev5.cabal) = 1203
 SIZE (generically-0.1.1.tar.gz) = 2870

@@ -54,6 +54,7 @@ packages: ../integer-conversion-0.1.1
 packages: ../hashable-1.4.7.0
 packages: ../ghc-bignum-orphans-0.1.1
 packages: ../data-array-byte-0.1.0.2
+packages: ../dlist-1.0
 packages: ../generically-0.1.1
 packages: ../data-fix-0.3.4
 packages: ../transformers-compat-0.7.2
@@ -108,6 +109,7 @@ constraints: integer-conversion == 0.1.1
 constraints: hashable == 1.4.7.0
 constraints: ghc-bignum-orphans == 0.1.1
 constraints: data-array-byte == 0.1.0.2
+constraints: dlist == 1.0
 constraints: generically == 0.1.1
 constraints: data-fix == 0.3.4
 constraints: transformers-compat == 0.7.2

@@ -66,7 +66,7 @@ do-install:
 	install -d ${PREFIX}/bin; \
 	install -m 755 "$$chat" ${PREFIX}/bin/simplex-chat
 
-	.include "simplex-chat.inc"
+.include "simplex-chat.inc"
 .include "simplex-chat.distfiles.inc"
 
 .include <bsd.port.mk>

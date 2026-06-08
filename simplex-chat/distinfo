@@ -35,6 +35,7 @@ SHA256 (integer-conversion-0.1.1.tar.gz) = wYFkoEgHMxD2NT68ZMkDe1KkuCmZY84F4Ce89
 SHA256 (integer-logarithms-1.0.5.tar.gz) = Zt/28fd4/h7GiROf4SXNTmqVZDc0xlHIker6LFBmlFk=
 SHA256 (main-tester-0.2.0.1.tar.gz) = zwb1k043Thly8sx2cBwD1nxVNgNNmtMsrOTgOBmleEI=
 SHA256 (network-byte-order-0.1.7.tar.gz) = SAzgrX9nNk7I1M6NgV9GPZ5AdON4m+IqVyLP3r7Qhnk=
+SHA256 (network-control-0.1.7.tar.gz) = BdQNOB5ccr7vsgm36Ch3tFf7yiiA5g7YSbrUgLZ5WxA=
 SHA256 (network-uri-2.6.4.2-rev1.cabal) = b/+1c3OWK1ZRotuLCvcyCYs78CmnztdqmFVhXeICZYg=
 SHA256 (network-uri-2.6.4.2.tar.gz) = nBiJcxJuiTJQuIHyDogR3KBsIjwjQCsG96Hy6ZV5cig=
 SHA256 (primitive-0.9.1.0.tar.gz) = RLTeQYE8e8Xbilf4fDYSoGm2UIaUYmi6FlCXJS69PXY=
@@ -106,6 +107,7 @@ SIZE (integer-conversion-0.1.1.tar.gz) = 6179
 SIZE (integer-logarithms-1.0.5.tar.gz) = 8925
 SIZE (main-tester-0.2.0.1.tar.gz) = 5310
 SIZE (network-byte-order-0.1.7.tar.gz) = 6402
+SIZE (network-control-0.1.7.tar.gz) = 7913
 SIZE (network-uri-2.6.4.2-rev1.cabal) = 3217
 SIZE (network-uri-2.6.4.2.tar.gz) = 31309
 SIZE (primitive-0.9.1.0.tar.gz) = 61724

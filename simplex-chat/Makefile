@@ -2,9 +2,10 @@ COMMENT = Private and encrypted chat platform (terminal client)
 # Keep the client release version separate from the server dependency pin so
 # the terminal client can track upstream independently.
 V = 6.5.4.0
+V_BASE = ${V:C/\.0$//}
 SIMPLEXMQ_V = 6.5.3.0
 DISTNAME = simplex-chat-${V}
-WRKDIST = ${WRKDIR}/simplex-chat-${V:R}
+WRKDIST = ${WRKDIR}/simplex-chat-${V_BASE}
 WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 

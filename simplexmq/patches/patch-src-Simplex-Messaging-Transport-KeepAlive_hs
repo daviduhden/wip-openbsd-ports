@@ -1,6 +1,7 @@
 $OpenBSD$
 
-OpenBSD patch for patch-src-Simplex-Messaging-Transport-KeepAlive_hs.
+Provide a small OpenBSD-specific keepalive implementation using the
+portable socket option available in the base system.
 
 --- src/Simplex/Messaging/Transport/KeepAlive.hs.orig
 +++ src/Simplex/Messaging/Transport/KeepAlive.hs

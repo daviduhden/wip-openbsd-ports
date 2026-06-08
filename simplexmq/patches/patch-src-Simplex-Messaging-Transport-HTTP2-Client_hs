@@ -1,6 +1,7 @@
 $OpenBSD$
 
-OpenBSD patch for patch-src-Simplex-Messaging-Transport-HTTP2-Client_hs.
+Adjust the HTTP/2 client callback signature for the `http2-5.4.0` API used
+on OpenBSD and import the helper that the newer API expects.
 
 --- src/Simplex/Messaging/Transport/HTTP2/Client.hs.orig
 +++ src/Simplex/Messaging/Transport/HTTP2/Client.hs

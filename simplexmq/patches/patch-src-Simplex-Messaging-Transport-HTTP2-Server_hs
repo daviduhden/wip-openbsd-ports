@@ -1,6 +1,8 @@
 $OpenBSD$
 
-OpenBSD patch for patch-src-Simplex-Messaging-Transport-HTTP2-Server_hs.
+Select the explicit `defaultServerConfig` entry point required by the
+`http2-5.4.0` server API. This keeps the server side aligned with the
+version available in the OpenBSD ports tree.
 
 --- src/Simplex/Messaging/Transport/HTTP2/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/HTTP2/Server.hs

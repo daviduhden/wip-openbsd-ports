@@ -1,6 +1,8 @@
 $OpenBSD$
 
-OpenBSD patch for patch-src-Simplex-Messaging-Parsers_hs.
+Keep the JSON encoding helpers compatible with the upstream API used by the
+OpenBSD build. The patch removes an obsolete `nullaryToObject` setting and
+uses the single-field object encoding form accepted by this version.
 
 --- src/Simplex/Messaging/Parsers.hs.orig
 +++ src/Simplex/Messaging/Parsers.hs

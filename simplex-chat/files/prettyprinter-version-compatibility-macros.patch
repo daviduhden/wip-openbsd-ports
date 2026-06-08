@@ -1,6 +1,7 @@
 $OpenBSD$
 
-OpenBSD patch for prettyprinter-version-compatibility-macros.patch.
+Make the prettyprinter compatibility macro use the base version guard that
+matches the OpenBSD GHC toolchain.
 
 --- prettyprinter-1.7.2/misc/version-compatibility-macros.h.orig
 +++ prettyprinter-1.7.2/misc/version-compatibility-macros.h

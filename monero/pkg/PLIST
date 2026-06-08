@@ -14,6 +14,9 @@
 @bin bin/monero-gen-trusted-multisig
 @bin bin/monero-wallet-cli
 @bin bin/monero-wallet-rpc
+%%lws%%@bin bin/monero-lws-admin
+%%lws%%@bin bin/monero-lws-client
+%%lws%%@bin bin/monero-lws-daemon
 @bin bin/monerod
 include/wallet/
 include/wallet/api/
@@ -26,4 +29,7 @@ share/examples/login.conf.d/monerod
 @sample ${SYSCONFDIR}/monero/
 @sample ${SYSCONFDIR}/monero/monerod.conf
 @sample ${LOCALSTATEDIR}/lib/monero/
+%%lws%%@sample ${SYSCONFDIR}/monero-lws/
+%%lws%%@sample ${LOCALSTATEDIR}/lib/monero-lws/
 @sample ${LOCALSTATEDIR}/log/monero/
+%%lws%%@sample ${LOCALSTATEDIR}/log/monero-lws/

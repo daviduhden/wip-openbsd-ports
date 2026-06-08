@@ -2,8 +2,8 @@ $OpenBSD$
 
 OpenBSD patch for patch-tests-fixtures-README_md.
 
---- 
-+++ 
+--- tests/fixtures/README.md.orig
++++ tests/fixtures/README.md
 @@ -4,11 +4,11 @@
  
  ```sh

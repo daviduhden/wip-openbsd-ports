@@ -2,8 +2,8 @@ $OpenBSD$
 
 OpenBSD patch for patch-tests-XFTPClient_hs.
 
---- 
-+++ 
+--- tests/XFTPClient.hs.orig
++++ tests/XFTPClient.hs
 @@ -146,10 +146,10 @@
  testXFTPServer2 = fromString testXFTPServerStr2
  

@@ -2,8 +2,8 @@ $OpenBSD$
 
 OpenBSD patch for patch-tests-SMPAgentClient_hs.
 
---- 
-+++ 
+--- tests/SMPAgentClient.hs.orig
++++ tests/SMPAgentClient.hs
 @@ -47,16 +47,16 @@
  #endif
  

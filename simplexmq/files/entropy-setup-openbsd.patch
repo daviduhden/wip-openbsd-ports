@@ -1,3 +1,7 @@
+$OpenBSD$
+
+OpenBSD patch for entropy-setup-openbsd.patch.
+
 --- entropy-0.4.1.11/Setup.hs.orig
 +++ entropy-0.4.1.11/Setup.hs
 @@ -20,7 +20,7 @@

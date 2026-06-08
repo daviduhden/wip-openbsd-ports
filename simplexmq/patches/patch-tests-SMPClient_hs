@@ -2,8 +2,8 @@ $OpenBSD$
 
 OpenBSD patch for patch-tests-SMPClient_hs.
 
---- 
-+++ 
+--- tests/SMPClient.hs.orig
++++ tests/SMPClient.hs
 @@ -80,7 +80,7 @@
  ntfTestPort2 = "6002"
  

@@ -2,8 +2,8 @@ $OpenBSD$
 
 OpenBSD patch for patch-tests-XFTPAgent.
 
---- 
-+++ 
+--- tests/XFTPAgent.hs.orig
++++ tests/XFTPAgent.hs
 @@ -419,7 +419,7 @@
      -- receive file - should fail with AUTH error
      withAgent 3 agentCfg initAgentServers testDB2 $ \rcp' -> do

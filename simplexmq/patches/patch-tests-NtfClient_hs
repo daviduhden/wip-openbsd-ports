@@ -2,8 +2,8 @@ $OpenBSD$
 
 OpenBSD patch for patch-tests-NtfClient_hs.
 
---- 
-+++ 
+--- tests/NtfClient.hs.orig
++++ tests/NtfClient.hs
 @@ -68,7 +68,7 @@
  apnsTestPort = "6010"
  

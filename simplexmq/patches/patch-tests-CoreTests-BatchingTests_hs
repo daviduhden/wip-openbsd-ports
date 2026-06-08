@@ -2,8 +2,8 @@ $OpenBSD$
 
 OpenBSD patch for patch-tests-CoreTests-BatchingTests_hs.
 
---- 
-+++ 
+--- tests/CoreTests/BatchingTests.hs.orig
++++ tests/CoreTests/BatchingTests.hs
 @@ -427,9 +427,9 @@
  testTHandleAuth :: VersionSMP -> TVar ChaChaDRG -> C.APublicAuthKey -> IO (Maybe (THandleAuth 'TClient))
  testTHandleAuth v g (C.APublicAuthKey a peerServerPubKey) = case a of

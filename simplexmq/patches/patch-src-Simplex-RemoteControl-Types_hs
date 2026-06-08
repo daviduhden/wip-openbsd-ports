@@ -2,8 +2,6 @@ $OpenBSD$
 
 OpenBSD patch for patch-src-Simplex-RemoteControl-Types_hs.
 
-Index: src/Simplex/RemoteControl/Types.hs
-===================================================================
 --- src/Simplex/RemoteControl/Types.hs.orig
 +++ src/Simplex/RemoteControl/Types.hs
 @@ -155,7 +155,7 @@ $(JQ.deriveJSON defaultJSON ''RCHostHello)

@@ -1,3 +1,7 @@
+$OpenBSD$
+
+OpenBSD patch for unix-compat-mktemp.patch.
+
 --- unix-compat-0.7.4/cbits/mktemp.c.orig
 +++ unix-compat-0.7.4/cbits/mktemp.c
 @@ -42,7 +42,8 @@

@@ -1,9 +1,5 @@
 $OpenBSD$
 
-OpenBSD patch for patch-xftp-server-paths.
-
-$OpenBSD$
-
 Use OpenBSD-style config and data paths for the XFTP server.
 This keeps XFTP state under /etc/simplex and /var/simplex.
 

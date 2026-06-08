@@ -1,9 +1,5 @@
 $OpenBSD$
 
-OpenBSD patch for patch-tests-AgentTests-FunctionalAPITests_hs.
-
-$OpenBSD$
-
 Reduce the stress-test load and timeout for OpenBSD scheduling while
 keeping the restart scenario close to upstream.
 

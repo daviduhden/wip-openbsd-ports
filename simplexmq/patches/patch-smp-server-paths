@@ -1,9 +1,5 @@
 $OpenBSD$
 
-OpenBSD patch for patch-smp-server-paths.
-
-$OpenBSD$
-
 Use OpenBSD-style config and data paths for the SMP server.
 The server should keep config under /etc/simplex and persistent state
 under /var/simplex instead of the upstream /etc/opt layout.

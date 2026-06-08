@@ -2,8 +2,8 @@ $OpenBSD$
 
 OpenBSD patch for patch-src-Simplex-Messaging-Agent-Store-SQLite-Migrations-agent_schema_sql.
 
---- 
-+++ 
+--- src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql.orig
++++ src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql
 @@ -202,10 +202,10 @@
    ntf_port TEXT NOT NULL,
    tkn_id BLOB, -- token ID assigned by notifications server

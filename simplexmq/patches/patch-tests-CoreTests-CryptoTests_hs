@@ -2,8 +2,8 @@ $OpenBSD$
 
 OpenBSD patch for patch-tests-CoreTests-CryptoTests_hs.
 
---- 
-+++ 
+--- tests/CoreTests/CryptoTests.hs.orig
++++ tests/CoreTests/CryptoTests.hs
 @@ -236,11 +236,11 @@
    let checkChain = validateCertificateChain SMPClient.testKeyHash "localhost" "5223" . X.CertificateChain
    checkChain [] `shouldReturn` [XV.EmptyChain]

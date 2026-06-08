@@ -2,8 +2,8 @@ $OpenBSD$
 
 OpenBSD patch for patch-tests-XFTPWebTests_hs.
 
---- 
-+++ 
+--- tests/XFTPWebTests.hs.orig
++++ tests/XFTPWebTests.hs
 @@ -2798,9 +2798,9 @@
  tsAddressTests :: Spec
  tsAddressTests = describe "protocol/address" $ do

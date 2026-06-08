@@ -1,9 +1,5 @@
 $OpenBSD$
 
-OpenBSD patch for patch-store-dup.
-
-$OpenBSD$
-
 GHC 9.10 requires DuplicateRecordFields pragma when exporting
 record fields with the same name from different data types.
 GroupLinkInfo and StoreError both have a 'groupId' field.

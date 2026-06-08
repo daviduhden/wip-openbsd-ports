@@ -2,8 +2,8 @@ $OpenBSD$
 
 OpenBSD patch for patch-tests-XFTPServerTests_hs.
 
---- 
-+++ 
+--- tests/XFTPServerTests.hs.orig
++++ tests/XFTPServerTests.hs
 @@ -446,7 +446,7 @@
  testNoSNICertSelection :: Expectation
  testNoSNICertSelection =

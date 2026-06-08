@@ -71,7 +71,6 @@ packages: ../hs-socks-a30cc7a79a08d8108316094f8f2f82a0c5e1ac51
 packages: ../direct-sqlcipher-f814ee68b16a9447fbb467ccc8f29bdd3546bfd9
 packages: ../sqlcipher-simple-a46bd361a19376c5211f1058908fc0ae6bf42446
 packages: ../haskell-terminal-f708b00009b54890172068f168bf98508ffcd495
-packages: ../android-support-9aa09f148089d6752ce563b14c2df1895718d806
 packages: ../zip-2eff156c3aac389e35d38bf10a52733d7061640a
 constraints: aeson == 2.2.3.0
 constraints: base-orphans == 0.9.3

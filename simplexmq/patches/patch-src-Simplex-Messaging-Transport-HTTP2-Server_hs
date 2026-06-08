@@ -1,3 +1,7 @@
+$OpenBSD$
+
+OpenBSD patch for patch-src-Simplex-Messaging-Transport-HTTP2-Server_hs.
+
 --- src/Simplex/Messaging/Transport/HTTP2/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/HTTP2/Server.hs
 @@ -87,7 +87,7 @@

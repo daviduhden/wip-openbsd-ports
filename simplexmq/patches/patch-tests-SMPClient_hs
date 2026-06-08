@@ -1,5 +1,9 @@
---- tests/SMPClient.hs	Sun Jun  7 08:03:49 2026
-+++ tests/SMPClient.hs	Sun Jun  7 08:07:41 2026
+$OpenBSD$
+
+OpenBSD patch for patch-tests-SMPClient_hs.
+
+--- 
++++ 
 @@ -80,7 +80,7 @@
  ntfTestPort2 = "6002"
  

@@ -1,5 +1,9 @@
---- tests/CoreTests/CryptoTests.hs	Sun Jun  7 08:03:49 2026
-+++ tests/CoreTests/CryptoTests.hs	Sun Jun  7 08:06:13 2026
+$OpenBSD$
+
+OpenBSD patch for patch-tests-CoreTests-CryptoTests_hs.
+
+--- 
++++ 
 @@ -236,11 +236,11 @@
    let checkChain = validateCertificateChain SMPClient.testKeyHash "localhost" "5223" . X.CertificateChain
    checkChain [] `shouldReturn` [XV.EmptyChain]

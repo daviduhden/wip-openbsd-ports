@@ -1,5 +1,9 @@
---- tests/NtfClient.hs	Sun Jun  7 08:03:49 2026
-+++ tests/NtfClient.hs	Sun Jun  7 08:07:41 2026
+$OpenBSD$
+
+OpenBSD patch for patch-tests-NtfClient_hs.
+
+--- 
++++ 
 @@ -68,7 +68,7 @@
  apnsTestPort = "6010"
  

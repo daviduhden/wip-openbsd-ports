@@ -1,5 +1,9 @@
---- tests/SMPAgentClient.hs	Sun Jun  7 08:03:49 2026
-+++ tests/SMPAgentClient.hs	Sun Jun  7 08:07:23 2026
+$OpenBSD$
+
+OpenBSD patch for patch-tests-SMPAgentClient_hs.
+
+--- 
++++ 
 @@ -47,16 +47,16 @@
  #endif
  

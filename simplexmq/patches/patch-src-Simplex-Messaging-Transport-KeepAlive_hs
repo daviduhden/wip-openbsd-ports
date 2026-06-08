@@ -1,3 +1,7 @@
+$OpenBSD$
+
+OpenBSD patch for patch-src-Simplex-Messaging-Transport-KeepAlive_hs.
+
 --- src/Simplex/Messaging/Transport/KeepAlive.hs.orig
 +++ src/Simplex/Messaging/Transport/KeepAlive.hs
 @@ -33,7 +33,11 @@

@@ -1,5 +1,9 @@
 $OpenBSD$
 
+OpenBSD patch for patch-terminal-underlining.
+
+$OpenBSD$
+
 Handle new Underlining constructor in ConsoleLayer. Underlining is a text
 decoration, not a color layer — use foreground as a sensible default.
 

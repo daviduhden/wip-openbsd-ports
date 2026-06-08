@@ -1,5 +1,9 @@
 $OpenBSD$
 
+OpenBSD patch for patch-xftp-web.
+
+$OpenBSD$
+
 Use project-relative `file-embed` paths for the XFTP web assets.
 The build should embed the bundled static tree from the extracted sources.
 

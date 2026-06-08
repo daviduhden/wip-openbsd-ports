@@ -1,5 +1,9 @@
 $OpenBSD$
 
+OpenBSD patch for patch-tests-SMPProxyTests.
+
+$OpenBSD$
+
 Reduce the SMP proxy stress-test load for OpenBSD.
 The upstream load is too heavy for the local test environment.
 

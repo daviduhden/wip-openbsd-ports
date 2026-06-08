@@ -1,7 +1,7 @@
-@newgroup _simplexmq:907
-@newuser _simplexmq:907:907::SimpleXMQ daemon:${VARBASE}/empty:/sbin/nologin
-@rcscript ${RCDIR}/smp-server
-@rcscript ${RCDIR}/xftp-server
+@newgroup _simplexmq:908
+@newuser _simplexmq:908:908::SimpleXMQ daemon:/var/empty:/sbin/nologin
+@rcscript ${RCDIR}/smp_server
+@rcscript ${RCDIR}/xftp_server
 @mode 755
 @owner _simplexmq
 @group _simplexmq

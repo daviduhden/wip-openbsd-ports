@@ -1,3 +1,5 @@
+# Dependency versions shared by the build rules and the distfile list.
+# Keep the block alphabetized so future refreshes are easy to review.
 AESON_REV =		4
 AESON_V =		2.2.3.0
 ALEX_V =		3.5.3.0
@@ -83,6 +85,8 @@ HSPEC_CORE_V =		2.11.17
 HSPEC_DISCOVER_V =		2.11.17
 HSPEC_EXPECTATIONS_V =		0.8.4
 HSPEC_V =		2.11.17
+# The remaining pins are the few non-Hackage source versions used by the
+# port, followed by the library version required by the HTTP/2 patching.
 HTTP2_V =		5.4.0
 HTTP_CLIENT_V =		0.7.19
 HTTP_DATE_V =		0.0.11
@@ -115,6 +119,7 @@ NETWORK_URI_REV =		1
 NETWORK_URI_V =		2.6.4.2
 NETWORK_V =		3.1.4.0
 OLD_LOCALE_V =		1.0.0.7
+OLD_LOCALE_REV =	2
 OLD_TIME_V =		1.1.0.4
 ONETUPLE_V =		0.4.2.1
 ONLY_REV =		2
@@ -143,7 +148,6 @@ SHA_V =		1.6.4.4
 SILENTLY_V =		1.2.5.4
 SIMPLE_LOGGER_V =		0.1.1
 SIMPLE_SENDFILE_V =		0.2.32
-SOCKS_V =		0.6.1
 SPLITMIX_V =		0.1.3.1
 SPLIT_V =		0.2.5
 STM_CHANS_V =		3.0.0.9

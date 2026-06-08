@@ -1,12 +1,7 @@
-#!/bin/sh
-#
-# $OpenBSD$
-#
-# PROVIDE: xftp_server
-# REQUIRE: DAEMON
-# KEYWORD: shutdown
+#!/bin/ksh
 
 daemon="${TRUEPREFIX}/bin/xftp-server"
+daemon_flags="start"
 daemon_user="_simplexmq"
 daemon_logger="daemon.info"
 rc_env="XFTP_SERVER_CFG_PATH=/etc/simplex/xftp-server XFTP_SERVER_LOG_PATH=/var/simplex/xftp-server"
@@ -14,6 +9,4 @@ rc_env="XFTP_SERVER_CFG_PATH=/etc/simplex/xftp-server XFTP_SERVER_LOG_PATH=/var/
 . /etc/rc.d/rc.subr
 
 rc_bg=YES
-pexp="xftp-server:.*"
-
 rc_cmd $1

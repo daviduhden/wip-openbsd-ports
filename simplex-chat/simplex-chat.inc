@@ -1,5 +1,9 @@
+# Dependency versions shared by the build rules and the distfile list.
+# Keep the block alphabetized so future refreshes are easy to review.
 AESON_REV =		4
 AESON_V =		2.2.3.0
+# The commit pins below are the small set of non-Hackage sources needed by
+# the upstream client build.
 ANDROID_SUPPORT_COMMIT =		9aa09f148089d6752ce563b14c2df1895718d806
 ASSOC_V =		1.1.1
 BASE_ORPHANS_V =		0.9.3

@@ -1,43 +1,43 @@
-COMMENT =		Private and encrypted chat platform (terminal client)
+COMMENT = Private and encrypted chat platform (terminal client)
 # Keep the client release version separate from the server dependency pin so
 # the terminal client can track upstream independently.
-V =			6.5.4.0
-SIMPLEXMQ_V =		6.5.3.0
-DISTNAME =		simplex-chat-${V}
-WRKDIST =		${WRKDIR}/simplex-chat-stable
-WRKSRC =		${WRKDIST}
-ONLY_FOR_ARCHS =	amd64 arm64
+V = 6.5.4.0
+SIMPLEXMQ_V = 6.5.3.0
+DISTNAME = simplex-chat-${V}
+WRKDIST = ${WRKDIR}/simplex-chat-${V:R}
+WRKSRC = ${WRKDIST}
+ONLY_FOR_ARCHS = amd64 arm64
 
-CATEGORIES =		net
+CATEGORIES = net
 
-HOMEPAGE =		https://simplex.chat/
+HOMEPAGE = https://simplex.chat/
 # Upstream client sources come from GitHub; dependency pins are centralized
 # in simplex-chat.distfiles.inc.
-SITES =			https://github.com/simplex-chat/ \
+SITES = https://github.com/simplex-chat/ \
 			https://github.com/yesodweb/
 SITES.hs =		https://hackage.haskell.org/package/
-DISTFILES =		simplex-chat-${V}${EXTRACT_SUFX}{simplex-chat/archive/refs/heads/stable.tar.gz}
-EXTRACT_ONLY =		simplex-chat-${V}${EXTRACT_SUFX}
+DISTFILES = simplex-chat-${V}${EXTRACT_SUFX}{simplex-chat/archive/refs/heads/stable.tar.gz}
+EXTRACT_ONLY = simplex-chat-${V}${EXTRACT_SUFX}
 
-MAINTAINER =		David Uhden Collado <daviduhden@gmail.com>
+MAINTAINER = David Uhden Collado <daviduhden@gmail.com>
 
 # AGPL-3
-PERMIT_PACKAGE =	Yes
+PERMIT_PACKAGE = Yes
 
-BUILD_DEPENDS =		devel/cabal-install \
+BUILD_DEPENDS = devel/cabal-install \
 			lang/ghc
-BUILD_DEPENDS +=	simplexmq->=${SIMPLEXMQ_V}:net/simplexmq
+BUILD_DEPENDS += simplexmq->=${SIMPLEXMQ_V}:net/simplexmq
 
-MAKE_ENV +=		XDG_CACHE_HOME=${WRKDIR}/.cache
+MAKE_ENV += XDG_CACHE_HOME=${WRKDIR}/.cache
 
-LIB_DEPENDS =		databases/sqlcipher \
+LIB_DEPENDS = databases/sqlcipher \
 			archivers/zstd
 
-RUN_DEPENDS =		databases/sqlcipher \
+RUN_DEPENDS = databases/sqlcipher \
 			archivers/zstd \
 			simplexmq->=${SIMPLEXMQ_V}:net/simplexmq
 
-NO_TEST =		Yes
+NO_TEST = Yes
 
 post-extract:
 	# Copy the port-local Cabal files first, then unpack the dependency trees
@@ -65,7 +65,7 @@ do-install:
 	install -d ${PREFIX}/bin; \
 	install -m 755 "$$chat" ${PREFIX}/bin/simplex-chat
 
-.include "simplex-chat.inc"
+	.include "simplex-chat.inc"
 .include "simplex-chat.distfiles.inc"
 
 .include <bsd.port.mk>

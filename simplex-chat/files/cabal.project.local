@@ -38,6 +38,7 @@ packages: ../assoc-1.1.1
 packages: ../foldable1-classes-compat-0.1.3
 packages: ../tagged-0.8.9
 packages: ../bifunctor-classes-compat-0.1
+packages: ../character-ps-0.1
 packages: ../text-short-0.1.6.1
 packages: ../text-iso8601-0.1.1.1
 packages: ../uuid-types-1.0.6.1
@@ -95,6 +96,7 @@ constraints: assoc == 1.1.1
 constraints: foldable1-classes-compat == 0.1.3
 constraints: tagged == 0.8.9
 constraints: bifunctor-classes-compat == 0.1
+constraints: character-ps == 0.1
 constraints: text-short == 0.1.6.1
 constraints: text-iso8601 == 0.1.1.1
 constraints: uuid-types == 1.0.6.1

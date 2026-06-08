@@ -1,5 +1,9 @@
 $OpenBSD$
 
+OpenBSD patch for patch-tests-RetryIntervalTests.
+
+$OpenBSD$
+
 Relax the retry-interval test to allow local timing jitter.
 The upstream exact sequence is too strict for OpenBSD scheduling.
 

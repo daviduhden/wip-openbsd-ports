@@ -1,5 +1,9 @@
---- tests/XFTPAgent.hs	Sun Jun  7 08:03:49 2026
-+++ tests/XFTPAgent.hs	Sun Jun  7 08:07:23 2026
+$OpenBSD$
+
+OpenBSD patch for patch-tests-XFTPAgent.
+
+--- 
++++ 
 @@ -419,7 +419,7 @@
      -- receive file - should fail with AUTH error
      withAgent 3 agentCfg initAgentServers testDB2 $ \rcp' -> do

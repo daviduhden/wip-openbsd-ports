@@ -1,5 +1,9 @@
---- tests/XFTPClient.hs	Sun Jun  7 08:03:49 2026
-+++ tests/XFTPClient.hs	Sun Jun  7 08:07:23 2026
+$OpenBSD$
+
+OpenBSD patch for patch-tests-XFTPClient_hs.
+
+--- 
++++ 
 @@ -146,10 +146,10 @@
  testXFTPServer2 = fromString testXFTPServerStr2
  

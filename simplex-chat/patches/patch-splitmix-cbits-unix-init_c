@@ -1,5 +1,9 @@
 $OpenBSD$
 
+OpenBSD patch for patch-splitmix-cbits-unix-init_c.
+
+$OpenBSD$
+
 Remove the unused Linux-specific sys/random.h include.
 OpenBSD provides getentropy(2) via unistd.h.
 

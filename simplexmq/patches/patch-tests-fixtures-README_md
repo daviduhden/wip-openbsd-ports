@@ -1,5 +1,9 @@
---- tests/fixtures/README.md	Sun Jun  7 08:03:49 2026
-+++ tests/fixtures/README.md	Sun Jun  7 08:06:13 2026
+$OpenBSD$
+
+OpenBSD patch for patch-tests-fixtures-README_md.
+
+--- 
++++ 
 @@ -4,11 +4,11 @@
  
  ```sh

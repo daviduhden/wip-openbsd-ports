@@ -1,5 +1,9 @@
---- tests/AgentTests/ConnectionRequestTests.hs	Sun Jun  7 08:03:49 2026
-+++ tests/AgentTests/ConnectionRequestTests.hs	Sun Jun  7 08:07:23 2026
+$OpenBSD$
+
+OpenBSD patch for patch-tests-AgentTests-ConnectionRequestTests_hs.
+
+--- 
++++ 
 @@ -336,7 +336,7 @@
          `shouldBe` contact srv2 (LinkKey "0123456789abcdef0123456789abcdef")
        Right (lnk :: ConnShortLink 'CMContact) <- pure $ strDecode "https://localhost/a#4AkRDmhf64tdRlN406g8lJRg5OCmhD6ynIhi6glOcCM?p=7001&c=LcJUMfVhwD8yxjAiSaDzzGF3-kLG4Uh0Fl_ZIjrRwjI"

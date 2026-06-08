@@ -1,5 +1,9 @@
 $OpenBSD$
 
+OpenBSD patch for patch-src-Simplex-Messaging-Client-Agent_hs.
+
+$OpenBSD$
+
 Retry temporary SMP client connect failures using the agent reconnect
 interval before surfacing them to the caller.
 

@@ -43,6 +43,7 @@ SHA256 (silently-1.2.5.4.tar.gz) = XiNgiWXBAEsAfcdxYEmYrm2lLBV3IwC/3eMNi1ISdG4=
 SHA256 (simplex-chat-6.5.4.0.tar.gz) = G6XRAZ9O3effJxVRW5FtDzMkPDYzIupkiGUr3d8J1sY=
 SHA256 (splitmix-0.1.3.1.tar.gz) = b6bcd0d79bd4fe40975c8ebe803be2f3bfbf6006069a59745a325a0df3f86270
 SHA256 (sqlcipher-simple-a46bd361a19376c5211f1058908fc0ae6bf42446.tar.gz) = auSadSOW/uytUWtOoTpzaKQ0sIojPO0ksmNQQGUEojE=
+SHA256 (strict-0.5.1.tar.gz) = d3GSgMKoYxLnSCJ7+nMu6q4OffSNV6zDwuW3sHr+L4s=
 SHA256 (tagged-0.8.9.tar.gz) = barYjrtBS6alVtKJjSy+dlDkJ2AQ46bu2Tna9UuVZ4Q=
 SHA256 (text-iso8601-0.1.1.1.tar.gz) = YDto0RNek3Pt8sIKmT6iJrnx/sERicGyuKZHJizriz4=
 SHA256 (text-short-0.1.6.1.tar.gz) = g2afQCNUJ0+83HUSZEOvczJnuVXkUfcsDG2Gro2odBY=
@@ -109,6 +110,7 @@ SIZE (silently-1.2.5.4.tar.gz) = 4640
 SIZE (simplex-chat-6.5.4.0.tar.gz) = 166655959
 SIZE (splitmix-0.1.3.1.tar.gz) = 21955
 SIZE (sqlcipher-simple-a46bd361a19376c5211f1058908fc0ae6bf42446.tar.gz) = 36327
+SIZE (strict-0.5.1.tar.gz) = 11798
 SIZE (tagged-0.8.9.tar.gz) = 8151
 SIZE (text-iso8601-0.1.1.1.tar.gz) = 9610
 SIZE (text-short-0.1.6.1.tar.gz) = 24700

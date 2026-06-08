@@ -57,6 +57,7 @@ SHA256 (time-compat-1.9.9.tar.gz) = kPrd7VPPnBWFXuv4CelTavj4XQDjK4L3yLUG0vrffCU=
 SHA256 (time-manager-0.2.4.tar.gz) = +8Lj7sWgMRsS8nvggzt1/R+Cgtgyn1wzDy7sGxoftnA=
 SHA256 (timeit-2.0.tar.gz) = oU305XjbNx5cYJ8HhCCRRFRfnK6QAm0kozmAQvfFkeo=
 SHA256 (transformers-compat-0.7.2.tar.gz) = tixzBMnzy8lGPQc5qoXLlInyF+oJK51iXUF1FPvMnWo=
+SHA256 (unix-time-0.4.16.tar.gz) = rOKnEm1zRP6zIhaAxVbefyipafsofUm9Si198Y/mOOk=
 SHA256 (unliftio-core-0.2.1.0.tar.gz) = mThMuo1W2dYbheOKMTqT6823i+ZWY2fwkw71gFl/4+M=
 SHA256 (unordered-containers-0.2.20.1.tar.gz) = cIpgUT1tph4JtguaSGEGr3A6iJtbQ0cqJ8O2C/NSRqs=
 SHA256 (utf8-string-1.0.2.tar.gz) = 7kjeradgA3ByjEFWywAkQd53DQEhrjOmgTmp7ZwZsJo=
@@ -127,6 +128,7 @@ SIZE (time-compat-1.9.9.tar.gz) = 64400
 SIZE (time-manager-0.2.4.tar.gz) = 5919
 SIZE (timeit-2.0.tar.gz) = 2117
 SIZE (transformers-compat-0.7.2.tar.gz) = 46485
+SIZE (unix-time-0.4.16.tar.gz) = 52594
 SIZE (unliftio-core-0.2.1.0.tar.gz) = 3865
 SIZE (unordered-containers-0.2.20.1.tar.gz) = 60625
 SIZE (utf8-string-1.0.2.tar.gz) = 10726

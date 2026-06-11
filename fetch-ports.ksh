@@ -158,7 +158,7 @@ list_all_directories() {
 prompt_selected_directories() {
 	log "Enter one or more port directories separated by spaces:"
 	print -n "> "
-	read SELECTED_DIRECTORIES
+	read -r SELECTED_DIRECTORIES
 	[ -n "${SELECTED_DIRECTORIES:-}" ] || {
 		error "No directories entered."
 		exit 1

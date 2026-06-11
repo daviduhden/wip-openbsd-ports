@@ -3,7 +3,7 @@ $OpenBSD$
 Use project-relative `file-embed` paths for the embedded web assets.
 This lets Cabal compile the bundled HTML and static files from the port tree.
 
---- apps/common/Web/Embedded.hs.orig
+--- apps/common/Web/Embedded.hs
 +++ apps/common/Web/Embedded.hs
 @@ -2,14 +2,14 @@
 

@@ -4,7 +4,7 @@ Use OpenBSD-style config and data paths for the SMP server.
 The server should keep config under /etc/simplex and persistent state
 under /var/simplex instead of the upstream /etc/opt layout.
 
---- apps/smp-server/Main.hs.orig
+--- apps/smp-server/Main.hs
 +++ apps/smp-server/Main.hs
 @@ -6,11 +6,11 @@
  import Simplex.Messaging.Server.Web (serveStaticFiles, attachStaticFiles)

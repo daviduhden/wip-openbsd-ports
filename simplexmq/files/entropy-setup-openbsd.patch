@@ -2,7 +2,7 @@ $OpenBSD$
 
 OpenBSD patch for entropy-setup-openbsd.patch.
 
---- entropy-0.4.1.11/Setup.hs.orig
+--- entropy-0.4.1.11/Setup.hs
 +++ entropy-0.4.1.11/Setup.hs
 @@ -20,7 +20,7 @@
                                          let mConf  = lookupProgram ghcProgram (withPrograms lbi)
@@ -12,4 +12,3 @@ OpenBSD patch for entropy-setup-openbsd.patch.
 +                                        lbiNew <- return $ addOptions ["-DHAVE_GETRANDOM", "-DHAVE_GETENTROPY"] ["-DHAVE_GETRANDOM", "-DHAVE_GETENTROPY"] lbi
                                          buildHook simpleUserHooks pd lbiNew uh bf
                        }
-

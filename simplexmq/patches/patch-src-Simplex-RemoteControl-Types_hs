@@ -3,7 +3,7 @@ $OpenBSD$
 Keep the remote-control hello record encoding aligned with the local
 `aeson`/`generic-aeson` behavior expected by the OpenBSD build.
 
---- src/Simplex/RemoteControl/Types.hs.orig
+--- src/Simplex/RemoteControl/Types.hs
 +++ src/Simplex/RemoteControl/Types.hs
 @@ -155,7 +155,7 @@ $(JQ.deriveJSON defaultJSON ''RCHostHello)
  data RCCtrlHello = RCCtrlHello {}

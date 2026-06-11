@@ -2,7 +2,7 @@ $OpenBSD$
 
 OpenBSD patch for prettyprinter-version-compatibility-macros.patch.
 
---- prettyprinter-1.7.2/misc/version-compatibility-macros.h.orig
+--- prettyprinter-1.7.2/misc/version-compatibility-macros.h
 +++ prettyprinter-1.7.2/misc/version-compatibility-macros.h
 @@ -8,7 +8,7 @@
  -- These macros allow writing CPP compatibility hacks in a way that makes their

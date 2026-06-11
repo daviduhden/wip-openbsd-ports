@@ -1,2 +1,1 @@
-@comment $OpenBSD$
-bin/simplex-chat
+@bin bin/simplex-chat

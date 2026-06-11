@@ -3,8 +3,8 @@ $OpenBSD$
 Make the prettyprinter compatibility macro use the base version guard that
 matches the OpenBSD GHC toolchain.
 
---- prettyprinter-1.7.2/misc/version-compatibility-macros.h.orig
-+++ prettyprinter-1.7.2/misc/version-compatibility-macros.h
+--- ../prettyprinter-1.7.2/misc/version-compatibility-macros.h
++++ ../prettyprinter-1.7.2/misc/version-compatibility-macros.h
 @@ -8,7 +8,7 @@
  -- These macros allow writing CPP compatibility hacks in a way that makes their
  -- purpose much clearer than just demanding a specific version of a library.

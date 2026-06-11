@@ -12,7 +12,7 @@ CATEGORIES = net
 HOMEPAGE = https://simplex.chat/
 # Upstream source tarballs come from GitHub; Hackage package pins are
 # centralized in simplexmq.distfiles.inc for reviewability.
-SITES = https://github.com/simplex-chat/ \
+SITES =	https://github.com/simplex-chat/ \
 			https://github.com/yesodweb/
 SITES.hs =		https://hackage.haskell.org/package/
 DISTFILES = simplexmq-${V}${EXTRACT_SUFX}{simplexmq/archive/refs/heads/stable.tar.gz}

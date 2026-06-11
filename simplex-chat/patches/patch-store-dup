@@ -4,7 +4,7 @@ GHC 9.10 requires DuplicateRecordFields pragma when exporting
 record fields with the same name from different data types.
 GroupLinkInfo and StoreError both have a 'groupId' field.
 
---- src/Simplex/Chat/Store.hs.orig
+--- src/Simplex/Chat/Store.hs
 +++ src/Simplex/Chat/Store.hs
 @@ -1,4 +1,5 @@
  {-# LANGUAGE CPP #-}

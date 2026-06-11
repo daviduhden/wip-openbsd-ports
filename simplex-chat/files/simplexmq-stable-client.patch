@@ -1,0 +1,25 @@
+$OpenBSD$
+
+Use a pure empty certificate-chain fallback on OpenBSD.
+
+--- ../simplexmq-stable/src/Simplex/Messaging/Transport/Client.hs
++++ ../simplexmq-stable/src/Simplex/Messaging/Transport/Client.hs
+@@ -296,17 +296,17 @@
+             T.onCertificateRequest = onCertRequest,
+             T.onSuggestALPN = pure alpn_
+           },
+       T.clientSupported = supported
+     }
+   where
+     p = B.pack port
+     onServerCert _ _ _ cc = do
+-      errs <- maybe def (\ca -> validateCertificateChain ca host p cc) cafp_
++      errs <- maybe (pure []) (\ca -> validateCertificateChain ca host p cc) cafp_
+       atomically $ putTMVar serverCerts $ if null errs then Just cc else Nothing
+       pure errs
+     onCertRequest = case clientCreds_ of
+       Just _ -> \_ -> clientCreds_ <$ writeIORef clientCredsSent True
+       Nothing -> \_ -> pure Nothing
+ 
+ validateCertificateChain :: C.KeyHash -> HostName -> ByteString -> X.CertificateChain -> IO [XV.FailedReason]
+ validateCertificateChain (C.KeyHash kh) host port cc = case chainIdCaCerts cc of

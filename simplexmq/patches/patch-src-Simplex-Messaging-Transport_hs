@@ -5,7 +5,7 @@ unwrap tls VerifyData to the ByteString expected by the transport code. The
 OpenBSD build uses the public Network.TLS.Internal re-export rather than the
 hidden tls Struct module.
 
---- src/Simplex/Messaging/Transport.hs.orig
+--- src/Simplex/Messaging/Transport.hs
 +++ src/Simplex/Messaging/Transport.hs
 @@ -130,10 +130,11 @@
  import qualified Data.X509 as X

@@ -1,16 +1,16 @@
 $OpenBSD$
 
-Keep the remote-control hello record encoding aligned with the local
-`aeson`/`generic-aeson` behavior expected by the OpenBSD build.
+OpenBSD does not need the upstream nullary-to-object override for this JSON
+derivation.
 
---- src/Simplex/RemoteControl/Types.hs
-+++ src/Simplex/RemoteControl/Types.hs
-@@ -155,7 +155,7 @@ $(JQ.deriveJSON defaultJSON ''RCHostHello)
+--- ../simplexmq-stable/src/Simplex/RemoteControl/Types.hs
++++ ../simplexmq-stable/src/Simplex/RemoteControl/Types.hs
+@@ -155,7 +155,7 @@
  data RCCtrlHello = RCCtrlHello {}
    deriving (Show)
-
+ 
 -$(JQ.deriveJSON defaultJSON {J.nullaryToObject = True} ''RCCtrlHello)
 +$(JQ.deriveJSON defaultJSON ''RCCtrlHello)
-
+ 
  -- | Long-term part of controller (desktop) connection to host (mobile)
  data RCHostPairing = RCHostPairing

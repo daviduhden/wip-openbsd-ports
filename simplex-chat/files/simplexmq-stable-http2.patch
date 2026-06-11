@@ -1,8 +1,10 @@
-OpenBSD patch for patch-src-Simplex-Messaging-Transport-HTTP2_hs.
+$OpenBSD$
+
 Use defaultConfig from http2-5.4.0; the Config constructor is not accepted by
-the OpenBSD build of the package API used here.
---- src/Simplex/Messaging/Transport/HTTP2.hs
-+++ src/Simplex/Messaging/Transport/HTTP2.hs
+the package API available here.
+
+--- ../simplexmq-stable/src/Simplex/Messaging/Transport/HTTP2.hs
++++ ../simplexmq-stable/src/Simplex/Messaging/Transport/HTTP2.hs
 @@ -19,7 +19,7 @@
  import Data.Maybe (fromMaybe)
  import Foreign (mallocBytes)

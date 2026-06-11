@@ -2,7 +2,7 @@ $OpenBSD$
 
 OpenBSD patch for entropy-getrandom.patch.
 
---- entropy-0.4.1.11/cbits/getrandom.c.orig
+--- entropy-0.4.1.11/cbits/getrandom.c
 +++ entropy-0.4.1.11/cbits/getrandom.c
 @@ -1,10 +1,37 @@
 -#ifdef HAVE_GETRANDOM

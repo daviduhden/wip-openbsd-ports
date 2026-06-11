@@ -3,7 +3,7 @@ $OpenBSD$
 Use OpenBSD-style config and data paths for the XFTP server.
 This keeps XFTP state under /etc/simplex and /var/simplex.
 
---- apps/xftp-server/Main.hs.orig
+--- apps/xftp-server/Main.hs
 +++ apps/xftp-server/Main.hs
 @@ -6,11 +6,11 @@
  import Simplex.Messaging.Server.Web (serveStaticFiles)

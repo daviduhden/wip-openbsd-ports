@@ -2,11 +2,10 @@ $OpenBSD$
 
 Restore the upstream finished-message selection logic in TLS handshakes and
 unwrap tls VerifyData to the ByteString expected by the transport code. The
-OpenBSD build uses the public Network.TLS.Internal re-export rather than the
-hidden tls Struct module.
+vendored simplexmq tree lives beside WRKSRC, so apply this patch from WRKDIR.
 
---- src/Simplex/Messaging/Transport.hs
-+++ src/Simplex/Messaging/Transport.hs
+--- ../simplexmq-stable/src/Simplex/Messaging/Transport.hs
++++ ../simplexmq-stable/src/Simplex/Messaging/Transport.hs
 @@ -130,10 +130,11 @@
  import qualified Data.X509 as X
  import qualified Data.X509.Validation as XV

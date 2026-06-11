@@ -1,12 +1,12 @@
 $OpenBSD$
 
-Select the explicit `defaultServerConfig` entry point required by the
-`http2-5.4.0` server API. This keeps the server side aligned with the
-version available in the OpenBSD ports tree.
+Adjust the HTTP2 server call to the http2-5.4.0 API available on OpenBSD.
 
---- src/Simplex/Messaging/Transport/HTTP2/Server.hs
-+++ src/Simplex/Messaging/Transport/HTTP2/Server.hs
-@@ -87,7 +87,7 @@
+--- ../simplexmq-stable/src/Simplex/Messaging/Transport/HTTP2/Server.hs
++++ ../simplexmq-stable/src/Simplex/Messaging/Transport/HTTP2/Server.hs
+@@ -85,8 +85,8 @@
+ runHTTP2ServerWith_ expCfg_ clientFinished bufferSize setup http2Server = setup $ \(sniUsed, tls) -> do
+   activeAt <- newTVarIO =<< getSystemTime
    tid_ <- mapM (forkIO . expireInactiveClient tls activeAt) expCfg_
    withHTTP2 bufferSize (run sniUsed tls activeAt) (clientFinished $ tlsUniq tls) tls `finally` mapM_ killThread tid_
    where
@@ -14,4 +14,3 @@ version available in the OpenBSD ports tree.
 +    run sniUsed tls activeAt cfg = H.run H.defaultServerConfig cfg $ \req _aux sendResp -> do
        getSystemTime >>= atomically . writeTVar activeAt
        http2Server sniUsed (tlsUniq tls) (tlsALPN tls) req (`sendResp` [])
-     expireInactiveClient tls activeAt expCfg = loop

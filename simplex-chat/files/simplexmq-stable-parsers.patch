@@ -1,11 +1,10 @@
 $OpenBSD$
 
-Keep the JSON encoding helpers compatible with the upstream API used by the
-OpenBSD build. The patch removes an obsolete `nullaryToObject` setting and
-uses the single-field object encoding form accepted by this version.
+OpenBSD builds without the upstream nullary-to-object Aeson setting used in
+this branch.
 
---- src/Simplex/Messaging/Parsers.hs
-+++ src/Simplex/Messaging/Parsers.hs
+--- ../simplexmq-stable/src/Simplex/Messaging/Parsers.hs
++++ ../simplexmq-stable/src/Simplex/Messaging/Parsers.hs
 @@ -124,7 +124,6 @@
        J.tagSingleConstructors = True,
        J.constructorTagModifier = tagModifier,
@@ -13,7 +12,7 @@ uses the single-field object encoding form accepted by this version.
 -      J.nullaryToObject = True,
        J.omitNothingFields = True
      }
-
+ 
 @@ -141,11 +140,10 @@
  singleFieldJSON_ :: Maybe String -> (String -> String) -> J.Options
  singleFieldJSON_ objectTag tagModifier =

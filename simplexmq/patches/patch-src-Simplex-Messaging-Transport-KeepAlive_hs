@@ -3,7 +3,7 @@ $OpenBSD$
 Provide a small OpenBSD-specific keepalive implementation using the
 portable socket option available in the base system.
 
---- src/Simplex/Messaging/Transport/KeepAlive.hs.orig
+--- src/Simplex/Messaging/Transport/KeepAlive.hs
 +++ src/Simplex/Messaging/Transport/KeepAlive.hs
 @@ -33,7 +33,11 @@
  _SOL_TCP :: CInt

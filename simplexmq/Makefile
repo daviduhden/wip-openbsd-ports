@@ -99,14 +99,14 @@ do-build:
 	# Build the package from the current directory; explicit exe selectors
 	# trigger Cabal's target-matching bug when a source file matches the name.
 	cd ${WRKSRC} && env HOME=${WRKDIR} XDG_CACHE_HOME=${WRKDIR}/.cache \
-		CABAL_DIR=${WRKDIR}/.cabal cabal build --offline --allow-newer -j \
+		CABAL_DIR=${WRKDIR}/.cabal cabal build --allow-newer -j \
 		--project-file=${PROJECT_FILE}
 
 do-test:
 	# Run the upstream test suite for the current package without explicit
 	# component selectors for the same Cabal matching reason.
 	cd ${WRKSRC} && env HOME=${WRKDIR} XDG_CACHE_HOME=${WRKDIR}/.cache \
-		CABAL_DIR=${WRKDIR}/.cabal cabal test --offline --allow-newer -j \
+		CABAL_DIR=${WRKDIR}/.cabal cabal test --allow-newer -j \
 		--project-file=${PROJECT_FILE}
 
 do-install:

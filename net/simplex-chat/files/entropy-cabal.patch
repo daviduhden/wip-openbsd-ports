@@ -1,0 +1,29 @@
+$OpenBSD$
+
+Use the simple build type so entropy does not pull in an extra setup stanza.
+
+--- ../entropy-0.4.1.11/entropy.cabal
++++ ../entropy-0.4.1.11/entropy.cabal
+@@ -16,7 +16,7 @@
+ bug-reports:    https://github.com/TomMD/entropy/issues
+ stability:      stable
+ 
+-build-type:     Custom
++build-type:     Simple
+ 
+ tested-with:
+   GHC == 9.12.1
+@@ -44,13 +44,6 @@
+                if detected during compilation (this plays poorly with cross compilation).
+   Default: False
+   Manual: True
+-
+-custom-setup
+-  setup-depends: Cabal >= 1.10 && < 3.15
+-               , base < 5
+-               , filepath < 1.6
+-               , directory < 1.4
+-               , process < 1.7
+ 
+ library
+   ghc-options:  -O2

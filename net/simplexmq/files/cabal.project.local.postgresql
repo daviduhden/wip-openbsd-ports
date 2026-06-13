@@ -1,0 +1,6 @@
+# PostgreSQL flavor overlay: import the shared local pins and only switch the
+# package flags that enable the upstream postgres client and server paths.
+import: cabal.project.local
+
+package simplexmq
+    flags: -client_library +client_postgres +server_postgres

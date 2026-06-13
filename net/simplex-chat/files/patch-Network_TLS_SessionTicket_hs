@@ -1,0 +1,10 @@
+$OpenBSD$
+# Drop the tls-session-manager sessionUseTicket field removed by tls 1.9.0.
+--- tls-session-manager-0.0.8/Network/TLS/SessionTicket.hs
++++ tls-session-manager-0.0.8/Network/TLS/SessionTicket.hs
+@@ -58,7 +58,6 @@
+         , sessionResumeOnlyOnce = resume ctmgr
+         , sessionEstablish = establish ctmgr
+         , sessionInvalidate = \_ -> return ()
+-        , sessionUseTicket = True
+         }

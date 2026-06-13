@@ -1,15 +1,21 @@
 COMMENT = Private and encrypted chat platform (terminal client)
 # Keep the client release version separate from the server dependency pin so
 # the terminal client can track upstream independently.
-V = 6.5.4.0
-V_BASE = ${V:C/\.0$//}
+V = 6.5.4.1
+V_BASE = ${V:C/\.[0-9]+$//}
 SIMPLEXMQ_V = 6.5.3.0
+# Keep the client on the matching simplexmq server line used by the port.
 DISTNAME = simplex-chat-${V}
 WRKDIST = ${WRKDIR}/simplex-chat-${V_BASE}
 WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 
 CATEGORIES = net
+FLAVORS = postgresql
+PROJECT_FILE = cabal.project.local
+.if !empty(FLAVOR:Mpostgresql)
+PROJECT_FILE = cabal.project.local.postgresql
+.endif
 
 HOMEPAGE = https://simplex.chat/
 # Upstream client sources come from GitHub; dependency pins are centralized
@@ -17,6 +23,8 @@ HOMEPAGE = https://simplex.chat/
 SITES = https://github.com/simplex-chat/ \
 			https://github.com/yesodweb/
 SITES.hs =		https://hackage.haskell.org/package/
+SITES.warp-fork =	https://github.com/simplex-chat/wai/archive/
+SITES.warp-tls-fork =	https://github.com/yesodweb/wai/archive/
 DISTFILES = simplex-chat-${V}${EXTRACT_SUFX}{simplex-chat/archive/refs/heads/stable.tar.gz}
 DISTFILES += simplexmq-${SIMPLEXMQ_V}${EXTRACT_SUFX}{simplexmq/archive/refs/heads/stable.tar.gz}
 EXTRACT_ONLY = simplex-chat-${V}${EXTRACT_SUFX}
@@ -32,6 +40,8 @@ BUILD_DEPENDS = devel/cabal-install \
 BUILD_DEPENDS += simplexmq->=${SIMPLEXMQ_V}:net/simplexmq
 
 MAKE_ENV += XDG_CACHE_HOME=${WRKDIR}/.cache
+MAKE_ENV += HOME=${WRKDIR}
+MAKE_ENV += CABAL_DIR=${WRKDIR}/.cabal
 
 LIB_DEPENDS = databases/sqlcipher \
 			archivers/zstd
@@ -40,28 +50,31 @@ RUN_DEPENDS = databases/sqlcipher \
 			archivers/zstd \
 			simplexmq->=${SIMPLEXMQ_V}:net/simplexmq
 
-NO_TEST = Yes
-
 post-extract:
 	# Copy the port-local Cabal files first, then unpack the dependency trees
 	# needed by the upstream cabal.project.local layout.
 	cp ${FILESDIR}/cabal.project ${WRKSRC}/cabal.project
 	cp ${FILESDIR}/cabal.project.local ${WRKSRC}/cabal.project.local
+	if [ "${PROJECT_FILE}" = "cabal.project.local.postgresql" ]; then \
+		cp ${FILESDIR}/cabal.project.local.postgresql ${WRKSRC}/cabal.project.local.postgresql; \
+	fi
 	cp ${FILESDIR}/simplex-chat.cabal ${WRKSRC}/simplex-chat.cabal
-	patch -d ${WRKDIR} -p1 < ${FILESDIR}/simplexmq-stable-transport.patch
-	patch -d ${WRKDIR} -p1 < ${FILESDIR}/simplexmq-stable-http2.patch
+	cp ${.CURDIR}/../simplexmq/files/simplexmq.cabal ${WRKDIR}/simplexmq-stable/simplexmq.cabal
+	cp -R ${WRKDIR}/wai-${WARP_FORK_TAG}/warp ${WRKDIR}/warp-${WARP_V}
+	cp -R ${WRKDIR}/wai-${WARP_TLS_FORK_TAG}/warp-tls ${WRKDIR}/warp-tls-${WARP_TLS_V}
+	tar -C ${WRKDIR} -xzf ${FULLDISTDIR}/bytestring-builder-${BYTESTRING_BUILDER_V}.tar.gz
+	tar -C ${WRKDIR} -xzf ${FULLDISTDIR}/type-equality-${TYPE_EQUALITY_V}.tar.gz
+	cp ${FULLDISTDIR}/type-equality-${TYPE_EQUALITY_V}-rev${TYPE_EQUALITY_REV}.cabal ${WRKDIR}/type-equality-${TYPE_EQUALITY_V}/type-equality.cabal
+	cp ${FULLDISTDIR}/tasty-quickcheck-${TASTY_QUICKCHECK_V}-rev${TASTY_QUICKCHECK_REV}.cabal \
+		${WRKDIR}/tasty-quickcheck-${TASTY_QUICKCHECK_V}/tasty-quickcheck.cabal
 	patch -d ${WRKDIR} -p1 < ${FILESDIR}/simplexmq-stable-parsers.patch
 	patch -d ${WRKDIR} -p1 < ${FILESDIR}/simplexmq-stable-rc-types.patch
 	patch -d ${WRKDIR} -p1 < ${FILESDIR}/simplexmq-stable-keepalive.patch
-	patch -d ${WRKDIR} -p1 < ${FILESDIR}/simplexmq-stable-http2-server.patch
-	patch -d ${WRKDIR} -p1 < ${FILESDIR}/simplexmq-stable-http2-client.patch
-	patch -d ${WRKDIR} -p1 < ${FILESDIR}/simplexmq-stable-client.patch
-	patch -d ${WRKDIR} -p1 < ${FILESDIR}/simplexmq-stable-cabal.patch
 	# entropy's Setup.hs is the default Main/defaultMain wrapper, so a
 	# simple build avoids an unnecessary Cabal/parsec setup dependency.
 	patch -d ${WRKDIR} -p1 < ${FILESDIR}/entropy-cabal.patch
 	tar -C ${WRKDIR} -xzf ${FULLDISTDIR}/Only-${ONLY_V}.tar.gz
-	patch -d ${WRKDIR} -p1 < ${FILESDIR}/Only-cabal.patch
+	cp ${FULLDISTDIR}/Only-${ONLY_V}-rev${ONLY_REV}.cabal ${WRKDIR}/Only-${ONLY_V}/Only.cabal
 	patch -d ${WRKDIR} -p1 < ${FILESDIR}/unicode-transforms-cabal.patch
 	tar -C ${WRKSRC} -xzf ${FULLDISTDIR}/splitmix-${SPLITMIX_V}.tar.gz
 	tar -C ${WRKDIR} -xzf ${FULLDISTDIR}/asn1-encoding-${ASN1_ENCODING_V}.tar.gz
@@ -118,6 +131,11 @@ post-extract:
 	tar -C ${WRKDIR} -xzf ${FULLDISTDIR}/zlib-${ZLIB_V}.tar.gz
 	tar -C ${WRKDIR} -xzf ${FULLDISTDIR}/prettyprinter-${PRETTYPRINTER_V}.tar.gz
 	patch -d ${WRKDIR} -p1 < ${FILESDIR}/prettyprinter-version-compatibility-macros.patch
+	patch -d ${WRKDIR} -p0 < ${FILESDIR}/patch-fast-logger_cabal
+	# fast-logger needs the source-side debounceThreadName fix for auto-update 0.1.6.
+	patch -d ${WRKDIR} -p0 < ${FILESDIR}/patch-System_Log_FastLogger_LoggerSet_hs
+	# fast-logger also drops updateThreadName on the same older auto-update API.
+	patch -d ${WRKDIR} -p0 < ${FILESDIR}/patch-System_Log_FastLogger_Date_hs
 	cp ${FULLDISTDIR}/safe-exceptions-${SAFE_EXCEPTIONS_V}-rev${SAFE_EXCEPTIONS_REV}.cabal ${WRKDIR}/safe-exceptions-${SAFE_EXCEPTIONS_V}/safe-exceptions.cabal
 	cp ${FULLDISTDIR}/attoparsec-${ATTOPARSEC_V}-rev${ATTOPARSEC_REV}.cabal ${WRKDIR}/attoparsec-${ATTOPARSEC_V}/attoparsec.cabal
 	cp ${FULLDISTDIR}/cryptohash-md5-${CRYPTOHASH_MD5_V}-rev6.cabal ${WRKDIR}/cryptohash-md5-${CRYPTOHASH_MD5_V}/cryptohash-md5.cabal
@@ -129,11 +147,30 @@ post-extract:
 	cp ${FULLDISTDIR}/generically-${GENERICALLY_V}-rev${GENERICALLY_REV}.cabal ${WRKDIR}/generically-${GENERICALLY_V}/generically.cabal
 	cp ${FULLDISTDIR}/ghc-bignum-orphans-${GHC_BIGNUM_ORPHANS_V}-rev${GHC_BIGNUM_ORPHANS_REV}.cabal ${WRKDIR}/ghc-bignum-orphans-${GHC_BIGNUM_ORPHANS_V}/ghc-bignum-orphans.cabal
 	cp ${FULLDISTDIR}/network-uri-${NETWORK_URI_V}-rev${NETWORK_URI_REV}.cabal ${WRKDIR}/network-uri-${NETWORK_URI_V}/network-uri.cabal
+	cp ${FULLDISTDIR}/ansi-wl-pprint-${ANSI_WL_PPRINT_V}-rev${ANSI_WL_PPRINT_REV}.cabal ${WRKDIR}/ansi-wl-pprint-${ANSI_WL_PPRINT_V}/ansi-wl-pprint.cabal
+	tar -C ${WRKDIR} -xzf ${FULLDISTDIR}/time-manager-${TIME_MANAGER_V}.tar.gz
+	# constraints 0.13.4 needs its `forall` export trimmed for GHC 9.10.
+	patch -d ${WRKDIR} -p0 < ${FILESDIR}/patch-Data_Constraint_Forall_hs
+	# tls-session-manager needs the older tls/auto-update API shape used by the port.
+	patch -d ${WRKDIR} -p0 < ${FILESDIR}/patch-Network_TLS_SessionManager_hs
+	patch -d ${WRKDIR} -p0 < ${FILESDIR}/patch-Network_TLS_SessionTicket_hs
+	patch -d ${WRKDIR} -p0 < ${FILESDIR}/patch-time-manager_cabal
+	patch -d ${WRKDIR} -p0 < ${FILESDIR}/patch-System_TimeManager_hs
+	patch -d ${WRKDIR} -p0 < ${FILESDIR}/patch-tls-session-manager_cabal
 
 do-build:
-	# Build only the terminal client executable installed by this port.
-	cd ${WRKSRC} && env HOME=${WRKSRC} XDG_CACHE_HOME=${WRKSRC}/.cache \
-		CABAL_DIR=${WRKSRC}/.cabal cabal build --offline -j exe:simplex-chat
+	# Build the package from the current directory; explicit exe selectors
+	# trigger Cabal's target-matching bug when a source file matches the name.
+	cd ${WRKSRC} && env HOME=${WRKDIR} XDG_CACHE_HOME=${WRKDIR}/.cache \
+		CABAL_DIR=${WRKDIR}/.cabal cabal build --offline --allow-newer -j \
+		--project-file=${PROJECT_FILE}
+
+do-test:
+	# Run the upstream test suite for the current package without explicit
+	# component selectors for the same Cabal matching reason.
+	cd ${WRKSRC} && env HOME=${WRKDIR} XDG_CACHE_HOME=${WRKDIR}/.cache \
+		CABAL_DIR=${WRKDIR}/.cabal cabal test --offline --allow-newer -j \
+		--project-file=${PROJECT_FILE}
 
 do-install:
 	# Install only the client binary produced by the build.

@@ -1,5 +1,6 @@
 tests: False
 benchmarks: False
+packages: .
 
 package simplexmq
     tests: False
@@ -28,16 +29,17 @@ packages: ../primitive-0.9.1.0
 packages: ../vector-0.13.2.0
 packages: ../vector-stream-0.1.0.1
 packages: ../time-compat-1.9.9
-packages: ../time-manager-0.2.4
+packages: ../time-manager-0.0.1
 packages: ../http-semantics-0.4.0
 packages: ../http-types-0.12.4
 packages: ../case-insensitive-1.2.1.0
 packages: ../network-byte-order-0.1.7
 packages: ../utf8-string-1.0.2
-packages: ../http2-5.4.0
-packages: ../warp-3.4.10
-packages: ../warp-tls-3.4.10
+packages: ../http2-4.2.2
+packages: ../warp-3.3.30
+packages: ../warp-tls-3.4.7
 packages: ../these-1.2.1
+packages: ../type-equality-1.0.1
 packages: ../assoc-1.1.1
 packages: ../foldable1-classes-compat-0.1.3
 packages: ../tagged-0.8.9
@@ -50,7 +52,7 @@ packages: ../semialign-1.3.1.1
 package semialign
   flags: -semigroupoids
 packages: ../unordered-containers-0.2.20.1
-packages: ../scientific-0.3.8.1
+packages: ../scientific-0.3.7.0
 packages: ../th-compat-0.1.7
 packages: ../network-uri-2.6.4.2
 packages: ../old-locale-1.0.0.7
@@ -63,7 +65,7 @@ packages: ../data-array-byte-0.1.0.2
 packages: ../generically-0.1.1
 packages: ../data-fix-0.3.4
 packages: ../transformers-compat-0.7.2
-packages: ../OneTuple-0.4.2.1
+packages: ../OneTuple-0.4.3
 packages: ../hs-socks-a30cc7a79a08d8108316094f8f2f82a0c5e1ac51
 packages: splitmix-0.1.3.1
 packages: ../direct-sqlcipher-f814ee68b16a9447fbb467ccc8f29bdd3546bfd9
@@ -78,15 +80,15 @@ constraints: primitive == 0.9.1.0
 constraints: vector == 0.13.2.0
 constraints: vector-stream == 0.1.0.1
 constraints: time-compat == 1.9.9
-constraints: time-manager == 0.2.4
+constraints: time-manager == 0.0.1
 constraints: http-semantics == 0.4.0
 constraints: http-types == 0.12.4
 constraints: case-insensitive == 1.2.1.0
 constraints: network-byte-order == 0.1.7
 constraints: utf8-string == 1.0.2
-constraints: http2 == 5.4.0
-constraints: warp == 3.4.10
-constraints: warp-tls == 3.4.10
+constraints: http2 == 4.2.2
+constraints: warp == 3.3.30
+constraints: warp-tls == 3.4.7
 constraints: these == 1.2.1
 constraints: assoc == 1.1.1
 constraints: foldable1-classes-compat == 0.1.3
@@ -98,7 +100,7 @@ constraints: uuid-types == 1.0.6.1
 constraints: th-abstraction == 0.7.2.0
 constraints: semialign == 1.3.1.1
 constraints: unordered-containers == 0.2.20.1
-constraints: scientific == 0.3.8.1
+constraints: scientific == 0.3.7.0
 constraints: th-compat == 0.1.7
 constraints: network-uri == 2.6.4.2
 constraints: integer-logarithms == 1.0.5
@@ -109,13 +111,14 @@ constraints: data-array-byte == 0.1.0.2
 constraints: generically == 0.1.1
 constraints: data-fix == 0.3.4
 constraints: transformers-compat == 0.7.2
-constraints: OneTuple == 0.4.2.1
+constraints: OneTuple == 0.4.3
 packages: ../Cabal-3.14.2.0
 packages: ../Cabal-syntax-3.14.2.0
 packages: ../Only-0.1
 packages: ../SHA-1.6.4.4
 packages: ../alex-3.5.3.0
 packages: ../ansi-terminal-0.9.1
+packages: ../ansi-wl-pprint-0.6.9
 packages: ../appar-0.1.8
 packages: ../asn1-encoding-0.9.6
 packages: ../asn1-parse-0.9.5
@@ -123,7 +126,7 @@ packages: ../asn1-types-0.3.4
 packages: ../async-2.2.6
 packages: ../attoparsec-0.14.4
 packages: ../attoparsec-iso8601-1.1.1.0
-packages: ../auto-update-0.2.6
+packages: ../auto-update-0.1.6
 packages: ../base16-bytestring-1.0.2.0
 packages: ../base64-bytestring-1.2.1.0
 packages: ../basement-0.0.16
@@ -137,6 +140,7 @@ packages: ../boring-0.2.2
 packages: ../bsb-http-chunked-0.0.0.4
 packages: ../byteorder-1.0.4
 packages: ../bytestring-0.11.5.4
+packages: ../bytestring-builder-0.10.8.2.0
 packages: ../call-stack-0.4.0
 packages: ../cborg-0.2.10.0
 packages: ../cereal-0.5.8.3
@@ -146,7 +150,7 @@ packages: ../colour-2.3.6
 packages: ../composition-1.0.2.2
 packages: ../conduit-1.3.6.1
 packages: ../conduit-extra-1.3.7
-packages: ../constraints-0.14.2
+packages: ../constraints-0.13.4
 packages: ../cookie-0.5.1
 packages: ../crypto-token-0.1.2
 packages: ../crypton-0.34
@@ -154,6 +158,8 @@ packages: ../crypton-x509-1.7.7
 packages: ../crypton-x509-store-1.6.10
 packages: ../crypton-x509-validation-1.6.14
 packages: ../cryptostore-0.3.1.0
+package cryptostore
+  flags: +use_crypton
 packages: ../data-default-0.7.1.3
 packages: ../data-default-class-0.1.2.2
 packages: ../data-default-instances-containers-0.1.0.3
@@ -187,10 +193,10 @@ packages: ../monad-loops-0.4.3
 packages: ../mono-traversable-1.0.21.0
 packages: ../network-control-0.1.7
 packages: ../network-info-0.2.1
-packages: ../network-transport-0.5.7
+packages: ../network-transport-0.5.6
 packages: ../network-udp-0.0.0
 packages: ../network-3.1.4.0
-packages: ../optparse-applicative-0.18.1.0
+packages: ../optparse-applicative-0.16.1.0
 packages: ../HUnit-1.6.2.0
 packages: ../QuickCheck-2.14.3
 packages: ../generic-random-1.5.0.1
@@ -223,9 +229,9 @@ packages: ../stm-chans-3.0.0.9
 packages: ../streaming-commons-0.2.3.0
 packages: ../strict-0.5.1
 packages: ../text-2.1.3
-packages: ../tasty-1.5.3
+packages: ../tasty-1.5.4
 packages: ../temporary-1.3
-packages: ../tls-2.1.6
+packages: ../tls-1.9.0
 packages: ../tls-session-manager-0.0.8
 packages: ../transformers-base-0.4.6
 packages: ../typed-process-0.2.13.0
@@ -240,7 +246,7 @@ packages: ../wai-3.2.4
 packages: ../wai-app-static-3.1.9
 packages: ../wai-extra-3.1.17
 packages: ../wai-logger-2.5.0
-packages: ../websockets-0.13.0.0
+packages: ../websockets-0.12.7.3
 packages: ../word8-0.1.3
 packages: ../yaml-0.11.11.2
 packages: ../zlib-0.7.1.0
@@ -258,7 +264,7 @@ constraints: asn1-types == 0.3.4
 constraints: async == 2.2.6
 constraints: attoparsec == 0.14.4
 constraints: attoparsec-iso8601 == 1.1.1.0
-constraints: auto-update == 0.2.6
+constraints: auto-update == 0.1.6
 constraints: base16-bytestring == 1.0.2.0
 constraints: base64-bytestring == 1.2.1.0
 constraints: basement == 0.0.16
@@ -281,7 +287,7 @@ constraints: colour == 2.3.6
 constraints: composition == 1.0.2.2
 constraints: conduit == 1.3.6.1
 constraints: conduit-extra == 1.3.7
-constraints: constraints == 0.14.2
+constraints: constraints == 0.13.4
 constraints: cookie == 0.5.1
 constraints: crypto-token == 0.1.2
 constraints: crypton == 0.34
@@ -322,11 +328,11 @@ constraints: monad-loops == 0.4.3
 constraints: mono-traversable == 1.0.21.0
 constraints: network-control == 0.1.7
 constraints: network-info == 0.2.1
-constraints: network-transport == 0.5.7
+constraints: network-transport == 0.5.6
 constraints: network-udp == 0.0.0
 constraints: old-locale == 1.0.0.7
 constraints: old-time == 1.1.0.4
-constraints: optparse-applicative == 0.18.1.0
+constraints: optparse-applicative == 0.16.1.0
 constraints: prettyprinter == 1.7.2
 constraints: prettyprinter-ansi-terminal == 1.1.4
 constraints: os-string == 2.0.7
@@ -348,7 +354,7 @@ constraints: streaming-commons == 0.2.3.0
 constraints: strict == 0.5.1
 constraints: text == 2.1.3
 constraints: temporary == 1.3
-constraints: tls == 2.1.6
+constraints: tls == 1.9.0
 constraints: tls-session-manager == 0.0.8
 constraints: transformers-base == 0.4.6
 constraints: typed-process == 0.2.13.0
@@ -363,7 +369,7 @@ constraints: wai == 3.2.4
 constraints: wai-app-static == 3.1.9
 constraints: wai-extra == 3.1.17
 constraints: wai-logger == 2.5.0
-constraints: websockets == 0.13.0.0
+constraints: websockets == 0.12.7.3
 constraints: word8 == 0.1.3
 constraints: yaml == 0.11.11.2
 constraints: zlib == 0.7.1.0

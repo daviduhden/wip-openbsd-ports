@@ -65,25 +65,11 @@ checkout_ports_tree() {
 
 # Ask if user wants to copy from wip-openbsd-ports (optional)
 ask_copy_from_wip() {
-	log "Do you want to copy ports from 'wip-openbsd-ports' into /usr/ports?"
-	select ANSWER in "One port" "Selected ports" "All ports" "No"; do
+	log "Do you want to copy a directory from 'wip-openbsd-ports' into /usr/ports?"
+	select ANSWER in "Yes" "No"; do
 		case "$ANSWER" in
-		"One port")
+		Yes)
 			DO_COPY=1
-			COPY_ALL=0
-			COPY_LIST=0
-			break
-			;;
-		"Selected ports")
-			DO_COPY=1
-			COPY_ALL=0
-			COPY_LIST=1
-			break
-			;;
-		"All ports")
-			DO_COPY=1
-			COPY_ALL=1
-			COPY_LIST=0
 			break
 			;;
 		No)
@@ -102,10 +88,7 @@ resolve_wip_openbsd_ports_dir() {
 		return 0
 	fi
 
-	SCRIPT_DIR=$(
-		unset CDPATH
-		cd -- "$(dirname -- "$0")" && pwd -P
-	)
+	SCRIPT_DIR=$(unset CDPATH; cd -- "$(dirname -- "$0")" && pwd -P)
 	if [ "$(basename "$SCRIPT_DIR")" = "wip-openbsd-ports" ] && [ -d "$SCRIPT_DIR/.git" ]; then
 		print "$SCRIPT_DIR"
 		return 0
@@ -142,27 +125,6 @@ list_directories() {
 			warn "Invalid selection. Please try again."
 		fi
 	done
-}
-
-# Function to list all top-level port directories in wip-openbsd-ports.
-list_all_directories() {
-	set -- */
-	if [ "$1" = "*/" ] || [ ! -d "$1" ]; then
-		error "No port directories found in wip-openbsd-ports."
-		exit 1
-	fi
-	print "$*"
-}
-
-# Function to prompt for a space-separated list of port directories.
-prompt_selected_directories() {
-	log "Enter one or more port directories separated by spaces:"
-	print -n "> "
-	read -r SELECTED_DIRECTORIES
-	[ -n "${SELECTED_DIRECTORIES:-}" ] || {
-		error "No directories entered."
-		exit 1
-	}
 }
 
 # Function to choose the target tree (mirrors your style; here only /usr/ports)
@@ -207,37 +169,6 @@ copy_directory() {
 	fi
 	cp -R "$DIRECTORY" "$SUBDIRECTORY/"
 	log "Directory $DIRECTORY copied to $SUBDIRECTORY/"
-}
-
-# Function to copy every top-level port directory into the target tree.
-copy_all_directories() {
-	ports=$(list_all_directories)
-	for DIRECTORY in $ports; do
-		TARGET_DIR="$TARGET_TREE/$DIRECTORY"
-		if [ -d "$TARGET_DIR" ]; then
-			warn "Directory $TARGET_DIR already exists. Removing files except 'CVS' directories."
-			find "$TARGET_DIR" -mindepth 1 ! -name "CVS" -exec rm -rf {} +
-		fi
-		cp -R "$DIRECTORY" "$TARGET_TREE/"
-		log "Directory $DIRECTORY copied to $TARGET_TREE/"
-	done
-}
-
-# Function to copy only the directories explicitly selected by the user.
-copy_selected_directories() {
-	for DIRECTORY in $SELECTED_DIRECTORIES; do
-		if [ ! -d "$DIRECTORY" ]; then
-			warn "Skipping unknown directory: $DIRECTORY"
-			continue
-		fi
-		TARGET_DIR="$TARGET_TREE/$DIRECTORY"
-		if [ -d "$TARGET_DIR" ]; then
-			warn "Directory $TARGET_DIR already exists. Removing files except 'CVS' directories."
-			find "$TARGET_DIR" -mindepth 1 ! -name "CVS" -exec rm -rf {} +
-		fi
-		cp -R "$DIRECTORY" "$TARGET_TREE/"
-		log "Directory $DIRECTORY copied to $TARGET_TREE/"
-	done
 }
 
 # Function to create the user 'user' with a random password
@@ -290,17 +221,10 @@ main() {
 	ask_copy_from_wip
 	if [ "${DO_COPY:-0}" -eq 1 ]; then
 		move_to_wip_openbsd_ports
+		list_directories
 		choose_target_tree
-		if [ "${COPY_ALL:-0}" -eq 1 ]; then
-			copy_all_directories
-		elif [ "${COPY_LIST:-0}" -eq 1 ]; then
-			prompt_selected_directories
-			copy_selected_directories
-		else
-			list_directories
-			list_tree_subdirectories
-			copy_directory
-		fi
+		list_tree_subdirectories
+		copy_directory
 	else
 		log "Skipping copy from wip-openbsd-ports."
 	fi

@@ -1,9 +1,0 @@
-# PostgreSQL flavor overlay: import the shared local pins and only switch the
-# package flags that enable the upstream postgres client path.
-import: cabal.project.local
-
-package simplex-chat
-    flags: -client_library +client_postgres
-
-package simplexmq
-    flags: +client_library +client_postgres

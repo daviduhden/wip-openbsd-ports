@@ -39,9 +39,11 @@ BUILD_DEPENDS = devel/cabal-install \
 			lang/ghc
 BUILD_DEPENDS += simplexmq->=${SIMPLEXMQ_V}:net/simplexmq
 
-MAKE_ENV += XDG_CACHE_HOME=${WRKDIR}/.cache
-MAKE_ENV += HOME=${WRKDIR}
-MAKE_ENV += CABAL_DIR=${WRKDIR}/.cabal
+# Keep Cabal state inside the per-build /usr/obj work tree.
+CABAL_STATE_ROOT = ${WRKDIR}/.cabal-state
+MAKE_ENV += XDG_CACHE_HOME=${CABAL_STATE_ROOT}/cache
+MAKE_ENV += HOME=${CABAL_STATE_ROOT}/home
+MAKE_ENV += CABAL_DIR=${CABAL_STATE_ROOT}/cabal
 
 LIB_DEPENDS = databases/sqlcipher \
 			archivers/zstd
@@ -161,15 +163,15 @@ post-extract:
 do-build:
 	# Build the package from the current directory; explicit exe selectors
 	# trigger Cabal's target-matching bug when a source file matches the name.
-	cd ${WRKSRC} && env HOME=${WRKDIR} XDG_CACHE_HOME=${WRKDIR}/.cache \
-		CABAL_DIR=${WRKDIR}/.cabal cabal build --allow-newer -j \
+	install -d ${CABAL_STATE_ROOT}/home ${CABAL_STATE_ROOT}/cache ${CABAL_STATE_ROOT}/cabal
+	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
+		env ${MAKE_ENV} cabal build --allow-newer -j \
 		--project-file=${PROJECT_FILE}
 
 do-test:
 	# Run the upstream test suite for the current package without explicit
 	# component selectors for the same Cabal matching reason.
-	cd ${WRKSRC} && env HOME=${WRKDIR} XDG_CACHE_HOME=${WRKDIR}/.cache \
-		CABAL_DIR=${WRKDIR}/.cabal cabal test --allow-newer -j \
+	cd ${WRKSRC} && env ${MAKE_ENV} cabal test --allow-newer -j \
 		--project-file=${PROJECT_FILE}
 
 do-install:

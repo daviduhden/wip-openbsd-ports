@@ -161,8 +161,8 @@ RECV_V =		0.1.1
 RESOURCET_V =		1.3.0
 SAFE_EXCEPTIONS_REV =	1
 SAFE_EXCEPTIONS_V =	0.1.7.4
-# 0.3.8.1 raises the base bound enough for GHC 9.10.
-SCIENTIFIC_V =		0.3.8.1
+# Synced with simplexmq/upstream constraints.
+SCIENTIFIC_V =		0.3.7.0
 SEMIALIGN_V =		1.3.1.1
 SERIALISE_REV =		5
 SERIALISE_V =		0.2.6.1
@@ -190,7 +190,7 @@ TH_LIFT_INSTANCES_V =	0.1.20
 TH_LIFT_V =		0.8.7
 THESE_V =		1.2.1
 TIME_COMPAT_V =		1.9.9
-TIME_MANAGER_V =		0.2.4
+TIME_MANAGER_V =		0.0.1
 TIMEIT_V =		2.0
 TLS_SESSION_MANAGER_V =		0.0.8
 TLS_V =		1.9.0

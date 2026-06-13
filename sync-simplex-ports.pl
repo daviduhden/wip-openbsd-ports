@@ -32,7 +32,7 @@ GetOptions(
 $mode = shift @ARGV // '';
 usage()
   unless $mode =~
-/^(?:list-deps|sync-upstream|sync-deps|normalize-patches|normalize-incs|all)$/;
+/^(?:list-deps|sync-upstream|sync-deps|normalize-patches|normalize-incs|normalize-cabals|all)$/;
 usage() if @ARGV;
 
 my $script_dir       = script_dir();
@@ -92,13 +92,14 @@ my %ports = (
 
 sub usage {
     print <<"USAGE";
-Usage: $0 [--apply] [list-deps|sync-upstream|sync-deps|normalize-patches|all]
+Usage: $0 [--apply] [list-deps|sync-upstream|sync-deps|normalize-patches|normalize-incs|normalize-cabals|all]
   list-deps          Compare local pins against upstream GitHub cabal constraints.
   sync-upstream      Copy upstream GitHub cabal files into files/ and update cabal.project.local files.
   sync-deps          Sync shared version pins from simplexmq.inc into simplex-chat.inc.
   normalize-patches  Rename patch files to path-derived OpenBSD names.
   normalize-incs     Reorder .inc files with GitHub pins first, then Hackage.
-  all                Run sync-upstream, normalize-patches, normalize-incs and sync-deps.
+  normalize-cabals   Reorder cabal.project.local package/constraint blocks.
+  all                Run sync-upstream, normalize-patches, normalize-incs, normalize-cabals and sync-deps.
   --apply             Make changes instead of printing a dry run.
 USAGE
     exit 1;
@@ -492,6 +493,8 @@ sub sync_project_local {
         }
     }
 
+    $changes += normalize_project_local_lines( \@lines );
+
     if ($changes) {
         if ($apply) {
             my $tmpname = $project . '.tmp';
@@ -507,6 +510,51 @@ sub sync_project_local {
     log_msg("project.local entries examined for $port: $changes");
 }
 
+sub project_local_sort_key {
+    my ($line) = @_;
+    if ( $line =~
+        /^\s*packages:\s+(?:\.\.\/)?([A-Za-z0-9_.-]+)-[0-9][A-Za-z0-9_.-]*\s*$/
+      )
+    {
+        return ( lc $1, lc $line );
+    }
+    if ( $line =~
+        /^\s*constraints:\s+([A-Za-z0-9_.-]+)\s*==\s*[0-9][A-Za-z0-9_.-]*\s*$/ )
+    {
+        return ( lc $1, lc $line );
+    }
+    return ( lc $line, lc $line );
+}
+
+sub normalize_project_local_lines {
+    my ($lines_ref) = @_;
+    my @lines       = @$lines_ref;
+    my $changes     = 0;
+
+    for ( my $i = 0 ; $i <= $#lines ; $i++ ) {
+        next
+          unless $lines[$i] =~ /^\s*(packages|constraints):\s+/;
+        my $kind = $1;
+        my $j    = $i;
+        $j++ while $j <= $#lines
+          && $lines[$j] =~ /^\s*\Q$kind\E:\s+/;
+        my @block  = @lines[ $i .. $j - 1 ];
+        my @sorted = sort {
+            my @ak = project_local_sort_key($a);
+            my @bk = project_local_sort_key($b);
+            $ak[0] cmp $bk[0] || $ak[1] cmp $bk[1]
+        } @block;
+        if ( join( '', @block ) ne join( '', @sorted ) ) {
+            @lines[ $i .. $j - 1 ] = @sorted;
+            $changes++;
+        }
+        $i = $j - 1;
+    }
+
+    @$lines_ref = @lines;
+    return $changes;
+}
+
 sub sync_project_locals {
     my ($port) = @_;
     my $cfg = $ports{$port} or die "unknown port $port";
@@ -514,6 +562,79 @@ sub sync_project_locals {
     for my $project ( @{ $cfg->{projects} || [] } ) {
         next unless -f $project;
         sync_project_local( $port, $project );
+    }
+}
+
+sub spec_candidate_versions {
+    my ($spec) = @_;
+    my %seen;
+    my @candidates;
+    while ( $spec =~ /(?:==|>=|<=|>|<|~=)\s*([0-9]+(?:\.[0-9]+)+)(\.\*)?/g ) {
+        my ( $ver, $wildcard ) = ( $1, $2 );
+        if ($wildcard) {
+            my $expanded = $ver . '.0';
+            push @candidates, $expanded unless $seen{$expanded}++;
+        }
+        push @candidates, $ver unless $seen{$ver}++;
+    }
+    return @candidates;
+}
+
+sub package_versions_across_ports {
+    my ($pkg) = @_;
+    my %versions;
+    for my $port ( keys %ports ) {
+        my %pins = assignments_hash( $ports{$port}->{inc} );
+        for my $var ( keys %pins ) {
+            my $name = var_to_package_name($var);
+            next unless defined $name && lc($name) eq lc($pkg);
+            $versions{ $pins{$var} } = 1;
+        }
+    }
+    return sort { version_cmp( $b, $a ); } keys %versions;
+}
+
+sub sync_inc_with_cabal_constraints {
+    my ( $port, $cabal_file ) = @_;
+    my $cfg   = $ports{$port} or die "unknown port $port";
+    my %specs = parse_cabal_constraints($cabal_file);
+
+    open my $in, '<', $cfg->{inc} or die "open $cfg->{inc}: $!";
+    my @lines = <$in>;
+    close $in;
+
+    my $changes = 0;
+    for my $line (@lines) {
+        next unless $line =~ /^([A-Z0-9_]+)\s*=\s*(.*?)\s*$/;
+        my ( $name, $current ) = ( $1, $2 );
+        my $pkg = var_to_package_name($name);
+        next unless defined $pkg;
+        next unless exists $specs{$pkg};
+        my $spec = join( ' || ', @{ $specs{$pkg} } );
+        next if satisfies_spec( $current, $spec );
+
+        my %seen;
+        my @candidates = grep { !$seen{$_}++ } (
+            package_versions_across_ports($pkg),
+            spec_candidate_versions($spec)
+        );
+        my ($wanted) = grep { satisfies_spec( $_, $spec ) } @candidates;
+        if ( !defined $wanted ) {
+            log_msg(
+                "skip $name: no candidate version satisfies upstream $spec");
+            next;
+        }
+        next if $wanted eq $current;
+        my $old = $current;
+        $line =~ s/^(\Q$name\E\s*=\s*).*$/$1$wanted/;
+        $line .= "\n" unless $line =~ /\n\z/;
+        log_msg("sync $cfg->{inc} $name: $old -> $wanted (requires $spec)");
+        $changes++;
+    }
+
+    if ($changes) {
+        write_lines_if_changed( $cfg->{inc}, \@lines );
+        sync_project_locals($port);
     }
 }
 
@@ -546,6 +667,7 @@ sub sync_upstream {
                 ( $apply ? 'updated ' : 'would update ' ) . $cfg->{cabal} );
             $changes++;
         }
+        sync_inc_with_cabal_constraints( $port, $upstream_cabal );
         sync_project_locals($port);
     }
     log_msg(
@@ -604,6 +726,7 @@ sub sync_dep_vars {
         print {$out} @lines;
         close $out;
         rename $tmpname, $chat_file or die "rename $tmpname -> $chat_file: $!";
+        sync_project_locals('simplex-chat') if $changes;
     }
     else {
         log_msg('dry run only; rerun with --apply to write changes');
@@ -672,6 +795,17 @@ sub normalize_incs {
     }
 }
 
+sub normalize_cabals {
+    for my $port ( sort keys %ports ) {
+        my $cfg = $ports{$port} or next;
+        sync_project_local( $port, $cfg->{project} ) if -f $cfg->{project};
+        for my $project ( @{ $cfg->{projects} || [] } ) {
+            next unless -f $project;
+            sync_project_local( $port, $project );
+        }
+    }
+}
+
 if ( $mode eq 'list-deps' ) {
     show_dep_diff();
 }
@@ -687,9 +821,13 @@ elsif ( $mode eq 'normalize-patches' ) {
 elsif ( $mode eq 'normalize-incs' ) {
     normalize_incs();
 }
+elsif ( $mode eq 'normalize-cabals' ) {
+    normalize_cabals();
+}
 elsif ( $mode eq 'all' ) {
     sync_upstream();
     normalize_patches();
     normalize_incs();
+    normalize_cabals();
     sync_dep_vars();
 }

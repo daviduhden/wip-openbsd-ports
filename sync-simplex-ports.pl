@@ -493,6 +493,13 @@ sub sync_project_local {
         }
     }
 
+    my $pruned =
+      prune_project_packages_to_direct( $port, $cfg->{cabal}, \@lines );
+    if ($pruned) {
+        log_msg("pruned non-direct packages from $project: $pruned");
+        $changes += $pruned;
+    }
+
     $changes += normalize_project_local_lines( \@lines );
 
     if ($changes) {
@@ -508,6 +515,46 @@ sub sync_project_local {
         }
     }
     log_msg("project.local entries examined for $port: $changes");
+}
+
+sub direct_deps_from_cabal {
+    my ($cabal_file) = @_;
+    my %specs = parse_cabal_constraints($cabal_file);
+    return map { lc $_ => 1 } keys %specs;
+}
+
+sub package_name_from_packages_token {
+    my ($token) = @_;
+    my $name = $token;
+    $name =~ s{^\.\./}{};
+    $name =~ s{/$}{};
+    $name =~ s/-[0-9][A-Za-z0-9_.-]*$//;
+    return lc $name;
+}
+
+sub prune_project_packages_to_direct {
+    my ( $port, $cabal_file, $lines_ref ) = @_;
+    my %direct = direct_deps_from_cabal($cabal_file);
+    my @out;
+    my $removed = 0;
+
+    for my $line (@$lines_ref) {
+        if ( $line =~ /^\s*packages:\s+(\S+)\s*$/ ) {
+            my $token = $1;
+            if ( $token ne '.' && $token =~ /-[0-9][A-Za-z0-9_.-]*$/ ) {
+                my $pkg = package_name_from_packages_token($token);
+                if ( !exists $direct{$pkg} ) {
+                    $removed++;
+                    next;
+                }
+            }
+        }
+        push @out, $line;
+    }
+
+    return 0 if !$removed;
+    @$lines_ref = @out;
+    return $removed;
 }
 
 sub project_local_sort_key {

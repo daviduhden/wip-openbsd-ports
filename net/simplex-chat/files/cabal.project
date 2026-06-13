@@ -1,0 +1,21 @@
+packages: .
+-- packages: . ../simplexmq
+-- packages: . ../simplexmq ../direct-sqlcipher ../sqlcipher-simple
+
+-- uncomment two sections below to run tests with coverage
+-- package *
+--    coverage: True
+--    library-coverage: True
+
+-- package attoparsec
+--    coverage: False
+--    library-coverage: False
+
+index-state: 2025-11-12T00:00:00Z
+
+package cryptostore
+    flags: +use_crypton
+
+constraints: zip +disable-bzip2 +disable-zstd
+
+-- TODO this fork is only needed to compile with GHC 8.10.7 - it allows previous base version

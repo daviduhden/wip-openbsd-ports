@@ -1,0 +1,19 @@
+@newgroup _simplexmq:908
+@newuser _simplexmq:908:908::SimpleXMQ daemon:/var/empty:/sbin/nologin
+@rcscript ${RCDIR}/smp_server
+@rcscript ${RCDIR}/xftp_server
+@mode 755
+@owner _simplexmq
+@group _simplexmq
+@sample ${SYSCONFDIR}/simplex/
+@sample ${SYSCONFDIR}/simplex/smp-server/
+@sample ${SYSCONFDIR}/simplex/xftp-server/
+@sample ${LOCALSTATEDIR}/simplex/
+@sample ${LOCALSTATEDIR}/simplex/smp-server/
+@sample ${LOCALSTATEDIR}/simplex/xftp-server/
+@mode
+@owner
+@group
+@bin bin/smp-server
+@bin bin/xftp-server
+share/doc/pkg-readmes/${PKGSTEM}

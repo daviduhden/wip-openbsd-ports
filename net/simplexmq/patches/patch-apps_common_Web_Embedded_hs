@@ -1,0 +1,27 @@
+$OpenBSD$
+
+Use project-relative `file-embed` paths for the embedded web assets.
+This lets Cabal compile the bundled HTML and static files from the port tree.
+
+--- apps/common/Web/Embedded.hs
++++ apps/common/Web/Embedded.hs
+@@ -2,14 +2,14 @@
+
+ module Web.Embedded where
+
+-import Data.FileEmbed (embedDir, embedFile)
++import Data.FileEmbed (embedDir, embedFile, makeRelativeToProject)
+ import Simplex.Messaging.Server.Web (EmbeddedContent (..))
+
+ embeddedContent :: EmbeddedContent
+ embeddedContent =
+   EmbeddedContent
+-    { indexHtml = $(embedFile "apps/common/Web/static/index.html"),
+-      linkHtml = $(embedFile "apps/common/Web/static/link.html"),
+-      mediaContent = $(embedDir "apps/common/Web/static/media/"),
+-      wellKnown = $(embedDir "apps/common/Web/static/.well-known/")
++    { indexHtml = $(embedFile =<< makeRelativeToProject "apps/common/Web/static/index.html"),
++      linkHtml = $(embedFile =<< makeRelativeToProject "apps/common/Web/static/link.html"),
++      mediaContent = $(embedDir =<< makeRelativeToProject "apps/common/Web/static/media/"),
++      wellKnown = $(embedDir =<< makeRelativeToProject "apps/common/Web/static/.well-known/")
+     }

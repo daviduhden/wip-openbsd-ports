@@ -1,0 +1,15 @@
+$OpenBSD$
+
+cryptostore still uses the old package name in its Cabal metadata,
+but the port provides crypton-x509-validation.
+--- /usr/obj/ports/simplex-chat-6.5.4.1/cryptostore-0.3.1.0/cryptostore.cabal	Sun Sep  9 03:46:40 2001
++++ /tmp/tmp.MHAdbB2NJy	Fri Jun 12 17:21:49 2026
+@@ -72,7 +72,7 @@
+   else
+     build-depends:     cryptonite >=0.26
+                      , x509 >= 1.7.5
+-                     , x509-validation >= 1.5
++                     , crypton-x509-validation >= 1.5
+   default-language:    Haskell2010
+   ghc-options:         -Wall
+ 

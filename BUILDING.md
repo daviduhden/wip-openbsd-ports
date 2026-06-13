@@ -20,6 +20,17 @@ Configure the ports tree in the usual OpenBSD way:
 The repository includes `fetch-ports.ksh` to bootstrap a ports tree and copy the
 custom ports into place under `/usr/ports/net/`.
 
+For the SimpleX ports, `sync-simplex-ports.pl` helps keep the shared Hackage
+pins in sync and normalizes `patches/` filenames so they follow the OpenBSD
+path-based convention.
+
+Examples:
+
+```sh
+perl ./sync-simplex-ports.pl list-deps
+perl ./sync-simplex-ports.pl --apply all
+```
+
 ## General Workflow
 
 From the port directory:

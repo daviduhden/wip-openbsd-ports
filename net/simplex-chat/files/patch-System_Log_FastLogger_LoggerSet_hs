@@ -1,0 +1,21 @@
+$OpenBSD$
+# Remove debounceThreadName usage dropped by auto-update 0.1.6.
+--- fast-logger-3.2.5/System/Log/FastLogger/LoggerSet.hs
++++ fast-logger-3.2.5/System/Log/FastLogger/LoggerSet.hs
+@@ -29,7 +29,7 @@
+ ) where
+ 
+ import Control.Concurrent (getNumCapabilities)
+-import Control.Debounce (debounceAction, defaultDebounceSettings, mkDebounce, debounceThreadName)
++import Control.Debounce (debounceAction, defaultDebounceSettings, mkDebounce)
+ 
+ import System.Log.FastLogger.FileIO
+ import System.Log.FastLogger.IO
+@@ -117,7 +117,6 @@
+         mkDebounce
+             defaultDebounceSettings
+                 { debounceAction = flushLogStrRaw logger
+-                , debounceThreadName = "Loggerset of FastLogger (Debounce)"
+                 }
+     return $
+         LoggerSet

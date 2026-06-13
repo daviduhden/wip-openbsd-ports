@@ -1,0 +1,12 @@
+$OpenBSD$
+# Relax time-manager to the upstream-compatible auto-update.
+--- time-manager-0.2.4/time-manager.cabal
++++ time-manager-0.2.4/time-manager.cabal
+@@ -17,7 +17,7 @@
+ 
+ Library
+   Build-Depends:     base                      >= 4.12       && < 5
+-                   , auto-update               >= 0.2        && < 0.3
++                   , auto-update               >= 0.1.6      && < 0.3
+                    , containers
+                    , stm

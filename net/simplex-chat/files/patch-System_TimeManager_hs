@@ -1,0 +1,25 @@
+$OpenBSD$
+# Swap reaperModify and drop the removed reaperThreadName field for the older
+# auto-update API.
+--- time-manager-0.2.4/System/TimeManager.hs
++++ time-manager-0.2.4/System/TimeManager.hs
+@@ -100,7 +100,6 @@
+                   -- with 'readIORef`. So, let's just use a list.
+                   reaperAction = mkListAction prune
+                 , reaperDelay = timeout
+-                , reaperThreadName = "WAI timeout manager (Reaper)"
+                 }
+   where
+     prune m@Handle{..} = do
+@@ -172,7 +171,9 @@
+ -- | Removing the 'Handle' from the 'Manager' immediately.
+ cancel :: Handle -> IO ()
+ cancel Handle{..} = case handleManager of
+     NoManager -> return ()
+-    Manager mgr -> void $ reaperModify mgr filt
++    Manager mgr -> do
++        handles <- reaperStop mgr
++        mapM_ (reaperAdd mgr) (filt handles)
+   where
+     -- It's very important that this function forces the whole workload so we
+     -- don't retain old handles, otherwise disasterous leaks occur.

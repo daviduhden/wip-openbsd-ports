@@ -1,121 +1,117 @@
-tests: False
+tests: True
 benchmarks: False
 packages: .
 
 package simplexmq
-    tests: False
+    tests: True
 
 package QuickCheck
     flags: -templatehaskell
+constraints: generic-random == 1.5.0.1
+constraints: haskell-lexer == 1.2.1
 constraints: haskell-lexer == 1.2.1
 constraints: hspec == 2.11.17
 constraints: hspec-core == 2.11.17
 constraints: hspec-discover == 2.11.17
 constraints: hspec-expectations == 0.8.4
-constraints: QuickCheck == 2.14.3
-constraints: generic-random == 1.5.0.1
 constraints: http-client == 0.7.19
-constraints: haskell-lexer == 1.2.1
-constraints: quickcheck-io == 0.2.0
 constraints: main-tester == 0.2.0.1
+constraints: QuickCheck == 2.14.3
+constraints: quickcheck-io == 0.2.0
 constraints: silently == 1.2.5.4
 constraints: timeit == 2.0
 packages: ../aeson-2.2.3.0
+packages: ../assoc-1.1.1
 packages: ../base-orphans-0.9.3
-packages: ../witherable-0.5
-packages: ../indexed-traversable-0.1.4
-packages: ../indexed-traversable-instances-0.1.2
-packages: ../primitive-0.9.1.0
-packages: ../vector-0.13.2.0
-packages: ../vector-stream-0.1.0.1
-packages: ../time-compat-1.9.9
-packages: ../time-manager-0.0.1
+packages: ../bifunctor-classes-compat-0.1
+packages: ../case-insensitive-1.2.1.0
+packages: ../foldable1-classes-compat-0.1.3
 packages: ../http-semantics-0.4.0
 packages: ../http-types-0.12.4
-packages: ../case-insensitive-1.2.1.0
-packages: ../network-byte-order-0.1.7
-packages: ../utf8-string-1.0.2
 packages: ../http2-4.2.2
+packages: ../indexed-traversable-0.1.4
+packages: ../indexed-traversable-instances-0.1.2
+packages: ../network-byte-order-0.1.7
+packages: ../primitive-0.9.1.0
+packages: ../semialign-1.3.1.1
+packages: ../tagged-0.8.9
+packages: ../text-iso8601-0.1.1.1
+packages: ../text-short-0.1.6.1
+packages: ../th-abstraction-0.7.2.0
+packages: ../these-1.2.1
+packages: ../time-compat-1.9.9
+packages: ../time-manager-0.0.1
+packages: ../type-equality-1.0.1
+packages: ../utf8-string-1.0.2
+packages: ../uuid-types-1.0.6.1
+packages: ../vector-0.13.2.0
+packages: ../vector-stream-0.1.0.1
 packages: ../warp-3.3.30
 packages: ../warp-tls-3.4.7
-packages: ../these-1.2.1
-packages: ../type-equality-1.0.1
-packages: ../assoc-1.1.1
-packages: ../foldable1-classes-compat-0.1.3
-packages: ../tagged-0.8.9
-packages: ../bifunctor-classes-compat-0.1
-packages: ../text-short-0.1.6.1
-packages: ../text-iso8601-0.1.1.1
-packages: ../uuid-types-1.0.6.1
-packages: ../th-abstraction-0.7.2.0
-packages: ../semialign-1.3.1.1
+packages: ../witherable-0.5
 package semialign
   flags: -semigroupoids
-packages: ../unordered-containers-0.2.20.1
-packages: ../scientific-0.3.7.0
-packages: ../th-compat-0.1.7
+packages: ../data-array-byte-0.1.0.2
+packages: ../data-fix-0.3.4
+packages: ../generically-0.1.1
+packages: ../ghc-bignum-orphans-0.1.1
+packages: ../hashable-1.4.7.0
+packages: ../integer-conversion-0.1.1
+packages: ../integer-logarithms-1.0.5
 packages: ../network-uri-2.6.4.2
 packages: ../old-locale-1.0.0.7
 packages: ../old-time-1.1.0.4
-packages: ../integer-logarithms-1.0.5
-packages: ../integer-conversion-0.1.1
-packages: ../hashable-1.4.7.0
-packages: ../ghc-bignum-orphans-0.1.1
-packages: ../data-array-byte-0.1.0.2
-packages: ../generically-0.1.1
-packages: ../data-fix-0.3.4
-packages: ../transformers-compat-0.7.2
 packages: ../OneTuple-0.4.3
-packages: ../hs-socks-a30cc7a79a08d8108316094f8f2f82a0c5e1ac51
-packages: splitmix-0.1.3.1
 packages: ../direct-sqlcipher-f814ee68b16a9447fbb467ccc8f29bdd3546bfd9
+packages: ../hs-socks-a30cc7a79a08d8108316094f8f2f82a0c5e1ac51
 packages: ../sqlcipher-simple-a46bd361a19376c5211f1058908fc0ae6bf42446
-constraints: splitmix == 0.1.3.1
+packages: ../scientific-0.3.7.0
+packages: splitmix-0.1.3.1
+packages: ../th-compat-0.1.7
+packages: ../transformers-compat-0.7.2
+packages: ../unordered-containers-0.2.20.1
 constraints: aeson == 2.2.3.0
+constraints: assoc == 1.1.1
 constraints: base-orphans == 0.9.3
-constraints: witherable == 0.5
-constraints: indexed-traversable == 0.1.4
-constraints: indexed-traversable-instances == 0.1.2
-constraints: primitive == 0.9.1.0
-constraints: vector == 0.13.2.0
-constraints: vector-stream == 0.1.0.1
-constraints: time-compat == 1.9.9
-constraints: time-manager == 0.0.1
+constraints: bifunctor-classes-compat == 0.1
+constraints: case-insensitive == 1.2.1.0
+constraints: data-array-byte == 0.1.0.2
+constraints: data-fix == 0.3.4
+constraints: foldable1-classes-compat == 0.1.3
+constraints: generically == 0.1.1
+constraints: ghc-bignum-orphans == 0.1.1
+constraints: hashable == 1.4.7.0
 constraints: http-semantics == 0.4.0
 constraints: http-types == 0.12.4
-constraints: case-insensitive == 1.2.1.0
-constraints: network-byte-order == 0.1.7
-constraints: utf8-string == 1.0.2
 constraints: http2 == 4.2.2
+constraints: indexed-traversable == 0.1.4
+constraints: indexed-traversable-instances == 0.1.2
+constraints: integer-conversion == 0.1.1
+constraints: integer-logarithms == 1.0.5
+constraints: network-byte-order == 0.1.7
+constraints: network-uri == 2.6.4.2
+constraints: OneTuple == 0.4.3
+constraints: primitive == 0.9.1.0
+constraints: scientific == 0.3.7.0
+constraints: semialign == 1.3.1.1
+constraints: splitmix == 0.1.3.1
+constraints: tagged == 0.8.9
+constraints: text-iso8601 == 0.1.1.1
+constraints: text-short == 0.1.6.1
+constraints: th-abstraction == 0.7.2.0
+constraints: th-compat == 0.1.7
+constraints: these == 1.2.1
+constraints: time-compat == 1.9.9
+constraints: time-manager == 0.0.1
+constraints: transformers-compat == 0.7.2
+constraints: unordered-containers == 0.2.20.1
+constraints: utf8-string == 1.0.2
+constraints: uuid-types == 1.0.6.1
+constraints: vector == 0.13.2.0
+constraints: vector-stream == 0.1.0.1
 constraints: warp == 3.3.30
 constraints: warp-tls == 3.4.7
-constraints: these == 1.2.1
-constraints: assoc == 1.1.1
-constraints: foldable1-classes-compat == 0.1.3
-constraints: tagged == 0.8.9
-constraints: bifunctor-classes-compat == 0.1
-constraints: text-short == 0.1.6.1
-constraints: text-iso8601 == 0.1.1.1
-constraints: uuid-types == 1.0.6.1
-constraints: th-abstraction == 0.7.2.0
-constraints: semialign == 1.3.1.1
-constraints: unordered-containers == 0.2.20.1
-constraints: scientific == 0.3.7.0
-constraints: th-compat == 0.1.7
-constraints: network-uri == 2.6.4.2
-constraints: integer-logarithms == 1.0.5
-constraints: integer-conversion == 0.1.1
-constraints: hashable == 1.4.7.0
-constraints: ghc-bignum-orphans == 0.1.1
-constraints: data-array-byte == 0.1.0.2
-constraints: generically == 0.1.1
-constraints: data-fix == 0.3.4
-constraints: transformers-compat == 0.7.2
-constraints: OneTuple == 0.4.3
-packages: ../Cabal-3.14.2.0
-packages: ../Cabal-syntax-3.14.2.0
-packages: ../Only-0.1
-packages: ../SHA-1.6.4.4
+constraints: witherable == 0.5
 packages: ../alex-3.5.3.0
 packages: ../ansi-terminal-0.9.1
 packages: ../ansi-wl-pprint-0.6.9
@@ -141,6 +137,8 @@ packages: ../bsb-http-chunked-0.0.0.4
 packages: ../byteorder-1.0.4
 packages: ../bytestring-0.11.5.4
 packages: ../bytestring-builder-0.10.8.2.0
+packages: ../Cabal-3.14.2.0
+packages: ../Cabal-syntax-3.14.2.0
 packages: ../call-stack-0.4.0
 packages: ../cborg-0.2.10.0
 packages: ../cereal-0.5.8.3
@@ -158,14 +156,16 @@ packages: ../crypton-x509-1.7.7
 packages: ../crypton-x509-store-1.6.10
 packages: ../crypton-x509-validation-1.6.14
 packages: ../cryptostore-0.3.1.0
+packages: ../Only-0.1
+packages: ../SHA-1.6.4.4
 package cryptostore
   flags: +use_crypton
+packages: ../containers-0.6.8
 packages: ../data-default-0.7.1.3
 packages: ../data-default-class-0.1.2.2
 packages: ../data-default-instances-containers-0.1.0.3
 packages: ../data-default-instances-dlist-0.0.1.2
 packages: ../data-default-instances-old-locale-0.0.1.2
-packages: ../containers-0.6.8
 packages: ../directory-1.3.9.0
 packages: ../dlist-1.0
 packages: ../easy-file-0.2.5
@@ -174,63 +174,63 @@ packages: ../fast-logger-3.2.5
 packages: ../file-embed-0.0.16.0
 packages: ../file-io-0.1.5
 packages: ../filepath-1.4.301.0
+packages: ../generic-random-1.5.0.1
 packages: ../half-0.3.2
 packages: ../hashmap-1.3.3
+packages: ../haskell-lexer-1.2.1
 packages: ../hourglass-0.2.12
 packages: ../hsc2hs-0.68.10
+packages: ../hspec-2.11.17
+packages: ../hspec-core-2.11.17
+packages: ../hspec-discover-2.11.17
+packages: ../hspec-expectations-0.8.4
+packages: ../http-client-0.7.19
 packages: ../http-date-0.0.11
+packages: ../HUnit-1.6.2.0
 packages: ../ini-0.4.1
 packages: ../iproute-1.7.15
 packages: ../iso8601-time-0.1.5
 packages: ../libyaml-0.1.4
 packages: ../libyaml-clib-0.2.5
 packages: ../lifted-base-0.2.3.12
+packages: ../main-tester-0.2.0.1
 packages: ../memory-0.18.0
 packages: ../mime-types-0.1.2.0
 packages: ../monad-control-1.0.3.1
 packages: ../monad-logger-0.3.42
 packages: ../monad-loops-0.4.3
 packages: ../mono-traversable-1.0.21.0
+packages: ../network-3.1.4.0
 packages: ../network-control-0.1.7
 packages: ../network-info-0.2.1
 packages: ../network-transport-0.5.6
 packages: ../network-udp-0.0.0
-packages: ../network-3.1.4.0
 packages: ../optparse-applicative-0.16.1.0
-packages: ../HUnit-1.6.2.0
-packages: ../QuickCheck-2.14.3
-packages: ../generic-random-1.5.0.1
-packages: ../http-client-0.7.19
-packages: ../haskell-lexer-1.2.1
-packages: ../hspec-2.11.17
-packages: ../hspec-core-2.11.17
-packages: ../hspec-discover-2.11.17
-packages: ../hspec-expectations-0.8.4
-packages: ../quickcheck-io-0.2.0
-packages: ../main-tester-0.2.0.1
-packages: ../silently-1.2.5.4
-packages: ../timeit-2.0
-packages: ../prettyprinter-1.7.2
-packages: ../prettyprinter-ansi-terminal-1.1.4
 packages: ../os-string-2.0.7
 packages: ../parsec-3.1.18.0
 packages: ../pem-0.2.4
+packages: ../prettyprinter-1.7.2
+packages: ../prettyprinter-ansi-terminal-1.1.4
 packages: ../process-1.6.26.1
 packages: ../psqueues-0.2.8.1
+packages: ../QuickCheck-2.14.3
+packages: ../quickcheck-io-0.2.0
 packages: ../random-1.2.1.3
 packages: ../recv-0.1.1
 packages: ../resourcet-1.3.0
 packages: ../safe-exceptions-0.1.7.4
 packages: ../serialise-0.2.6.1
+packages: ../silently-1.2.5.4
 packages: ../simple-logger-0.1.1
 packages: ../simple-sendfile-0.2.32
 packages: ../split-0.2.5
 packages: ../stm-chans-3.0.0.9
 packages: ../streaming-commons-0.2.3.0
 packages: ../strict-0.5.1
-packages: ../text-2.1.3
 packages: ../tasty-1.5.4
 packages: ../temporary-1.3
+packages: ../text-2.1.3
+packages: ../timeit-2.0
 packages: ../tls-1.9.0
 packages: ../tls-session-manager-0.0.8
 packages: ../transformers-base-0.4.6
@@ -251,10 +251,6 @@ packages: ../word8-0.1.3
 packages: ../yaml-0.11.11.2
 packages: ../zlib-0.7.1.0
 packages: ../zstd-0.1.3.0
-constraints: Cabal == 3.14.2.0
-constraints: Cabal-syntax == 3.14.2.0
-constraints: Only == 0.1
-constraints: SHA == 1.6.4.4
 constraints: alex == 3.5.3.0
 constraints: ansi-terminal == 0.9.1
 constraints: appar == 0.1.8
@@ -278,6 +274,8 @@ constraints: boring == 0.2.2
 constraints: bsb-http-chunked == 0.0.0.4
 constraints: byteorder == 1.0.4
 constraints: bytestring == 0.11.5.4
+constraints: Cabal == 3.14.2.0
+constraints: Cabal-syntax == 3.14.2.0
 constraints: call-stack == 0.4.0
 constraints: cborg == 0.2.10.0
 constraints: cereal == 0.5.8.3
@@ -288,6 +286,7 @@ constraints: composition == 1.0.2.2
 constraints: conduit == 1.3.6.1
 constraints: conduit-extra == 1.3.7
 constraints: constraints == 0.13.4
+constraints: containers == 0.6.8
 constraints: cookie == 0.5.1
 constraints: crypto-token == 0.1.2
 constraints: crypton == 0.34
@@ -300,7 +299,6 @@ constraints: data-default-class == 0.1.2.2
 constraints: data-default-instances-containers == 0.1.0.3
 constraints: data-default-instances-dlist == 0.0.1.2
 constraints: data-default-instances-old-locale == 0.0.1.2
-constraints: containers == 0.6.8
 constraints: directory == 1.3.9.0
 constraints: dlist == 1.0
 constraints: easy-file == 0.2.5
@@ -332,12 +330,13 @@ constraints: network-transport == 0.5.6
 constraints: network-udp == 0.0.0
 constraints: old-locale == 1.0.0.7
 constraints: old-time == 1.1.0.4
+constraints: Only == 0.1
 constraints: optparse-applicative == 0.16.1.0
-constraints: prettyprinter == 1.7.2
-constraints: prettyprinter-ansi-terminal == 1.1.4
 constraints: os-string == 2.0.7
 constraints: parsec == 3.1.18.0
 constraints: pem == 0.2.4
+constraints: prettyprinter == 1.7.2
+constraints: prettyprinter-ansi-terminal == 1.1.4
 constraints: process == 1.6.26.1
 constraints: psqueues == 0.2.8.1
 constraints: random == 1.2.1.3
@@ -345,6 +344,7 @@ constraints: recv == 0.1.1
 constraints: resourcet == 1.3.0
 constraints: safe-exceptions == 0.1.7.4
 constraints: serialise == 0.2.6.1
+constraints: SHA == 1.6.4.4
 constraints: simple-logger == 0.1.1
 constraints: simple-sendfile == 0.2.32
 constraints: socks == 0.6.1
@@ -352,8 +352,8 @@ constraints: split == 0.2.5
 constraints: stm-chans == 3.0.0.9
 constraints: streaming-commons == 0.2.3.0
 constraints: strict == 0.5.1
-constraints: text == 2.1.3
 constraints: temporary == 1.3
+constraints: text == 2.1.3
 constraints: tls == 1.9.0
 constraints: tls-session-manager == 0.0.8
 constraints: transformers-base == 0.4.6

@@ -149,7 +149,6 @@ RECV_V =		0.1.1
 RESOURCET_V =		1.3.0
 SAFE_EXCEPTIONS_REV =		1
 SAFE_EXCEPTIONS_V =		0.1.7.4
-# Upstream keeps simplexmq on the 0.3.7 line.
 SCIENTIFIC_V =		0.3.7.0
 SEMIALIGN_V =		1.3.1.1
 SERIALISE_REV =		5

@@ -1,10 +1,10 @@
 $OpenBSD$
 
 GHC 9.10+ requires DuplicateRecordFields when exported data types share
-field names. Guard with __GLASGOW_HASKELL__ >= 910 CPP conditional.
+field names. Guard with __GLASGOW_HASKELL__ >= 910.
 
---- a/src/Simplex/Chat/Store.hs
-+++ b/src/Simplex/Chat/Store.hs
+--- src/Simplex/Chat/Store.hs
++++ src/Simplex/Chat/Store.hs
 @@ -1,4 +1,7 @@
  {-# LANGUAGE CPP #-}
 +#if __GLASGOW_HASKELL__ >= 910

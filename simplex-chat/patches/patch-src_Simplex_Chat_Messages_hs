@@ -1,10 +1,10 @@
 $OpenBSD$
 
-GHC 9.14 removed support for 'type' keyword in import subspecifiers
-for type operators. Guard with __GLASGOW_HASKELL__ >= 914 CPP check.
+GHC 9.14 removed 'type' keyword in import subspecifiers for type
+operators. Guard with __GLASGOW_HASKELL__ >= 914.
 
---- a/src/Simplex/Chat/Messages.hs
-+++ b/src/Simplex/Chat/Messages.hs
+--- src/Simplex/Chat/Messages.hs
++++ src/Simplex/Chat/Messages.hs
 @@ -1,3 +1,4 @@
 +{-# LANGUAGE CPP #-}
  {-# LANGUAGE DataKinds #-}

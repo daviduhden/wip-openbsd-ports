@@ -1,11 +1,10 @@
 $OpenBSD$
 
-Same KeepAlive CPP patch applied to the simplexmq copy bundled with
-simplex-chat. OpenBSD uses portable setSocketOption; other platforms
-keep the original CApiFFI implementation.
+Same KeepAlive CPP patch for the simplexmq copy bundled with
+simplex-chat. OpenBSD uses portable setSocketOption.
 
---- a/src/Simplex/Messaging/Transport/KeepAlive.hs
-+++ b/src/Simplex/Messaging/Transport/KeepAlive.hs
+--- src/Simplex/Messaging/Transport/KeepAlive.hs
++++ src/Simplex/Messaging/Transport/KeepAlive.hs
 @@ -30,6 +30,10 @@
        keepCnt = 4
      }

@@ -1,10 +1,10 @@
 $OpenBSD$
 
-System.Random.genByteString removed in random >= 1.2.1. Provide local
-implementation guarded by MIN_VERSION_random(1,2,1) CPP check.
+genByteString removed in random >= 1.2.1. Provide local implementation
+guarded by MIN_VERSION_random(1,2,1) CPP check.
 
---- a/src/Simplex/Messaging/Server/MsgStore/Journal.hs
-+++ b/src/Simplex/Messaging/Server/MsgStore/Journal.hs
+--- src/Simplex/Messaging/Server/MsgStore/Journal.hs
++++ src/Simplex/Messaging/Server/MsgStore/Journal.hs
 @@ -92,7 +92,13 @@
  import System.FilePath (takeFileName, (</>))
  import System.IO (BufferMode (..), Handle, IOMode (..), SeekMode (..))

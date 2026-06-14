@@ -1,10 +1,10 @@
 $OpenBSD$
 
 Replace L.unzip with explicit Maybe pattern match: works across all
-versions of semialign/these, no CPP needed.
+versions of semialign/these.
 
---- a/src/Simplex/Chat/Store/Profiles.hs
-+++ b/src/Simplex/Chat/Store/Profiles.hs
+--- src/Simplex/Chat/Store/Profiles.hs
++++ src/Simplex/Chat/Store/Profiles.hs
 @@ -283,7 +283,9 @@
      |]
      (hashSalt viewPwdHash :. (BI showNtfs, userId))

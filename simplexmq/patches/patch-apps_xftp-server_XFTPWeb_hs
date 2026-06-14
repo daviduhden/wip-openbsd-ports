@@ -1,10 +1,9 @@
 $OpenBSD$
 
-Use makeRelativeToProject for XFTP web asset file-embed paths,
-consistent with the Web.Embedded module patch.
+Use makeRelativeToProject for XFTP web asset file-embed paths.
 
---- a/apps/xftp-server/XFTPWeb.hs
-+++ b/apps/xftp-server/XFTPWeb.hs
+--- apps/xftp-server/XFTPWeb.hs
++++ apps/xftp-server/XFTPWeb.hs
 @@ -10,7 +10,7 @@
  import Control.Monad (forM_)
  import qualified Data.ByteString.Char8 as B

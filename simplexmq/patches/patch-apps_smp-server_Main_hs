@@ -3,8 +3,8 @@ $OpenBSD$
 OpenBSD paths: /etc/opt/simplex -> /etc/simplex/smp-server,
 /var/opt/simplex -> /var/simplex/smp-server.
 
---- a/apps/smp-server/Main.hs
-+++ b/apps/smp-server/Main.hs
+--- apps/smp-server/Main.hs
++++ apps/smp-server/Main.hs
 @@ -7,10 +7,10 @@
  import SMPWeb (smpGenerateSite)
  

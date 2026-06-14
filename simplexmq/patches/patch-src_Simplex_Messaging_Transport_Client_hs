@@ -1,10 +1,10 @@
 $OpenBSD$
 
 Replace maybe def with maybe (pure []) to avoid Default instance
-ambiguity with newer GHC. Safe for all GHC versions.
+ambiguity with newer GHC.
 
---- a/src/Simplex/Messaging/Transport/Client.hs
-+++ b/src/Simplex/Messaging/Transport/Client.hs
+--- src/Simplex/Messaging/Transport/Client.hs
++++ src/Simplex/Messaging/Transport/Client.hs
 @@ -301,7 +301,7 @@
    where
      p = B.pack port

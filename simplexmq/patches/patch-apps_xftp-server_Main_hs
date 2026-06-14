@@ -1,21 +1,20 @@
 $OpenBSD$
 
-Use OpenBSD-style config and data paths for the XFTP server.
-This keeps XFTP state under /etc/simplex and /var/simplex.
+OpenBSD paths: /etc/opt/simplex-xftp -> /etc/simplex/xftp-server,
+/var/opt/simplex-xftp -> /var/simplex/xftp-server.
 
---- apps/xftp-server/Main.hs
-+++ apps/xftp-server/Main.hs
-@@ -6,11 +6,11 @@
- import Simplex.Messaging.Server.Web (serveStaticFiles)
+--- a/apps/xftp-server/Main.hs
++++ b/apps/xftp-server/Main.hs
+@@ -7,10 +7,10 @@
  import XFTPWeb (xftpGenerateSite)
-
+ 
  defaultCfgPath :: FilePath
 -defaultCfgPath = "/etc/opt/simplex-xftp"
 +defaultCfgPath = "/etc/simplex/xftp-server"
-
+ 
  defaultLogPath :: FilePath
 -defaultLogPath = "/var/opt/simplex-xftp"
 +defaultLogPath = "/var/simplex/xftp-server"
-
+ 
  logCfg :: LogConfig
  logCfg = LogConfig {lc_file = Nothing, lc_stderr = True}

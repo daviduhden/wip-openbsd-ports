@@ -1,0 +1,35 @@
+$OpenBSD$
+
+cxtFinished returns Maybe VerifyData in tls >= 2.0.0 (was Maybe ByteString).
+Wrap in MIN_VERSION_tls(2,0,0) CPP conditional for portability.
+
+--- a/src/Simplex/Messaging/Transport.hs
++++ b/src/Simplex/Messaging/Transport.hs
+@@ -1,4 +1,5 @@
+ {-# LANGUAGE AllowAmbiguousTypes #-}
++{-# LANGUAGE CPP #-}
+ {-# LANGUAGE DataKinds #-}
+ {-# LANGUAGE DeriveAnyClass #-}
+ {-# LANGUAGE DerivingStrategies #-}
+@@ -132,6 +133,9 @@
+ import GHC.IO.Handle.Internals (ioe_EOF)
+ import Network.Socket
+ import qualified Network.TLS as T
++#if MIN_VERSION_tls(2,0,0)
++import Network.TLS (VerifyData(..))
++#endif
+ import qualified Network.TLS.Extra as TE
+ import qualified Paths_simplexmq as SMQ
+ import qualified Simplex.Messaging.Crypto as C
+@@ -373,7 +377,11 @@
+ 
+ withTlsUnique :: forall c p. TransportPeerI p => T.Context -> (ByteString -> IO (c p)) -> IO (c p)
+ withTlsUnique cxt f =
++#if MIN_VERSION_tls(2,0,0)
++  (fmap (\(VerifyData bs) -> bs) <$> cxtFinished cxt)
++#else
+   cxtFinished cxt
++#endif
+     >>= maybe (closeTLS cxt >> ioe_EOF) f
+   where
+     cxtFinished = case sTransportPeer @p of

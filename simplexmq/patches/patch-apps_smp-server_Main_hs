@@ -1,22 +1,20 @@
 $OpenBSD$
 
-Use OpenBSD-style config and data paths for the SMP server.
-The server should keep config under /etc/simplex and persistent state
-under /var/simplex instead of the upstream /etc/opt layout.
+OpenBSD paths: /etc/opt/simplex -> /etc/simplex/smp-server,
+/var/opt/simplex -> /var/simplex/smp-server.
 
---- apps/smp-server/Main.hs
-+++ apps/smp-server/Main.hs
-@@ -6,11 +6,11 @@
- import Simplex.Messaging.Server.Web (serveStaticFiles, attachStaticFiles)
+--- a/apps/smp-server/Main.hs
++++ b/apps/smp-server/Main.hs
+@@ -7,10 +7,10 @@
  import SMPWeb (smpGenerateSite)
-
+ 
  defaultCfgPath :: FilePath
 -defaultCfgPath = "/etc/opt/simplex"
 +defaultCfgPath = "/etc/simplex/smp-server"
-
+ 
  defaultLogPath :: FilePath
 -defaultLogPath = "/var/opt/simplex"
 +defaultLogPath = "/var/simplex/smp-server"
-
+ 
  logCfg :: LogConfig
  logCfg = LogConfig {lc_file = Nothing, lc_stderr = True}

@@ -1,10 +1,10 @@
 $OpenBSD$
 
-Use makeRelativeToProject for file-embed TH splices so that paths
-resolve relative to the Cabal project root (needed in OpenBSD ports).
+Use makeRelativeToProject for file-embed TH splices so paths
+resolve relative to the Cabal project root.
 
---- a/apps/common/Web/Embedded.hs
-+++ b/apps/common/Web/Embedded.hs
+--- apps/common/Web/Embedded.hs
++++ apps/common/Web/Embedded.hs
 @@ -2,14 +2,14 @@
  
  module Web.Embedded where

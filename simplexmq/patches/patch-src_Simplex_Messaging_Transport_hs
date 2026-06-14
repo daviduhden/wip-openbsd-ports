@@ -1,10 +1,10 @@
 $OpenBSD$
 
-cxtFinished returns Maybe VerifyData in tls >= 2.0.0 (was Maybe ByteString).
-Wrap in MIN_VERSION_tls(2,0,0) CPP conditional for portability.
+cxtFinished returns Maybe VerifyData in tls >= 2.0.0. Wrap in
+MIN_VERSION_tls(2,0,0) CPP conditional for portability.
 
---- a/src/Simplex/Messaging/Transport.hs
-+++ b/src/Simplex/Messaging/Transport.hs
+--- src/Simplex/Messaging/Transport.hs
++++ src/Simplex/Messaging/Transport.hs
 @@ -1,4 +1,5 @@
  {-# LANGUAGE AllowAmbiguousTypes #-}
 +{-# LANGUAGE CPP #-}

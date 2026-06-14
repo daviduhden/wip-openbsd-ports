@@ -3,8 +3,8 @@ $OpenBSD$
 OpenBSD paths: /etc/opt/simplex-xftp -> /etc/simplex/xftp-server,
 /var/opt/simplex-xftp -> /var/simplex/xftp-server.
 
---- a/apps/xftp-server/Main.hs
-+++ b/apps/xftp-server/Main.hs
+--- apps/xftp-server/Main.hs
++++ apps/xftp-server/Main.hs
 @@ -7,10 +7,10 @@
  import XFTPWeb (xftpGenerateSite)
  

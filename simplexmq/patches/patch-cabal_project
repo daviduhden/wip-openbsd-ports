@@ -1,17 +1,13 @@
 $OpenBSD$
 
-Project configuration for OpenBSD ports:
-- Add vendored splitmix and patched dependencies as local packages
-  (memory, asn1-encoding, asn1-types, hourglass, tls, cryptostore,
-  warp, crypton-x509 in deps/ with GHC 9.10+ source fixes)
-- Relax bounds via allow-newer for GHC 9.10+ base ecosystem
-- Drop index-state pin to use current Hackage snapshot
+Add vendored splitmix as local package, allow-newer for GHC 9.10+,
+drop index-state pin, comment out warp source-repository-package.
 
---- a/cabal.project
-+++ b/cabal.project
+--- cabal.project
++++ cabal.project
 @@ -1,5 +1,9 @@
 -packages: .
-+packages: . splitmix-0.1.3.1 ../deps/memory-0.18.0 ../deps/asn1-encoding-0.9.6 ../deps/asn1-types-0.3.4 ../deps/hourglass-0.2.12 ../deps/tls-2.1.6 ../deps/cryptostore-0.5.0.0 ../deps/warp-3.3.30 ../deps/crypton-x509-1.9.1
++packages: . splitmix-0.1.3.1
  -- packages: . ../direct-sqlcipher ../sqlcipher-simple
 +
 +-- Relax bounds for GHC 9.10+ compatibility (equivalent to patching each .cabal)

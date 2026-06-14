@@ -41,16 +41,10 @@ post-extract:
 do-build:
 	install -d ${CABAL_STATE_ROOT}/home ${CABAL_STATE_ROOT}/cache ${CABAL_STATE_ROOT}/cabal
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		sh ${FILESDIR}/patch-hashable-cache.ksh \
-		${CABAL_STATE_ROOT}/cabal/packages/hackage.haskell.org/hashable/1.4.3.0/hashable-1.4.3.0.tar.gz \
-		${FILESDIR}/patch-hashable-1_4_3_0_hashable_cabal && \
 		env ${MAKE_ENV} cabal build -j
 
 do-test:
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		sh ${FILESDIR}/patch-hashable-cache.ksh \
-		${CABAL_STATE_ROOT}/cabal/packages/hackage.haskell.org/hashable/1.4.3.0/hashable-1.4.3.0.tar.gz \
-		${FILESDIR}/patch-hashable-1_4_3_0_hashable_cabal && \
 		env ${MAKE_ENV} cabal test -j
 
 do-install:

@@ -1,0 +1,18 @@
+$OpenBSD$
+
+Replace L.unzip with explicit Maybe pattern match: works across all
+versions of semialign/these, no CPP needed.
+
+--- a/src/Simplex/Chat/Store/Profiles.hs
++++ b/src/Simplex/Chat/Store/Profiles.hs
+@@ -283,7 +283,9 @@
+     |]
+     (hashSalt viewPwdHash :. (BI showNtfs, userId))
+   where
+-    hashSalt = L.unzip . fmap (\UserPwdHash {hash, salt} -> (hash, salt))
++    hashSalt = \case
++      Nothing -> (Nothing, Nothing)
++      Just UserPwdHash {hash, salt} -> (Just hash, Just salt)
+ 
+ updateAllContactReceipts :: DB.Connection -> Bool -> IO ()
+ updateAllContactReceipts db onOff =

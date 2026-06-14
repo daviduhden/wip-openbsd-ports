@@ -43,7 +43,7 @@ do-build:
 		${WRKDIR}/.cabal/packages/hackage.haskell.org/hashable/1.4.3.0/hashable-1.4.3.0.tar.gz \
 		${FILESDIR}/patch-hashable-1_4_3_0_hashable_cabal && \
 		env HOME=${WRKDIR} XDG_CACHE_HOME=${WRKDIR}/.cache \
-		CABAL_DIR=${WRKDIR}/.cabal cabal build --allow-newer -j
+		CABAL_DIR=${WRKDIR}/.cabal cabal build -j
 
 do-test:
 	cd ${WRKSRC} && env HOME=${WRKDIR} XDG_CACHE_HOME=${WRKDIR}/.cache \
@@ -52,7 +52,7 @@ do-test:
 		${WRKDIR}/.cabal/packages/hackage.haskell.org/hashable/1.4.3.0/hashable-1.4.3.0.tar.gz \
 		${FILESDIR}/patch-hashable-1_4_3_0_hashable_cabal && \
 		env HOME=${WRKDIR} XDG_CACHE_HOME=${WRKDIR}/.cache \
-		CABAL_DIR=${WRKDIR}/.cabal cabal test --allow-newer -j
+		CABAL_DIR=${WRKDIR}/.cabal cabal test -j
 
 do-install:
 	smp=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/smp-server/build/smp-server/smp-server' | head -n 1); \

@@ -44,14 +44,14 @@ do-build:
 		sh ${FILESDIR}/patch-hashable-cache.ksh \
 		${CABAL_STATE_ROOT}/cabal/packages/hackage.haskell.org/hashable/1.4.3.0/hashable-1.4.3.0.tar.gz \
 		${FILESDIR}/patch-hashable-1_4_3_0_hashable_cabal && \
-		env ${MAKE_ENV} cabal build --allow-newer -j
+		env ${MAKE_ENV} cabal build -j
 
 do-test:
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
 		sh ${FILESDIR}/patch-hashable-cache.ksh \
 		${CABAL_STATE_ROOT}/cabal/packages/hackage.haskell.org/hashable/1.4.3.0/hashable-1.4.3.0.tar.gz \
 		${FILESDIR}/patch-hashable-1_4_3_0_hashable_cabal && \
-		env ${MAKE_ENV} cabal test --allow-newer -j
+		env ${MAKE_ENV} cabal test -j
 
 do-install:
 	chat=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/simplex-chat/build/simplex-chat/simplex-chat' | head -n 1); \

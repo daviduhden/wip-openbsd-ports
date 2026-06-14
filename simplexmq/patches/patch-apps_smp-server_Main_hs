@@ -9,14 +9,14 @@ under /var/simplex instead of the upstream /etc/opt layout.
 @@ -6,11 +6,11 @@
  import Simplex.Messaging.Server.Web (serveStaticFiles, attachStaticFiles)
  import SMPWeb (smpGenerateSite)
- 
+
  defaultCfgPath :: FilePath
 -defaultCfgPath = "/etc/opt/simplex"
 +defaultCfgPath = "/etc/simplex/smp-server"
- 
+
  defaultLogPath :: FilePath
 -defaultLogPath = "/var/opt/simplex"
 +defaultLogPath = "/var/simplex/smp-server"
- 
+
  logCfg :: LogConfig
  logCfg = LogConfig {lc_file = Nothing, lc_stderr = True}

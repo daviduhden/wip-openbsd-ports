@@ -1,0 +1,17 @@
+$OpenBSD$
+
+GHC 9.10+ compat: replace deprecated memory/asn1-encoding/asn1-types
+with their maintained successors ram/crypton-asn1-encoding/crypton-asn1-types.
+
+--- tls.cabal
++++ tls.cabal
+@@ -121,8 +121,8 @@
+         asn1-encoding >= 0.9 && < 0.10,
+-        asn1-types >= 0.3 && < 0.4,
++        crypton-asn1-encoding >= 0.10.0 && < 0.11,
++        crypton-asn1-types >= 0.4.1 && < 0.5,
+         async >= 2.0 && < 2.3,
+@@ -131,7 +131,7 @@
+         memory >= 0.18 && < 0.19,
++        ram >= 0.18 && < 0.23,
+         mtl >= 2.6 && < 2.4,

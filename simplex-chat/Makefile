@@ -36,7 +36,7 @@ RUN_DEPENDS = databases/sqlcipher \
 			archivers/zstd
 
 post-extract:
-	patch -d ${WRKDIR} -p1 < ${FILESDIR}/patch-simplexmq-stable_src_Simplex_Messaging_Transport_KeepAlive_hs
+	patch -d ${WRKDIR}/simplexmq-stable -p0 < ${FILESDIR}/patch-simplexmq-stable_src_Simplex_Messaging_Transport_KeepAlive_hs
 
 do-build:
 	install -d ${CABAL_STATE_ROOT}/home ${CABAL_STATE_ROOT}/cache ${CABAL_STATE_ROOT}/cabal

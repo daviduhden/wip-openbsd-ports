@@ -1,7 +1,7 @@
 $OpenBSD$
 
-GHC 9.10+ requires DuplicateRecordFields when exported data types share
-field names. Guard with __GLASGOW_HASKELL__ >= 910.
+GHC 9.10+ requires DuplicateRecordFields when exported data
+types share field names. Guard with __GLASGOW_HASKELL__ >= 910.
 
 --- src/Simplex/Chat/Store.hs
 +++ src/Simplex/Chat/Store.hs

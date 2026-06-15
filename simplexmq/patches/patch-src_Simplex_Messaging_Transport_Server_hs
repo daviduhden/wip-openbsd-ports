@@ -1,7 +1,6 @@
 $OpenBSD$
 
-Add explicit type annotation IO [AddrInfo] for getAddrInfo call;
-newer network versions change the return type causing ambiguity.
+Add explicit IO [AddrInfo] type annotation for getAddrInfo.
 
 --- src/Simplex/Messaging/Transport/Server.hs
 +++ src/Simplex/Messaging/Transport/Server.hs

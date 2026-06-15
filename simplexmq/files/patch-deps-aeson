@@ -1,0 +1,32 @@
+$OpenBSD$
+
+GHC 9.10+ compat: add SA.Unzip KeyMap instance (required by semialign>=1.3),
+add snd to Prelude import, relax ghc-prim upper bound.
+
+--- aeson.cabal
++++ aeson.cabal
+@@ -100,7 +100,7 @@
+       base              >=4.10.0.0 && <5
+     , bytestring        >=0.10.8.1 && <0.13
+     , containers        >=0.6.0.1 && <0.7
+-    , ghc-prim          >=0.5.0.0  && <0.12
++    , ghc-prim          >=0.5.0.0  && <0.14
+     , template-haskell  >=2.12.0.0 && <2.23
+     , text              >=1.2.3.0 && <2.2
+
+--- src/Data/Aeson/KeyMap.hs
++++ src/Data/Aeson/KeyMap.hs
+@@ -94,4 +94,4 @@
+ import Prelude (Show, showsPrec, showParen, shows, showString)
+-import Prelude (fst)
++import Prelude (fst, snd)
+ import Data.Bifunctor (first)
+@@ -693,6 +693,10 @@
+ instance SA.Zip KeyMap where
+     zipWith = intersectionWith
+ 
++instance SA.Unzip KeyMap where
++    unzip (KeyMap m) = (KeyMap (fmap fst m), KeyMap (fmap snd m))
++
+ instance SAI.ZipWithIndex Key KeyMap where
+     izipWith = intersectionWithKey

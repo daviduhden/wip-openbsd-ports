@@ -1,0 +1,14 @@
+$OpenBSD$
+
+GHC 9.10+ compat: replace memory with ram in cryptostore build-depends.
+
+--- cryptostore.cabal
++++ cryptostore.cabal
+@@ -65,3 +65,3 @@
+                      , memory
++                     , ram
+                      , bytestring
+@@ -104,3 +104,3 @@
+                      , memory
++                     , ram
+                      , psqueues

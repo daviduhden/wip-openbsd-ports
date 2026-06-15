@@ -1,6 +1,6 @@
 $OpenBSD$
 
-Same KeepAlive CPP patch for the simplexmq copy bundled with
+Same KeepAlive CPP patch for simplexmq copy bundled with
 simplex-chat. OpenBSD uses portable setSocketOption.
 
 --- src/Simplex/Messaging/Transport/KeepAlive.hs

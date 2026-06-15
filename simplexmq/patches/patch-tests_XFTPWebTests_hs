@@ -1,0 +1,477 @@
+$OpenBSD$
+
+Fix ByteArrayAccess incompatibilities in tests: add toBS
+helper using BA.unpack/B.pack instead of BA.convert for
+types that lost instances in the memory->ram transition.
+Add PackageImports for ram-qualified imports.
+
+--- tests/XFTPWebTests.hs
++++ tests/XFTPWebTests.hs
+@@ -54,6 +54,9 @@
+ import XFTPCLI (recipientFiles, senderFiles, testBracket)
+ import qualified Simplex.Messaging.Crypto.File as CF
+ 
++toBS :: BA.ByteArrayAccess a => a -> B.ByteString
++toBS = B.pack . BA.unpack
++
+ xftpWebDir :: FilePath
+ xftpWebDir = "xftp-web"
+ 
+@@ -589,7 +592,7 @@
+       let seed = B.pack [1 .. 32]
+           sk = throwCryptoError $ Ed25519.secretKey seed
+           pk = Ed25519.toPublic sk
+-          rawPub = BA.convert pk :: B.ByteString
++          rawPub = toBS pk
+           haskellDer = C.encodePubKey (C.PublicKeyEd25519 pk)
+       tsDer <- callNode $ impKey <> jsOut ("K.encodePubKeyEd25519(" <> jsUint8 rawPub <> ")")
+       tsDer `shouldBe` haskellDer
+@@ -598,7 +601,7 @@
+       let rawPriv = B.pack [1 .. 32]
+           sk = throwCryptoError $ X25519.secretKey rawPriv
+           pk = X25519.toPublic sk
+-          rawPub = BA.convert pk :: B.ByteString
++          rawPub = toBS pk
+           haskellDer = C.encodePubKey (C.PublicKeyX25519 pk)
+       tsDer <- callNode $ impKey <> jsOut ("K.encodePubKeyX25519(" <> jsUint8 rawPub <> ")")
+       tsDer `shouldBe` haskellDer
+@@ -630,7 +633,7 @@
+           pk = Ed25519.toPublic sk
+           msg = "deterministic test" :: B.ByteString
+           sig = Ed25519.sign sk pk msg
+-          rawSig = BA.convert sig :: B.ByteString
++          rawSig = toBS sig :: B.ByteString
+       actual <-
+         callNode $
+           impKey
+@@ -646,8 +649,8 @@
+           pk = Ed25519.toPublic sk
+           msg = "cross-language sign test" :: B.ByteString
+           sig = Ed25519.sign sk pk msg
+-          rawPub = BA.convert pk :: B.ByteString
+-          rawSig = BA.convert sig :: B.ByteString
++          rawPub = toBS pk :: B.ByteString
++          rawSig = toBS sig :: B.ByteString
+       actual <-
+         callNode $
+           impKey
+@@ -683,8 +686,8 @@
+           msg = "original message" :: B.ByteString
+           wrongMsg = "wrong message" :: B.ByteString
+           sig = Ed25519.sign sk pk msg
+-          rawPub = BA.convert pk :: B.ByteString
+-          rawSig = BA.convert sig :: B.ByteString
++          rawPub = toBS pk :: B.ByteString
++          rawSig = toBS sig :: B.ByteString
+       actual <-
+         callNode $
+           impKey
+@@ -706,8 +709,8 @@
+           sk2 = throwCryptoError $ X25519.secretKey seed2
+           pk2 = X25519.toPublic sk2
+           dhHs = X25519.dh pk2 sk1
+-          rawPk2 = BA.convert pk2 :: B.ByteString
+-          rawDh = BA.convert dhHs :: B.ByteString
++          rawPk2 = toBS pk2 :: B.ByteString
++          rawDh = toBS dhHs :: B.ByteString
+       actual <-
+         callNode $
+           impKey <> jsOut ("K.dh(" <> jsUint8 rawPk2 <> ", " <> jsUint8 seed1 <> ")")
+@@ -720,8 +723,8 @@
+           pk1 = X25519.toPublic sk1
+           sk2 = throwCryptoError $ X25519.secretKey seed2
+           pk2 = X25519.toPublic sk2
+-          rawPk1 = BA.convert pk1 :: B.ByteString
+-          rawPk2 = BA.convert pk2 :: B.ByteString
++          rawPk1 = toBS pk1 :: B.ByteString
++          rawPk2 = toBS pk2 :: B.ByteString
+       dh1 <-
+         callNode $
+           impKey <> jsOut ("K.dh(" <> jsUint8 rawPk2 <> ", " <> jsUint8 seed1 <> ")")
+@@ -1007,7 +1010,7 @@
+           padLen = encSize - 16 - fileSize' - 8
+           padding = B.replicate (fromIntegral padLen) 0x23
+           (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
+-          tag = BA.convert (LC.sbAuth sb3) :: B.ByteString
++          tag = toBS (LC.sbAuth sb3) :: B.ByteString
+           hsEncrypted = B.concat [hdrEnc, srcEnc, padEnc, tag]
+       tsEncrypted <-
+         callNode $
+@@ -1042,7 +1045,7 @@
+           padLen = encSize - 16 - fileSize' - 8
+           padding = B.replicate (fromIntegral padLen) 0x23
+           (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
+-          tag = BA.convert (LC.sbAuth sb3) :: B.ByteString
++          tag = toBS (LC.sbAuth sb3) :: B.ByteString
+           encrypted = B.concat [hdrEnc, srcEnc, padEnc, tag]
+       tsResult <-
+         callNode $
+@@ -1104,7 +1107,7 @@
+           padLen = encSize - 16 - fileSize' - 8
+           padding = B.replicate (fromIntegral padLen) 0x23
+           (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
+-          tag = BA.convert (LC.sbAuth sb3) :: B.ByteString
++          tag = toBS (LC.sbAuth sb3) :: B.ByteString
+           encrypted = B.concat [hdrEnc, srcEnc, padEnc, tag]
+           (chunk1, rest) = B.splitAt 50 encrypted
+           (chunk2, chunk3) = B.splitAt 50 rest
+@@ -1141,7 +1144,7 @@
+           padLen = encSize - 16 - fileSize' - 8
+           padding = B.replicate (fromIntegral padLen) 0x23
+           (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
+-          tag = BA.convert (LC.sbAuth sb3) :: B.ByteString
++          tag = toBS (LC.sbAuth sb3) :: B.ByteString
+           encrypted = B.concat [hdrEnc, srcEnc, padEnc, tag]
+       tsResult <-
+         callNode $
+@@ -1416,7 +1419,7 @@
+           tInner = smpEncode corrId <> smpEncode entityId <> cmdBytes
+           tForAuth = smpEncode sessionId <> tInner
+           sig = Ed25519.sign sk pk tForAuth
+-          rawSig = BA.convert sig :: B.ByteString
++          rawSig = toBS sig :: B.ByteString
+           authenticator = smpEncode rawSig
+           -- implySessId = False: tToSend = tForAuth (sessionId on wire)
+           encoded = authenticator <> tForAuth
+@@ -1715,18 +1718,18 @@
+       let signSeed = B.pack [1 .. 32]
+           signSk = throwCryptoError $ Ed25519.secretKey signSeed
+           signPk = Ed25519.toPublic signSk
+-          signPkRaw = BA.convert signPk :: B.ByteString
++          signPkRaw = toBS signPk :: B.ByteString
+           -- Generate DH key (X25519)
+           dhSeed = B.pack [41 .. 72]
+           dhSk = throwCryptoError $ X25519.secretKey dhSeed
+           dhPk = X25519.toPublic dhSk
+-          dhPkRaw = BA.convert dhPk :: B.ByteString
++          dhPkRaw = toBS dhPk :: B.ByteString
+           -- SubjectPublicKeyInfo DER for X25519 (44 bytes)
+           x25519Prefix = B.pack [0x30, 0x2a, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x6e, 0x03, 0x21, 0x00]
+           spkiDer = x25519Prefix <> dhPkRaw
+           -- Sign the SPKI with Ed25519
+           sig = Ed25519.sign signSk signPk spkiDer
+-          sigRaw = BA.convert sig :: B.ByteString
++          sigRaw = toBS sig :: B.ByteString
+           -- AlgorithmIdentifier for Ed25519 (7 bytes)
+           algId = B.pack [0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70]
+           -- BIT STRING wrapper (3 + 64 = 67 bytes)
+@@ -1748,15 +1751,15 @@
+       let signSeed = B.pack [1 .. 32]
+           signSk = throwCryptoError $ Ed25519.secretKey signSeed
+           signPk = Ed25519.toPublic signSk
+-          signPkRaw = BA.convert signPk :: B.ByteString
++          signPkRaw = toBS signPk :: B.ByteString
+           dhSeed = B.pack [41 .. 72]
+           dhSk = throwCryptoError $ X25519.secretKey dhSeed
+           dhPk = X25519.toPublic dhSk
+-          dhPkRaw = BA.convert dhPk :: B.ByteString
++          dhPkRaw = toBS dhPk :: B.ByteString
+           x25519Prefix = B.pack [0x30, 0x2a, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x6e, 0x03, 0x21, 0x00]
+           spkiDer = x25519Prefix <> dhPkRaw
+           sig = Ed25519.sign signSk signPk spkiDer
+-          sigRaw = BA.convert sig :: B.ByteString
++          sigRaw = toBS sig :: B.ByteString
+           algId = B.pack [0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70]
+           bitString = B.pack [0x03, 0x41, 0x00] <> sigRaw
+           content = spkiDer <> algId <> bitString
+@@ -1827,7 +1830,7 @@
+       let signSeed = B.pack [1 .. 32]
+           signSk = throwCryptoError $ Ed25519.secretKey signSeed
+           signPk = Ed25519.toPublic signSk
+-          signPkRaw = BA.convert signPk :: B.ByteString
++          signPkRaw = toBS signPk :: B.ByteString
+           leafCertDer = mkFakeCertDer signPkRaw
+           idCertDer = B.pack [1 .. 50]
+           keyHash = C.sha256Hash idCertDer
+@@ -1835,11 +1838,11 @@
+           dhSeed = B.pack [41 .. 72]
+           dhSk = throwCryptoError $ X25519.secretKey dhSeed
+           dhPk = X25519.toPublic dhSk
+-          dhPkRaw = BA.convert dhPk :: B.ByteString
++          dhPkRaw = toBS dhPk :: B.ByteString
+           x25519Prefix = B.pack [0x30, 0x2a, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x6e, 0x03, 0x21, 0x00]
+           spkiDer = x25519Prefix <> dhPkRaw
+           dhSig = Ed25519.sign signSk signPk spkiDer
+-          dhSigRaw = BA.convert dhSig :: B.ByteString
++          dhSigRaw = toBS dhSig :: B.ByteString
+           algId = B.pack [0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70]
+           bitString = B.pack [0x03, 0x41, 0x00] <> dhSigRaw
+           signedKeyDer = B.pack [0x30, 0x76] <> spkiDer <> algId <> bitString
+@@ -1847,7 +1850,7 @@
+           challenge = B.pack [101 .. 132]
+           sessionId = B.pack [201 .. 232]
+           challengeSig = Ed25519.sign signSk signPk (challenge <> sessionId)
+-          challengeSigRaw = BA.convert challengeSig :: B.ByteString
++          challengeSigRaw = toBS challengeSig :: B.ByteString
+       tsResult <-
+         callNode $
+           impId
+@@ -1879,7 +1882,7 @@
+       let signSeed = B.pack [1 .. 32]
+           signSk = throwCryptoError $ Ed25519.secretKey signSeed
+           signPk = Ed25519.toPublic signSk
+-          signPkRaw = BA.convert signPk :: B.ByteString
++          signPkRaw = toBS signPk :: B.ByteString
+           leafCertDer = mkFakeCertDer signPkRaw
+           idCertDer = B.pack [1 .. 50]
+           wrongKeyHash = B.replicate 32 0xff
+@@ -1887,18 +1890,18 @@
+           dhSeed = B.pack [41 .. 72]
+           dhSk = throwCryptoError $ X25519.secretKey dhSeed
+           dhPk = X25519.toPublic dhSk
+-          dhPkRaw = BA.convert dhPk :: B.ByteString
++          dhPkRaw = toBS dhPk :: B.ByteString
+           x25519Prefix = B.pack [0x30, 0x2a, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x6e, 0x03, 0x21, 0x00]
+           spkiDer = x25519Prefix <> dhPkRaw
+           dhSig = Ed25519.sign signSk signPk spkiDer
+-          dhSigRaw = BA.convert dhSig :: B.ByteString
++          dhSigRaw = toBS dhSig :: B.ByteString
+           algId = B.pack [0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70]
+           bitString = B.pack [0x03, 0x41, 0x00] <> dhSigRaw
+           signedKeyDer = B.pack [0x30, 0x76] <> spkiDer <> algId <> bitString
+           challenge = B.pack [101 .. 132]
+           sessionId = B.pack [201 .. 232]
+           challengeSig = Ed25519.sign signSk signPk (challenge <> sessionId)
+-          challengeSigRaw = BA.convert challengeSig :: B.ByteString
++          challengeSigRaw = toBS challengeSig :: B.ByteString
+       tsResult <-
+         callNode $
+           impId
+@@ -1930,7 +1933,7 @@
+       let signSeed = B.pack [1 .. 32]
+           signSk = throwCryptoError $ Ed25519.secretKey signSeed
+           signPk = Ed25519.toPublic signSk
+-          signPkRaw = BA.convert signPk :: B.ByteString
++          signPkRaw = toBS signPk :: B.ByteString
+           leafCertDer = mkFakeCertDer signPkRaw
+           idCertDer = B.pack [1 .. 50]
+           keyHash = C.sha256Hash idCertDer
+@@ -1938,11 +1941,11 @@
+           dhSeed = B.pack [41 .. 72]
+           dhSk = throwCryptoError $ X25519.secretKey dhSeed
+           dhPk = X25519.toPublic dhSk
+-          dhPkRaw = BA.convert dhPk :: B.ByteString
++          dhPkRaw = toBS dhPk :: B.ByteString
+           x25519Prefix = B.pack [0x30, 0x2a, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x6e, 0x03, 0x21, 0x00]
+           spkiDer = x25519Prefix <> dhPkRaw
+           dhSig = Ed25519.sign signSk signPk spkiDer
+-          dhSigRaw = BA.convert dhSig :: B.ByteString
++          dhSigRaw = toBS dhSig :: B.ByteString
+           algId = B.pack [0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70]
+           bitString = B.pack [0x03, 0x41, 0x00] <> dhSigRaw
+           signedKeyDer = B.pack [0x30, 0x76] <> spkiDer <> algId <> bitString
+@@ -1950,7 +1953,7 @@
+           sessionId = B.pack [201 .. 232]
+           wrongChallenge = B.pack [1 .. 32]
+           wrongSig = Ed25519.sign signSk signPk (wrongChallenge <> sessionId)
+-          wrongSigRaw = BA.convert wrongSig :: B.ByteString
++          wrongSigRaw = toBS wrongSig :: B.ByteString
+       tsResult <-
+         callNode $
+           impId
+@@ -1982,7 +1985,7 @@
+       let signSeed = B.pack [1 .. 32]
+           signSk = throwCryptoError $ Ed25519.secretKey signSeed
+           signPk = Ed25519.toPublic signSk
+-          signPkRaw = BA.convert signPk :: B.ByteString
++          signPkRaw = toBS signPk :: B.ByteString
+           leafCertDer = mkFakeCertDer signPkRaw
+           idCertDer = B.pack [1 .. 50]
+           keyHash = C.sha256Hash idCertDer
+@@ -1993,18 +1996,18 @@
+           dhSeed = B.pack [41 .. 72]
+           dhSk = throwCryptoError $ X25519.secretKey dhSeed
+           dhPk = X25519.toPublic dhSk
+-          dhPkRaw = BA.convert dhPk :: B.ByteString
++          dhPkRaw = toBS dhPk :: B.ByteString
+           x25519Prefix = B.pack [0x30, 0x2a, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x6e, 0x03, 0x21, 0x00]
+           spkiDer = x25519Prefix <> dhPkRaw
+           dhSig = Ed25519.sign otherSk otherPk spkiDer
+-          dhSigRaw = BA.convert dhSig :: B.ByteString
++          dhSigRaw = toBS dhSig :: B.ByteString
+           algId = B.pack [0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70]
+           bitString = B.pack [0x03, 0x41, 0x00] <> dhSigRaw
+           signedKeyDer = B.pack [0x30, 0x76] <> spkiDer <> algId <> bitString
+           challenge = B.pack [101 .. 132]
+           sessionId = B.pack [201 .. 232]
+           challengeSig = Ed25519.sign signSk signPk (challenge <> sessionId)
+-          challengeSigRaw = BA.convert challengeSig :: B.ByteString
++          challengeSigRaw = toBS challengeSig :: B.ByteString
+       tsResult <-
+         callNode $
+           impId
+@@ -2298,11 +2301,11 @@
+   let privARaw = B.pack [1 .. 32]
+       privA = throwCryptoError $ X25519.secretKey privARaw
+       pubA = X25519.toPublic privA
+-      pubARaw = BA.convert pubA :: B.ByteString
++      pubARaw = toBS pubA :: B.ByteString
+       privBRaw = B.pack [33 .. 64]
+       privB = throwCryptoError $ X25519.secretKey privBRaw
+       pubB = X25519.toPublic privB
+-      pubBRaw = BA.convert pubB :: B.ByteString
++      pubBRaw = toBS pubB :: B.ByteString
+       nonce24 = B.pack [0 .. 23]
+ 
+   describe "cbAuthenticate" $ do
+@@ -2417,13 +2420,13 @@
+ 
+   describe "transport chunk encryption" $ do
+     let dhSecret = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
+-        dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
++        dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> toBS k :: B.ByteString
+ 
+     it "encryptTransportChunk matches Haskell" $ do
+       let plaintext = B.pack [100 .. 199]
+           state0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           (cipher, state1) = LC.sbEncryptChunk state0 plaintext
+-          tag = BA.convert $ LC.sbAuth state1 :: B.ByteString
++          tag = toBS $ LC.sbAuth state1 :: B.ByteString
+           expected = cipher <> tag
+       tsResult <-
+         callNode $
+@@ -2442,7 +2445,7 @@
+       let plaintext = B.pack ([200 .. 255] <> [0 .. 99])
+           state0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           (cipher, state1) = LC.sbEncryptChunk state0 plaintext
+-          tag = BA.convert $ LC.sbAuth state1 :: B.ByteString
++          tag = toBS $ LC.sbAuth state1 :: B.ByteString
+           encData = cipher <> tag
+       tsResult <-
+         callNode $
+@@ -2516,11 +2519,11 @@
+   let privARaw = B.pack [1 .. 32]
+       privA = throwCryptoError $ X25519.secretKey privARaw
+       pubA = X25519.toPublic privA
+-      pubARaw = BA.convert pubA :: B.ByteString
++      pubARaw = toBS pubA :: B.ByteString
+       privBRaw = B.pack [33 .. 64]
+       privB = throwCryptoError $ X25519.secretKey privBRaw
+       pubB = X25519.toPublic privB
+-      pubBRaw = BA.convert pubB :: B.ByteString
++      pubBRaw = toBS pubB :: B.ByteString
+       nonce24 = B.pack [0 .. 23]
+       -- File-level key/nonce (different from transport)
+       fileKey32 = B.pack [1 .. 32]
+@@ -2532,7 +2535,7 @@
+     it "derives DH secret matching Haskell" $ do
+       -- Simulate: client has privA, server sends pubB
+       let hsDhSecret = C.dh' (C.PublicKeyX25519 pubB) (C.PrivateKeyX25519 privA)
+-          hsDhBytes = case hsDhSecret of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
++          hsDhBytes = case hsDhSecret of C.DhSecretX25519 k -> toBS k :: B.ByteString
+       tsDhSecret <-
+         callNode $
+           impDl
+@@ -2548,12 +2551,12 @@
+     it "transport decrypt with digest verification" $ do
+       -- Haskell: transport-encrypt a chunk
+       let dhSecret = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
+-          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
++          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> toBS k :: B.ByteString
+           chunkData = B.pack [50 .. 149]
+           chunkDigest = C.sha256Hash chunkData
+           state0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           (cipher, state1) = LC.sbEncryptChunk state0 chunkData
+-          tag = BA.convert (LC.sbAuth state1) :: B.ByteString
++          tag = toBS (LC.sbAuth state1) :: B.ByteString
+           encData = cipher <> tag
+       tsResult <-
+         callNode $
+@@ -2572,12 +2575,12 @@
+ 
+     it "rejects wrong digest" $ do
+       let dhSecret = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
+-          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
++          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> toBS k :: B.ByteString
+           chunkData = B.pack [50 .. 149]
+           wrongDigest = B.replicate 32 0xff
+           state0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           (cipher, state1) = LC.sbEncryptChunk state0 chunkData
+-          tag = BA.convert (LC.sbAuth state1) :: B.ByteString
++          tag = toBS (LC.sbAuth state1) :: B.ByteString
+           encData = cipher <> tag
+       tsResult <-
+         callNode $
+@@ -2596,11 +2599,11 @@
+ 
+     it "allows null digest (skip verification)" $ do
+       let dhSecret = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
+-          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
++          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> toBS k :: B.ByteString
+           chunkData = B.pack [10 .. 50]
+           state0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           (cipher, state1) = LC.sbEncryptChunk state0 chunkData
+-          tag = BA.convert (LC.sbAuth state1) :: B.ByteString
++          tag = toBS (LC.sbAuth state1) :: B.ByteString
+           encData = cipher <> tag
+       tsResult <-
+         callNode $
+@@ -2630,14 +2633,14 @@
+           padLen = encSize - 16 - fileSize' - 8
+           padding = B.replicate (fromIntegral padLen) 0x23
+           (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
+-          fileTag = BA.convert (LC.sbAuth sb3) :: B.ByteString
++          fileTag = toBS (LC.sbAuth sb3) :: B.ByteString
+           fileEncrypted = B.concat [hdrEnc, srcEnc, padEnc, fileTag]
+       -- Step 2: transport-level encryption (simulates server sending chunk)
+       let dhSecret = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
+-          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
++          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> toBS k :: B.ByteString
+           ts0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           (transportCipher, ts1) = LC.sbEncryptChunk ts0 fileEncrypted
+-          transportTag = BA.convert (LC.sbAuth ts1) :: B.ByteString
++          transportTag = toBS (LC.sbAuth ts1) :: B.ByteString
+           transportEncData = transportCipher <> transportTag
+       -- Step 3: TS decrypts transport, then file-level
+       tsResult <-
+@@ -2675,7 +2678,7 @@
+           padLen = encSize - 16 - fileSize' - 8
+           padding = B.replicate (fromIntegral padLen) 0x23
+           (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
+-          fileTag = BA.convert (LC.sbAuth sb3) :: B.ByteString
++          fileTag = toBS (LC.sbAuth sb3) :: B.ByteString
+           fileEncrypted = B.concat [hdrEnc, srcEnc, padEnc, fileTag]
+       -- Split file-encrypted data into two "chunks" and transport-encrypt each
+       let splitPt = B.length fileEncrypted `div` 2
+@@ -2683,19 +2686,19 @@
+           fileChunk2 = B.drop splitPt fileEncrypted
+           -- Transport encrypt chunk 1 (with separate DH / nonce per chunk)
+           dhSecret1 = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
+-          dhSecret1Bytes = case dhSecret1 of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
++          dhSecret1Bytes = case dhSecret1 of C.DhSecretX25519 k -> toBS k :: B.ByteString
+           nonce1 = nonce24
+           t1s0 = either (error . show) id $ LC.cbInit dhSecret1 (C.cbNonce nonce1)
+           (t1cipher, t1s1) = LC.sbEncryptChunk t1s0 fileChunk1
+-          t1tag = BA.convert (LC.sbAuth t1s1) :: B.ByteString
++          t1tag = toBS (LC.sbAuth t1s1) :: B.ByteString
+           transportEnc1 = t1cipher <> t1tag
+           -- Transport encrypt chunk 2 (different nonce)
+           nonce2 = B.pack [24 .. 47]
+           dhSecret2 = C.dh' (C.PublicKeyX25519 pubB) (C.PrivateKeyX25519 privA)
+-          dhSecret2Bytes = case dhSecret2 of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
++          dhSecret2Bytes = case dhSecret2 of C.DhSecretX25519 k -> toBS k :: B.ByteString
+           t2s0 = either (error . show) id $ LC.cbInit dhSecret2 (C.cbNonce nonce2)
+           (t2cipher, t2s1) = LC.sbEncryptChunk t2s0 fileChunk2
+-          t2tag = BA.convert (LC.sbAuth t2s1) :: B.ByteString
++          t2tag = toBS (LC.sbAuth t2s1) :: B.ByteString
+           transportEnc2 = t2cipher <> t2tag
+       -- TS: transport-decrypt each chunk, then file-level decrypt the concatenation
+       tsResult <-
+@@ -2733,7 +2736,7 @@
+           chunkData = "FGET round-trip test data" :: B.ByteString
+           state0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           (cipher, state1) = LC.sbEncryptChunk state0 chunkData
+-          tag = BA.convert (LC.sbAuth state1) :: B.ByteString
++          tag = toBS (LC.sbAuth state1) :: B.ByteString
+           encData = cipher <> tag
+           -- Simulate server response: FILE <serverPubKey> <nonce>
+           -- Server sends pubA (client has privB to do DH)
+@@ -2771,7 +2774,7 @@
+           padLen = encSize - 16 - fileSize' - 8
+           padding = B.replicate (fromIntegral padLen) 0x23
+           (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
+-          fileTag = BA.convert (LC.sbAuth sb3) :: B.ByteString
++          fileTag = toBS (LC.sbAuth sb3) :: B.ByteString
+           fileEncrypted = B.concat [hdrEnc, srcEnc, padEnc, fileTag]
+       -- TS: call processDownloadedFile with a minimal FileDescription-like object
+       tsResult <-

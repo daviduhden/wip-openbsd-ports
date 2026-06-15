@@ -1,14 +1,24 @@
 $OpenBSD$
 
-GHC 9.10+ compat: replace memory with ram in cryptostore build-depends.
+GHC 9.10+ compat: replace memory with ram in build-depends.
 
 --- cryptostore.cabal
 +++ cryptostore.cabal
-@@ -65,3 +65,3 @@
-                      , memory
-+                     , ram
+@@ -62,7 +62,7 @@
+   build-depends:       base >= 4.9 && < 5
                       , bytestring
-@@ -104,3 +104,3 @@
-                      , memory
+                      , basement
+-                     , memory
 +                     , ram
-                      , psqueues
+   if flag(use_crypton)
+     build-depends:     crypton
+                      , crypton-asn1-encoding >= 0.10.0 && < 0.11
+@@ -101,7 +101,7 @@
+                      , X509.Tests
+   build-depends:       base >= 4.9 && < 5
+                      , bytestring
+-                     , memory
++                     , ram
+                      , tasty
+                      , tasty-hunit
+                      , tasty-quickcheck

@@ -18,7 +18,7 @@ if [ ! -d "${DEPS}/splitmix" ]; then
 	tar -xzf "${DEPS}/splitmix.tar.gz" -C "${DEPS}"
 	mv "${DEPS}/splitmix-${SPLITMIX_V}" "${DEPS}/splitmix"
 	rm -f "${DEPS}/splitmix.tar.gz"
-	patch -d "${DEPS}/splitmix" -p0 < "${FILESDIR}/patch-deps-splitmix"
+	patch -d "${DEPS}/splitmix" -p0 <"${FILESDIR}/patch-deps-splitmix"
 fi
 
 # --- aeson: clone simplex-chat fork and patch ---
@@ -27,7 +27,7 @@ if [ ! -d "${DEPS}/aeson" ]; then
 	cd "${DEPS}/aeson"
 	git fetch --depth 1 origin aab7b5a14d6c5ea64c64dcaee418de1bb00dcc2b
 	git checkout aab7b5a14d6c5ea64c64dcaee418de1bb00dcc2b
-	patch -p0 < "${FILESDIR}/patch-deps-aeson"
+	patch -p0 <"${FILESDIR}/patch-deps-aeson"
 fi
 
 # --- warp: clone wai fork and patch ---
@@ -37,7 +37,7 @@ if [ ! -d "${DEPS}/warp" ]; then
 	git fetch --depth 1 origin 2f6e5aa5f05ba9140ac99e195ee647b4f7d926b0
 	git checkout 2f6e5aa5f05ba9140ac99e195ee647b4f7d926b0
 	cp -r warp "${DEPS}/warp"
-	patch -d "${DEPS}/warp" -p0 < "${FILESDIR}/patch-deps-warp"
+	patch -d "${DEPS}/warp" -p0 <"${FILESDIR}/patch-deps-warp"
 	rm -rf "${DEPS}/wai-src"
 fi
 
@@ -54,7 +54,7 @@ if [ ! -d "${DEPS}/tls" ]; then
 		mv "${DEPS}/tls-${TLS_VER}" "${DEPS}/tls"
 		rm -f "${DEPS}/tls.tar.gz"
 	fi
-	patch -d "${DEPS}/tls" -p0 < "${FILESDIR}/patch-deps-tls"
+	patch -d "${DEPS}/tls" -p0 <"${FILESDIR}/patch-deps-tls"
 fi
 
 # --- cryptostore: extract from cabal cache and patch ---
@@ -70,5 +70,5 @@ if [ ! -d "${DEPS}/cryptostore" ]; then
 		mv "${DEPS}/cryptostore-${CS_VER}" "${DEPS}/cryptostore"
 		rm -f "${DEPS}/cryptostore.tar.gz"
 	fi
-	patch -d "${DEPS}/cryptostore" -p0 < "${FILESDIR}/patch-deps-cryptostore"
+	patch -d "${DEPS}/cryptostore" -p0 <"${FILESDIR}/patch-deps-cryptostore"
 fi

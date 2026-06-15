@@ -1,17 +1,36 @@
 $OpenBSD$
 
 GHC 9.10+ compat: replace deprecated memory/asn1-encoding/asn1-types
-with their maintained successors ram/crypton-asn1-encoding/crypton-asn1-types.
+with maintained successors ram/crypton-asn1-encoding/crypton-asn1-types.
 
 --- tls.cabal
 +++ tls.cabal
-@@ -121,8 +121,8 @@
-         asn1-encoding >= 0.9 && < 0.10,
+@@ -118,8 +118,8 @@
+     ghc-options:      -Wall
+     build-depends:
+         base >=4.9 && <5,
+-        asn1-encoding >= 0.9 && < 0.10,
 -        asn1-types >= 0.3 && < 0.4,
 +        crypton-asn1-encoding >= 0.10.0 && < 0.11,
 +        crypton-asn1-types >= 0.4.1 && < 0.5,
-         async >= 2.0 && < 2.3,
-@@ -131,7 +131,7 @@
-         memory >= 0.18 && < 0.19,
+         base16-bytestring,
+         bytestring >= 0.10 && < 0.13,
+         cereal >= 0.5.3 && < 0.6,
+@@ -128,7 +128,7 @@
+         crypton-x509-store >= 1.6 && < 1.7,
+         crypton-x509-validation >= 1.6.13 && < 1.7,
+         data-default,
+-        memory >= 0.18 && < 0.19,
 +        ram >= 0.18 && < 0.23,
-         mtl >= 2.6 && < 2.4,
+         mtl >= 2.2 && < 2.4,
+         network >= 3.1,
+         serialise >= 0.2 && < 0.3,
+@@ -159,7 +159,7 @@
+     build-depends:
+         base >=4.9 && <5,
+         QuickCheck,
+-        asn1-types,
++        crypton-asn1-types,
+         async,
+         bytestring,
+         crypton,

@@ -1,5 +1,5 @@
 #!/bin/ksh
-set -eu
+set -eux
 # Create patched dependency copies in ${WRKDIR}/deps/
 # Called from do-build before cabal build
 
@@ -7,6 +7,13 @@ WRKDIR="${1:?}"
 FILESDIR="${2:?}"
 DEPS="${WRKDIR}/deps"
 HACKAGE="https://hackage.haskell.org/package"
+
+# OpenBSD uses ftp(1), fall back to curl
+if command -v ftp >/dev/null 2>&1; then
+	FETCH="ftp -o"
+else
+	FETCH="curl -sSL -o"
+fi
 
 # dependency versions
 SPLITMIX_V="${3:-0.1.3.1}"
@@ -17,7 +24,7 @@ mkdir -p "${DEPS}"
 
 # --- splitmix: download from hackage and patch ---
 if [ ! -d "${DEPS}/splitmix" ]; then (
-	ftp -o "${DEPS}/splitmix.tar.gz" \
+	${FETCH} "${DEPS}/splitmix.tar.gz" \
 		"${HACKAGE}/splitmix-${SPLITMIX_V}/splitmix-${SPLITMIX_V}.tar.gz"
 	tar -xzf "${DEPS}/splitmix.tar.gz" -C "${DEPS}"
 	mv "${DEPS}/splitmix-${SPLITMIX_V}" "${DEPS}/splitmix"
@@ -52,7 +59,7 @@ if [ ! -d "${DEPS}/tls" ]; then (
 	if [ -f "${CABAL_CACHE}/tls/${TLS_VER}/tls-${TLS_VER}.tar.gz" ]; then
 		tar -xzf "${CABAL_CACHE}/tls/${TLS_VER}/tls-${TLS_VER}.tar.gz" -C "${DEPS}"
 	else
-		ftp -o "${DEPS}/tls.tar.gz" \
+		${FETCH} "${DEPS}/tls.tar.gz" \
 			"${HACKAGE}/tls-${TLS_VER}/tls-${TLS_VER}.tar.gz"
 		tar -xzf "${DEPS}/tls.tar.gz" -C "${DEPS}"
 		rm -f "${DEPS}/tls.tar.gz"
@@ -67,7 +74,7 @@ if [ ! -d "${DEPS}/cryptostore" ]; then (
 	if [ -f "${CABAL_CACHE}/cryptostore/${CS_VER}/cryptostore-${CS_VER}.tar.gz" ]; then
 		tar -xzf "${CABAL_CACHE}/cryptostore/${CS_VER}/cryptostore-${CS_VER}.tar.gz" -C "${DEPS}"
 	else
-		ftp -o "${DEPS}/cryptostore.tar.gz" \
+		${FETCH} "${DEPS}/cryptostore.tar.gz" \
 			"${HACKAGE}/cryptostore-${CS_VER}/cryptostore-${CS_VER}.tar.gz"
 		tar -xzf "${DEPS}/cryptostore.tar.gz" -C "${DEPS}"
 		rm -f "${DEPS}/cryptostore.tar.gz"

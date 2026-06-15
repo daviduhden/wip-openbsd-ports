@@ -1,9 +1,9 @@
 COMMENT = Private and encrypted chat platform (terminal client)
 V = 6.5.4.1
 
-GH_ACCOUNT = simplex-chat
-GH_PROJECT = simplex-chat
-GH_TAGNAME = stable
+SITES = https://github.com/simplex-chat/simplex-chat/archive/refs/heads/
+DISTFILES = stable.tar.gz
+DISTNAME = simplex-chat-${V}
 
 WRKDIST = ${WRKDIR}/simplex-chat-stable
 WRKSRC = ${WRKDIST}

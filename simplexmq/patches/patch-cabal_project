@@ -1,17 +1,17 @@
 $OpenBSD$
 
 Add patched deps as local packages. allow-newer for GHC 9.10+,
-extra-lib-dirs for network configure. drop index-state.
+drop index-state.
 
 --- cabal.project
 +++ cabal.project
 @@ -1,4 +1,4 @@
 -packages: .
-+packages: . ../deps/splitmix ../deps/aeson ../deps/warp ../deps/tls ../deps/cryptostore
++packages: . ../deps/splitmix ../deps/aeson ../deps/warp ../deps/tls ../deps/cryptostore ../deps/network
  -- packages: . ../direct-sqlcipher ../sqlcipher-simple
  -- packages: . ../hs-socks
  -- packages: . ../http2
-@@ -13,7 +13,13 @@
+@@ -13,7 +13,10 @@
     -- coverage: False
     -- library-coverage: False
  
@@ -20,9 +20,6 @@ extra-lib-dirs for network configure. drop index-state.
 +
 +-- Relax bounds for GHC 9.10+ compatibility
 +allow-newer: *
-+
-+package network
-+    extra-lib-dirs: /usr/lib /usr/local/lib
  
  package cryptostore
      flags: +use_crypton

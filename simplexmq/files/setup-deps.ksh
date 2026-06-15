@@ -24,6 +24,7 @@ fi
 SPLITMIX_V="${3:-0.1.3.1}"
 TLS_VER="2.1.6"
 CS_VER="0.5.0.0"
+NET_VER="3.2.8.0"
 
 mkdir -p "${DEPS}"
 
@@ -86,4 +87,19 @@ if [ ! -d "${DEPS}/cryptostore" ]; then (
 	fi
 	mv "${DEPS}/cryptostore-${CS_VER}" "${DEPS}/cryptostore"
 	patch -d "${DEPS}/cryptostore" -p0 <"${FILESDIR}/patch-deps-cryptostore"
+); fi
+
+# --- network: download from hackage and patch configure ---
+if [ ! -d "${DEPS}/network" ]; then (
+	CABAL_CACHE="${WRKDIR}/.cabal/packages/hackage.haskell.org"
+	if [ -f "${CABAL_CACHE}/network/${NET_VER}/network-${NET_VER}.tar.gz" ]; then
+		tar -xzf "${CABAL_CACHE}/network/${NET_VER}/network-${NET_VER}.tar.gz" -C "${DEPS}"
+	else
+		${FETCH} "${DEPS}/network.tar.gz" \
+			"${HACKAGE}/network-${NET_VER}/network-${NET_VER}.tar.gz"
+		tar -xzf "${DEPS}/network.tar.gz" -C "${DEPS}"
+		rm -f "${DEPS}/network.tar.gz"
+	fi
+	mv "${DEPS}/network-${NET_VER}" "${DEPS}/network"
+	patch -d "${DEPS}/network" -p0 <"${FILESDIR}/patch-deps-network"
 ); fi

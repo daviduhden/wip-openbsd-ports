@@ -2,11 +2,10 @@ $OpenBSD$
 
 Relax bounds via allow-newer for GHC 9.10+ compatibility.
 Drop index-state pin to use current Hackage snapshot.
-Add extra-lib-dirs for network configure.
 
 --- cabal.project
 +++ cabal.project
-@@ -11,7 +11,13 @@
+@@ -11,7 +11,10 @@
  --    coverage: False
  --    library-coverage: False
  
@@ -15,9 +14,6 @@ Add extra-lib-dirs for network configure.
 +
 +-- Relax bounds for GHC 9.10+ compatibility
 +allow-newer: *
-+
-+package network
-+    extra-lib-dirs: /usr/lib /usr/local/lib
  
  package cryptostore
      flags: +use_crypton

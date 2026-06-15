@@ -5,14 +5,19 @@ set -eu
 
 WRKDIR="${1:?}"
 FILESDIR="${2:?}"
+SPLITMIX_V="${3:-0.1.3.1}"
 DEPS="${WRKDIR}/deps"
-CABAL_CACHE="${WRKDIR}/.cabal/packages/hackage.haskell.org"
+HACKAGE="https://hackage.haskell.org/package"
 
 mkdir -p "${DEPS}"
 
-# --- splitmix: move from WRKSRC to deps/ and patch ---
+# --- splitmix: download from hackage and patch ---
 if [ ! -d "${DEPS}/splitmix" ]; then
-	cp -r "${WRKDIR}/simplexmq-stable/splitmix-0.1.3.1" "${DEPS}/splitmix"
+	ftp -o "${DEPS}/splitmix.tar.gz" \
+		"${HACKAGE}/splitmix-${SPLITMIX_V}/splitmix-${SPLITMIX_V}.tar.gz"
+	tar -xzf "${DEPS}/splitmix.tar.gz" -C "${DEPS}"
+	mv "${DEPS}/splitmix-${SPLITMIX_V}" "${DEPS}/splitmix"
+	rm -f "${DEPS}/splitmix.tar.gz"
 	patch -d "${DEPS}/splitmix" -p0 < "${FILESDIR}/patch-deps-splitmix"
 fi
 
@@ -39,13 +44,12 @@ fi
 # --- tls: extract from cabal cache and patch ---
 TLS_VER="2.1.6"
 if [ ! -d "${DEPS}/tls" ]; then
-	TLS_TGZ="${CABAL_CACHE}/tls/${TLS_VER}/tls-${TLS_VER}.tar.gz"
-	if [ -f "${TLS_TGZ}" ]; then
-		tar -xzf "${TLS_TGZ}" -C "${DEPS}"
+	if [ -f "${WRKDIR}/.cabal/packages/hackage.haskell.org/tls/${TLS_VER}/tls-${TLS_VER}.tar.gz" ]; then
+		tar -xzf "${WRKDIR}/.cabal/packages/hackage.haskell.org/tls/${TLS_VER}/tls-${TLS_VER}.tar.gz" -C "${DEPS}"
 		mv "${DEPS}/tls-${TLS_VER}" "${DEPS}/tls"
 	else
-		ftpmirror -o "${DEPS}/tls.tar.gz" \
-			"https://hackage.haskell.org/package/tls-${TLS_VER}/tls-${TLS_VER}.tar.gz"
+		ftp -o "${DEPS}/tls.tar.gz" \
+			"${HACKAGE}/tls-${TLS_VER}/tls-${TLS_VER}.tar.gz"
 		tar -xzf "${DEPS}/tls.tar.gz" -C "${DEPS}"
 		mv "${DEPS}/tls-${TLS_VER}" "${DEPS}/tls"
 		rm -f "${DEPS}/tls.tar.gz"
@@ -56,13 +60,12 @@ fi
 # --- cryptostore: extract from cabal cache and patch ---
 if [ ! -d "${DEPS}/cryptostore" ]; then
 	CS_VER="0.5.0.0"
-	CS_TGZ="${CABAL_CACHE}/cryptostore/${CS_VER}/cryptostore-${CS_VER}.tar.gz"
-	if [ -f "${CS_TGZ}" ]; then
-		tar -xzf "${CS_TGZ}" -C "${DEPS}"
+	if [ -f "${WRKDIR}/.cabal/packages/hackage.haskell.org/cryptostore/${CS_VER}/cryptostore-${CS_VER}.tar.gz" ]; then
+		tar -xzf "${WRKDIR}/.cabal/packages/hackage.haskell.org/cryptostore/${CS_VER}/cryptostore-${CS_VER}.tar.gz" -C "${DEPS}"
 		mv "${DEPS}/cryptostore-${CS_VER}" "${DEPS}/cryptostore"
 	else
-		ftpmirror -o "${DEPS}/cryptostore.tar.gz" \
-			"https://hackage.haskell.org/package/cryptostore-${CS_VER}/cryptostore-${CS_VER}.tar.gz"
+		ftp -o "${DEPS}/cryptostore.tar.gz" \
+			"${HACKAGE}/cryptostore-${CS_VER}/cryptostore-${CS_VER}.tar.gz"
 		tar -xzf "${DEPS}/cryptostore.tar.gz" -C "${DEPS}"
 		mv "${DEPS}/cryptostore-${CS_VER}" "${DEPS}/cryptostore"
 		rm -f "${DEPS}/cryptostore.tar.gz"

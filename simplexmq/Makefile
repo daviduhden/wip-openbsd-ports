@@ -37,16 +37,14 @@ post-extract:
 	tar -C ${WRKSRC} -xzf ${FULLDISTDIR}/splitmix-${SPLITMIX_V}.tar.gz
 
 do-build:
-	cd ${WRKSRC} && env HOME=${WRKDIR} XDG_CACHE_HOME=${WRKDIR}/.cache \
-		CABAL_DIR=${WRKDIR}/.cabal cabal update && \
-		env HOME=${WRKDIR} XDG_CACHE_HOME=${WRKDIR}/.cache \
-		CABAL_DIR=${WRKDIR}/.cabal cabal build -j
+	sh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
+	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
+		env ${MAKE_ENV} cabal build -j
 
 do-test:
-	cd ${WRKSRC} && env HOME=${WRKDIR} XDG_CACHE_HOME=${WRKDIR}/.cache \
-		CABAL_DIR=${WRKDIR}/.cabal cabal update && \
-		env HOME=${WRKDIR} XDG_CACHE_HOME=${WRKDIR}/.cache \
-		CABAL_DIR=${WRKDIR}/.cabal cabal test -j
+	sh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
+	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
+		env ${MAKE_ENV} cabal test -j
 
 do-install:
 	smp=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/smp-server/build/smp-server/smp-server' | head -n 1); \

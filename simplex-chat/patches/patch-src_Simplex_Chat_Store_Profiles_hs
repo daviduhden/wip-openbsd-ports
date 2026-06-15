@@ -1,7 +1,7 @@
 $OpenBSD$
 
-Replace L.unzip with explicit Maybe pattern match: works across all
-versions of semialign/these.
+Replace L.unzip with explicit Maybe pattern match for
+compatibility across semialign/these versions.
 
 --- src/Simplex/Chat/Store/Profiles.hs
 +++ src/Simplex/Chat/Store/Profiles.hs

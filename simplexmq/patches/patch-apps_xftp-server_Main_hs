@@ -1,7 +1,6 @@
 $OpenBSD$
 
-OpenBSD paths: /etc/opt/simplex-xftp -> /etc/simplex/xftp-server,
-/var/opt/simplex-xftp -> /var/simplex/xftp-server.
+OpenBSD paths: /etc/opt/simplex-xftp -> /etc/simplex/xftp-server.
 
 --- apps/xftp-server/Main.hs
 +++ apps/xftp-server/Main.hs

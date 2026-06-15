@@ -1,7 +1,6 @@
 $OpenBSD$
 
-Replace maybe def with maybe (pure []) to avoid Default instance
-ambiguity with newer GHC.
+Replace maybe def with maybe (pure []) for GHC type inference.
 
 --- src/Simplex/Messaging/Transport/Client.hs
 +++ src/Simplex/Messaging/Transport/Client.hs

@@ -1,7 +1,6 @@
 $OpenBSD$
 
-OpenBSD paths: /etc/opt/simplex -> /etc/simplex/smp-server,
-/var/opt/simplex -> /var/simplex/smp-server.
+OpenBSD paths: /etc/opt/simplex -> /etc/simplex/smp-server.
 
 --- apps/smp-server/Main.hs
 +++ apps/smp-server/Main.hs

@@ -1,10 +1,9 @@
 COMMENT = SimpleX messaging protocol server and client library
 V = 6.5.3.0
-SPLITMIX_V = 0.1.3.1
 
-GH_ACCOUNT = simplex-chat
-GH_PROJECT = simplexmq
-GH_TAGNAME = stable
+SITES = https://github.com/simplex-chat/simplexmq/archive/refs/heads/
+DISTFILES = stable.tar.gz
+DISTNAME = simplexmq-${V}
 
 WRKDIST = ${WRKDIR}/simplexmq-stable
 WRKSRC = ${WRKDIST}
@@ -32,12 +31,12 @@ LIB_DEPENDS = converters/libiconv \
 			devel/libffi
 
 do-build:
-	sh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR} ${SPLITMIX_V}
+	ksh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
 		env ${MAKE_ENV} cabal build -j
 
 do-test:
-	sh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR} ${SPLITMIX_V}
+	ksh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
 		env ${MAKE_ENV} cabal test -j
 

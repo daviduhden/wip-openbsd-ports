@@ -1,8 +1,7 @@
 $OpenBSD$
 
-Add patched deps as local packages. Comment out aeson and warp
-source-repos (replaced by deps/). allow-newer for GHC 9.10+,
-drop index-state.
+Add patched deps as local packages. allow-newer for GHC 9.10+,
+use installed network package, drop index-state.
 
 --- cabal.project
 +++ cabal.project
@@ -12,7 +11,7 @@ drop index-state.
  -- packages: . ../direct-sqlcipher ../sqlcipher-simple
  -- packages: . ../hs-socks
  -- packages: . ../http2
-@@ -13,15 +13,18 @@
+@@ -13,7 +13,11 @@
     -- coverage: False
     -- library-coverage: False
  
@@ -21,32 +20,7 @@ drop index-state.
 +
 +-- Relax bounds for GHC 9.10+ compatibility
 +allow-newer: *
++constraints: network installed
  
  package cryptostore
      flags: +use_crypton
- 
--source-repository-package
--    type: git
--    location: https://github.com/simplex-chat/aeson.git
--    tag: aab7b5a14d6c5ea64c64dcaee418de1bb00dcc2b
-+-- source-repository-package
-+--     type: git
-+--     location: https://github.com/simplex-chat/aeson.git
-+--     tag: aab7b5a14d6c5ea64c64dcaee418de1bb00dcc2b
- 
- source-repository-package
-     type: git
-@@ -46,8 +49,8 @@
-     subdir: warp-tls
- 
- -- backported fork due http-5.0
--source-repository-package
--    type: git
--    location: https://github.com/simplex-chat/wai.git
--    tag: 2f6e5aa5f05ba9140ac99e195ee647b4f7d926b0
--    subdir: warp
-+-- source-repository-package
-+--     type: git
-+--     location: https://github.com/simplex-chat/wai.git
-+--     tag: 2f6e5aa5f05ba9140ac99e195ee647b4f7d926b0
-+--     subdir: warp

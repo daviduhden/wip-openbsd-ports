@@ -49,6 +49,7 @@ do-test:
 do-install:
 	smp=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/smp-server/build/smp-server/smp-server' | head -n 1); \
 	xftp_server=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/xftp-server/build/xftp-server/xftp-server' | head -n 1); \
+	env ${MAKE_ENV} cabal install --lib simplexmq; \
 	install -d ${PREFIX}/bin; \
 	install -m 755 "$$smp" ${PREFIX}/bin/smp-server; \
 	install -m 755 "$$xftp_server" ${PREFIX}/bin/xftp-server

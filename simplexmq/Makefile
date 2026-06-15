@@ -9,11 +9,8 @@ ONLY_FOR_ARCHS = amd64 arm64
 CATEGORIES = net
 HOMEPAGE = https://simplex.chat/
 SITES = https://github.com/simplex-chat/
-SITES.hs = https://hackage.haskell.org/package/
 DISTFILES = simplexmq-${V}${EXTRACT_SUFX}{simplexmq/archive/refs/heads/stable.tar.gz}
-DISTFILES.hs += splitmix-${SPLITMIX_V}.tar.gz
 EXTRACT_ONLY = simplexmq-${V}${EXTRACT_SUFX}
-EXTRACT_ONLY += splitmix-${SPLITMIX_V}.tar.gz
 
 MAINTAINER = David Uhden Collado <daviduhden@gmail.com>
 
@@ -34,15 +31,15 @@ LIB_DEPENDS = converters/libiconv \
 			devel/libffi
 
 post-extract:
-	tar -C ${WRKSRC} -xzf ${FULLDISTDIR}/splitmix-${SPLITMIX_V}.tar.gz
+	# splitmix handled by setup-deps.ksh
 
 do-build:
-	sh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
+	sh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR} ${SPLITMIX_V}
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
 		env ${MAKE_ENV} cabal build -j
 
 do-test:
-	sh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
+	sh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR} ${SPLITMIX_V}
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
 		env ${MAKE_ENV} cabal test -j
 

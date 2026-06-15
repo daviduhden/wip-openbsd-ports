@@ -1,16 +1,16 @@
 COMMENT = Private and encrypted chat platform (terminal client)
 V = 6.5.4.1
-V_BASE = ${V:C/\.[0-9]+$//}
-DISTNAME = simplex-chat-${V}
-WRKDIST = ${WRKDIR}/simplex-chat-${V_BASE}
+
+GH_ACCOUNT = simplex-chat
+GH_PROJECT = simplex-chat
+GH_TAGNAME = stable
+
+WRKDIST = ${WRKDIR}/simplex-chat-stable
 WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 
 CATEGORIES = net
 HOMEPAGE = https://simplex.chat/
-SITES = https://github.com/simplex-chat/
-DISTFILES = simplex-chat-${V}${EXTRACT_SUFX}{simplex-chat/archive/refs/heads/stable.tar.gz}
-EXTRACT_ONLY = simplex-chat-${V}${EXTRACT_SUFX}
 
 MAINTAINER = David Uhden Collado <daviduhden@gmail.com>
 

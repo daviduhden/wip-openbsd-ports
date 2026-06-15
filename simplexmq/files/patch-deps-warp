@@ -5,7 +5,7 @@ record pattern. Replace Reaper{..} with explicit function calls.
 
 --- Network/Wai/Handler/Warp/FileInfoCache.hs
 +++ Network/Wai/Handler/Warp/FileInfoCache.hs
-@@ -61,7 +61,7 @@
+@@ -61,8 +61,8 @@
  ----------------------------------------------------------------
  
  getAndRegisterInfo :: FileInfoCache -> FilePath -> IO FileInfo
@@ -16,7 +16,7 @@ record pattern. Replace Reaper{..} with explicit function calls.
      case M.lookup path cache of
          Just Negative     -> UnliftIO.throwIO (userError "FileInfoCache:getAndRegisterInfo")
          Just (Positive x) -> return x
-@@ -70,8 +70,8 @@
+@@ -70,14 +70,14 @@
                                 `UnliftIO.onException` negative reaper path
  
  positive :: FileInfoCache -> FilePath -> IO FileInfo
@@ -33,3 +33,5 @@ record pattern. Replace Reaper{..} with explicit function calls.
 +negative reaper path = do
 +    reaperAdd reaper (path, Negative)
      UnliftIO.throwIO (userError "FileInfoCache:negative")
+ 
+ ----------------------------------------------------------------

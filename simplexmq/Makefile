@@ -34,8 +34,6 @@ MAKE_ENV += XDG_CACHE_HOME=${WRKDIR}/.cache
 MAKE_ENV += HOME=${WRKDIR}
 MAKE_ENV += CABAL_DIR=${WRKDIR}/.cabal
 MAKE_ENV += DEBUG=${DEBUG}
-MAKE_ENV += LIBRARY_PATH=/usr/lib:/usr/local/lib
-MAKE_ENV += LD_LIBRARY_PATH=/usr/lib:/usr/local/lib
 
 LIB_DEPENDS = converters/libiconv \
 			devel/gmp \

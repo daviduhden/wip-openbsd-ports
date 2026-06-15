@@ -1,11 +1,11 @@
 COMMENT = Private and encrypted chat platform (terminal client)
 V = 6.5.4.1
 
-SITES = https://github.com/simplex-chat/simplex-chat/archive/refs/heads/
-DISTFILES = stable.tar.gz
-DISTNAME = simplex-chat-${V}
+GH_ACCOUNT = simplex-chat
+GH_PROJECT = simplex-chat
+GH_COMMIT = f144bf45607e8838c250bae424660658844457f4
 
-WRKDIST = ${WRKDIR}/simplex-chat-stable
+WRKDIST = ${WRKDIR}/${GH_PROJECT}-${GH_COMMIT}
 WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 
@@ -35,11 +35,11 @@ RUN_DEPENDS = databases/sqlcipher \
 do-build:
 	install -d ${CABAL_STATE_ROOT}/home ${CABAL_STATE_ROOT}/cache ${CABAL_STATE_ROOT}/cabal
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal build -v2 --prefer-local
+		env ${MAKE_ENV} cabal build
 
 do-test:
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal test -v2
+		env ${MAKE_ENV} cabal test
 
 do-install:
 	chat=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/simplex-chat/build/simplex-chat/simplex-chat' | head -n 1); \

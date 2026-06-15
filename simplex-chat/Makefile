@@ -1,5 +1,13 @@
 COMMENT = Private and encrypted chat platform (terminal client)
 
+DEBUG ?= 0
+
+.if ${DEBUG} == 1
+CABAL_FLAGS = -v2
+.else
+CABAL_FLAGS = -j
+.endif
+
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
 GH_COMMIT = f144bf45607e8838c250bae424660658844457f4
@@ -35,11 +43,11 @@ RUN_DEPENDS = databases/sqlcipher \
 do-build:
 	install -d ${CABAL_STATE_ROOT}/home ${CABAL_STATE_ROOT}/cache ${CABAL_STATE_ROOT}/cabal
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal build -j
+		env ${MAKE_ENV} cabal build ${CABAL_FLAGS}
 
 do-test:
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal test -j
+		env ${MAKE_ENV} cabal test ${CABAL_FLAGS}
 
 do-install:
 	chat=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/simplex-chat/build/simplex-chat/simplex-chat' | head -n 1); \

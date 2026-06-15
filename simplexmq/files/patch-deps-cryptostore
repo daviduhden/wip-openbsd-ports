@@ -1,6 +1,7 @@
 $OpenBSD$
 
-GHC 9.10+ compat: replace memory with ram in build-depends.
+GHC 9.10+ compat: replace memory with ram in build-depends,
+replace MIN_VERSION_memory CPP macro with MIN_VERSION_ram.
 
 --- cryptostore.cabal
 +++ cryptostore.cabal
@@ -22,3 +23,15 @@ GHC 9.10+ compat: replace memory with ram in build-depends.
                       , tasty
                       , tasty-hunit
                       , tasty-quickcheck
+
+--- src/Crypto/Store/Util.hs
++++ src/Crypto/Store/Util.hs
+@@ -39,7 +39,7 @@
+ 
+ -- | Reverse a bytearray.
+ reverseBytes :: ByteArray ba => ba -> ba
+-#if MIN_VERSION_memory(0,14,18)
++#if MIN_VERSION_ram(0,14,18)
+ reverseBytes = B.reverse
+ #else
+ reverseBytes = B.pack . reverse . B.unpack

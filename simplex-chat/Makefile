@@ -35,11 +35,11 @@ RUN_DEPENDS = databases/sqlcipher \
 do-build:
 	install -d ${CABAL_STATE_ROOT}/home ${CABAL_STATE_ROOT}/cache ${CABAL_STATE_ROOT}/cabal
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal build -v2
+		env ${MAKE_ENV} cabal build -j
 
 do-test:
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal test -v2
+		env ${MAKE_ENV} cabal test -j
 
 do-install:
 	chat=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/simplex-chat/build/simplex-chat/simplex-chat' | head -n 1); \

@@ -1,5 +1,5 @@
 #!/bin/ksh
-set -eux
+set -eu
 # Create patched dependency copies in ${WRKDIR}/deps/
 # Called from do-build before cabal build
 

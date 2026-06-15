@@ -33,12 +33,12 @@ LIB_DEPENDS = converters/libiconv \
 do-build:
 	ksh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal build -v2
+		env ${MAKE_ENV} cabal build -j
 
 do-test:
 	ksh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal test -v2
+		env ${MAKE_ENV} cabal test -j
 
 do-install:
 	smp=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/smp-server/build/smp-server/smp-server' | head -n 1); \

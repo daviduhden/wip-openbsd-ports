@@ -1,8 +1,3 @@
-$OpenBSD$
-
-GHC 9.10+ compat: add SA.Unzip KeyMap instance (required by semialign>=1.3),
-add snd to Prelude import, relax ghc-prim upper bound.
-
 --- aeson.cabal
 +++ aeson.cabal
 @@ -100,7 +100,7 @@
@@ -14,15 +9,21 @@ add snd to Prelude import, relax ghc-prim upper bound.
      , template-haskell  >=2.12.0.0 && <2.22
      , text              >=1.2.3.0  && <1.3  || >=2.0 && <2.2
      , time              >=1.8.0.2  && <1.13
-
 --- src/Data/Aeson/KeyMap.hs
 +++ src/Data/Aeson/KeyMap.hs
-@@ -351,7 +351,7 @@
+@@ -100,6 +100,7 @@
+ import Prelude ((.), ($))
+ import Prelude (Functor(fmap), Monad(..))
+ import Prelude (Show, showsPrec, showParen, shows, showString)
++import Prelude (fst, snd)
+ 
+ import Control.Applicative (Applicative)
+ import Control.DeepSeq (NFData(..))
+@@ -351,7 +352,6 @@
  
  import Data.List (sortBy)
  import Data.Ord (comparing)
 -import Prelude (fst)
-+import Prelude (fst, snd)
  
  -- | A map from JSON key type 'Key' to 'v'.
  newtype KeyMap v = KeyMap { unKeyMap :: HashMap Key v }

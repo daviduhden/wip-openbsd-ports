@@ -1,11 +1,11 @@
 COMMENT = SimpleX messaging protocol server and client library
 V = 6.5.3.0
 
-SITES = https://github.com/simplex-chat/simplexmq/archive/refs/heads/
-DISTFILES = stable.tar.gz
-DISTNAME = simplexmq-${V}
+GH_ACCOUNT = simplex-chat
+GH_PROJECT = simplexmq
+GH_COMMIT = 9f9b6c8e88524fb5fd063f47617a679ea53ac7c0
 
-WRKDIST = ${WRKDIR}/simplexmq-stable
+WRKDIST = ${WRKDIR}/${GH_PROJECT}-${GH_COMMIT}
 WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 
@@ -33,12 +33,12 @@ LIB_DEPENDS = converters/libiconv \
 do-build:
 	ksh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal build -v2 --prefer-local
+		env ${MAKE_ENV} cabal build
 
 do-test:
 	ksh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal test -v2
+		env ${MAKE_ENV} cabal test
 
 do-install:
 	smp=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/smp-server/build/smp-server/smp-server' | head -n 1); \

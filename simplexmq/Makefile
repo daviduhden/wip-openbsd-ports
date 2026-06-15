@@ -1,5 +1,13 @@
 COMMENT = SimpleX messaging protocol server and client library
 
+DEBUG ?= 0
+
+.if ${DEBUG} == 1
+CABAL_FLAGS = -v2
+.else
+CABAL_FLAGS = -j
+.endif
+
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplexmq
 GH_COMMIT = 9f9b6c8e88524fb5fd063f47617a679ea53ac7c0
@@ -24,7 +32,7 @@ BUILD_DEPENDS = devel/cabal-install \
 
 MAKE_ENV += XDG_CACHE_HOME=${WRKDIR}/.cache
 MAKE_ENV += HOME=${WRKDIR}
-MAKE_ENV += CABAL_DIR=${WRKDIR}/.cabal
+MAKE_ENV += DEBUG=${DEBUG}
 
 LIB_DEPENDS = converters/libiconv \
 			devel/gmp \
@@ -33,12 +41,12 @@ LIB_DEPENDS = converters/libiconv \
 do-build:
 	ksh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal build -j
+		env ${MAKE_ENV} cabal build ${CABAL_FLAGS}
 
 do-test:
 	ksh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
 	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal test -j
+		env ${MAKE_ENV} cabal test ${CABAL_FLAGS}
 
 do-install:
 	smp=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/smp-server/build/smp-server/smp-server' | head -n 1); \

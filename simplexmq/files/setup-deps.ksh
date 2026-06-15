@@ -1,5 +1,10 @@
 #!/bin/ksh
-set -eu
+# DEBUG=1 enables command tracing
+if [ "${DEBUG:-0}" = 1 ]; then
+	set -eux
+else
+	set -eu
+fi
 # Create patched dependency copies in ${WRKDIR}/deps/
 # Called from do-build before cabal build
 

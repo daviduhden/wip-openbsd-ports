@@ -1,16 +1,17 @@
 COMMENT = SimpleX messaging protocol server and client library
 V = 6.5.3.0
 SPLITMIX_V = 0.1.3.1
-DISTNAME = simplexmq-${V}
+
+GH_ACCOUNT = simplex-chat
+GH_PROJECT = simplexmq
+GH_TAGNAME = stable
+
 WRKDIST = ${WRKDIR}/simplexmq-stable
 WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 
 CATEGORIES = net
 HOMEPAGE = https://simplex.chat/
-SITES = https://github.com/simplex-chat/
-DISTFILES = simplexmq-${V}${EXTRACT_SUFX}{simplexmq/archive/refs/heads/stable.tar.gz}
-EXTRACT_ONLY = simplexmq-${V}${EXTRACT_SUFX}
 
 MAINTAINER = David Uhden Collado <daviduhden@gmail.com>
 
@@ -29,9 +30,6 @@ MAKE_ENV += CABAL_DIR=${WRKDIR}/.cabal
 LIB_DEPENDS = converters/libiconv \
 			devel/gmp \
 			devel/libffi
-
-post-extract:
-	# splitmix handled by setup-deps.ksh
 
 do-build:
 	sh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR} ${SPLITMIX_V}

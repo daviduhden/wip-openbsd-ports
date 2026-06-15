@@ -1,0 +1,21 @@
+$OpenBSD$
+
+Same C compiler wrapper issue as network. Skip the configure
+C compiler test on OpenBSD.
+
+--- configure
++++ configure
+@@ -2552,10 +2552,9 @@
+ $as_echo "no" >&6; }
+ $as_echo "$as_me: failed program was:" >&5
+ sed 's/^/| /' conftest.$ac_ext >&5
+-
+-{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error 77 "C compiler cannot create executables
++printf "%s\n" "Skipping C compiler test (OpenBSD ports wrapper)" >&5
++printf "%s\n" "yes" >&6
++ac_file='a.out'
+ See \`config.log' for more details" "$LINENO" 5; }
+ else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5

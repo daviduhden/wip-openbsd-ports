@@ -103,3 +103,19 @@ if [ ! -d "${DEPS}/network" ]; then (
 	mv "${DEPS}/network-${NET_VER}" "${DEPS}/network"
 	patch -d "${DEPS}/network" -p0 <"${FILESDIR}/patch-deps-network"
 ); fi
+
+# --- unix-time: download from hackage and patch configure ---
+UT_VER="0.5.0"
+if [ ! -d "${DEPS}/unix-time" ]; then (
+	CABAL_CACHE="${WRKDIR}/.cabal/packages/hackage.haskell.org"
+	if [ -f "${CABAL_CACHE}/unix-time/${UT_VER}/unix-time-${UT_VER}.tar.gz" ]; then
+		tar -xzf "${CABAL_CACHE}/unix-time/${UT_VER}/unix-time-${UT_VER}.tar.gz" -C "${DEPS}"
+	else
+		${FETCH} "${DEPS}/unix-time.tar.gz" \
+			"${HACKAGE}/unix-time-${UT_VER}/unix-time-${UT_VER}.tar.gz"
+		tar -xzf "${DEPS}/unix-time.tar.gz" -C "${DEPS}"
+		rm -f "${DEPS}/unix-time.tar.gz"
+	fi
+	mv "${DEPS}/unix-time-${UT_VER}" "${DEPS}/unix-time"
+	patch -d "${DEPS}/unix-time" -p0 <"${FILESDIR}/patch-deps-unix-time"
+); fi

@@ -33,6 +33,7 @@ CABAL_STATE_ROOT = ${WRKDIR}/.cabal-state
 MAKE_ENV += XDG_CACHE_HOME=${CABAL_STATE_ROOT}/cache
 MAKE_ENV += HOME=${CABAL_STATE_ROOT}/home
 MAKE_ENV += CABAL_DIR=${CABAL_STATE_ROOT}/cabal
+MAKE_ENV += CABAL_UNVEIL=0
 
 LIB_DEPENDS = databases/sqlcipher \
 			archivers/zstd

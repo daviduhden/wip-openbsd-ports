@@ -1,8 +1,7 @@
 $OpenBSD$
 
-Add patched deps as local packages. Specific allow-newer for
-GHC core packages only (avoids rebuilding network/unix-time
-from hackage). Drop index-state.
+Add patched deps as local packages. allow-newer for GHC 9.10+,
+drop index-state.
 
 --- cabal.project
 +++ cabal.project
@@ -12,27 +11,15 @@ from hackage). Drop index-state.
  -- packages: . ../direct-sqlcipher ../sqlcipher-simple
  -- packages: . ../hs-socks
  -- packages: . ../http2
-@@ -13,7 +13,22 @@
+@@ -13,7 +13,10 @@
     -- coverage: False
     -- library-coverage: False
  
 -index-state: 2023-12-12T00:00:00Z
 +-- index-state: 2023-12-12T00:00:00Z
 +
-+-- Relax bounds for GHC 9.10+ (core packages only)
-+allow-newer:
-+  base,
-+  ghc-prim,
-+  template-haskell,
-+  Cabal,
-+  directory,
-+  process,
-+  unix,
-+  time,
-+  bytestring,
-+  containers,
-+  deepseq,
-+  filepath
++-- Relax bounds for GHC 9.10+ compatibility
++allow-newer: *
  
  package cryptostore
      flags: +use_crypton

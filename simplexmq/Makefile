@@ -34,8 +34,6 @@ MAKE_ENV += XDG_CACHE_HOME=${WRKDIR}/.cache
 MAKE_ENV += HOME=${WRKDIR}
 MAKE_ENV += CABAL_DIR=${WRKDIR}/.cabal
 MAKE_ENV += DEBUG=${DEBUG}
-MAKE_ENV += CC=/usr/bin/clang
-MAKE_ENV += CXX=/usr/bin/clang++
 MAKE_ENV += LIBRARY_PATH=/usr/lib:/usr/local/lib
 
 LIB_DEPENDS = converters/libiconv \
@@ -44,13 +42,13 @@ LIB_DEPENDS = converters/libiconv \
 
 do-build:
 	ksh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
-	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal build ${CABAL_FLAGS}
+	cd ${WRKSRC} && env ${MAKE_ENV} CC=/usr/bin/clang CXX=/usr/bin/clang++ cabal update && \
+		env ${MAKE_ENV} CC=/usr/bin/clang CXX=/usr/bin/clang++ cabal build ${CABAL_FLAGS}
 
 do-test:
 	ksh ${FILESDIR}/setup-deps.ksh ${WRKDIR} ${FILESDIR}
-	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal test ${CABAL_FLAGS}
+	cd ${WRKSRC} && env ${MAKE_ENV} CC=/usr/bin/clang CXX=/usr/bin/clang++ cabal update && \
+		env ${MAKE_ENV} CC=/usr/bin/clang CXX=/usr/bin/clang++ cabal test ${CABAL_FLAGS}
 
 do-install:
 	smp=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/smp-server/build/smp-server/smp-server' | head -n 1); \

@@ -91,7 +91,8 @@ if [ ! -d "${DEPS}/cryptostore" ]; then (
 
 # --- network: download from hackage, switch to build-type Simple ---
 NET_VER="3.2.8.0"
-if [ ! -d "${DEPS}/network" ]; then (
+if [ ! -f "${DEPS}/network/network.cabal" ] || grep -q 'build-type: Configure' "${DEPS}/network/network.cabal" 2>/dev/null; then (
+	rm -rf "${DEPS}/network"
 	${FETCH} "${DEPS}/network.tar.gz" \
 		"${HACKAGE}/network-${NET_VER}/network-${NET_VER}.tar.gz"
 	tar -xzf "${DEPS}/network.tar.gz" -C "${DEPS}"
@@ -137,7 +138,8 @@ NETEOF
 
 # --- unix-time: download from hackage, switch to build-type Simple ---
 UT_VER="0.5.0"
-if [ ! -d "${DEPS}/unix-time" ]; then (
+if [ ! -f "${DEPS}/unix-time/unix-time.cabal" ] || grep -q 'build-type: Configure' "${DEPS}/unix-time/unix-time.cabal" 2>/dev/null; then (
+	rm -rf "${DEPS}/unix-time"
 	${FETCH} "${DEPS}/unix-time.tar.gz" \
 		"${HACKAGE}/unix-time-${UT_VER}/unix-time-${UT_VER}.tar.gz"
 	tar -xzf "${DEPS}/unix-time.tar.gz" -C "${DEPS}"

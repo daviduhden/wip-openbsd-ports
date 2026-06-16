@@ -7,7 +7,7 @@ drop index-state.
 +++ cabal.project
 @@ -1,4 +1,4 @@
 -packages: .
-+packages: . ../deps/splitmix ../deps/aeson ../deps/warp ../deps/tls ../deps/cryptostore
++packages: . ../deps/splitmix ../deps/aeson ../deps/warp ../deps/tls ../deps/cryptostore ../deps/network ../deps/unix-time
  -- packages: . ../direct-sqlcipher ../sqlcipher-simple
  -- packages: . ../hs-socks
  -- packages: . ../http2

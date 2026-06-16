@@ -91,14 +91,14 @@ if [ ! -d "${DEPS}/cryptostore" ]; then (
 
 # --- network: download from hackage, switch to build-type Simple ---
 NET_VER="3.2.8.0"
-if [ ! -f "${DEPS}/network/network.cabal" ] || grep -q 'build-type: Configure' "${DEPS}/network/network.cabal" 2>/dev/null; then (
+if [ ! -f "${DEPS}/network/network.cabal" ] || grep -q 'build-type:.*Configure' "${DEPS}/network/network.cabal" 2>/dev/null; then (
 	rm -rf "${DEPS}/network"
 	${FETCH} "${DEPS}/network.tar.gz" \
 		"${HACKAGE}/network-${NET_VER}/network-${NET_VER}.tar.gz"
 	tar -xzf "${DEPS}/network.tar.gz" -C "${DEPS}"
 	mv "${DEPS}/network-${NET_VER}" "${DEPS}/network"
 	rm -f "${DEPS}/network.tar.gz"
-	sed -i 's/build-type: Configure/build-type: Simple/' "${DEPS}/network/network.cabal"
+	sed -i 's/build-type:.*Configure/build-type: Simple/' "${DEPS}/network/network.cabal"
 	mkdir -p "${DEPS}/network/include"
 	cat >"${DEPS}/network/include/HsNetworkConfig.h" <<'NETEOF'
 #ifndef HSNETWORKCONFIG_H
@@ -138,12 +138,12 @@ NETEOF
 
 # --- unix-time: download from hackage, switch to build-type Simple ---
 UT_VER="0.5.0"
-if [ ! -f "${DEPS}/unix-time/unix-time.cabal" ] || grep -q 'build-type: Configure' "${DEPS}/unix-time/unix-time.cabal" 2>/dev/null; then (
+if [ ! -f "${DEPS}/unix-time/unix-time.cabal" ] || grep -q 'build-type:.*Configure' "${DEPS}/unix-time/unix-time.cabal" 2>/dev/null; then (
 	rm -rf "${DEPS}/unix-time"
 	${FETCH} "${DEPS}/unix-time.tar.gz" \
 		"${HACKAGE}/unix-time-${UT_VER}/unix-time-${UT_VER}.tar.gz"
 	tar -xzf "${DEPS}/unix-time.tar.gz" -C "${DEPS}"
 	mv "${DEPS}/unix-time-${UT_VER}" "${DEPS}/unix-time"
 	rm -f "${DEPS}/unix-time.tar.gz"
-	sed -i 's/build-type: Configure/build-type: Simple/' "${DEPS}/unix-time/unix-time.cabal"
+	sed -i 's/build-type:.*Configure/build-type: Simple/' "${DEPS}/unix-time/unix-time.cabal"
 ); fi

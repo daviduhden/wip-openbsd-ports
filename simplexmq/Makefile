@@ -34,6 +34,8 @@ MAKE_ENV += XDG_CACHE_HOME=${WRKDIR}/.cache
 MAKE_ENV += HOME=${WRKDIR}
 MAKE_ENV += CABAL_DIR=${WRKDIR}/.cabal
 MAKE_ENV += DEBUG=${DEBUG}
+MAKE_ENV += CC=/usr/bin/clang
+MAKE_ENV += CXX=/usr/bin/clang++
 MAKE_ENV += LIBRARY_PATH=/usr/lib:/usr/local/lib
 
 LIB_DEPENDS = converters/libiconv \

@@ -34,6 +34,7 @@ MAKE_ENV += XDG_CACHE_HOME=${WRKDIR}/.cache
 MAKE_ENV += HOME=${WRKDIR}
 MAKE_ENV += CABAL_DIR=${WRKDIR}/.cabal
 MAKE_ENV += DEBUG=${DEBUG}
+MAKE_ENV += CABAL_UNVEIL=0
 
 LIB_DEPENDS = converters/libiconv \
 			devel/gmp \

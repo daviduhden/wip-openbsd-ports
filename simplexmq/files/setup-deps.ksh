@@ -88,3 +88,60 @@ if [ ! -d "${DEPS}/cryptostore" ]; then (
 	patch -d "${DEPS}/cryptostore" -p0 <"${FILESDIR}/patch-deps-cryptostore"
 ); fi
 
+
+# --- network: download from hackage, switch to build-type Simple ---
+NET_VER="3.2.8.0"
+if [ ! -d "${DEPS}/network" ]; then (
+	${FETCH} "${DEPS}/network.tar.gz" \
+		"${HACKAGE}/network-${NET_VER}/network-${NET_VER}.tar.gz"
+	tar -xzf "${DEPS}/network.tar.gz" -C "${DEPS}"
+	mv "${DEPS}/network-${NET_VER}" "${DEPS}/network"
+	rm -f "${DEPS}/network.tar.gz"
+	sed -i 's/build-type: Configure/build-type: Simple/' "${DEPS}/network/network.cabal"
+	mkdir -p "${DEPS}/network/include"
+	cat >"${DEPS}/network/include/HsNetworkConfig.h" <<'NETEOF'
+#ifndef HSNETWORKCONFIG_H
+#define HSNETWORKCONFIG_H
+#define HAVE_NETINET_IN_H 1
+#define HAVE_NETINET_TCP_H 1
+#define HAVE_SYS_SOCKET_H 1
+#define HAVE_SYS_UIO_H 1
+#define HAVE_SYS_UN_H 1
+#define HAVE_SYS_TYPES_H 1
+#define HAVE_FCNTL_H 1
+#define HAVE_NETDB_H 1
+#define HAVE_ARPA_INET_H 1
+#define HAVE_NET_IF_H 1
+#define HAVE_LIMITS_H 1
+#define HAVE_STDLIB_H 1
+#define HAVE_UNISTD_H 1
+#define HAVE_GETPEEREID 1
+#define HAVE_GAI_STRERROR 1
+#define HAVE_ACCEPT4 1
+#define HAVE_STRUCT_SOCKADDR_SA_LEN 1
+#define HAVE_STRUCT_MSGHDR_MSG_CONTROL 1
+#define HAVE_DECL_AI_ADDRCONFIG 1
+#define HAVE_DECL_AI_ALL 1
+#define HAVE_DECL_AI_NUMERICSERV 1
+#define HAVE_DECL_AI_V4MAPPED 1
+#define HAVE_DECL_IPV6_V6ONLY 1
+#define HAVE_DECL_IPPROTO_IP 1
+#define HAVE_DECL_IPPROTO_TCP 1
+#define HAVE_DECL_IPPROTO_IPV6 1
+#define HAVE_DECL_SO_PEERCRED 1
+#define HAVE_DECL_IP_DONTFRAG 1
+#define HAVE_DECL_IP_MTU_DISCOVER 1
+#endif
+NETEOF
+); fi
+
+# --- unix-time: download from hackage, switch to build-type Simple ---
+UT_VER="0.5.0"
+if [ ! -d "${DEPS}/unix-time" ]; then (
+	${FETCH} "${DEPS}/unix-time.tar.gz" \
+		"${HACKAGE}/unix-time-${UT_VER}/unix-time-${UT_VER}.tar.gz"
+	tar -xzf "${DEPS}/unix-time.tar.gz" -C "${DEPS}"
+	mv "${DEPS}/unix-time-${UT_VER}" "${DEPS}/unix-time"
+	rm -f "${DEPS}/unix-time.tar.gz"
+	sed -i 's/build-type: Configure/build-type: Simple/' "${DEPS}/unix-time/unix-time.cabal"
+); fi

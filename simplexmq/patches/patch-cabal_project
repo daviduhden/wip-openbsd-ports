@@ -1,16 +1,9 @@
 $OpenBSD$
 
-Add patched deps as local packages. allow-newer for GHC 9.10+,
-drop index-state.
+Use the ports-provided dependency set and relax bounds for newer GHC.
 
 --- cabal.project
 +++ cabal.project
-@@ -1,4 +1,4 @@
--packages: .
-+packages: . ../deps/splitmix ../deps/aeson ../deps/warp ../deps/tls ../deps/cryptostore ../deps/network ../deps/unix-time
- -- packages: . ../direct-sqlcipher ../sqlcipher-simple
- -- packages: . ../hs-socks
- -- packages: . ../http2
 @@ -13,7 +13,10 @@
     -- coverage: False
     -- library-coverage: False

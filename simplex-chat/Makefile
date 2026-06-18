@@ -2,20 +2,34 @@ COMMENT = Private and encrypted chat platform (terminal client)
 
 DEBUG ?= 0
 
-.if ${DEBUG} == 1
-CABAL_FLAGS = -v2
-.else
-CABAL_FLAGS = -j
-.endif
-
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-GH_COMMIT = f144bf45607e8838c250bae424660658844457f4
+GH_TAGNAME = v6.5.5
 
-DISTNAME = simplex-chat-6.5.4.1
-WRKDIST = ${WRKDIR}/${GH_PROJECT}-${GH_COMMIT}
+V = 6.5.5.0
+DISTNAME = ${GH_PROJECT}-${V}
+DISTFILES = ${GH_DISTFILE}
+SITES = ${SITES_GITHUB}
+WRKDIST = ${WRKDIR}/${GH_PROJECT}-${GH_TAGNAME:S/^v//}
 WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
+
+DIST_TUPLE += github simplex-chat simplexmq \
+		376d6a261a1074717aed65ad97bb6f2a9532011b ../simplexmq
+DIST_TUPLE += github simplex-chat hs-socks \
+		a30cc7a79a08d8108316094f8f2f82a0c5e1ac51 ../hs-socks
+DIST_TUPLE += github simplex-chat direct-sqlcipher \
+		f814ee68b16a9447fbb467ccc8f29bdd3546bfd9 ../direct-sqlcipher
+DIST_TUPLE += github simplex-chat sqlcipher-simple \
+		a46bd361a19376c5211f1058908fc0ae6bf42446 ../sqlcipher-simple
+DIST_TUPLE += github simplex-chat aeson \
+		aab7b5a14d6c5ea64c64dcaee418de1bb00dcc2b ../aeson
+DIST_TUPLE += github simplex-chat haskell-terminal \
+		f708b00009b54890172068f168bf98508ffcd495 ../haskell-terminal
+DIST_TUPLE += github simplex-chat android-support \
+		9aa09f148089d6752ce563b14c2df1895718d806 ../android-support
+DIST_TUPLE += github simplex-chat zip \
+		2eff156c3aac389e35d38bf10a52733d7061640a ../zip
 
 CATEGORIES = net
 HOMEPAGE = https://simplex.chat/
@@ -25,15 +39,31 @@ MAINTAINER = David Uhden Collado <daviduhden@gmail.com>
 # AGPL-3
 PERMIT_PACKAGE = Yes
 
-BUILD_DEPENDS = devel/cabal-install \
-			lang/ghc \
-			net/simplexmq
+WANTLIB = ${COMPILER_LIBCXX} c crypto ffi gmp iconv m pthread sqlcipher util z zstd
 
-CABAL_STATE_ROOT = ${WRKDIR}/.cabal-state
-MAKE_ENV += XDG_CACHE_HOME=${CABAL_STATE_ROOT}/cache
-MAKE_ENV += HOME=${CABAL_STATE_ROOT}/home
-MAKE_ENV += CABAL_DIR=${CABAL_STATE_ROOT}/cabal
-MAKE_ENV += CABAL_UNVEIL=0
+MODULES = devel/cabal
+MODCABAL_STEM = simplex-chat
+MODCABAL_VERSION = ${V}
+MODCABAL_EXECUTABLES = simplex-chat
+
+.if ${DEBUG} == 1
+MODCABAL_BUILD_ARGS = -v2
+.endif
+
+CRYPTOSTORE_V = 0.5.0.0
+NETWORK_V = 3.2.8.0
+UNIX_TIME_V = 0.5.0
+CABAL_INC_HOME ?= ${WRKDIR}/.cabal-inc-home
+CABAL_INC_SKIP = simplexmq,aeson,socks,direct-sqlcipher,sqlcipher-simple,terminal,android-support,zip
+CABAL_INC_EXTRA = yaml:0.11.11.2:0
+SIMPLEXMQ_PATCHES = \
+	patch-simplexmq_cabal \
+	patch-simplexmq-agent_schema_sql \
+	patch-simplexmq-msgstore_journal \
+	patch-simplexmq-transport \
+	patch-simplexmq-transport_client \
+	patch-simplexmq-transport_keepalive \
+	patch-simplexmq-transport_server
 
 LIB_DEPENDS = databases/sqlcipher \
 			archivers/zstd
@@ -41,18 +71,73 @@ LIB_DEPENDS = databases/sqlcipher \
 RUN_DEPENDS = databases/sqlcipher \
 			archivers/zstd
 
-do-build:
-	install -d ${CABAL_STATE_ROOT}/home ${CABAL_STATE_ROOT}/cache ${CABAL_STATE_ROOT}/cabal
-	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal build ${CABAL_FLAGS}
+post-patch:
+	perl -0pi -e 's/\nsource-repository-package\n(?:    .*\n)+//g' \
+		${WRKSRC}/cabal.project
+	printf '%s\n' \
+		'packages: ${WRKDIR}/simplexmq/simplexmq.cabal' \
+		'packages: ${WRKDIR}/hs-socks/socks.cabal' \
+		'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \
+		'packages: ${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal' \
+		'packages: ${WRKDIR}/aeson/aeson.cabal' \
+		'packages: ${WRKDIR}/haskell-terminal/terminal.cabal' \
+		'packages: ${WRKDIR}/android-support/android-support.cabal' \
+		'packages: ${WRKDIR}/zip/zip.cabal' \
+		'package simplexmq' \
+		'    flags: +client_library' \
+		>> ${WRKSRC}/cabal.project.local
+.for _p in ${SIMPLEXMQ_PATCHES}
+	patch -d ${WRKDIR}/simplexmq -p0 < ${FILESDIR}/${_p}
+.endfor
+	patch -d ${WRKDIR}/aeson -p0 < ${FILESDIR}/patch-deps-aeson
+	if [ -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} ]; then \
+		perl -pi -e 's/^(\s*,\s*)memory\b/$${1}ram/' \
+			${WRKDIR}/cryptostore-${CRYPTOSTORE_V}/cryptostore.cabal; \
+		patch -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} -p0 \
+			< ${FILESDIR}/patch-deps-cryptostore; \
+	fi
+	if [ -f ${WRKDIR}/network-${NETWORK_V}/network.cabal ]; then \
+		perl -pi -e 's/^(build-type:\s*)Configure\b/\1Simple/i' \
+			${WRKDIR}/network-${NETWORK_V}/network.cabal; \
+		${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include; \
+		${INSTALL_DATA} ${FILESDIR}/HsNetworkConfig.h \
+			${WRKDIR}/network-${NETWORK_V}/include/HsNetworkConfig.h; \
+	fi
+	if [ -f ${WRKDIR}/unix-time-${UNIX_TIME_V}/unix-time.cabal ]; then \
+		perl -pi -e 's/^(build-type:\s*)Configure\b/\1Simple/i' \
+			${WRKDIR}/unix-time-${UNIX_TIME_V}/unix-time.cabal; \
+		${INSTALL_DATA} ${FILESDIR}/UnixTimeConfig.h \
+			${WRKDIR}/unix-time-${UNIX_TIME_V}/cbits/config.h; \
+	fi
 
-do-test:
-	cd ${WRKSRC} && env ${MAKE_ENV} cabal update && \
-		env ${MAKE_ENV} cabal test ${CABAL_FLAGS}
+cabal-inc: patch
+	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}
+	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}/.cabal
+	env HOME=${CABAL_INC_HOME} CABAL_DIR=${CABAL_INC_HOME}/.cabal \
+		LC_ALL=en_US.UTF-8 \
+		${LOCALBASE}/bin/cabal update
+	if [ ! -f ${CABAL_INC_HOME}/.cabal/config ] && \
+		[ -f ${CABAL_INC_HOME}/.config/cabal/config ]; then \
+		cp ${CABAL_INC_HOME}/.config/cabal/config \
+			${CABAL_INC_HOME}/.cabal/config; \
+	fi
+	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
+		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
+		${LOCALBASE}/bin/cabal v2-build --dry-run \
+		-w ${LOCALBASE}/bin/ghc \
+		--disable-benchmarks --disable-tests \
+		exe:simplex-chat
+	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
+		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
+		${LOCALBASE}/bin/cabal-bundler --openbsd \
+		--plan dist-newstyle/cache/plan.json \
+		--executable simplex-chat \
+		${MODCABAL_STEM}-${MODCABAL_VERSION} \
+		> ${WRKDIR}/simplex-chat.raw.inc
+	env SKIP=${CABAL_INC_SKIP} EXTRA=${CABAL_INC_EXTRA} perl -e 'my %skip = map { $$_ => 1 } split /,/, $$ENV{SKIP}; my %seen; for my $$dep (split /,/, $$ENV{EXTRA}) { next unless length $$dep; my ($$n, $$v, $$r) = split /:/, $$dep; next if $$skip{$$n}; $$seen{"$$n\t$$v\t$$r"} = 1 if defined $$r; } while (<>) { next unless /^\s+(\S+)\s+(\S+)\s+(\d+)\s*\\?$$/; next if $$skip{$$1}; $$seen{"$$1\t$$2\t$$3"} = 1; } my @deps = sort keys %seen; print "MODCABAL_MANIFEST\t= \\\n"; for my $$i (0 .. $$#deps) { print "\t$$deps[$$i]"; print $$i == $$#deps ? "\n" : "\t\\\n"; }' \
+		${WRKDIR}/simplex-chat.raw.inc \
+			> ${.CURDIR}/cabal.inc
 
-do-install:
-	chat=$$(find ${WRKSRC}/dist-newstyle/build -path '*/x/simplex-chat/build/simplex-chat/simplex-chat' | head -n 1); \
-	install -d ${PREFIX}/bin; \
-	install -m 755 "$$chat" ${PREFIX}/bin/simplex-chat
+.include "cabal.inc"
 
 .include <bsd.port.mk>

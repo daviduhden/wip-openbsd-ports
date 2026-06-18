@@ -1,0 +1,15 @@
+$OpenBSD$
+
+Add explicit IO [AddrInfo] type annotation for getAddrInfo.
+
+--- src/Simplex/Messaging/Transport/Server.hs
++++ src/Simplex/Messaging/Transport/Server.hs
+@@ -235,7 +235,7 @@
+   where
+     resolve =
+       let hints = defaultHints {addrFlags = [AI_PASSIVE], addrSocketType = Stream}
+-       in select <$> getAddrInfo (Just hints) host (Just port)
++       in select <$> (getAddrInfo (Just hints) host (Just port) :: IO [AddrInfo])
+     select as = fromJust $ family AF_INET6 <|> family AF_INET
+       where
+         family f = find ((== f) . addrFamily) as

@@ -1,28 +1,7 @@
 $OpenBSD$
 
-GHC 9.10+ compat: replace memory with ram in build-depends,
-replace MIN_VERSION_memory CPP macro with MIN_VERSION_ram.
-
---- cryptostore.cabal
-+++ cryptostore.cabal
-@@ -62,7 +62,7 @@
-   build-depends:       base >= 4.9 && < 5
-                      , bytestring
-                      , basement
--                     , memory
-+                     , ram
-   if flag(use_crypton)
-     build-depends:     crypton
-                      , crypton-asn1-encoding >= 0.10.0 && < 0.11
-@@ -101,7 +101,7 @@
-                      , X509.Tests
-   build-depends:       base >= 4.9 && < 5
-                      , bytestring
--                     , memory
-+                     , ram
-                      , tasty
-                      , tasty-hunit
-                      , tasty-quickcheck
+GHC 9.10+ compat: replace MIN_VERSION_memory CPP macro with
+MIN_VERSION_ram after switching the cabal build-depends to ram.
 
 --- src/Crypto/Store/Util.hs
 +++ src/Crypto/Store/Util.hs

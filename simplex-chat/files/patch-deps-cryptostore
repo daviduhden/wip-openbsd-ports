@@ -1,0 +1,16 @@
+$OpenBSD$
+
+GHC 9.10+ compat: replace MIN_VERSION_memory CPP macro with
+MIN_VERSION_ram after switching the cabal build-depends to ram.
+
+--- src/Crypto/Store/Util.hs
++++ src/Crypto/Store/Util.hs
+@@ -39,7 +39,7 @@
+ 
+ -- | Reverse a bytearray.
+ reverseBytes :: ByteArray ba => ba -> ba
+-#if MIN_VERSION_memory(0,14,18)
++#if MIN_VERSION_ram(0,14,18)
+ reverseBytes = B.reverse
+ #else
+ reverseBytes = B.pack . reverse . B.unpack

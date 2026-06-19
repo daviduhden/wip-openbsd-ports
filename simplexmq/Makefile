@@ -46,20 +46,28 @@ MODCABAL_EXECUTABLES = smp-server xftp-server
 MODCABAL_BUILD_ARGS = -v2
 .endif
 
-CRYPTOSTORE_V = 0.5.0.0
 NETWORK_V = 3.2.8.0
 UNIX_TIME_V = 0.5.0
+CRYPTOSTORE_V = 0.5.0.0
 CABAL_INC_HOME ?= ${WRKDIR}/.cabal-inc-home
 CABAL_INC_SKIP = aeson,socks,direct-sqlcipher,sqlcipher-simple,warp-tls,warp
 CABAL_INC_EXTRA = wai-app-static:3.2.1:0,wai-extra:3.1.18:0,yaml:0.11.11.2:0
+AESON_PATCHES = \
+	patch-aeson_cabal \
+	patch-src_Data_Aeson_Types_FromJSON_hs \
+	patch-src_Data_Aeson_KeyMap_hs
+CRYPTOSTORE_PATCHES = \
+	patch-cryptostore_cabal \
+	patch-src_Crypto_Store_Util_hs
+WARP_PATCHES = \
+	patch-warp_cabal \
+	patch-Network_Wai_Handler_Warp_FileInfoCache_hs
 
 LIB_DEPENDS = converters/libiconv \
 			devel/gmp \
 			devel/libffi
 
 post-patch:
-	perl -0pi -e 's/\nsource-repository-package\n(?:    .*\n)+//g' \
-		${WRKSRC}/cabal.project
 	printf '%s\n' \
 		'packages: ${WRKDIR}/aeson/aeson.cabal' \
 		'packages: ${WRKDIR}/hs-socks/socks.cabal' \
@@ -67,25 +75,31 @@ post-patch:
 		'packages: ${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal' \
 		'packages: ${WRKDIR}/yesod-wai/warp-tls/warp-tls.cabal' \
 		'packages: ${WRKDIR}/simplex-wai/warp/warp.cabal' \
+		'package *' \
+		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
 		>> ${WRKSRC}/cabal.project.local
-	patch -d ${WRKDIR}/aeson -p0 < ${FILESDIR}/patch-deps-aeson
-	patch -d ${WRKDIR}/simplex-wai/warp -p0 < ${FILESDIR}/patch-deps-warp
+.for _p in ${AESON_PATCHES}
+	patch -d ${WRKDIR}/aeson -p0 < ${FILESDIR}/${_p}
+.endfor
+.for _p in ${CRYPTOSTORE_PATCHES}
 	if [ -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} ]; then \
-		perl -pi -e 's/^(\s*,\s*)memory\b/$${1}ram/' \
-			${WRKDIR}/cryptostore-${CRYPTOSTORE_V}/cryptostore.cabal; \
 		patch -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} -p0 \
-			< ${FILESDIR}/patch-deps-cryptostore; \
+			< ${FILESDIR}/${_p}; \
 	fi
+.endfor
+.for _p in ${WARP_PATCHES}
+	patch -d ${WRKDIR}/simplex-wai/warp -p0 < ${FILESDIR}/${_p}
+.endfor
 	if [ -f ${WRKDIR}/network-${NETWORK_V}/network.cabal ]; then \
-		perl -pi -e 's/^(build-type:\s*)Configure\b/\1Simple/i' \
-			${WRKDIR}/network-${NETWORK_V}/network.cabal; \
+		patch -d ${WRKDIR}/network-${NETWORK_V} -p0 \
+			< ${FILESDIR}/patch-network_cabal; \
 		${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include; \
 		${INSTALL_DATA} ${FILESDIR}/HsNetworkConfig.h \
 			${WRKDIR}/network-${NETWORK_V}/include/HsNetworkConfig.h; \
 	fi
 	if [ -f ${WRKDIR}/unix-time-${UNIX_TIME_V}/unix-time.cabal ]; then \
-		perl -pi -e 's/^(build-type:\s*)Configure\b/\1Simple/i' \
-			${WRKDIR}/unix-time-${UNIX_TIME_V}/unix-time.cabal; \
+		patch -d ${WRKDIR}/unix-time-${UNIX_TIME_V} -p0 \
+			< ${FILESDIR}/patch-unix-time_cabal; \
 		${INSTALL_DATA} ${FILESDIR}/UnixTimeConfig.h \
 			${WRKDIR}/unix-time-${UNIX_TIME_V}/cbits/config.h; \
 	fi
@@ -101,6 +115,16 @@ cabal-inc: patch
 		cp ${CABAL_INC_HOME}/.config/cabal/config \
 			${CABAL_INC_HOME}/.cabal/config; \
 	fi
+	printf '%s\n' \
+		'packages: ${WRKDIR}/aeson/aeson.cabal' \
+		'packages: ${WRKDIR}/hs-socks/socks.cabal' \
+		'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \
+		'packages: ${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal' \
+		'packages: ${WRKDIR}/yesod-wai/warp-tls/warp-tls.cabal' \
+		'packages: ${WRKDIR}/simplex-wai/warp/warp.cabal' \
+		'package *' \
+		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
+		> ${WRKSRC}/cabal.project.local
 	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
 		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
 		${LOCALBASE}/bin/cabal v2-build --dry-run \
@@ -121,7 +145,8 @@ cabal-inc: patch
 		--executable xftp-server \
 		${MODCABAL_STEM}-${MODCABAL_VERSION} \
 		> ${WRKDIR}/simplexmq.xftp.inc
-	env SKIP=${CABAL_INC_SKIP} EXTRA=${CABAL_INC_EXTRA} perl -e 'my %skip = map { $$_ => 1 } split /,/, $$ENV{SKIP}; my %seen; for my $$dep (split /,/, $$ENV{EXTRA}) { next unless length $$dep; my ($$n, $$v, $$r) = split /:/, $$dep; next if $$skip{$$n}; $$seen{"$$n\t$$v\t$$r"} = 1 if defined $$r; } while (<>) { next unless /^\s+(\S+)\s+(\S+)\s+(\d+)\s*\\?$$/; next if $$skip{$$1}; $$seen{"$$1\t$$2\t$$3"} = 1; } my @deps = sort keys %seen; print "MODCABAL_MANIFEST\t= \\\n"; for my $$i (0 .. $$#deps) { print "\t$$deps[$$i]"; print $$i == $$#deps ? "\n" : "\t\\\n"; }' \
+	env SKIP=${CABAL_INC_SKIP} EXTRA=${CABAL_INC_EXTRA} \
+		perl -e 'my %skip = map { $$_ => 1 } split /,/, $$ENV{SKIP}; my %seen; for my $$dep (split /,/, $$ENV{EXTRA}) { next unless length $$dep; my ($$n, $$v, $$r) = split /:/, $$dep; next if $$skip{$$n}; $$seen{"$$n\t$$v\t$$r"} = 1 if defined $$r; } while (<>) { next unless /^\s+(\S+)\s+(\S+)\s+(\d+)\s*\\?$$/; my ($$n, $$v, $$r) = ($$1, $$2, $$3); next if $$skip{$$n}; $$seen{"$$n\t$$v\t$$r"} = 1; } my @deps = sort keys %seen; print "MODCABAL_MANIFEST\t= \\\n"; for my $$i (0 .. $$#deps) { print "\t$$deps[$$i]"; print $$i == $$#deps ? "\n" : "\t\\\n"; }' \
 		${WRKDIR}/simplexmq.smp.inc ${WRKDIR}/simplexmq.xftp.inc \
 			> ${.CURDIR}/cabal.inc
 

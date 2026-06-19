@@ -1,0 +1,39 @@
+$OpenBSD$
+
+Backport the aeson 2.3.0.0 fix for HSEC-2026-0007: reject very large
+negative exponents before converting bounded scientific values.
+
+--- src/Data/Aeson/Types/FromJSON.hs.orig
++++ src/Data/Aeson/Types/FromJSON.hs
+@@ -794,11 +794,13 @@
+ withBoundedScientific_ :: (Parser a -> Parser a) -> (Scientific -> Parser a) -> Value -> Parser a
+ withBoundedScientific_ whenFail f (Number scientific) =
+     if exp10 > 1024
+-    then whenFail (fail msg)
++    then whenFail (fail (msg "greater than 1024"))
++    else if exp10 < -1024
++    then whenFail (fail (msg "less than -1024"))
+     else f scientific
+   where
+     exp10 = base10Exponent scientific
+-    msg = "found a number with exponent " ++ show exp10 ++ ", but it must not be greater than 1024"
++    msg req = "found a number with exponent " ++ show exp10 ++ ", but it must not be " ++ req
+ withBoundedScientific_ whenFail _ v =
+     whenFail (typeMismatch "Number" v)
+ 
+@@ -1727,14 +1729,7 @@
+         _      -> Scientific.toRealFloat <$> parseScientificText t
+ 
+ instance (FromJSON a, Integral a) => FromJSON (Ratio a) where
+-    parseJSON (Number x)
+-      | exp10 <= 1024
+-      , exp10 >= -1024 = return $! realToFrac x
+-      | otherwise      = prependContext "Ratio" $ fail msg
+-      where
+-        exp10 = base10Exponent x
+-        msg = "found a number with exponent " ++ show exp10
+-           ++ ", but it must not be greater than 1024 or less than -1024"
++    parseJSON n@(Number _) = withBoundedScientific "Ratio" (($!) pure . realToFrac) n
+     parseJSON o = objParser o
+       where
+         objParser = withObject "Rational" $ \obj -> do

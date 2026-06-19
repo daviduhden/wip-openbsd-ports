@@ -1,8 +1,8 @@
 $OpenBSD$
 
-Add explicit IO [AddrInfo] type annotation for getAddrInfo.
+Disambiguate getAddrInfo's result type for newer network/GHC combinations.
 
---- src/Simplex/Messaging/Transport/Server.hs
+--- src/Simplex/Messaging/Transport/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/Server.hs
 @@ -235,7 +235,7 @@
    where

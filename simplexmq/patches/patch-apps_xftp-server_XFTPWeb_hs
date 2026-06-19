@@ -1,8 +1,8 @@
 $OpenBSD$
 
-Use makeRelativeToProject for XFTP web asset file-embed paths.
+Resolve embedded XFTP web assets relative to the project root in Cabal builds.
 
---- apps/xftp-server/XFTPWeb.hs
+--- apps/xftp-server/XFTPWeb.hs.orig
 +++ apps/xftp-server/XFTPWeb.hs
 @@ -10,7 +10,7 @@
  import Control.Monad (forM_)

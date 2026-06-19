@@ -1,9 +1,8 @@
 $OpenBSD$
 
-cxtFinished returns Maybe VerifyData in tls >= 2.0.0.
-Wrap in MIN_VERSION_tls(2,0,0) CPP conditional.
+Adapt the TLS unique channel binding result type for newer tls/GHC builds.
 
---- src/Simplex/Messaging/Transport.hs
+--- src/Simplex/Messaging/Transport.hs.orig
 +++ src/Simplex/Messaging/Transport.hs
 @@ -1,7 +1,9 @@
  {-# LANGUAGE AllowAmbiguousTypes #-}

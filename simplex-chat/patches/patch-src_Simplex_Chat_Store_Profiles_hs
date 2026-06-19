@@ -1,11 +1,10 @@
 $OpenBSD$
 
-Replace L.unzip with explicit Maybe pattern match for
-compatibility across semialign/these versions.
+Pattern match the optional password hash instead of using list unzip on Maybe.
 
---- src/Simplex/Chat/Store/Profiles.hs
+--- src/Simplex/Chat/Store/Profiles.hs.orig
 +++ src/Simplex/Chat/Store/Profiles.hs
-@@ -283,7 +283,9 @@
+@@ -295,7 +295,9 @@
      |]
      (hashSalt viewPwdHash :. (BI showNtfs, userId))
    where

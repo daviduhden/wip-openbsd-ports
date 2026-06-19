@@ -1,0 +1,15 @@
+$OpenBSD$
+
+Use the config header installed by the port instead of running configure.
+
+--- unix-time.cabal.orig
++++ unix-time.cabal
+@@ -8,7 +8,7 @@
+ synopsis:           Unix time parser/formatter and utilities
+ description:        Fast parser\/formatter\/utilities for Unix time
+ category:           Data
+-build-type:         Configure
++build-type:         Simple
+ extra-source-files:
+     cbits/config.h.in
+     cbits/conv.c

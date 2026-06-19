@@ -1,29 +1,31 @@
-Do not use -Ofast.
-Use devel/readline instead of readline in the base system on OpenBSD.
-Use curses for terminfo on OpenBSD.
+$OpenBSD$
 
-Index: CMakeLists.txt
+Avoid -Ofast and use the ports readline/curses libraries when building
+through the depends CMake path on OpenBSD.
+
 --- CMakeLists.txt.orig
 +++ CMakeLists.txt
-@@ -343,7 +343,7 @@ endif()
+@@ -343,7 +343,7 @@
  if(WIN32 OR ARM OR PPC64LE OR PPC64 OR PPC)
    set(OPT_FLAGS_RELEASE "-O2")
  else()
 -  set(OPT_FLAGS_RELEASE "-Ofast")
 +  set(OPT_FLAGS_RELEASE "")
  endif()
-
+ 
  # BUILD_TAG is used to select the build type to check for a new version
-@@ -1182,10 +1182,16 @@ endif()
+@@ -1180,9 +1180,15 @@
+     message(STATUS "Could not find GNU readline library so building without readline support")
+   endif()
  elseif(USE_READLINE AND DEPENDS AND NOT MINGW)
+-  find_path(Readline_INCLUDE_PATH readline/readline.h)
+-  find_library(Readline_LIBRARY readline)
+-  find_library(Terminfo_LIBRARY tinfo)
 +  if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
 +    find_path(Readline_INCLUDE_PATH ereadline/readline/readline.h)
 +    find_library(Readline_LIBRARY ereadline)
 +    find_library(Terminfo_LIBRARY curses)
 +  else()
--  find_path(Readline_INCLUDE_PATH readline/readline.h)
--  find_library(Readline_LIBRARY readline)
--  find_library(Terminfo_LIBRARY tinfo)
 +    find_path(Readline_INCLUDE_PATH readline/readline.h)
 +    find_library(Readline_LIBRARY readline)
 +    find_library(Terminfo_LIBRARY tinfo)
@@ -31,5 +33,3 @@ Index: CMakeLists.txt
    set(Readline_LIBRARY "${Readline_LIBRARY};${Terminfo_LIBRARY}")
    set(GNU_READLINE_LIBRARY ${Readline_LIBRARY})
    add_definitions(-DHAVE_READLINE)
-   set(EPEE_READLINE epee_readline)
- endif()

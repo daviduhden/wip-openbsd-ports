@@ -1,8 +1,8 @@
 $OpenBSD$
 
-Replace maybe def with maybe (pure []) for GHC type inference.
+Avoid relying on Default for certificate validation errors with newer deps.
 
---- src/Simplex/Messaging/Transport/Client.hs
+--- src/Simplex/Messaging/Transport/Client.hs.orig
 +++ src/Simplex/Messaging/Transport/Client.hs
 @@ -301,7 +301,7 @@
    where

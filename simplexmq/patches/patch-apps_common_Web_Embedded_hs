@@ -1,9 +1,8 @@
 $OpenBSD$
 
-Use makeRelativeToProject for file-embed TH splices so paths
-resolve relative to the Cabal project root.
+Resolve embedded web assets relative to the project root during Cabal builds.
 
---- apps/common/Web/Embedded.hs
+--- apps/common/Web/Embedded.hs.orig
 +++ apps/common/Web/Embedded.hs
 @@ -2,14 +2,14 @@
  

@@ -1,24 +1,22 @@
-Use devel/readline instead of readline in the base system on OpenBSD.
-Use curses for terminfo on OpenBSD.
+$OpenBSD$
 
-Index: contrib/depends/toolchain.cmake.in
+Teach the depends toolchain file to use OpenBSD's ereadline and curses paths.
+
 --- contrib/depends/toolchain.cmake.in.orig
 +++ contrib/depends/toolchain.cmake.in
-@@ -21,9 +21,15 @@ SET(ENV{PKG_CONFIG_PATH} @prefix@/lib/pkgconfig)
-
+@@ -20,9 +20,15 @@
+ SET(ENV{PKG_CONFIG_PATH} @prefix@/lib/pkgconfig)
+ 
  SET(Readline_ROOT_DIR @prefix@)
 +if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
 +SET(Readline_INCLUDE_DIR @prefix@/include/ereadline)
 +SET(Readline_LIBRARY @prefix@/lib/libereadline.so)
 +SET(Terminfo_LIBRARY /usr/lib/libcurses.so)
 +else()
--SET(Readline_INCLUDE_DIR @prefix@/include)
--SET(Readline_LIBRARY @prefix@/lib/libreadline.a)
--SET(Terminfo_LIBRARY @prefix@/lib/libtinfo.a)
-+SET(Readline_INCLUDE_DIR @prefix@/include)
-+SET(Readline_LIBRARY @prefix@/lib/libreadline.a)
-+SET(Terminfo_LIBRARY @prefix@/lib/libtinfo.a)
+ SET(Readline_INCLUDE_DIR @prefix@/include)
+ SET(Readline_LIBRARY @prefix@/lib/libreadline.a)
+ SET(Terminfo_LIBRARY @prefix@/lib/libtinfo.a)
 +endif()
-
+ 
  SET(UNBOUND_INCLUDE_DIR @prefix@/include)
  SET(UNBOUND_LIBRARIES @prefix@/lib/libunbound.a)

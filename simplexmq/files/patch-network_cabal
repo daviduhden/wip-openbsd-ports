@@ -1,0 +1,15 @@
+$OpenBSD$
+
+Use the static config header installed by the port instead of running configure.
+
+--- network.cabal.orig
++++ network.cabal
+@@ -50,7 +50,7 @@
+     >   build-depends: network-uri-flag
+ 
+ category:           Network
+-build-type:         Configure
++build-type:         Simple
+ 
+ extra-doc-files:
+     README.md

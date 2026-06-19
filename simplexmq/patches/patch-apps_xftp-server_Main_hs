@@ -1,8 +1,8 @@
 $OpenBSD$
 
-OpenBSD paths: /etc/opt/simplex-xftp -> /etc/simplex/xftp-server.
+Use OpenBSD-style default configuration and log directories for xftp-server.
 
---- apps/xftp-server/Main.hs
+--- apps/xftp-server/Main.hs.orig
 +++ apps/xftp-server/Main.hs
 @@ -7,10 +7,10 @@
  import XFTPWeb (xftpGenerateSite)

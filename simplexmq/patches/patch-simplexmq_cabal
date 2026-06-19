@@ -1,4 +1,8 @@
---- simplexmq.cabal
+$OpenBSD$
+
+Use the crypton-era ASN.1 packages and time-hourglass in the dependency set.
+
+--- simplexmq.cabal.orig
 +++ simplexmq.cabal
 @@ -335,8 +335,8 @@
        crypto
@@ -11,7 +15,7 @@
      , async ==2.2.*
      , attoparsec ==0.14.*
      , base >=4.14 && <5
-@@ -352,12 +352,13 @@
+@@ -352,12 +352,12 @@
      , data-default ==0.7.*
      , directory ==1.3.*
      , filepath ==1.4.*
@@ -22,16 +26,6 @@
      , iproute ==1.7.*
      , iso8601-time ==0.1.*
      , memory ==0.18.*
-+    , ram
      , mtl >=2.3.1 && <3.0
      , network >=3.1.2.7 && <3.2
      , network-info ==0.2.*
-@@ -597,7 +598,7 @@
-     , ini
-     , iso8601-time
-     , main-tester ==0.2.*
--    , memory
-+    , ram
-     , mtl
-     , network
-     , QuickCheck ==2.14.*

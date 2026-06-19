@@ -1,21 +1,8 @@
 $OpenBSD$
 
-GHC 9.10+ compat: add SA.Unzip KeyMap instance (required by
-semialign>=1.3), add fst,snd to shared Prelude import (available
-to both CPP branches), relax ghc-prim upper bound.
+Add the KeyMap Unzip instance required by newer semialign/these versions.
 
---- aeson.cabal
-+++ aeson.cabal
-@@ -100,7 +100,7 @@
-     , containers        >=0.5.10.2 && <0.7
-     , deepseq           >=1.4.3.0  && <1.6
-     , exceptions        >=0.10.4   && <0.11
--    , ghc-prim          >=0.5.0.0  && <0.12
-+    , ghc-prim          >=0.5.0.0  && <0.14
-     , template-haskell  >=2.12.0.0 && <2.22
-     , text              >=1.2.3.0  && <1.3  || >=2.0 && <2.2
-     , time              >=1.8.0.2  && <1.13
---- src/Data/Aeson/KeyMap.hs
+--- src/Data/Aeson/KeyMap.hs.orig
 +++ src/Data/Aeson/KeyMap.hs
 @@ -100,6 +100,7 @@
  import Prelude ((.), ($))

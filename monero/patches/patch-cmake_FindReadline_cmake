@@ -1,11 +1,13 @@
-Use devel/readline instead of readline in the base system on OpenBSD.
+$OpenBSD$
 
-Index: cmake/FindReadline.cmake
+Find devel/readline as ereadline on OpenBSD instead of base libedit/readline.
+
 --- cmake/FindReadline.cmake.orig
 +++ cmake/FindReadline.cmake
-@@ -22,19 +22,30 @@
- #  LIBEDIT_LIBRARY           The empty string.
-
+@@ -21,20 +21,30 @@
+ #  GNU_READLINE_LIBRARY      The GNU readline library or empty string.
+ #  LIBEDIT_LIBRARY           The libedit library or empty string.
+ 
 +if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
 +  set(_READLINE_ROOT_NAME include/ereadline/readline/readline.h)
 +  set(_READLINE_INCLUDE_SUBDIR "/include/ereadline")
@@ -22,14 +24,14 @@ Index: cmake/FindReadline.cmake
      PATHS /usr/local/opt/readline/ /opt/homebrew/opt/readline/ /opt/local/ /usr/local/ /usr/
      NO_DEFAULT_PATH
  )
-
+ 
  find_path(Readline_INCLUDE_DIR
      NAMES readline/readline.h
 -    PATHS ${Readline_ROOT_DIR}/include
 +    PATHS ${Readline_ROOT_DIR}${_READLINE_INCLUDE_SUBDIR}
      NO_DEFAULT_PATH
  )
-
+ 
  find_library(Readline_LIBRARY
 -    NAMES readline
 +    NAMES ${_READLINE_LIBRARY_NAME}

@@ -1,9 +1,8 @@
 $OpenBSD$
 
-Add OpenBSD keepalive branch via CPP: on OpenBSD use only
-setSocketOption KeepAlive. Other platforms keep original CApiFFI code.
+OpenBSD does not expose the TCP keepalive tuning options used on Linux.
 
---- src/Simplex/Messaging/Transport/KeepAlive.hs
+--- src/Simplex/Messaging/Transport/KeepAlive.hs.orig
 +++ src/Simplex/Messaging/Transport/KeepAlive.hs
 @@ -30,6 +30,10 @@
        keepCnt = 4

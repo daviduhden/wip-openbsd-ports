@@ -1,11 +1,8 @@
 $OpenBSD$
 
-Fix ByteArrayAccess incompatibilities in tests: add toBS
-helper using BA.unpack/B.pack instead of BA.convert for
-types that lost instances in the memory->ram transition.
-Add PackageImports for ram-qualified imports.
+Avoid ambiguous ByteArray conversions in XFTP web tests with GHC 9.10.
 
---- tests/XFTPWebTests.hs
+--- tests/XFTPWebTests.hs.orig
 +++ tests/XFTPWebTests.hs
 @@ -54,6 +54,9 @@
  import XFTPCLI (recipientFiles, senderFiles, testBracket)

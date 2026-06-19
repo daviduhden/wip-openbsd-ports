@@ -1,9 +1,8 @@
 $OpenBSD$
 
-GHC 9.10+ compat: replace MIN_VERSION_memory CPP macro with
-MIN_VERSION_ram after switching the cabal build-depends to ram.
+Use ram's Cabal version macro after building cryptostore against ram.
 
---- src/Crypto/Store/Util.hs
+--- src/Crypto/Store/Util.hs.orig
 +++ src/Crypto/Store/Util.hs
 @@ -39,7 +39,7 @@
  

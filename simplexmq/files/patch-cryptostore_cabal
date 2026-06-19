@@ -1,0 +1,23 @@
+--- cryptostore.cabal.orig
++++ cryptostore.cabal
+@@ -63,9 +63,9 @@
+   build-depends:       base >= 4.9 && < 5
+                      , bytestring
+                      , basement
+-                     , memory
++                     , ram
+   if flag(use_crypton)
+-    build-depends:     crypton < 1.1
++    build-depends:     crypton >= 1.1
+                      , crypton-asn1-encoding >= 0.10.0 && < 0.11
+                      , crypton-asn1-types >= 0.4.1 && < 0.5
+                      , crypton-pem >= 0.2.4 && <0.4
+@@ -102,7 +102,7 @@
+                      , X509.Tests
+   build-depends:       base >= 4.9 && < 5
+                      , bytestring
+-                     , memory
++                     , ram
+                      , tasty
+                      , tasty-hunit
+                      , tasty-quickcheck

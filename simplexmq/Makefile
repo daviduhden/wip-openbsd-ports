@@ -4,9 +4,9 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplexmq
-GH_COMMIT = 376d6a261a1074717aed65ad97bb6f2a9532011b
+GH_COMMIT = 92598c2ddb06cfc2c19797a2c900cffcb8af4d5c
 
-V = 6.5.4.0
+V = 6.5.5.0
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -26,6 +26,10 @@ DIST_TUPLE += github yesodweb wai \
 		ec5e017d896a78e787a5acea62b37a4e677dec2e ../yesod-wai
 DIST_TUPLE += github simplex-chat wai \
 		2f6e5aa5f05ba9140ac99e195ee647b4f7d926b0 ../simplex-wai
+DIST_TUPLE += github supranational blst \
+		db3defd0d501cc2bb1cdd59cb955d1a421821441 cbits/blst
+DIST_TUPLE += github simplex-chat libbbs \
+		59a0f4bf32e195cb6883de8374825c0f4764c717 cbits/libbbs
 
 CATEGORIES = net
 HOMEPAGE = https://simplex.chat/
@@ -58,11 +62,12 @@ AESON_PATCHES = \
 	patch-src_Data_Aeson_KeyMap_hs
 CRYPTOSTORE_PATCHES = \
 	patch-cryptostore_cabal \
+	patch-src_Crypto_Store_Cipher_RC2_Primitive_hs \
+	patch-src_Crypto_Store_PKCS5_PBES1_hs \
 	patch-src_Crypto_Store_Util_hs
 WARP_PATCHES = \
-	patch-warp_cabal \
-	patch-Network_Wai_Handler_Warp_FileInfoCache_hs
-
+	patch-Network_Wai_Handler_Warp_FileInfoCache_hs \
+	patch-Network_Wai_Handler_Warp_HTTP2_hs
 LIB_DEPENDS = converters/libiconv \
 			devel/gmp \
 			devel/libffi
@@ -146,9 +151,16 @@ cabal-inc: patch
 		${MODCABAL_STEM}-${MODCABAL_VERSION} \
 		> ${WRKDIR}/simplexmq.xftp.inc
 	env SKIP=${CABAL_INC_SKIP} EXTRA=${CABAL_INC_EXTRA} \
-		perl -e 'my %skip = map { $$_ => 1 } split /,/, $$ENV{SKIP}; my %seen; for my $$dep (split /,/, $$ENV{EXTRA}) { next unless length $$dep; my ($$n, $$v, $$r) = split /:/, $$dep; next if $$skip{$$n}; $$seen{"$$n\t$$v\t$$r"} = 1 if defined $$r; } while (<>) { next unless /^\s+(\S+)\s+(\S+)\s+(\d+)\s*\\?$$/; my ($$n, $$v, $$r) = ($$1, $$2, $$3); next if $$skip{$$n}; $$seen{"$$n\t$$v\t$$r"} = 1; } my @deps = sort keys %seen; print "MODCABAL_MANIFEST\t= \\\n"; for my $$i (0 .. $$#deps) { print "\t$$deps[$$i]"; print $$i == $$#deps ? "\n" : "\t\\\n"; }' \
+		perl ${FILESDIR}/cabal-deps-merge.pl \
 		${WRKDIR}/simplexmq.smp.inc ${WRKDIR}/simplexmq.xftp.inc \
 			> ${.CURDIR}/cabal.inc
+
+do-test:
+	cd ${WRKBUILD} && exec ${SETENV} ${MAKE_ENV} \
+		${_MODCABAL_CABAL} v2-test \
+		-w ${LOCALBASE}/bin/ghc \
+		-j${MAKE_JOBS} \
+		${MODCABAL_BUILD_ARGS}
 
 .include "cabal.inc"
 

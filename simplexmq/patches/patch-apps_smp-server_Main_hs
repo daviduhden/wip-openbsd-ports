@@ -4,9 +4,7 @@ Use OpenBSD-style default configuration and log directories for smp-server.
 
 --- apps/smp-server/Main.hs.orig
 +++ apps/smp-server/Main.hs
-@@ -7,10 +7,10 @@
- import SMPWeb (smpGenerateSite)
- 
+@@ -9,6 +9,6 @@
  defaultCfgPath :: FilePath
 -defaultCfgPath = "/etc/opt/simplex"
 +defaultCfgPath = "/etc/simplex/smp-server"
@@ -15,5 +13,3 @@ Use OpenBSD-style default configuration and log directories for smp-server.
 -defaultLogPath = "/var/opt/simplex"
 +defaultLogPath = "/var/simplex/smp-server"
  
- logCfg :: LogConfig
- logCfg = LogConfig {lc_file = Nothing, lc_stderr = True}

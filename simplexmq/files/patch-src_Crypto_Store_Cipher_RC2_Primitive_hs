@@ -1,0 +1,26 @@
+$OpenBSD$
+
+Allocate the RC2 expansion buffer as ram Bytes before converting it to
+basement's internal Block representation.
+
+--- src/Crypto/Store/Cipher/RC2/Primitive.hs.orig
++++ src/Crypto/Store/Cipher/RC2/Primitive.hs
+@@ -187,7 +187,7 @@
+          => Int    -- ^ Effective key length in bits
+          -> key    -- ^ Input key between 1 and 128 bytes
+          -> Key    -- ^ Expanded key
+-buildKey t1 key = Key $ doCast $ B.allocAndFreeze 128 $ \p -> do
++buildKey t1 key = Key $ doCast $ fromList $ B.unpack $ asBytes $ B.allocAndFreeze 128 $ \p -> do
+     B.copyByteArrayToPtr key p
+ 
+     forM_ [t .. 127] $ \i -> do
+@@ -208,6 +208,9 @@
+         t8 = (t1 + 7) `div` 8
+         tm | t1 == 8 * t8 = 255
+            | otherwise    = 255 `mod` shiftL 1 (8 + t1 - 8 * t8)
++
++        asBytes :: B.Bytes -> B.Bytes
++        asBytes = id
+ 
+         doCast :: Block Word8 -> Block Word16
+         doCast = Basement.Block.map fromLE . cast

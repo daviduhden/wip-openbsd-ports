@@ -4,9 +4,7 @@ Use OpenBSD-style default configuration and log directories for xftp-server.
 
 --- apps/xftp-server/Main.hs.orig
 +++ apps/xftp-server/Main.hs
-@@ -7,10 +7,10 @@
- import XFTPWeb (xftpGenerateSite)
- 
+@@ -9,6 +9,6 @@
  defaultCfgPath :: FilePath
 -defaultCfgPath = "/etc/opt/simplex-xftp"
 +defaultCfgPath = "/etc/simplex/xftp-server"
@@ -15,5 +13,3 @@ Use OpenBSD-style default configuration and log directories for xftp-server.
 -defaultLogPath = "/var/opt/simplex-xftp"
 +defaultLogPath = "/var/simplex/xftp-server"
  
- logCfg :: LogConfig
- logCfg = LogConfig {lc_file = Nothing, lc_stderr = True}

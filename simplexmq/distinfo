@@ -147,6 +147,7 @@ SHA256 (hackage/simple-sendfile-0.2.32.tar.gz) = nyjQpnrD2VbS3XjrGeqSLAqRkru+7ur
 SHA256 (hackage/simplex-chat-aeson-aab7b5a14d6c5ea64c64dcaee418de1bb00dcc2b.tar.gz) = XO2t/yrjxGA8rkav/bzfFjsZHBIZk5Bhcvs3x4NPMAQ=
 SHA256 (hackage/simplex-chat-direct-sqlcipher-f814ee68b16a9447fbb467ccc8f29bdd3546bfd9.tar.gz) = vC+/7O4ZuLo85AlJTWE0XPNnKSW+ktRVzMm9fUN9WMY=
 SHA256 (hackage/simplex-chat-hs-socks-a30cc7a79a08d8108316094f8f2f82a0c5e1ac51.tar.gz) = oA1ByCz6N/WSg4h0tOC0lC0hXNosGcUNHu9YfuTNalI=
+SHA256 (hackage/simplex-chat-libbbs-59a0f4bf32e195cb6883de8374825c0f4764c717.tar.gz) = +IO5U+NE2ZU5kuBosY675mH+iu2onMwHhY2FQvITzDA=
 SHA256 (hackage/simplex-chat-sqlcipher-simple-a46bd361a19376c5211f1058908fc0ae6bf42446.tar.gz) = auSadSOW/uytUWtOoTpzaKQ0sIojPO0ksmNQQGUEojE=
 SHA256 (hackage/simplex-chat-wai-2f6e5aa5f05ba9140ac99e195ee647b4f7d926b0.tar.gz) = zSMSPZTp80fji+YvSDF/5oiRZKXQQDQJPjaXjdblOuA=
 SHA256 (hackage/simplexmq-6.5.4.0-376d6a26.tar.gz) = DbRJO4ufoggD8vMwx9+/tNLFSMCZPZ2wzFbQ68rU+/I=
@@ -156,6 +157,7 @@ SHA256 (hackage/stm-chans-3.0.0.11.tar.gz) = spPvhH48eqCADSCxiRKgabppUefS41FxrOz
 SHA256 (hackage/streaming-commons-0.2.3.1.tar.gz) = M9FsDGCAeVgA2fDkkCA+o+UL1QNOXQd6DdwE0z6k3G4=
 SHA256 (hackage/strict-0.5.1.tar.gz) = d3GSgMKoYxLnSCJ7+nMu6q4OffSNV6zDwuW3sHr+L4s=
 SHA256 (hackage/strict-0.5.1_1.cabal) = WMNzt8d0jLtKWmyMFQc/maHBCpqbtolKwz9Dpc25AfI=
+SHA256 (hackage/supranational-blst-db3defd0d501cc2bb1cdd59cb955d1a421821441.tar.gz) = lgw5e4AbiR5coUiQxfns4FC2wQ1d1r3L6KZY52msLI4=
 SHA256 (hackage/tagged-0.8.10.tar.gz) = F+95HrTK8xSjtLFYgnoPH0tpXCokrwh18J49jBD1bF0=
 SHA256 (hackage/tagged-0.8.10_1.cabal) = 6bl8mOmCeYHWLzfF/r+ea7tnrOySuL1B/Z96zl6zHTI=
 SHA256 (hackage/tasty-1.5.4.tar.gz) = x2EgFBvWHEQYs+1e/F/jCUGG1Hz+Ete+VSMgE59Sxsc=
@@ -354,6 +356,7 @@ SIZE (hackage/simple-sendfile-0.2.32.tar.gz) = 343565
 SIZE (hackage/simplex-chat-aeson-aab7b5a14d6c5ea64c64dcaee418de1bb00dcc2b.tar.gz) = 415517
 SIZE (hackage/simplex-chat-direct-sqlcipher-f814ee68b16a9447fbb467ccc8f29bdd3546bfd9.tar.gz) = 2451897
 SIZE (hackage/simplex-chat-hs-socks-a30cc7a79a08d8108316094f8f2f82a0c5e1ac51.tar.gz) = 12085
+SIZE (hackage/simplex-chat-libbbs-59a0f4bf32e195cb6883de8374825c0f4764c717.tar.gz) = 59001
 SIZE (hackage/simplex-chat-sqlcipher-simple-a46bd361a19376c5211f1058908fc0ae6bf42446.tar.gz) = 36327
 SIZE (hackage/simplex-chat-wai-2f6e5aa5f05ba9140ac99e195ee647b4f7d926b0.tar.gz) = 255670
 SIZE (hackage/simplexmq-6.5.4.0-376d6a26.tar.gz) = 2599918
@@ -363,6 +366,7 @@ SIZE (hackage/stm-chans-3.0.0.11.tar.gz) = 10187
 SIZE (hackage/streaming-commons-0.2.3.1.tar.gz) = 37955
 SIZE (hackage/strict-0.5.1.tar.gz) = 11798
 SIZE (hackage/strict-0.5.1_1.cabal) = 3557
+SIZE (hackage/supranational-blst-db3defd0d501cc2bb1cdd59cb955d1a421821441.tar.gz) = 616074
 SIZE (hackage/tagged-0.8.10.tar.gz) = 8398
 SIZE (hackage/tagged-0.8.10_1.cabal) = 2201
 SIZE (hackage/tasty-1.5.4.tar.gz) = 68529

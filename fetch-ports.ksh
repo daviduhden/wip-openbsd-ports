@@ -26,9 +26,18 @@ else
 	RESET=""
 fi
 
-log() { print "$(date '+%Y-%m-%d %H:%M:%S') ${GREEN}[INFO]${RESET} ✅ $*"; }
-warn() { print "$(date '+%Y-%m-%d %H:%M:%S') ${YELLOW}[WARN]${RESET} ⚠️ $*" >&2; }
-error() { print "$(date '+%Y-%m-%d %H:%M:%S') ${RED}[ERROR]${RESET} ❌ $*" >&2; }
+log() {
+	print "$(date '+%Y-%m-%d %H:%M:%S')" \
+		"${GREEN}[INFO]${RESET} ✅ $*"
+}
+warn() {
+	print "$(date '+%Y-%m-%d %H:%M:%S')" \
+		"${YELLOW}[WARN]${RESET} ⚠️ $*" >&2
+}
+error() {
+	print "$(date '+%Y-%m-%d %H:%M:%S')" \
+		"${RED}[ERROR]${RESET} ❌ $*" >&2
+}
 
 # Verify that the script is run as root
 check_root() {
@@ -38,10 +47,13 @@ check_root() {
 	fi
 }
 
-# Function to permanently set the CVSROOT environment variable if not already set
+# Set CVSROOT in .profile if not already configured
 set_cvsroot() {
-	if [ ! -f "$HOME/.profile" ] || ! grep -Fq "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" "$HOME/.profile"; then
-		print "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" >>"$HOME/.profile"
+	if [ ! -f "$HOME/.profile" ] ||
+		! grep -Fq "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" \
+			"$HOME/.profile"; then
+		print "export CVSROOT=anoncvs@anoncvs.eu.openbsd.org:/cvs" \
+			>>"$HOME/.profile"
 		log "CVSROOT variable added to ~/.profile"
 	else
 		log "CVSROOT variable already exists in ~/.profile"
@@ -65,7 +77,7 @@ checkout_ports_tree() {
 
 # Ask if user wants to copy from wip-openbsd-ports (optional)
 ask_copy_from_wip() {
-	log "Do you want to copy ports from 'wip-openbsd-ports' into /usr/ports?"
+	log "Copy ports from 'wip-openbsd-ports' into /usr/ports?"
 	select ANSWER in "One port" "Selected ports" "All ports" "No"; do
 		case "$ANSWER" in
 		"One port")
@@ -95,9 +107,10 @@ ask_copy_from_wip() {
 	done
 }
 
-# Resolve local wip-openbsd-ports path before expensive filesystem search.
-resolve_wip_openbsd_ports_dir() {
-	if [ -n "${WIP_OPENBSD_PORTS_DIR:-}" ] && [ -d "$WIP_OPENBSD_PORTS_DIR" ]; then
+# Resolve local wip-openbsd-ports path before filesystem search.
+resolve_local_port_dir() {
+	if [ -n "${WIP_OPENBSD_PORTS_DIR:-}" ] &&
+		[ -d "$WIP_OPENBSD_PORTS_DIR" ]; then
 		print "$WIP_OPENBSD_PORTS_DIR"
 		return 0
 	fi
@@ -106,7 +119,8 @@ resolve_wip_openbsd_ports_dir() {
 		unset CDPATH
 		cd -- "$(dirname -- "$0")" && pwd -P
 	)
-	if [ "$(basename "$SCRIPT_DIR")" = "wip-openbsd-ports" ] && [ -d "$SCRIPT_DIR/.git" ]; then
+	if [ "$(basename "$SCRIPT_DIR")" = "wip-openbsd-ports" ] &&
+		[ -d "$SCRIPT_DIR/.git" ]; then
 		print "$SCRIPT_DIR"
 		return 0
 	fi
@@ -165,7 +179,7 @@ prompt_selected_directories() {
 	}
 }
 
-# Function to choose the target tree (mirrors your style; here only /usr/ports)
+# Choose the target port tree (here always /usr/ports)
 choose_target_tree() {
 	options=""
 	[ -d /usr/ports ] && options="$options /usr/ports"
@@ -184,9 +198,10 @@ choose_target_tree() {
 	done
 }
 
-# Function to list subdirectories (categories) in the chosen tree and select one
+# List category subdirectories and prompt for selection
 list_tree_subdirectories() {
-	log "Select a subdirectory in $TARGET_TREE where the directory will be copied:"
+	log "Select a subdirectory in $TARGET_TREE" \
+		"where the directory will be copied:"
 	select SUBDIRECTORY in "$TARGET_TREE"/*/; do
 		if [ -n "$SUBDIRECTORY" ]; then
 			log "You selected $SUBDIRECTORY"
@@ -198,11 +213,12 @@ list_tree_subdirectories() {
 	done
 }
 
-# Function to copy the selected directory to the chosen subdirectory in target tree
+# Copy the selected directory to the chosen target subdirectory
 copy_directory() {
 	TARGET_DIR="$SUBDIRECTORY/$DIRECTORY"
 	if [ -d "$TARGET_DIR" ]; then
-		warn "Directory $TARGET_DIR already exists. Removing files except 'CVS' directories."
+		warn "Directory $TARGET_DIR already exists." \
+			"Removing files except 'CVS' directories."
 		find "$TARGET_DIR" -mindepth 1 ! -name "CVS" -exec rm -rf {} +
 	fi
 	cp -R "$DIRECTORY" "$SUBDIRECTORY/"
@@ -215,15 +231,17 @@ copy_all_directories() {
 	for DIRECTORY in $ports; do
 		TARGET_DIR="$TARGET_TREE/$DIRECTORY"
 		if [ -d "$TARGET_DIR" ]; then
-			warn "Directory $TARGET_DIR already exists. Removing files except 'CVS' directories."
-			find "$TARGET_DIR" -mindepth 1 ! -name "CVS" -exec rm -rf {} +
+			warn "Directory $TARGET_DIR already exists." \
+				"Removing files except 'CVS'."
+			find "$TARGET_DIR" -mindepth 1 ! -name "CVS" \
+				-exec rm -rf {} +
 		fi
 		cp -R "$DIRECTORY" "$TARGET_TREE/"
 		log "Directory $DIRECTORY copied to $TARGET_TREE/"
 	done
 }
 
-# Function to copy only the directories explicitly selected by the user.
+# Copy only the directories explicitly selected by the user.
 copy_selected_directories() {
 	for DIRECTORY in $SELECTED_DIRECTORIES; do
 		if [ ! -d "$DIRECTORY" ]; then
@@ -232,8 +250,10 @@ copy_selected_directories() {
 		fi
 		TARGET_DIR="$TARGET_TREE/$DIRECTORY"
 		if [ -d "$TARGET_DIR" ]; then
-			warn "Directory $TARGET_DIR already exists. Removing files except 'CVS' directories."
-			find "$TARGET_DIR" -mindepth 1 ! -name "CVS" -exec rm -rf {} +
+			warn "Directory $TARGET_DIR already exists." \
+				"Removing files except 'CVS'."
+			find "$TARGET_DIR" -mindepth 1 ! -name "CVS" \
+				-exec rm -rf {} +
 		fi
 		cp -R "$DIRECTORY" "$TARGET_TREE/"
 		log "Directory $DIRECTORY copied to $TARGET_TREE/"
@@ -279,7 +299,8 @@ configure_ports_system() {
 		print "PACKAGE_REPOSITORY=$PACKAGE_REPOSITORY"
 		print "SUDO=doas"
 	} >>/etc/mk.conf
-	log "Configuration complete. The ports tree has been installed and configured successfully."
+	log "Configuration complete." \
+		"The ports tree has been installed and configured."
 }
 
 # Main function

@@ -1,0 +1,39 @@
+$OpenBSD$
+
+Build with http2 5.x using its public configuration templates, qualified
+field selectors and server configuration argument.
+
+--- Network/Wai/Handler/Warp/HTTP2.hs.orig
++++ Network/Wai/Handler/Warp/HTTP2.hs
+@@ -45,21 +45,21 @@
+     -- the time handler in both the receiver and the sender.
+     let recvN = wrappedRecvN th istatus (S.settingsSlowlorisSize settings) rawRecvN
+         sendBS x = connSendAll conn x >> T.tickle th
+-        conf = H2.Config {
+-            confWriteBuffer       = bufBuffer writeBuffer
+-          , confBufferSize        = bufSize writeBuffer
+-          , confSendAll           = sendBS
+-          , confReadN             = recvN
+-          , confPositionReadMaker = pReadMaker ii
+-          , confTimeoutManager    = timeoutManager ii
++        conf = H2.defaultConfig {
++            H2.confWriteBuffer       = bufBuffer writeBuffer
++          , H2.confBufferSize        = bufSize writeBuffer
++          , H2.confSendAll           = sendBS
++          , H2.confReadN             = recvN
++          , H2.confPositionReadMaker = pReadMaker ii
++          , H2.confTimeoutManager    = timeoutManager ii
+ #if MIN_VERSION_http2(4,2,0)
+-          , confMySockAddr        = connMySockAddr conn
+-          , confPeerSockAddr      = peersa
++          , H2.confMySockAddr        = connMySockAddr conn
++          , H2.confPeerSockAddr      = peersa
+ #endif
+           }
+     checkTLS
+     setConnHTTP2 conn True
+-    H2.run conf $ http2server settings ii transport peersa app
++    H2.run H2.defaultServerConfig conf $ http2server settings ii transport peersa app
+   where
+     checkTLS = case transport of
+         TCP -> return () -- direct

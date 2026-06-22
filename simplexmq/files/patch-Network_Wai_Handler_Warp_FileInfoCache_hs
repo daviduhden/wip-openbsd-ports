@@ -1,6 +1,7 @@
 $OpenBSD$
 
-Newer auto-update hides the Reaper constructor; use its accessor functions.
+auto-update does not export the Reaper constructor. Use its public
+accessor functions instead of record patterns.
 
 --- Network/Wai/Handler/Warp/FileInfoCache.hs.orig
 +++ Network/Wai/Handler/Warp/FileInfoCache.hs

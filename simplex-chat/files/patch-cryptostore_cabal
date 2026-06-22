@@ -1,3 +1,8 @@
+$OpenBSD$
+
+Build cryptostore against ram when using crypton 1.1+, whose bytearray
+classes come from ram rather than memory.
+
 --- cryptostore.cabal.orig
 +++ cryptostore.cabal
 @@ -63,9 +63,9 @@

@@ -5,7 +5,7 @@ The package installs rc.d scripts for both daemons:
 - `smp_server`
 - `xftp_server`
 
-The first start requires initializing each server once so that its
+Each server must be initialized once before its first start so that
 configuration, certificates, and state directories are created.
 
 Example:
@@ -20,8 +20,8 @@ doas rcctl start smp_server
 doas rcctl start xftp_server
 ```
 
-The servers store their configuration under `/etc/simplex/` and runtime data
-under `/var/simplex/`.
+The servers store configuration under `/etc/simplex/` and runtime
+data under `/var/simplex/`.
 
-The explicit ED25519 option is required because LibreSSL does not provide the
-ED448 algorithm selected by the upstream XFTP default.
+The explicit ED25519 option is required because LibreSSL does not
+provide the ED448 algorithm selected by the upstream XFTP default.

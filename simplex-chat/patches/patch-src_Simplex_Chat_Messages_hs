@@ -1,15 +1,11 @@
 $OpenBSD$
 
 Handle the GHC TypeLits export change for the :<>: error-message operator.
+GHC 9.14+ exports (:<>:) without the "type" prefix.
 
 --- src/Simplex/Chat/Messages.hs.orig
 +++ src/Simplex/Chat/Messages.hs
-@@ -1,3 +1,4 @@
-+{-# LANGUAGE CPP #-}
- {-# LANGUAGE DataKinds #-}
- {-# LANGUAGE DeriveAnyClass #-}
- {-# LANGUAGE DuplicateRecordFields #-}
-@@ -40,7 +41,11 @@
+@@ -41,7 +41,11 @@
  import Data.Time.Clock (NominalDiffTime, UTCTime, diffUTCTime, nominalDay)
  import Data.Type.Equality
  import Data.Typeable (Typeable)

@@ -4,11 +4,9 @@ Enable DuplicateRecordFields explicitly when GHC 9.10 requires it.
 
 --- src/Simplex/Chat/Store.hs.orig
 +++ src/Simplex/Chat/Store.hs
-@@ -1,4 +1,7 @@
+@@ -1,2 +1,5 @@
  {-# LANGUAGE CPP #-}
 +#if __GLASGOW_HASKELL__ >= 910
 +{-# LANGUAGE DuplicateRecordFields #-}
 +#endif
  
- module Simplex.Chat.Store
-   ( DBStore,

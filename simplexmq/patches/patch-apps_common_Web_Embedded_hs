@@ -4,16 +4,12 @@ Resolve embedded web assets relative to the project root during Cabal builds.
 
 --- apps/common/Web/Embedded.hs.orig
 +++ apps/common/Web/Embedded.hs
-@@ -2,14 +2,14 @@
- 
- module Web.Embedded where
+@@ -4,3 +4,3 @@
  
 -import Data.FileEmbed (embedDir, embedFile)
 +import Data.FileEmbed (embedDir, embedFile, makeRelativeToProject)
  import Simplex.Messaging.Server.Web (EmbeddedContent (..))
- 
- embeddedContent :: EmbeddedContent
- embeddedContent =
+@@ -10,6 +10,6 @@
    EmbeddedContent
 -    { indexHtml = $(embedFile "apps/common/Web/static/index.html"),
 -      linkHtml = $(embedFile "apps/common/Web/static/link.html"),

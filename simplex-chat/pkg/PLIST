@@ -1,1 +1,1 @@
-@bin bin/simplex-chat
+@bin bin/${MODCABAL_STEM}

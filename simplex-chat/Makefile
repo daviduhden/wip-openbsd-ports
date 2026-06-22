@@ -4,9 +4,9 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-GH_TAGNAME = v6.5.5
+GH_TAGNAME = v6.5.6
 
-V = 6.5.5.0
+V = 6.5.6.1
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -15,7 +15,11 @@ WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 
 DIST_TUPLE += github simplex-chat simplexmq \
-		376d6a261a1074717aed65ad97bb6f2a9532011b ../simplexmq
+		92598c2ddb06cfc2c19797a2c900cffcb8af4d5c ../simplexmq
+DIST_TUPLE += github supranational blst \
+		db3defd0d501cc2bb1cdd59cb955d1a421821441 ../simplexmq/cbits/blst
+DIST_TUPLE += github simplex-chat libbbs \
+		59a0f4bf32e195cb6883de8374825c0f4764c717 ../simplexmq/cbits/libbbs
 DIST_TUPLE += github simplex-chat hs-socks \
 		a30cc7a79a08d8108316094f8f2f82a0c5e1ac51 ../hs-socks
 DIST_TUPLE += github simplex-chat direct-sqlcipher \
@@ -62,20 +66,10 @@ AESON_PATCHES = \
 	patch-src_Data_Aeson_KeyMap_hs
 CRYPTOSTORE_PATCHES = \
 	patch-cryptostore_cabal \
+	patch-src_Crypto_Store_Cipher_RC2_Primitive_hs \
+	patch-src_Crypto_Store_PKCS5_PBES1_hs \
 	patch-src_Crypto_Store_Util_hs
-SIMPLEXMQ_PATCHES = \
-	patch-simplexmq_cabal \
-	patch-src_Simplex_Messaging_Agent_Store_SQLite_Migrations_agent_schema_sql \
-	patch-src_Simplex_Messaging_Server_MsgStore_Journal_hs \
-	patch-src_Simplex_Messaging_Transport_hs \
-	patch-src_Simplex_Messaging_Transport_Client_hs \
-	patch-src_Simplex_Messaging_Transport_KeepAlive_hs \
-	patch-src_Simplex_Messaging_Transport_Server_hs
-
 LIB_DEPENDS = databases/sqlcipher \
-			archivers/zstd
-
-RUN_DEPENDS = databases/sqlcipher \
 			archivers/zstd
 
 post-patch:
@@ -93,9 +87,6 @@ post-patch:
 		'package *' \
 		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
 		>> ${WRKSRC}/cabal.project.local
-.for _p in ${SIMPLEXMQ_PATCHES}
-	patch -d ${WRKDIR}/simplexmq -p0 < ${FILESDIR}/${_p}
-.endfor
 .for _p in ${AESON_PATCHES}
 	patch -d ${WRKDIR}/aeson -p0 < ${FILESDIR}/${_p}
 .endfor
@@ -158,9 +149,16 @@ cabal-inc: patch
 		${MODCABAL_STEM}-${MODCABAL_VERSION} \
 		> ${WRKDIR}/simplex-chat.raw.inc
 	env SKIP=${CABAL_INC_SKIP} EXTRA=${CABAL_INC_EXTRA} \
-		perl -e 'my %skip = map { $$_ => 1 } split /,/, $$ENV{SKIP}; my %seen; for my $$dep (split /,/, $$ENV{EXTRA}) { next unless length $$dep; my ($$n, $$v, $$r) = split /:/, $$dep; next if $$skip{$$n}; $$seen{"$$n\t$$v\t$$r"} = 1 if defined $$r; } while (<>) { next unless /^\s+(\S+)\s+(\S+)\s+(\d+)\s*\\?$$/; my ($$n, $$v, $$r) = ($$1, $$2, $$3); next if $$skip{$$n}; $$seen{"$$n\t$$v\t$$r"} = 1; } my @deps = sort keys %seen; print "MODCABAL_MANIFEST\t= \\\n"; for my $$i (0 .. $$#deps) { print "\t$$deps[$$i]"; print $$i == $$#deps ? "\n" : "\t\\\n"; }' \
+		perl ${FILESDIR}/cabal-deps-merge.pl \
 		${WRKDIR}/simplex-chat.raw.inc \
 			> ${.CURDIR}/cabal.inc
+
+do-test:
+	cd ${WRKBUILD} && exec ${SETENV} ${MAKE_ENV} \
+		${_MODCABAL_CABAL} v2-test \
+		-w ${LOCALBASE}/bin/ghc \
+		-j${MAKE_JOBS} \
+		${MODCABAL_BUILD_ARGS}
 
 .include "cabal.inc"
 

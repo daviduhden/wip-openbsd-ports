@@ -4,9 +4,7 @@ Use the ports-provided dependency set and relax bounds for newer GHC.
 
 --- cabal.project.orig
 +++ cabal.project
-@@ -13,41 +13,10 @@
-    -- coverage: False
-    -- library-coverage: False
+@@ -15,3 +15,6 @@
  
 -index-state: 2023-12-12T00:00:00Z
 +-- index-state: 2023-12-12T00:00:00Z
@@ -14,9 +12,8 @@ Use the ports-provided dependency set and relax bounds for newer GHC.
 +-- Relax bounds for GHC 9.10+ compatibility
 +allow-newer: *
  
- package cryptostore
-     flags: +use_crypton
--
+@@ -20,34 +23,3 @@
+ 
 -source-repository-package
 -    type: git
 -    location: https://github.com/simplex-chat/aeson.git
@@ -37,14 +34,14 @@ Use the ports-provided dependency set and relax bounds for newer GHC.
 -    location: https://github.com/simplex-chat/sqlcipher-simple.git
 -    tag: a46bd361a19376c5211f1058908fc0ae6bf42446
 -
---- waiting for published warp-tls-3.4.7
+ -- waiting for published warp-tls-3.4.7
 -source-repository-package
 -    type: git
 -    location: https://github.com/yesodweb/wai.git
 -    tag: ec5e017d896a78e787a5acea62b37a4e677dec2e
 -    subdir: warp-tls
 -
---- backported fork due http-5.0
+ -- backported fork due http-5.0
 -source-repository-package
 -    type: git
 -    location: https://github.com/simplex-chat/wai.git

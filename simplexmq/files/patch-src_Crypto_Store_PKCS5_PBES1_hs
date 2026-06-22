@@ -1,0 +1,50 @@
+$OpenBSD$
+
+Bridge basement's UTF-8 representation and ram byte arrays explicitly.
+crypton 1.1 uses ram's ByteArray classes, which do not have instances for
+basement's internal UArray and Block types.
+
+--- src/Crypto/Store/PKCS5/PBES1.hs.orig
++++ src/Crypto/Store/PKCS5/PBES1.hs
+@@ -27,9 +27,7 @@
+     , rc4Combine
+     ) where
+ 
+-import           Basement.Block (Block)
+ import           Basement.Compat.IsList
+-import           Basement.Endianness
+ import qualified Basement.String as S
+ 
+ import           Crypto.Cipher.Types
+@@ -78,7 +76,7 @@
+         showString "toProtectionPassword " . showsPrec 11 b
+ 
+ instance IsString ProtectionPassword where
+-    fromString = PasswordUTF8 . B.convert . S.toBytes S.UTF8 . fromString
++    fromString = PasswordUTF8 . B.pack . toList . S.toBytes S.UTF8 . fromString
+ 
+ instance ByteArrayAccess ProtectionPassword where
+     length = applyPP 0 B.length
+@@ -155,15 +153,16 @@
+ toUCS2 :: ByteArray bucs2 => ProtectionPassword -> Maybe bucs2
+ toUCS2 NullPassword = Just B.empty
+ toUCS2 (PasswordUTF8 pwdUTF8)
+-    | B.null r  = Just pwdUCS2
++    | null (toList r) = Just pwdUCS2
+     | otherwise = Nothing
+   where
+-    (p, _, r) = S.fromBytes S.UTF8 $ B.snoc (B.convert pwdUTF8) 0
+-    pwdBlock  = fromList $ map ucs2 $ toList p :: Block (BE Word16)
+-    pwdUCS2   = B.convert pwdBlock
++    (p, _, r) = S.fromBytes S.UTF8 $ fromList (B.unpack pwdUTF8 ++ [0])
++    pwdUCS2   = B.pack $ concatMap ucs2 $ toList p
+ 
+-    ucs2 :: Char -> BE Word16
+-    ucs2 = toBE . toEnum . fromEnum
++    ucs2 :: Char -> [Word8]
++    ucs2 c = [fromIntegral (w `shiftR` 8), fromIntegral w]
++      where
++        w = fromIntegral (fromEnum c) :: Word16
+ 
+ 
+ -- PBES1, RFC 8018 section 6.1.2

@@ -1,32 +1,54 @@
 $OpenBSD$
 
-Add the KeyMap Unzip instance required by newer semialign/these versions.
+Add the KeyMap Unzip instance with correct instance ordering for GHC
+9.14+ compatibility. semialign 1.4 makes Unzip a superclass of
+Semialign, which requires the instance order: Unzip -> Semialign ->
+Align -> Zip -> ZipWithIndex -> SemialignWithIndex. GHC 9.14 checks
+superclass constraints at instance declaration time.
 
 --- src/Data/Aeson/KeyMap.hs.orig
 +++ src/Data/Aeson/KeyMap.hs
-@@ -100,6 +100,7 @@
- import Prelude ((.), ($))
+@@ -101,6 +101,8 @@
  import Prelude (Functor(fmap), Monad(..))
  import Prelude (Show, showsPrec, showParen, shows, showString)
-+import Prelude (fst, snd)
  
++import Prelude (fst, snd)
++
  import Control.Applicative (Applicative)
  import Control.DeepSeq (NFData(..))
-@@ -351,7 +352,6 @@
+ import Data.Aeson.Key (Key)
+@@ -690,21 +692,28 @@
+ -- semialign
+ -------------------------------------------------------------------------------
  
- import Data.List (sortBy)
- import Data.Ord (comparing)
--import Prelude (fst)
- 
- -- | A map from JSON key type 'Key' to 'v'.
- newtype KeyMap v = KeyMap { unKeyMap :: HashMap Key v }
-@@ -693,6 +693,9 @@
++-- Unzip must come first: Semialign depends on Unzip in semialign >= 1.3.
++instance SA.Unzip KeyMap where
++    unzip (KeyMap m) = (KeyMap (fmap fst m), KeyMap (fmap snd m))
++
++-- Semialign depends on Unzip; Zip depends on Semialign.
++instance SA.Semialign KeyMap where
++    alignWith = alignWith
++
++instance SA.Align KeyMap where
++    nil = empty
++
  instance SA.Zip KeyMap where
      zipWith = intersectionWith
  
-+
-+instance SA.Unzip KeyMap where
-+    unzip (KeyMap m) = (KeyMap (fmap fst m), KeyMap (fmap snd m))
++-- ZipWithIndex depends on Zip.
  instance SAI.ZipWithIndex Key KeyMap where
      izipWith = intersectionWithKey
  
+-instance SA.Semialign KeyMap where
+-    alignWith = alignWith
+-
++-- SemialignWithIndex depends on Semialign.
+ instance SAI.SemialignWithIndex Key KeyMap where
+     ialignWith = alignWithKey
+ 
+-instance SA.Align KeyMap where
+-    nil = empty
+-
+ -------------------------------------------------------------------------------
+ -- witherable
+ -------------------------------------------------------------------------------

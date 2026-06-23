@@ -8,6 +8,8 @@ MODCABAL_MANIFEST	= \
 	ansi-terminal	1.1.5	0	\
 	ansi-terminal-types	1.1.3	0	\
 	appar	0.1.8	0	\
+	asn1-encoding	0.9.6	2	\
+	asn1-types	0.3.4	0	\
 	assoc	1.1.1	2	\
 	async	2.2.6	0	\
 	attoparsec	0.14.4	6	\
@@ -64,6 +66,7 @@ MODCABAL_MANIFEST	= \
 	generically	0.1.1	5	\
 	half	0.3.3	2	\
 	hashable	1.5.1.0	0	\
+	hourglass	0.2.12	1	\
 	hpke	0.1.0	0	\
 	hsc2hs	0.68.10	5	\
 	http-date	0.0.11	0	\

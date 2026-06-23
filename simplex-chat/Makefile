@@ -69,6 +69,11 @@ CRYPTOSTORE_PATCHES = \
 	patch-src_Crypto_Store_Cipher_RC2_Primitive_hs \
 	patch-src_Crypto_Store_PKCS5_PBES1_hs \
 	patch-src_Crypto_Store_Util_hs
+# ASN1Object instance visibility for crypton-x509 >= 1.9 via
+# allow-newer.
+SIMPLEXMQ_PATCHES = \
+	patch-src_Simplex_Messaging_Crypto_hs
+
 LIB_DEPENDS = databases/sqlcipher \
 			archivers/zstd
 
@@ -87,6 +92,9 @@ post-patch:
 		'package *' \
 		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
 		>> ${WRKSRC}/cabal.project.local
+.for _p in ${SIMPLEXMQ_PATCHES}
+	patch -d ${WRKDIR}/simplexmq -p0 < ${FILESDIR}/${_p}
+.endfor
 .for _p in ${AESON_PATCHES}
 	patch -d ${WRKDIR}/aeson -p0 < ${FILESDIR}/${_p}
 .endfor

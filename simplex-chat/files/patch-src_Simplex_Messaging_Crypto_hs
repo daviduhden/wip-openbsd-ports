@@ -1,0 +1,11 @@
+--- src/Simplex/Messaging/Crypto.hs.orig	2026-06-23 04:57:32.470321676 +0200
++++ src/Simplex/Messaging/Crypto.hs	2026-06-23 04:57:32.525273072 +0200
+@@ -243,6 +243,7 @@
+ import Data.Typeable (Proxy (Proxy), Typeable)
+ import Data.Word (Word32)
+ import qualified Data.X509 as X
++import Data.X509 (PubKey (..), PrivKey (..))
+ import Data.X509.Validation (Fingerprint (..), getFingerprint)
+ import GHC.TypeLits (ErrorMessage (..), KnownNat, Nat, TypeError, natVal, type (+))
+ import Network.Transport.Internal (decodeWord16, encodeWord16)
+

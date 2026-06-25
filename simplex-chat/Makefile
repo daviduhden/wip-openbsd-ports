@@ -69,10 +69,18 @@ CRYPTOSTORE_PATCHES = \
 	patch-src_Crypto_Store_Cipher_RC2_Primitive_hs \
 	patch-src_Crypto_Store_PKCS5_PBES1_hs \
 	patch-src_Crypto_Store_Util_hs
-# ASN1Object instance visibility for crypton-x509 >= 1.9 via
-# allow-newer.
 SIMPLEXMQ_PATCHES = \
-	patch-src_Simplex_Messaging_Crypto_hs
+	patch-simplexmq_cabal \
+	patch-src_Simplex_Messaging_Agent_Store_SQLite_Migrations_agent_schema_sql \
+	patch-src_Simplex_Messaging_Crypto_hs \
+	patch-src_Simplex_Messaging_Server_MsgStore_Journal_hs \
+	patch-src_Simplex_Messaging_Transport_hs \
+	patch-src_Simplex_Messaging_Transport_Client_hs \
+	patch-src_Simplex_Messaging_Transport_HTTP2_hs \
+	patch-src_Simplex_Messaging_Transport_HTTP2_Client_hs \
+	patch-src_Simplex_Messaging_Transport_HTTP2_Server_hs \
+	patch-src_Simplex_Messaging_Transport_KeepAlive_hs \
+	patch-src_Simplex_Messaging_Transport_Server_hs
 
 LIB_DEPENDS = databases/sqlcipher \
 			archivers/zstd

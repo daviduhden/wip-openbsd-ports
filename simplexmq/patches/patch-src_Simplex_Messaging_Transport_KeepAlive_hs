@@ -1,0 +1,30 @@
+$OpenBSD$
+
+OpenBSD does not expose the TCP keepalive tuning options used on Linux.
+
+--- src/Simplex/Messaging/Transport/KeepAlive.hs.orig
++++ src/Simplex/Messaging/Transport/KeepAlive.hs
+@@ -30,6 +30,10 @@
+       keepCnt = 4
+     }
+ 
++setSocketKeepAlive :: Socket -> KeepAliveOpts -> IO ()
++#if defined(openbsd_HOST_OS)
++setSocketKeepAlive sock _ = setSocketOption sock KeepAlive 1
++#else
+ _SOL_TCP :: CInt
+ _SOL_TCP = 6
+ 
+@@ -63,11 +67,11 @@
+ 
+ #endif
+ 
+-setSocketKeepAlive :: Socket -> KeepAliveOpts -> IO ()
+ setSocketKeepAlive sock KeepAliveOpts {keepCnt, keepIdle, keepIntvl} = do
+   setSocketOption sock KeepAlive 1
+   setSocketOption sock (SockOpt _SOL_TCP _TCP_KEEPIDLE) keepIdle
+   setSocketOption sock (SockOpt _SOL_TCP _TCP_KEEPINTVL) keepIntvl
+   setSocketOption sock (SockOpt _SOL_TCP _TCP_KEEPCNT) keepCnt
++#endif
+ 
+ $(J.deriveJSON defaultJSON ''KeepAliveOpts)

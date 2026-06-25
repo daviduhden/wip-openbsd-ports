@@ -1,0 +1,30 @@
+$OpenBSD$
+
+Replace random's removed genByteString helper with a small local equivalent.
+
+--- src/Simplex/Messaging/Server/MsgStore/Journal.hs.orig
++++ src/Simplex/Messaging/Server/MsgStore/Journal.hs
+@@ -92,7 +92,9 @@
+ import System.FilePath (takeFileName, (</>))
+ import System.IO (BufferMode (..), Handle, IOMode (..), SeekMode (..))
+ import qualified System.IO as IO
+-import System.Random (StdGen, genByteString, newStdGen)
++import System.Random (StdGen, newStdGen, randomR)
++import Data.ByteString (ByteString)
++import qualified Data.ByteString as BS
+ 
+ data JournalMsgStore s = JournalMsgStore
+   { config :: JournalStoreConfig s,
+@@ -819,6 +821,12 @@
+ newJournalId :: TVar StdGen -> IO ByteString
+ newJournalId g = strEncode <$> atomically (stateTVar g $ genByteString 12)
+ 
++genByteString :: Int -> StdGen -> (ByteString, StdGen)
++genByteString n g = go n g []
++  where
++    go 0 g' acc = (BS.pack (reverse acc), g')
++    go i g' acc = let (w, g'') = randomR (0, 255 :: Int) g' in go (i - 1) g'' (fromIntegral w : acc)
++
+ openJournals :: JournalMsgStore s -> FilePath -> MsgQueueState -> Handle -> IO (MsgQueueState, Handle, Maybe Handle)
+ openJournals ms dir st@MsgQueueState {readState = rs, writeState = ws} sh = do
+   let rjId = journalId rs

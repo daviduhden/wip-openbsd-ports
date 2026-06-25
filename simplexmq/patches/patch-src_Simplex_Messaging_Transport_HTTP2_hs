@@ -1,0 +1,42 @@
+$OpenBSD$
+
+Build with http2 5.x using its public client configuration template.
+http2 5.x removed the Config constructor; use HC.defaultConfig instead
+with qualified field selectors.
+
+--- src/Simplex/Messaging/Transport/HTTP2.hs.orig
++++ src/Simplex/Messaging/Transport/HTTP2.hs
+@@ -19,7 +19,7 @@
+ import Data.Maybe (fromMaybe)
+ import Foreign (mallocBytes)
+ import Network.HPACK (BufferSize)
+-import Network.HTTP2.Client (Config (..), defaultPositionReadMaker, freeSimpleConfig)
++import Network.HTTP2.Client (Config, freeSimpleConfig)
+ import qualified Network.HTTP2.Client as HC
+ import qualified Network.HTTP2.Server as HS
+ import Network.Socket (SockAddr (..))
+@@ -40,15 +40,15 @@
+   buf <- mallocBytes sz
+   tm <- TI.initialize $ 30 * 1000000
+   pure
+-    Config
+-      { confWriteBuffer = buf,
+-        confBufferSize = sz,
+-        confSendAll = cPut c,
+-        confReadN = cGet c,
+-        confPositionReadMaker = defaultPositionReadMaker,
+-        confTimeoutManager = tm,
+-        confMySockAddr = SockAddrInet 0 0,
+-        confPeerSockAddr = SockAddrInet 0 0
++    HC.defaultConfig
++      { HC.confWriteBuffer = buf,
++        HC.confBufferSize = sz,
++        HC.confSendAll = cPut c,
++        HC.confReadN = cGet c,
++        HC.confPositionReadMaker = HC.defaultPositionReadMaker,
++        HC.confTimeoutManager = tm,
++        HC.confMySockAddr = SockAddrInet 0 0,
++        HC.confPeerSockAddr = SockAddrInet 0 0
+       }
+ 
+ http2TLSParams :: T.Supported

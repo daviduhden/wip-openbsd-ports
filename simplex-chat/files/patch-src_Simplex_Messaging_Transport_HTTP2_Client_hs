@@ -1,0 +1,56 @@
+$OpenBSD$
+
+Adapt the client callback and configuration to http2 5.x. http2 5.x
+removed the ClientConfig constructor; use H.defaultClientConfig and
+pass the configuration argument to the client callback.
+
+--- src/Simplex/Messaging/Transport/HTTP2/Client.hs.orig
++++ src/Simplex/Messaging/Transport/HTTP2/Client.hs
+@@ -28,11 +28,12 @@
+ import qualified Control.Exception as E
+ import Control.Monad
+ import Data.Functor (($>))
++import qualified Data.ByteString.Char8 as B
+ import Data.Time (UTCTime, getCurrentTime)
+ import qualified Data.X509 as X
+ import qualified Data.X509.CertificateStore as XS
+ import Network.HPACK (BufferSize)
+-import Network.HTTP2.Client (ClientConfig (..), Request, Response)
++import Network.HTTP2.Client (Request, Response)
+ import qualified Network.HTTP2.Client as H
+ import Network.Socket (HostName, ServiceName)
+ import Network.Socks5 (SocksCredentials)
+@@ -146,7 +147,7 @@
+         Nothing -> cancel action $> Left (HCNetworkError NETimeoutError)
+ 
+     client :: HClient -> TMVar (Either HTTP2ClientError HTTP2Client) -> TLS p -> H.Client HTTP2Response
+-    client c cVar tls sendReq = do
++    client c cVar tls sendReq aux = do
+       sessionTs <- getCurrentTime
+       let c' =
+             HTTP2Client
+@@ -164,10 +165,10 @@
+       atomically $ do
+         writeTVar (connected c) True
+         putTMVar cVar (Right c')
+-      process c' sendReq `E.finally` disconnected
++      process c' sendReq aux `E.finally` disconnected
+ 
+     process :: HTTP2Client -> H.Client HTTP2Response
+-    process HTTP2Client {client_ = HClient {reqQ}} sendReq = forever $ do
++    process HTTP2Client {client_ = HClient {reqQ}} sendReq _aux = forever $ do
+       (req, respVar) <- atomically $ readTBQueue reqQ
+       sendReq req $ \r -> do
+         respBody <- getHTTP2Body r (bodyHeadSize config)
+@@ -213,4 +214,10 @@
+ runHTTP2ClientWith bufferSize host setup client = setup $ \tls -> withHTTP2 bufferSize (run tls) (pure ()) tls
+   where
+     run :: TLS p -> H.Config -> IO a
+-    run tls cfg = H.run (ClientConfig "https" (strEncode host) 20) cfg $ client tls
++    run tls cfg = H.run clientConfig cfg $ client tls
++    clientConfig =
++      H.defaultClientConfig
++        { H.scheme = "https",
++          H.authority = B.unpack $ strEncode host,
++          H.cacheLimit = 20
++        }

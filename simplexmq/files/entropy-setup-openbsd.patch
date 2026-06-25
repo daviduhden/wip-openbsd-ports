@@ -1,0 +1,89 @@
+ $OpenBSD$
+
+Disable entropy build-time probes on OpenBSD.
+
+--- Setup.hs.orig	Mon Jun  1 02:50:04 2026
++++ Setup.hs	Mon Jun  1 02:50:04 2026
+@@ -53,8 +53,12 @@
+   where cArgs = ["-DHAVE_RDRAND"]
+ 
+ checkGetrandom :: FilePath -> LocalBuildInfo -> IO LocalBuildInfo
+-checkGetrandom cc lbi = do
+-    libcGetrandom <- compileCheck cc "testLibcGetrandom" "Result of libc getrandom() Test: "
++checkGetrandom cc lbi =
++#ifdef __OpenBSD__
++    return lbi
++#else
++    do
++        libcGetrandom <- compileCheck cc "testLibcGetrandom" "Result of libc getrandom() Test: "
+                 (unlines        [ "#define _GNU_SOURCE"
+                                 , "#include <errno.h>"
+                                 , "#include <sys/random.h>"
+@@ -65,33 +69,38 @@
+                                 , "    return getrandom(&tmp, sizeof(tmp), GRND_NONBLOCK) != -1;"
+                                 , "}"
+                                 ])
+-    if libcGetrandom then return $ addOptions cArgsLibc cArgsLibc lbi
+-    else do
+-        syscallGetrandom <- compileCheck cc "testSyscallGetrandom" "Result of syscall getrandom() Test: "
+-                (unlines        [ "#define _GNU_SOURCE"
+-                                , "#include <errno.h>"
+-                                , "#include <unistd.h>"
+-                                , "#include <sys/syscall.h>"
+-                                , "#include <sys/types.h>"
+-                                , "#include <linux/random.h>"
++        if libcGetrandom then return $ addOptions cArgsLibc cArgsLibc lbi
++            else do
++            syscallGetrandom <- compileCheck cc "testSyscallGetrandom" "Result of syscall getrandom() Test: "
++                    (unlines        [ "#define _GNU_SOURCE"
++                                    , "#include <errno.h>"
++                                    , "#include <unistd.h>"
++                                    , "#include <sys/syscall.h>"
++                                    , "#include <sys/types.h>"
++                                    , "#include <linux/random.h>"
+ 
+-                                , "static ssize_t getrandom(void* buf, size_t buflen, unsigned int flags)"
+-                                , "{"
+-                                , "    return syscall(SYS_getrandom, buf, buflen, flags);"
+-                                , "}"
++                                    , "static ssize_t getrandom(void* buf, size_t buflen, unsigned int flags)"
++                                    , "{"
++                                    , "    return syscall(SYS_getrandom, buf, buflen, flags);"
++                                    , "}"
+ 
+-                                , "int main()"
+-                                , "{"
+-                                , "    char tmp;"
+-                                , "    return getrandom(&tmp, sizeof(tmp), GRND_NONBLOCK) != -1;"
+-                                , "}"
+-                                ])
+-        return $ if syscallGetrandom then addOptions cArgs cArgs lbi else lbi
++                                    , "int main()"
++                                    , "{"
++                                    , "    char tmp;"
++                                    , "    return getrandom(&tmp, sizeof(tmp), GRND_NONBLOCK) != -1;"
++                                    , "}"
++                                    ])
++            return $ if syscallGetrandom then addOptions cArgs cArgs lbi else lbi
+   where cArgs = ["-DHAVE_GETRANDOM"]
+         cArgsLibc = cArgs ++ ["-DHAVE_LIBC_GETRANDOM"]
++#endif
+ 
+ checkGetentropy :: FilePath -> LocalBuildInfo -> IO LocalBuildInfo
+-checkGetentropy cc lbi = do
++checkGetentropy cc lbi =
++#ifdef __OpenBSD__
++    return lbi
++#else
++    do
+         b <- compileCheck cc "testGetentropy" "Result of getentropy() Test: "
+                 (unlines        [ "#define _GNU_SOURCE"
+                                 , "#include <unistd.h>"
+@@ -104,6 +113,7 @@
+                                 ])
+         return $ if b then addOptions cArgs cArgs lbi else lbi
+   where cArgs = ["-DHAVE_GETENTROPY"]
++#endif
+ 
+ myRawSystemExitCode :: Verbosity -> FilePath -> [String] -> IO ExitCode
+ #if MIN_VERSION_Cabal(3,14,0)

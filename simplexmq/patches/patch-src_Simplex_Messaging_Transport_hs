@@ -1,33 +1,21 @@
 $OpenBSD$
 
-Adapt the TLS unique channel binding result type for newer tls/GHC builds.
+Use tls's public TLS unique channel binding API (getTLSUnique)
+instead of the deprecated peer-specific functions.
 
 --- src/Simplex/Messaging/Transport.hs.orig
 +++ src/Simplex/Messaging/Transport.hs
-@@ -1,7 +1,9 @@
- {-# LANGUAGE AllowAmbiguousTypes #-}
-+{-# LANGUAGE CPP #-}
- {-# LANGUAGE DataKinds #-}
- {-# LANGUAGE DeriveAnyClass #-}
- {-# LANGUAGE DerivingStrategies #-}
-+{-# LANGUAGE PackageImports #-}
- {-# LANGUAGE DuplicateRecordFields #-}
- {-# LANGUAGE FlexibleContexts #-}
- {-# LANGUAGE FlexibleInstances #-}
-@@ -132,6 +134,7 @@
- import GHC.IO.Handle.Internals (ioe_EOF)
- import Network.Socket
- import qualified Network.TLS as T
-+import Unsafe.Coerce (unsafeCoerce)
- import qualified Network.TLS.Extra as TE
- import qualified Paths_simplexmq as SMQ
- import qualified Simplex.Messaging.Crypto as C
-@@ -373,7 +376,7 @@
+@@ -373,12 +373,8 @@
  
  withTlsUnique :: forall c p. TransportPeerI p => T.Context -> (ByteString -> IO (c p)) -> IO (c p)
  withTlsUnique cxt f =
 -  cxtFinished cxt
-+  (fmap unsafeCoerce <$> cxtFinished cxt)
++  T.getTLSUnique cxt
      >>= maybe (closeTLS cxt >> ioe_EOF) f
-   where
-     cxtFinished = case sTransportPeer @p of
+-  where
+-    cxtFinished = case sTransportPeer @p of
+-      STServer -> T.getPeerFinished
+-      STClient -> T.getFinished
+ 
+ closeTLS :: T.Context -> IO ()
+ closeTLS ctx =

@@ -53,6 +53,7 @@ MODCABAL_BUILD_ARGS = -v2
 NETWORK_V = 3.2.8.0
 UNIX_TIME_V = 0.5.0
 CRYPTOSTORE_V = 0.5.0.0
+ENTROPY_V = 0.4.1.11
 CABAL_INC_HOME ?= ${WRKDIR}/.cabal-inc-home
 CABAL_INC_SKIP = aeson,socks,direct-sqlcipher,sqlcipher-simple,warp-tls,warp
 CABAL_INC_EXTRA = wai-app-static:3.2.1:0,wai-extra:3.1.18:0,yaml:0.11.11.2:0
@@ -107,6 +108,12 @@ post-patch:
 			< ${FILESDIR}/patch-unix-time_cabal; \
 		${INSTALL_DATA} ${FILESDIR}/UnixTimeConfig.h \
 			${WRKDIR}/unix-time-${UNIX_TIME_V}/cbits/config.h; \
+	fi
+	if [ -f ${WRKDIR}/entropy-${ENTROPY_V}/entropy.cabal ]; then \
+		patch -d ${WRKDIR}/entropy-${ENTROPY_V} -p0 \
+			< ${FILESDIR}/entropy-cabal.patch; \
+		patch -d ${WRKDIR}/entropy-${ENTROPY_V} -p0 \
+			< ${FILESDIR}/entropy-setup-openbsd.patch; \
 	fi
 
 cabal-inc: patch

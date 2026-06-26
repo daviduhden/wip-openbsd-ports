@@ -157,17 +157,39 @@ cabal-inc: patch
 		--executable xftp-server \
 		${MODCABAL_STEM}-${MODCABAL_VERSION} \
 		> ${WRKDIR}/simplexmq.xftp.inc
+	printf '%s\n' \
+		'package *' \
+		'    tests: False' \
+		'package simplexmq' \
+		'    tests: True' \
+		>> ${WRKSRC}/cabal.project.local
+	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
+		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
+		${LOCALBASE}/bin/cabal v2-test --dry-run \
+		-w ${LOCALBASE}/bin/ghc \
+		--disable-benchmarks \
+		test:simplexmq-test
+	cp ${WRKBUILD}/dist-newstyle/cache/plan.json \
+		${WRKDIR}/simplexmq.test.plan.json
 	env SKIP=${CABAL_INC_SKIP} EXTRA=${CABAL_INC_EXTRA} \
 		perl ${FILESDIR}/cabal-deps-merge.pl \
 		${WRKDIR}/simplexmq.smp.inc ${WRKDIR}/simplexmq.xftp.inc \
+			${WRKDIR}/simplexmq.test.plan.json \
 			> ${.CURDIR}/cabal.inc
 
 do-test:
+	printf '%s\n' \
+		'package *' \
+		'    tests: False' \
+		'package simplexmq' \
+		'    tests: True' \
+		>> ${WRKSRC}/cabal.project.local
 	cd ${WRKBUILD} && exec ${SETENV} ${MAKE_ENV} \
-		${_MODCABAL_CABAL} v2-test \
+		${_MODCABAL_CABAL} v2-test --offline --disable-benchmarks \
 		-w ${LOCALBASE}/bin/ghc \
 		-j${MAKE_JOBS} \
-		${MODCABAL_BUILD_ARGS}
+		--flags="${MODCABAL_FLAGS}" ${MODCABAL_BUILD_ARGS} \
+		test:simplexmq-test
 
 .include "cabal.inc"
 

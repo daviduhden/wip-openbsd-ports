@@ -1,4 +1,6 @@
 MODCABAL_MANIFEST	= \
+	Diff	1.0.2	0	\
+	HUnit	1.6.2.0	0	\
 	OneTuple	0.4.3	0	\
 	Only	0.1	2	\
 	QuickCheck	2.18.0.0	0	\
@@ -11,6 +13,7 @@ MODCABAL_MANIFEST	= \
 	async	2.2.6	0	\
 	attoparsec	0.14.4	6	\
 	auto-update	0.2.6	0	\
+	base-compat	0.15.0	0	\
 	base-orphans	0.9.4	0	\
 	base16	1.0	4	\
 	base16-bytestring	1.0.2.0	1	\
@@ -23,6 +26,7 @@ MODCABAL_MANIFEST	= \
 	blaze-textual	0.2.3.1	0	\
 	boring	0.2.2.1	0	\
 	byteorder	1.0.4	0	\
+	call-stack	0.4.0	0	\
 	case-insensitive	1.2.1.0	0	\
 	cborg	0.2.10.0	3	\
 	cereal	0.5.8.3	0	\
@@ -55,11 +59,18 @@ MODCABAL_MANIFEST	= \
 	entropy	0.4.1.11	1	\
 	fast-logger	3.2.6	0	\
 	file-embed	0.0.16.0	0	\
+	generic-deriving	1.14.7	0	\
+	generic-random	1.5.0.1	0	\
 	generically	0.1.1	5	\
 	half	0.3.3	2	\
 	hashable	1.5.1.0	0	\
+	haskell-lexer	1.2.1	0	\
 	hpke	0.1.0	0	\
 	hsc2hs	0.68.10	5	\
+	hspec	2.11.17	0	\
+	hspec-core	2.11.17	0	\
+	hspec-discover	2.11.17	0	\
+	hspec-expectations	0.8.4	0	\
 	http-semantics	0.4.0	0	\
 	http-types	0.12.5	0	\
 	http2	5.4.0	1	\
@@ -86,11 +97,14 @@ MODCABAL_MANIFEST	= \
 	network-udp	0.0.0	0	\
 	network-uri	2.6.4.2	1	\
 	old-locale	1.0.0.7	2	\
+	old-time	1.1.1.0	0	\
 	optparse-applicative	0.19.0.0	1	\
 	prettyprinter	1.7.2	0	\
 	prettyprinter-ansi-terminal	1.1.4	0	\
 	primitive	0.9.1.0	1	\
 	psqueues	0.2.8.3	2	\
+	quickcheck-instances	0.4	0	\
+	quickcheck-io	0.2.0	0	\
 	ram	0.22.0	0	\
 	random	1.3.1	0	\
 	record-hasfield	1.0.1	0	\
@@ -100,6 +114,7 @@ MODCABAL_MANIFEST	= \
 	semialign	1.4	0	\
 	semigroupoids	6.0.2	1	\
 	serialise	0.2.6.1	5	\
+	silently	1.2.5.4	0	\
 	simple-logger	0.1.1	0	\
 	split	0.2.5	0	\
 	splitmix	0.1.3.2	0	\
@@ -108,6 +123,10 @@ MODCABAL_MANIFEST	= \
 	strict	0.5.1	1	\
 	tagged	0.8.10	1	\
 	tasty	1.5.4	0	\
+	tasty-golden	2.3.6	0	\
+	tasty-hunit	0.10.2	0	\
+	tasty-quickcheck	0.11.1	0	\
+	temporary	1.3	0	\
 	text-iso8601	0.2.0.0	0	\
 	text-short	0.1.6.1	0	\
 	th-abstraction	0.7.2.0	0	\

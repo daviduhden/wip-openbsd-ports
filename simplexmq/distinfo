@@ -1,3 +1,4 @@
+SHA256 (hackage/Diff-1.0.2.tar.gz) = zX4m09Xr9/LBp1Ja6+JR+8v/7ipjYttjS0viO541TYU=
 SHA256 (hackage/HUnit-1.6.2.0.tar.gz) = sLdTiHH/wFhIb8AHQIhtLzFy+PpoaZNr/oOl4QvXRKs=
 SHA256 (hackage/OneTuple-0.4.3.tar.gz) = ZD0fSOY0gKxtA6jwq1l21mUnybQrH8qB0b83PRAJnGs=
 SHA256 (hackage/Only-0.1.tar.gz) = q3qhk+jCV9O9prCzwcvPdM2qhasIyyDC3WK6JIwasmU=
@@ -14,6 +15,7 @@ SHA256 (hackage/async-2.2.6.tar.gz) = FIVxvBiAAxASQdpsSRMdBzJOY6iO0oOoTe8ulpRZlh
 SHA256 (hackage/attoparsec-0.14.4.tar.gz) = PzN/5YYkVl3hJCb2B8I+YMewnIa04638gnyhiMmXnmw=
 SHA256 (hackage/attoparsec-0.14.4_6.cabal) = NRKdCrF0HwAPGn0vyDlUSRnub7uPLW5/CmKcQfkQNfM=
 SHA256 (hackage/auto-update-0.2.6.tar.gz) = miXMXJ3iogmB/+mB/81R/uiFl8gCwVVd0I+pxcZODlQ=
+SHA256 (hackage/base-compat-0.15.0.tar.gz) = WapJ13eaIKgIkkaQWDZTwr37DlS1Fi34DfWoFjKCRTE=
 SHA256 (hackage/base-orphans-0.9.4.tar.gz) = CMwoOjE1D3vSiypdMa9pPuM38lk9PnIimZty3UlUxys=
 SHA256 (hackage/base16-1.0.tar.gz) = hjZjZJELeGCWd4F88/mHvxaQ4fdbugS8kaXtmT1hnN4=
 SHA256 (hackage/base16-1.0_4.cabal) = TdNBIoFo8s3gOVTdchde5yagcT4iAPbHtz9M2NIgc3c=
@@ -80,14 +82,22 @@ SHA256 (hackage/entropy-0.4.1.11.tar.gz) = 9d1aASePgxjZeT7WBxt0LxPONsdFYyi6rkrMg
 SHA256 (hackage/entropy-0.4.1.11_1.cabal) = G5sacoK6bXZx5tepvoTMGMQKOkgM72IZJ6jkxm7EeRM=
 SHA256 (hackage/fast-logger-3.2.6.tar.gz) = vWbGIt6EFw70HNbKN/UHiCMio5aOOaicYgYT8z5jxcM=
 SHA256 (hackage/file-embed-0.0.16.0.tar.gz) = XxhnLv+TY1VVfN0WOQVFEgXX7iJ0LtrDE90nz0Kj9BU=
+SHA256 (hackage/generic-deriving-1.14.7.tar.gz) = yRYgpckVm7163eGDUg6sIsLQb04Hbf/k4LhlAZHl2Mo=
+SHA256 (hackage/generic-random-1.5.0.1.tar.gz) = 3TRRgIeI2ZIR7erCcofbVBfpcjTOkiGi65qwLpz8LAo=
 SHA256 (hackage/generically-0.1.1.tar.gz) = BMWkNr7EsEH3GnM/VqG9f0NfY93o0+tcH0jVW028Q88=
 SHA256 (hackage/generically-0.1.1_5.cabal) = f+QVI01FXrWEAkd4mayWnkY3TQuqsJ6N3TGfY5Sko2k=
 SHA256 (hackage/half-0.3.3.tar.gz) = 9HYElijW/3lyL7BzwB6F8qEbLvODX9w/whph8F0XqwI=
 SHA256 (hackage/half-0.3.3_2.cabal) = s5VJt/jNQZrCLZxJ8IN9erwGcM3ff0L0SbEOV23Bwss=
 SHA256 (hackage/hashable-1.5.1.0.tar.gz) = 7Qt8EM6Syf/kVCDa3DjG0520hv82M/8TVnzJ9195sRI=
+SHA256 (hackage/haskell-lexer-1.2.1.tar.gz) = nXbhUoEGsbMubkZSZOOTgcpLRQtypLUzHn5RJ2QKGkE=
 SHA256 (hackage/hpke-0.1.0.tar.gz) = GgDgXDRLF/fSsorhlXbCrsNI1xyZVYP4WIJkpZ3If6I=
 SHA256 (hackage/hsc2hs-0.68.10.tar.gz) = b04014j+LKcJHuChAwfuinwGChuokPK/+tFqfU1c73Y=
 SHA256 (hackage/hsc2hs-0.68.10_5.cabal) = ObJf2SmwKwGj/ln+x8qLLabw+eKCJ2t6hOY6RwLE1yU=
+SHA256 (hackage/hspec-2.11.17.tar.gz) = OeTIw7sr4IpMYXR93/A2XGoH78YYWzqAp7iPu2vsl1Y=
+SHA256 (hackage/hspec-core-2.11.17.tar.gz) = hLUXalJcsN+YBwRAIBIggUUXtdUeb9FaUsC8edo7ioU=
+SHA256 (hackage/hspec-discover-2.11.17.tar.gz) = NWydjfeN8wMzSL5hfd9AiRSkHdh8ErXteHsEgPrORlI=
+SHA256 (hackage/hspec-expectations-0.8.4.tar.gz) = e43efiMOz9qQyV/YBHiyRKReaGAvs91KdvRxBhm+If8=
+SHA256 (hackage/http-client-0.7.19.tar.gz) = oCwb4ILo9IyVmscVCkikBfjUOD4JQmOUgehLIg8prWE=
 SHA256 (hackage/http-date-0.0.11.tar.gz) = MvkjrBrZvf6tznxSoDybpiJbpg3BQTfLHN8y6oTM9NM=
 SHA256 (hackage/http-semantics-0.4.0.tar.gz) = nUAGXrhcGcG9NysxvTKYqqA6z+ZkbqTtq/plMQgIvHM=
 SHA256 (hackage/http-types-0.12.5.tar.gz) = 3m1QvEeJ13kMREhOaoOnqtMVGCLKGUg1uVXjRBcO/g0=
@@ -104,6 +114,7 @@ SHA256 (hackage/iso8601-time-0.1.5.tar.gz) = 8s1ESyvmhALHc6S0UZEoF/BtMwk66mkbQuv
 SHA256 (hackage/libyaml-0.1.4.tar.gz) = 1il+ybHrtOS1gKQ1fYQNCKb1PhOhDAxT7nS5c7um+hM=
 SHA256 (hackage/libyaml-clib-0.2.5.tar.gz) = BFJrxU5fz0ccK9IoVOa1GeFipuPWVOhmzYhiEDxyUUk=
 SHA256 (hackage/lifted-base-0.2.3.12.tar.gz) = wTSpX1Z1Cq6AbjiVe7A8WWJ82hYDSvngCgK2mUdDF8U=
+SHA256 (hackage/main-tester-0.2.0.1.tar.gz) = zwb1k043Thly8sx2cBwD1nxVNgNNmtMsrOTgOBmleEI=
 SHA256 (hackage/memory-0.18.0.tar.gz) = /U629jjiS4G05s3Wh3KlMXJvL2dobIlp00B9gveGLj4=
 SHA256 (hackage/memory-0.18.0_1.cabal) = n03pZzUvgLbxdMmhZvMVOT3egLd9e2fkEmiufewDGfk=
 SHA256 (hackage/mime-types-0.1.2.2.tar.gz) = 5W5HR3jXLDhwOdNRS1KprzSF9KvjHmIJbzgUha9JSUA=
@@ -122,6 +133,7 @@ SHA256 (hackage/network-uri-2.6.4.2.tar.gz) = nBiJcxJuiTJQuIHyDogR3KBsIjwjQCsG96
 SHA256 (hackage/network-uri-2.6.4.2_1.cabal) = b/+1c3OWK1ZRotuLCvcyCYs78CmnztdqmFVhXeICZYg=
 SHA256 (hackage/old-locale-1.0.0.7.tar.gz) = 26+L9riI+5iEVwUHkpaiPD9A7i9EnfcxL39/HeGNe1A=
 SHA256 (hackage/old-locale-1.0.0.7_2.cabal) = +pmL4sfgDNJqbpB1vqeQyq85Msqj6Ul61pvCA4DdaRE=
+SHA256 (hackage/old-time-1.1.1.0.tar.gz) = LEQNO8JoDe/LN5pLXmRpxd/x00ADdKrGBSPO94w9lqs=
 SHA256 (hackage/optparse-applicative-0.19.0.0.tar.gz) = zxau79ghcwx3OER/p8a3rafKHJzCVADWTvKDKU00WHE=
 SHA256 (hackage/optparse-applicative-0.19.0.0_1.cabal) = TB3L2/JJj3zdiIJuh2QD23+NgZMZYgYOxMOlehhsbMM=
 SHA256 (hackage/prettyprinter-1.7.2.tar.gz) = 8E62/YZVEq2Gctoei/zqHDhFCfwvZixBt6w514mHBu4=
@@ -130,6 +142,8 @@ SHA256 (hackage/primitive-0.9.1.0.tar.gz) = RLTeQYE8e8Xbilf4fDYSoGm2UIaUYmi6FlCX
 SHA256 (hackage/primitive-0.9.1.0_1.cabal) = dWsiLHFbxu9bqB+mnNuqIMXFO+tvFvF0uLrMk6bSOfA=
 SHA256 (hackage/psqueues-0.2.8.3.tar.gz) = ELy+mus8oA1y6G2UDPkbAhuD+QiIU3USDU1R0CQK0HY=
 SHA256 (hackage/psqueues-0.2.8.3_2.cabal) = 9uGYdJ1KNE6FLTGvjvhxs6zxv4cHUDXmDQUgBxCJEQI=
+SHA256 (hackage/quickcheck-instances-0.4.tar.gz) = +yj+L85OmcCh0g7RX21uzVYkHBbhqOmeoWbqkOlnJ/M=
+SHA256 (hackage/quickcheck-io-0.2.0.tar.gz) = +3eRGdef4I/01QL7aGmnDJqNX9iuCVn2BcPJN+/ZZCI=
 SHA256 (hackage/ram-0.22.0.tar.gz) = L35AEcNuAp2fO3B5pOaS4ZYvMw9/CwoRfzYDmNIDXRU=
 SHA256 (hackage/random-1.3.1.tar.gz) = 2ECsg/JlsM+ipnj47HhifrUM+b4vBnxSyKQjnCm3GjU=
 SHA256 (hackage/recv-0.1.1.tar.gz) = ja93xX9SlQPdMDjvw4E6gAEDLtgQvd3/CssPrKA5tyE=
@@ -142,6 +156,7 @@ SHA256 (hackage/semigroupoids-6.0.2.tar.gz) = 5IJY5JVCJF72xY1/QZqD0dGrkbAT2Sw7XI
 SHA256 (hackage/semigroupoids-6.0.2_1.cabal) = UsWjRv33Q4Bhj2f/eEmJ75B4SY273/CeTY4v7SAgLiw=
 SHA256 (hackage/serialise-0.2.6.1.tar.gz) = Y5SXmf/RBnXvcOpwHB62PmGGKbOy97JfB8WpZuJOd/Q=
 SHA256 (hackage/serialise-0.2.6.1_5.cabal) = pn+JtVM7EUitRl3H8kuu7S4unn2B0qFH/H+o/xCJyk0=
+SHA256 (hackage/silently-1.2.5.4.tar.gz) = XiNgiWXBAEsAfcdxYEmYrm2lLBV3IwC/3eMNi1ISdG4=
 SHA256 (hackage/simple-logger-0.1.1.tar.gz) = 5GHyMiwUyOgdtgyFAd/15Y/gYzXrX/4SfXHfoZo5V5k=
 SHA256 (hackage/simple-sendfile-0.2.32.tar.gz) = nyjQpnrD2VbS3XjrGeqSLAqRkru+7urSDTn1YWNoKKM=
 SHA256 (hackage/simplex-chat-aeson-aab7b5a14d6c5ea64c64dcaee418de1bb00dcc2b.tar.gz) = XO2t/yrjxGA8rkav/bzfFjsZHBIZk5Bhcvs3x4NPMAQ=
@@ -161,6 +176,9 @@ SHA256 (hackage/supranational-blst-db3defd0d501cc2bb1cdd59cb955d1a421821441.tar.
 SHA256 (hackage/tagged-0.8.10.tar.gz) = F+95HrTK8xSjtLFYgnoPH0tpXCokrwh18J49jBD1bF0=
 SHA256 (hackage/tagged-0.8.10_1.cabal) = 6bl8mOmCeYHWLzfF/r+ea7tnrOySuL1B/Z96zl6zHTI=
 SHA256 (hackage/tasty-1.5.4.tar.gz) = x2EgFBvWHEQYs+1e/F/jCUGG1Hz+Ete+VSMgE59Sxsc=
+SHA256 (hackage/tasty-golden-2.3.6.tar.gz) = jzd/o6IXAMEPiJXgGrn+PbaqFiQp+K5Y/ADy05HXCrw=
+SHA256 (hackage/tasty-hunit-0.10.2.tar.gz) = WvAfp8HvmLMk2gYuNveZhqixuD/wz2/VP5XZdrQeA/Y=
+SHA256 (hackage/tasty-quickcheck-0.11.1.tar.gz) = 49TedFXtNC+IdNhGht74l7ijFs4ZhGHaGBBtih9jJGo=
 SHA256 (hackage/temporary-1.3.tar.gz) = jEQpk2lLX/yoI86GSvlb0oQftSZO5RHGHPSMxx2HmJA=
 SHA256 (hackage/text-iso8601-0.2.0.0.tar.gz) = 1ScdBUd72UbWKzGt9Ltus9ljwTWBxn5+V9Livf/L5O4=
 SHA256 (hackage/text-short-0.1.6.1.tar.gz) = g2afQCNUJ0+83HUSZEOvczJnuVXkUfcsDG2Gro2odBY=
@@ -172,6 +190,7 @@ SHA256 (hackage/time-compat-1.9.9.tar.gz) = kPrd7VPPnBWFXuv4CelTavj4XQDjK4L3yLUG
 SHA256 (hackage/time-compat-1.9.9_1.cabal) = DCkeDDyH7giyUXEHtikBsQKgQNyGIDtTvfB6lv9WMuA=
 SHA256 (hackage/time-hourglass-0.3.0.tar.gz) = nHx8dN2lAzFgMoYGyz6HJCAaut+aFAJxxzyJomErnSI=
 SHA256 (hackage/time-manager-0.3.2.tar.gz) = d23sHgAKnDBrF0dJV3bCQAWRprUbLNWLg1zXpCntNhk=
+SHA256 (hackage/timeit-2.0.tar.gz) = oU305XjbNx5cYJ8HhCCRRFRfnK6QAm0kozmAQvfFkeo=
 SHA256 (hackage/tls-2.4.3.tar.gz) = ot0PhRMa+Z0rfe8McShpkJLcBP5nkm/7j8UsYsGpxVE=
 SHA256 (hackage/tls-session-manager-0.1.0.tar.gz) = KacUVvjTOhwiNrUt2AMfCdgJEmF8xfAHPZUcmBNvvR4=
 SHA256 (hackage/tls-session-manager-0.1.0_1.cabal) = 1bo2pdgR2ln8ZokivaByLbwE414+z5l25D/ajx3YVNQ=
@@ -207,6 +226,7 @@ SHA256 (hackage/yaml-0.11.11.2.tar.gz) = 7nSSPuWw/vdEE8WKqiDqWbr10p0lamL7R8wnlXD
 SHA256 (hackage/yesodweb-wai-ec5e017d896a78e787a5acea62b37a4e677dec2e.tar.gz) = +0Ano/LQisAFSb913JQRTslft3JwxK7jwERHnjQwWsA=
 SHA256 (hackage/zlib-0.7.1.1.tar.gz) = v5WrAe2SS+gArd6hlfulypfsafN4No9v9Ga9wpZmwcE=
 SHA256 (hackage/zstd-0.1.3.0.tar.gz) = oMK1I15msmliV83uEaQZyhe/84n3iYm1OB6zzhCh8G0=
+SIZE (hackage/Diff-1.0.2.tar.gz) = 10936
 SIZE (hackage/HUnit-1.6.2.0.tar.gz) = 21179
 SIZE (hackage/OneTuple-0.4.3.tar.gz) = 5299
 SIZE (hackage/Only-0.1.tar.gz) = 1960
@@ -223,6 +243,7 @@ SIZE (hackage/async-2.2.6.tar.gz) = 18996
 SIZE (hackage/attoparsec-0.14.4.tar.gz) = 160701
 SIZE (hackage/attoparsec-0.14.4_6.cabal) = 5914
 SIZE (hackage/auto-update-0.2.6.tar.gz) = 14719
+SIZE (hackage/base-compat-0.15.0.tar.gz) = 32422
 SIZE (hackage/base-orphans-0.9.4.tar.gz) = 19999
 SIZE (hackage/base16-1.0.tar.gz) = 17347
 SIZE (hackage/base16-1.0_4.cabal) = 2649
@@ -289,14 +310,22 @@ SIZE (hackage/entropy-0.4.1.11.tar.gz) = 9112
 SIZE (hackage/entropy-0.4.1.11_1.cabal) = 2935
 SIZE (hackage/fast-logger-3.2.6.tar.gz) = 14852
 SIZE (hackage/file-embed-0.0.16.0.tar.gz) = 7198
+SIZE (hackage/generic-deriving-1.14.7.tar.gz) = 50604
+SIZE (hackage/generic-random-1.5.0.1.tar.gz) = 21703
 SIZE (hackage/generically-0.1.1.tar.gz) = 2870
 SIZE (hackage/generically-0.1.1_5.cabal) = 1203
 SIZE (hackage/half-0.3.3.tar.gz) = 8359
 SIZE (hackage/half-0.3.3_2.cabal) = 2011
 SIZE (hackage/hashable-1.5.1.0.tar.gz) = 90605
+SIZE (hackage/haskell-lexer-1.2.1.tar.gz) = 14602
 SIZE (hackage/hpke-0.1.0.tar.gz) = 25281
 SIZE (hackage/hsc2hs-0.68.10.tar.gz) = 40517
 SIZE (hackage/hsc2hs-0.68.10_5.cabal) = 3131
+SIZE (hackage/hspec-2.11.17.tar.gz) = 12095
+SIZE (hackage/hspec-core-2.11.17.tar.gz) = 99483
+SIZE (hackage/hspec-discover-2.11.17.tar.gz) = 6892
+SIZE (hackage/hspec-expectations-0.8.4.tar.gz) = 6105
+SIZE (hackage/http-client-0.7.19.tar.gz) = 96836
 SIZE (hackage/http-date-0.0.11.tar.gz) = 5351
 SIZE (hackage/http-semantics-0.4.0.tar.gz) = 15054
 SIZE (hackage/http-types-0.12.5.tar.gz) = 25272
@@ -313,6 +342,7 @@ SIZE (hackage/iso8601-time-0.1.5.tar.gz) = 1956
 SIZE (hackage/libyaml-0.1.4.tar.gz) = 9592
 SIZE (hackage/libyaml-clib-0.2.5.tar.gz) = 55500
 SIZE (hackage/lifted-base-0.2.3.12.tar.gz) = 11700
+SIZE (hackage/main-tester-0.2.0.1.tar.gz) = 5310
 SIZE (hackage/memory-0.18.0.tar.gz) = 41957
 SIZE (hackage/memory-0.18.0_1.cabal) = 4581
 SIZE (hackage/mime-types-0.1.2.2.tar.gz) = 12220
@@ -331,6 +361,7 @@ SIZE (hackage/network-uri-2.6.4.2.tar.gz) = 31309
 SIZE (hackage/network-uri-2.6.4.2_1.cabal) = 3217
 SIZE (hackage/old-locale-1.0.0.7.tar.gz) = 3384
 SIZE (hackage/old-locale-1.0.0.7_2.cabal) = 1071
+SIZE (hackage/old-time-1.1.1.0.tar.gz) = 77182
 SIZE (hackage/optparse-applicative-0.19.0.0.tar.gz) = 67629
 SIZE (hackage/optparse-applicative-0.19.0.0_1.cabal) = 5982
 SIZE (hackage/prettyprinter-1.7.2.tar.gz) = 57434
@@ -339,6 +370,8 @@ SIZE (hackage/primitive-0.9.1.0.tar.gz) = 61724
 SIZE (hackage/primitive-0.9.1.0_1.cabal) = 3258
 SIZE (hackage/psqueues-0.2.8.3.tar.gz) = 28239
 SIZE (hackage/psqueues-0.2.8.3_2.cabal) = 4830
+SIZE (hackage/quickcheck-instances-0.4.tar.gz) = 12094
+SIZE (hackage/quickcheck-io-0.2.0.tar.gz) = 1843
 SIZE (hackage/ram-0.22.0.tar.gz) = 42098
 SIZE (hackage/random-1.3.1.tar.gz) = 63846
 SIZE (hackage/recv-0.1.1.tar.gz) = 4772
@@ -351,6 +384,7 @@ SIZE (hackage/semigroupoids-6.0.2.tar.gz) = 36447
 SIZE (hackage/semigroupoids-6.0.2_1.cabal) = 7216
 SIZE (hackage/serialise-0.2.6.1.tar.gz) = 75106
 SIZE (hackage/serialise-0.2.6.1_5.cabal) = 8814
+SIZE (hackage/silently-1.2.5.4.tar.gz) = 4640
 SIZE (hackage/simple-logger-0.1.1.tar.gz) = 4159
 SIZE (hackage/simple-sendfile-0.2.32.tar.gz) = 343565
 SIZE (hackage/simplex-chat-aeson-aab7b5a14d6c5ea64c64dcaee418de1bb00dcc2b.tar.gz) = 415517
@@ -370,6 +404,9 @@ SIZE (hackage/supranational-blst-db3defd0d501cc2bb1cdd59cb955d1a421821441.tar.gz
 SIZE (hackage/tagged-0.8.10.tar.gz) = 8398
 SIZE (hackage/tagged-0.8.10_1.cabal) = 2201
 SIZE (hackage/tasty-1.5.4.tar.gz) = 68529
+SIZE (hackage/tasty-golden-2.3.6.tar.gz) = 16648
+SIZE (hackage/tasty-hunit-0.10.2.tar.gz) = 7808
+SIZE (hackage/tasty-quickcheck-0.11.1.tar.gz) = 7349
 SIZE (hackage/temporary-1.3.tar.gz) = 5686
 SIZE (hackage/text-iso8601-0.2.0.0.tar.gz) = 10093
 SIZE (hackage/text-short-0.1.6.1.tar.gz) = 24700
@@ -381,6 +418,7 @@ SIZE (hackage/time-compat-1.9.9.tar.gz) = 64400
 SIZE (hackage/time-compat-1.9.9_1.cabal) = 5488
 SIZE (hackage/time-hourglass-0.3.0.tar.gz) = 32660
 SIZE (hackage/time-manager-0.3.2.tar.gz) = 8547
+SIZE (hackage/timeit-2.0.tar.gz) = 2117
 SIZE (hackage/tls-2.4.3.tar.gz) = 195039
 SIZE (hackage/tls-session-manager-0.1.0.tar.gz) = 4453
 SIZE (hackage/tls-session-manager-0.1.0_1.cabal) = 1130

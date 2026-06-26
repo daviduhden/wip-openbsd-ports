@@ -89,7 +89,13 @@ LIB_DEPENDS = converters/libiconv \
 			devel/libffi \
 			archivers/zstd
 
+BUILD_DEPENDS = converters/dos2unix
+
 post-patch:
+	# Normalize source to LF before applying patches.
+	find ${WRKDIR} -type f \( -name '*.hs' -o -name '*.cabal' \
+		-o -name '*.sql' -o -name '*.h' -o -name '*.c' \) \
+		-exec ${LOCALBASE}/bin/dos2unix -q {} +
 	printf '%s\n' \
 		'packages: ${WRKDIR}/simplexmq/simplexmq.cabal' \
 		'packages: ${WRKDIR}/hs-socks/socks.cabal' \

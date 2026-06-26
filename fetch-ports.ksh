@@ -107,41 +107,96 @@ ask_copy_from_wip() {
 	done
 }
 
-# Resolve local wip-openbsd-ports path before filesystem search.
+# Resolve local wip-openbsd-ports path. Checks, in order:
+#   1. WIP_OPENBSD_PORTS_DIR environment variable
+#   2. Script's own directory (if named wip-openbsd-ports)
+#   3. Common locations under $HOME and /usr
+#   4. Current working directory or its parent
+#   5. Limited filesystem search
 resolve_local_port_dir() {
+	local dir
+
+	# 1. Explicit environment variable
 	if [ -n "${WIP_OPENBSD_PORTS_DIR:-}" ] &&
-		[ -d "$WIP_OPENBSD_PORTS_DIR" ]; then
+		[ -d "$WIP_OPENBSD_PORTS_DIR/.git" ]; then
+		log "Using WIP_OPENBSD_PORTS_DIR=$WIP_OPENBSD_PORTS_DIR"
 		print "$WIP_OPENBSD_PORTS_DIR"
 		return 0
 	fi
 
-	SCRIPT_DIR=$(
+	# 2. Script directory (if the script lives inside the repo)
+	dir=$(
 		unset CDPATH
-		cd -- "$(dirname -- "$0")" && pwd -P
+		cd -- "$(dirname -- "$0")" 2>/dev/null && pwd -P
 	)
-	if [ "$(basename "$SCRIPT_DIR")" = "wip-openbsd-ports" ] &&
-		[ -d "$SCRIPT_DIR/.git" ]; then
-		print "$SCRIPT_DIR"
+	while [ -n "$dir" ] && [ "$dir" != "/" ]; do
+		if [ "$(basename "$dir")" = "wip-openbsd-ports" ] &&
+			[ -d "$dir/.git" ]; then
+			log "Found wip-openbsd-ports at $dir"
+			print "$dir"
+			return 0
+		fi
+		dir=$(dirname "$dir")
+	done
+
+	# 3. Common locations: $HOME, home directories, /usr
+	for dir in \
+		"${HOME:-}/wip-openbsd-ports" \
+		/root/wip-openbsd-ports \
+		/usr/wip-openbsd-ports \
+		"${HOME:-}/git/wip-openbsd-ports"; do
+		if [ -d "$dir/.git" ]; then
+			log "Found wip-openbsd-ports at $dir"
+			print "$dir"
+			return 0
+		fi
+	done
+
+	# 4. Scan home directories for wip-openbsd-ports
+	for dir in /home/*/wip-openbsd-ports /home/*/git/wip-openbsd-ports; do
+		if [ -d "$dir/.git" ]; then
+			log "Found wip-openbsd-ports at $dir"
+			print "$dir"
+			return 0
+		fi
+	done
+
+	# 5. Current directory or parent
+	if [ -d "$PWD/.git" ] &&
+		[ "$(basename "$PWD")" = "wip-openbsd-ports" ]; then
+		print "$PWD"
 		return 0
 	fi
-
-	if [ -d "$PWD/wip-openbsd-ports" ]; then
+	if [ -d "$PWD/wip-openbsd-ports/.git" ]; then
 		print "$PWD/wip-openbsd-ports"
 		return 0
 	fi
 
-	warn "Falling back to full filesystem search for wip-openbsd-ports."
-	find / -type d -name "wip-openbsd-ports" 2>/dev/null | head -n 1
+	# 6. Limited search under /home and /usr (skip / to avoid
+	#    traversing the entire filesystem).
+	warn "Searching /home and /usr for wip-openbsd-ports..."
+	dir=$(find /home /usr /root -maxdepth 5 \
+		-type d -name "wip-openbsd-ports" \
+		-exec test -d '{}/.git' ';' \
+		-print -quit 2>/dev/null)
+	if [ -n "$dir" ]; then
+		log "Found wip-openbsd-ports at $dir"
+		print "$dir"
+		return 0
+	fi
+
+	error "wip-openbsd-ports directory not found." \
+		"Set WIP_OPENBSD_PORTS_DIR to its location."
+	exit 1
 }
 
-# Function to change directory to the wip-openbsd-ports directory
+# Change to the wip-openbsd-ports directory.
 move_to_wip_openbsd_ports() {
-	wip_openbsd_ports_dir=$(resolve_wip_openbsd_ports_dir)
-	if [ -z "$wip_openbsd_ports_dir" ]; then
-		error "wip-openbsd-ports directory not found."
+	wip_openbsd_ports_dir=$(resolve_local_port_dir)
+	cd "$wip_openbsd_ports_dir" || {
+		error "Could not cd to $wip_openbsd_ports_dir"
 		exit 1
-	fi
-	cd "$wip_openbsd_ports_dir" || exit 1
+	}
 }
 
 # Function to list directories in wip-openbsd-ports and select one

@@ -7,9 +7,6 @@ SHA256 (hackage/StateVar-1.2.2.tar.gz) = Xks52jlWVqWYJ7AoBQiq/ccDNXmLUOXW/VJZYCY
 SHA256 (hackage/ansi-terminal-1.1.5.tar.gz) = nPCDzvLiuoikJfEyyKgr+pMetLDDgjKyAX+PzqLiMHM=
 SHA256 (hackage/ansi-terminal-types-1.1.3.tar.gz) = n8nOIVfxiJvZmk0iyfHGRYlZC+D3l8Pv5xyPoXoRpok=
 SHA256 (hackage/appar-0.1.8.tar.gz) = xM7t3CZSW1jYLEG20+MhQTcaIApnlKrhhbYmbMyBYx8=
-SHA256 (hackage/asn1-encoding-0.9.6.tar.gz) = 2fjeq9O5COXPg8DYE8CNwBQ7PsHA2X9mDSz6AsHI2go=
-SHA256 (hackage/asn1-encoding-0.9.6_2.cabal) = J+2PYEOu15YwMTu5MffI4rUQ8LRYbNVcFq4EDH0eoJg=
-SHA256 (hackage/asn1-types-0.3.4.tar.gz) = eO6SolE3kpjKgg+lPtv0szxTm5/NiHyG9SDDDjtOIag=
 SHA256 (hackage/assoc-1.1.1.tar.gz) = IxFJt/7wn13ZWvUSKGFeOyltvQ+q3soFPgZEpLE7D/Y=
 SHA256 (hackage/assoc-1.1.1_2.cabal) = dmsQQO2lJVv88Q4amFnAbQ7WrQ4qyH7ZFbsDVXTRCuQ=
 SHA256 (hackage/async-2.2.6.tar.gz) = FIVxvBiAAxASQdpsSRMdBzJOY6iO0oOoTe8ulpRZlhk=
@@ -80,8 +77,6 @@ SHA256 (hackage/generically-0.1.1_5.cabal) = f+QVI01FXrWEAkd4mayWnkY3TQuqsJ6N3TG
 SHA256 (hackage/half-0.3.3.tar.gz) = 9HYElijW/3lyL7BzwB6F8qEbLvODX9w/whph8F0XqwI=
 SHA256 (hackage/half-0.3.3_2.cabal) = s5VJt/jNQZrCLZxJ8IN9erwGcM3ff0L0SbEOV23Bwss=
 SHA256 (hackage/hashable-1.5.1.0.tar.gz) = 7Qt8EM6Syf/kVCDa3DjG0520hv82M/8TVnzJ9195sRI=
-SHA256 (hackage/hourglass-0.2.12.tar.gz) = RDNbXEAugMYPHbanRGK+TqKdGpBDqplDNP/uEWTxyko=
-SHA256 (hackage/hourglass-0.2.12_1.cabal) = hcRsts0wyEVGkpkm1EAqU09yNlEZjllFyeWbnmmaiXk=
 SHA256 (hackage/hpke-0.1.0.tar.gz) = GgDgXDRLF/fSsorhlXbCrsNI1xyZVYP4WIJkpZ3If6I=
 SHA256 (hackage/hsc2hs-0.68.10.tar.gz) = b04014j+LKcJHuChAwfuinwGChuokPK/+tFqfU1c73Y=
 SHA256 (hackage/hsc2hs-0.68.10_5.cabal) = ObJf2SmwKwGj/ln+x8qLLabw+eKCJ2t6hOY6RwLE1yU=
@@ -123,7 +118,7 @@ SHA256 (hackage/prettyprinter-ansi-terminal-1.1.4.tar.gz) = kSzTQNXCWDER4urrmqA7
 SHA256 (hackage/primitive-0.9.1.0.tar.gz) = RLTeQYE8e8Xbilf4fDYSoGm2UIaUYmi6FlCXJS69PXY=
 SHA256 (hackage/primitive-0.9.1.0_1.cabal) = dWsiLHFbxu9bqB+mnNuqIMXFO+tvFvF0uLrMk6bSOfA=
 SHA256 (hackage/psqueues-0.2.8.3.tar.gz) = ELy+mus8oA1y6G2UDPkbAhuD+QiIU3USDU1R0CQK0HY=
-SHA256 (hackage/psqueues-0.2.8.3_1.cabal) = xDrjxKYqg+Z0NrbpRLt3Q6yZjcmlyiIiiOpUNCChiuc=
+SHA256 (hackage/psqueues-0.2.8.3_2.cabal) = 9uGYdJ1KNE6FLTGvjvhxs6zxv4cHUDXmDQUgBxCJEQI=
 SHA256 (hackage/ram-0.22.0.tar.gz) = L35AEcNuAp2fO3B5pOaS4ZYvMw9/CwoRfzYDmNIDXRU=
 SHA256 (hackage/random-1.3.1.tar.gz) = 2ECsg/JlsM+ipnj47HhifrUM+b4vBnxSyKQjnCm3GjU=
 SHA256 (hackage/record-hasfield-1.0.1.tar.gz) = Gj68AMNWGsduWETEaWrp+hsAjkofrDNi5dnylIVG7Z4=
@@ -210,9 +205,6 @@ SIZE (hackage/StateVar-1.2.2.tar.gz) = 5048
 SIZE (hackage/ansi-terminal-1.1.5.tar.gz) = 33344
 SIZE (hackage/ansi-terminal-types-1.1.3.tar.gz) = 8791
 SIZE (hackage/appar-0.1.8.tar.gz) = 4037
-SIZE (hackage/asn1-encoding-0.9.6.tar.gz) = 17343
-SIZE (hackage/asn1-encoding-0.9.6_2.cabal) = 2060
-SIZE (hackage/asn1-types-0.3.4.tar.gz) = 6472
 SIZE (hackage/assoc-1.1.1.tar.gz) = 3158
 SIZE (hackage/assoc-1.1.1_2.cabal) = 1437
 SIZE (hackage/async-2.2.6.tar.gz) = 18996
@@ -283,8 +275,6 @@ SIZE (hackage/generically-0.1.1_5.cabal) = 1203
 SIZE (hackage/half-0.3.3.tar.gz) = 8359
 SIZE (hackage/half-0.3.3_2.cabal) = 2011
 SIZE (hackage/hashable-1.5.1.0.tar.gz) = 90605
-SIZE (hackage/hourglass-0.2.12.tar.gz) = 25797
-SIZE (hackage/hourglass-0.2.12_1.cabal) = 3197
 SIZE (hackage/hpke-0.1.0.tar.gz) = 25281
 SIZE (hackage/hsc2hs-0.68.10.tar.gz) = 40517
 SIZE (hackage/hsc2hs-0.68.10_5.cabal) = 3131
@@ -326,7 +316,7 @@ SIZE (hackage/prettyprinter-ansi-terminal-1.1.4.tar.gz) = 9918
 SIZE (hackage/primitive-0.9.1.0.tar.gz) = 61724
 SIZE (hackage/primitive-0.9.1.0_1.cabal) = 3258
 SIZE (hackage/psqueues-0.2.8.3.tar.gz) = 28239
-SIZE (hackage/psqueues-0.2.8.3_1.cabal) = 4830
+SIZE (hackage/psqueues-0.2.8.3_2.cabal) = 4830
 SIZE (hackage/ram-0.22.0.tar.gz) = 42098
 SIZE (hackage/random-1.3.1.tar.gz) = 63846
 SIZE (hackage/record-hasfield-1.0.1.tar.gz) = 3680

@@ -6,15 +6,11 @@
 @bin bin/xftp-server
 share/doc/pkg-readmes/${PKGSTEM}
 @mode 755
-@owner _simplexmq
-@group _simplexmq
+@owner _${MODCABAL_STEM}
+@group _${MODCABAL_STEM}
 @sample ${SYSCONFDIR}/simplex/
 @sample ${SYSCONFDIR}/simplex/smp-server/
 @sample ${SYSCONFDIR}/simplex/xftp-server/
 @sample ${LOCALSTATEDIR}/simplex/
 @sample ${LOCALSTATEDIR}/simplex/smp-server/
 @sample ${LOCALSTATEDIR}/simplex/xftp-server/
-@mode
-@owner
-@group
-

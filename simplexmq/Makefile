@@ -39,7 +39,7 @@ MAINTAINER = David Uhden Collado <daviduhden@gmail.com>
 # AGPL-3
 PERMIT_PACKAGE = Yes
 
-WANTLIB = ${COMPILER_LIBCXX} c crypto ffi gmp iconv m pthread util z
+WANTLIB = ${COMPILER_LIBCXX} c crypto ffi gmp iconv m pthread sqlcipher util z zstd
 
 MODULES = devel/cabal
 MODCABAL_STEM = simplexmq
@@ -70,10 +70,18 @@ WARP_PATCHES = \
 	patch-Network_Wai_Handler_Warp_FileInfoCache_hs \
 	patch-Network_Wai_Handler_Warp_HTTP2_hs
 LIB_DEPENDS = converters/libiconv \
+			databases/sqlcipher \
 			devel/gmp \
-			devel/libffi
+			devel/libffi \
+			archivers/zstd
+
+BUILD_DEPENDS = converters/dos2unix
 
 post-patch:
+	# Normalize source to LF before applying patches.
+	find ${WRKDIR} -type f \( -name '*.hs' -o -name '*.cabal' \
+		-o -name '*.sql' -o -name '*.h' -o -name '*.c' \) \
+		-exec ${LOCALBASE}/bin/dos2unix -q {} +
 	printf '%s\n' \
 		'packages: ${WRKDIR}/aeson/aeson.cabal' \
 		'packages: ${WRKDIR}/hs-socks/socks.cabal' \

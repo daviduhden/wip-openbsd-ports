@@ -1,0 +1,20 @@
+# Enforce Unix LF line endings for all text files. CRLF line
+# terminators corrupt OpenBSD ports patches and must be avoided.
+* text=auto eol=lf
+*.h text eol=lf
+*.hs text eol=lf
+*.cabal text eol=lf
+*.sql text eol=lf
+patches/* text eol=lf
+files/* text eol=lf
+*.rc text eol=lf
+*.ksh text eol=lf
+*.pl text eol=lf
+Makefile text eol=lf
+*.inc text eol=lf
+distinfo text eol=lf
+DESCR text eol=lf
+PLIST text eol=lf
+README text eol=lf
+*.md text eol=lf
+*.txt text eol=lf

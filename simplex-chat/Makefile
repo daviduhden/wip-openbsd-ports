@@ -174,17 +174,39 @@ cabal-inc: patch
 		--executable simplex-chat \
 		${MODCABAL_STEM}-${MODCABAL_VERSION} \
 		> ${WRKDIR}/simplex-chat.raw.inc
+	printf '%s\n' \
+		'package *' \
+		'    tests: False' \
+		'package simplex-chat' \
+		'    tests: True' \
+		>> ${WRKSRC}/cabal.project.local
+	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
+		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
+		${LOCALBASE}/bin/cabal v2-test --dry-run \
+		-w ${LOCALBASE}/bin/ghc \
+		--disable-benchmarks \
+		test:simplex-chat-test
+	cp ${WRKBUILD}/dist-newstyle/cache/plan.json \
+		${WRKDIR}/simplex-chat.test.plan.json
 	env SKIP=${CABAL_INC_SKIP} EXTRA=${CABAL_INC_EXTRA} \
 		perl ${FILESDIR}/cabal-deps-merge.pl \
 		${WRKDIR}/simplex-chat.raw.inc \
+			${WRKDIR}/simplex-chat.test.plan.json \
 			> ${.CURDIR}/cabal.inc
 
 do-test:
+	printf '%s\n' \
+		'package *' \
+		'    tests: False' \
+		'package simplex-chat' \
+		'    tests: True' \
+		>> ${WRKSRC}/cabal.project.local
 	cd ${WRKBUILD} && exec ${SETENV} ${MAKE_ENV} \
-		${_MODCABAL_CABAL} v2-test \
+		${_MODCABAL_CABAL} v2-test --offline --disable-benchmarks \
 		-w ${LOCALBASE}/bin/ghc \
 		-j${MAKE_JOBS} \
-		${MODCABAL_BUILD_ARGS}
+		--flags="${MODCABAL_FLAGS}" ${MODCABAL_BUILD_ARGS} \
+		test:simplex-chat-test
 
 .include "cabal.inc"
 

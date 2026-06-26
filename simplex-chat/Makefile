@@ -83,7 +83,10 @@ SIMPLEXMQ_PATCHES = \
 	patch-src_Simplex_Messaging_Transport_KeepAlive_hs \
 	patch-src_Simplex_Messaging_Transport_Server_hs
 
-LIB_DEPENDS = databases/sqlcipher \
+LIB_DEPENDS = converters/libiconv \
+			databases/sqlcipher \
+			devel/gmp \
+			devel/libffi \
 			archivers/zstd
 
 post-patch:

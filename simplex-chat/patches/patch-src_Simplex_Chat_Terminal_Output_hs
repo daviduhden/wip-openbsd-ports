@@ -1,0 +1,16 @@
+$OpenBSD$
+
+Handle the Underlining constructor added in newer terminal library
+versions. Underlining is a text decoration, not a color layer, so
+fall back to the foreground color as a sensible default.
+
+--- src/Simplex/Chat/Terminal/Output.hs.orig
++++ src/Simplex/Chat/Terminal/Output.hs
+@@ -409,6 +409,7 @@
+     layer = \case
+       Foreground -> foreground
+       Background -> background
++      Underlining -> foreground
+     intensity = \case
+       Dull -> id
+       Vivid -> bright

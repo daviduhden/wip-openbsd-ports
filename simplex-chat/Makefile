@@ -106,7 +106,7 @@ post-patch:
 		'packages: ${WRKDIR}/android-support/android-support.cabal' \
 		'packages: ${WRKDIR}/zip/zip.cabal' \
 		'package simplexmq' \
-		'    flags: +client_library' \
+		'    flags: -client_library' \
 		'package *' \
 		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
 		>> ${WRKSRC}/cabal.project.local
@@ -163,7 +163,7 @@ cabal-inc: patch
 		'packages: ${WRKDIR}/android-support/android-support.cabal' \
 		'packages: ${WRKDIR}/zip/zip.cabal' \
 		'package simplexmq' \
-		'    flags: +client_library' \
+		'    flags: -client_library' \
 		'package *' \
 		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
 		> ${WRKSRC}/cabal.project.local

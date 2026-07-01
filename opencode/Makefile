@@ -42,11 +42,38 @@ tarball:
 	@ls -lh opencode-v${V}-node-modules.tar.gz
 
 pre-build:
-	@test -d ${WRKSRC}/node_modules || \
-		( echo "node_modules/ not found in WRKSRC."; \
-		  echo "Extract opencode-v${V}-node-modules.tar.gz"; \
-		  echo "into ${WRKSRC} before building."; \
-		  exit 1 )
+	@# Resolve Bun catalog: references to concrete versions so
+	@# npm can install.  The patches remove Bun APIs from source
+	@# but package.json files still use Bun'"'"'s catalog: protocol.
+	@cd ${WRKSRC} && python3 -c "
+import json, glob
+with open('package.json') as f:
+    cat = json.load(f).get('workspaces',{}).get('catalog',{})
+if not cat:
+    import sys; sys.exit(0)
+for p in glob.glob('**/package.json', recursive=True):
+    try:
+        with open(p) as f: content = f.read()
+        changed = False
+        for n,v in cat.items():
+            old = f'\"{n}\": \"catalog:\"'
+            if old in content:
+                content = content.replace(old, f'\"{n}\": \"{v}\"')
+                changed = True
+        if '\"workspace:*\"' in content:
+            content = content.replace('\"workspace:*\"', '\"*\"')
+            changed = True
+        if changed:
+            with open(p,'w') as f: f.write(content)
+    except: pass
+" 2>/dev/null
+	@if [ ! -d ${WRKSRC}/node_modules ]; then \
+		echo "===> Installing npm dependencies (network required)"; \
+		cd ${WRKSRC} && \
+			npm install --workspaces --legacy-peer-deps \
+				--ignore-scripts --force && \
+			npm install --no-save --ignore-scripts tsx ioredis; \
+	fi
 	rm -f ${WRKSRC}/bun.lock ${WRKSRC}/github/bun.lock
 
 do-build:

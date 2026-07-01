@@ -1,9 +1,16 @@
-SimpleXMQ is a message broker for the SimpleX Chat protocol.
-It provides:
+SimpleXMQ is the message broker and transport library for the
+SimpleX Chat platform. It provides:
 
-- SMP server - the core message broker
-- XFTP server - file transfer server
-- A library for building messaging applications
+- SMP server: the core message broker implementing the SimpleX
+  Messaging Protocol (SMP) for end-to-end encrypted messaging
+  without global user identifiers.
 
-SimpleXMQ uses the SMP (SimpleX Messaging Protocol) which provides
-end-to-end encrypted messaging without any global user identifiers.
+- XFTP server: a file transfer server that handles end-to-end
+  encrypted file uploads and downloads via the XFTP protocol.
+
+- Client library: Haskell packages for building messaging
+  applications that connect to SMP and XFTP servers.
+
+SimpleXMQ is designed so that servers do not store user identities
+or unencrypted message content. All cryptography is performed on
+client devices.

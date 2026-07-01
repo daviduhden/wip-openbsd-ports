@@ -1,0 +1,40 @@
+$OpenBSD$
+
+Keep schema tests independent from the server-backed ChatClient helper.
+
+--- tests/SchemaDump.hs.orig
++++ tests/SchemaDump.hs
+@@ -5,10 +5,10 @@
+ 
+ module SchemaDump where
+ 
+-import ChatClient (withTmpFiles)
+ import ChatTests.DBUtils
+ import Control.Concurrent.STM
+ import Control.DeepSeq
++import Control.Exception (bracket_)
+ import qualified Control.Exception as E
+ import Control.Monad (unless, void)
+ import Data.List (dropWhileEnd, sort)
+@@ -29,7 +29,7 @@
+ import qualified Simplex.Messaging.Agent.Store.SQLite.Migrations as Migrations
+ import Simplex.Messaging.Agent.Store.Shared (Migration (..), MigrationConfig (..), MigrationConfirmation (..), MigrationsToRun (..), toDownMigration)
+ import Simplex.Messaging.Util (ifM, tshow, whenM)
+-import System.Directory (doesFileExist, removeFile)
++import System.Directory (createDirectoryIfMissing, doesFileExist, removeDirectoryRecursive, removeFile)
+ import System.Process (readCreateProcess, shell)
+ import Test.Hspec
+ 
+@@ -50,6 +50,12 @@
+ 
+ appAgentQueryPlans :: FilePath
+ appAgentQueryPlans = "src/Simplex/Chat/Store/SQLite/Migrations/agent_query_plans.txt"
++
++withTmpFiles :: IO a -> IO a
++withTmpFiles =
++  bracket_
++    (createDirectoryIfMissing False "tests/tmp")
++    (removeDirectoryRecursive "tests/tmp")
+ 
+ testSchema :: FilePath
+ testSchema = "tests/tmp/test_agent_schema.sql"

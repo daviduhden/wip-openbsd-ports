@@ -1,0 +1,72 @@
+.Dd $Mdocdate$
+.Dt XFTP-SERVER 1
+.Os
+.Sh NAME
+.Nm xftp-server
+.Nd SimpleX File Transfer Protocol server
+.Sh SYNOPSIS
+.Nm
+.Cm init
+.Op Fl l
+.Op Fl p Ar port
+.Op Fl q Ar quota
+.Op Fl -sign-algorithm Ar alg
+.Op Fl -path Ar dir
+.Op Ar host
+.Nm
+.Cm start
+.Op Fl l
+.Nm
+.Cm delete
+.Nm
+.Cm help
+.Sh DESCRIPTION
+.Nm
+is a file transfer server implementing the XFTP protocol.
+It handles end-to-end encrypted file uploads and downloads,
+and does not store unencrypted file content or user
+identifiers.
+.Pp
+The server must be initialized once before first use.
+The
+.Cm init
+command creates configuration files, TLS credentials, and
+the file store directory.
+The
+.Cm start
+command runs the server in the foreground.
+.Pp
+On LibreSSL systems, the
+.Fl -sign-algorithm Ar alg
+option must be set to
+.Ar ED25519
+because LibreSSL does not provide the ED448 algorithm.
+.Pp
+The
+.Fl p Ar port
+option overrides the default port 443.
+The
+.Fl -path Ar dir
+option sets the file storage directory
+(default:
+.Pa /var/simplex/xftp-server/files ) .
+The
+.Fl q Ar quota
+option sets the total storage quota in bytes.
+.Sh FILES
+.Bl -tag -width Ds
+.It Pa /etc/simplex/xftp-server/
+Configuration files and TLS credentials.
+.It Pa /var/simplex/xftp-server/
+File store, persistent state, and logs.
+.El
+.Sh SEE ALSO
+.Xr simplex-chat 1 ,
+.Xr smp-server 1
+.Sh STANDARDS
+.Rs
+.%T XFTP Protocol
+.%U https://github.com/simplex-chat/simplexmq/blob/stable/protocol/xftp.md
+.Re
+.Sh AUTHORS
+.An SimpleX Chat contributors

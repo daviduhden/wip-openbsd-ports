@@ -107,7 +107,7 @@ SHA256 (hackage/libyaml-clib-0.2.5.tar.gz) = BFJrxU5fz0ccK9IoVOa1GeFipuPWVOhmzYh
 SHA256 (hackage/lifted-base-0.2.3.12.tar.gz) = wTSpX1Z1Cq6AbjiVe7A8WWJ82hYDSvngCgK2mUdDF8U=
 SHA256 (hackage/memory-0.18.0.tar.gz) = /U629jjiS4G05s3Wh3KlMXJvL2dobIlp00B9gveGLj4=
 SHA256 (hackage/memory-0.18.0_1.cabal) = n03pZzUvgLbxdMmhZvMVOT3egLd9e2fkEmiufewDGfk=
-SHA256 (hackage/mlkem-0.2.1.0.tar.gz) = baK8WYNfDdq4ku3mjuH9nYIw79lZRiB4wXSGYzAGiVc=
+SHA256 (hackage/mlkem-0.2.2.0.tar.gz) = zV0H2lk2D2L/TmVqRvvapYEkkmvJikgObNWNgCSSroE=
 SHA256 (hackage/monad-control-1.0.3.1.tar.gz) = rguuoE2ZN173iBQDZxeZlKcXjUAKjODZAmhGVGdycTw=
 SHA256 (hackage/monad-logger-0.3.42.tar.gz) = ZiNEbNQqofWKniH0q8GM//E7iZHWrIUtk1LQ/+oSUBA=
 SHA256 (hackage/monad-loops-0.4.3.tar.gz) = fqqva8Q2YenobjEP+MVvvqFutr8TwxouKBAxOKwWTBg=
@@ -324,7 +324,7 @@ SIZE (hackage/libyaml-clib-0.2.5.tar.gz) = 55500
 SIZE (hackage/lifted-base-0.2.3.12.tar.gz) = 11700
 SIZE (hackage/memory-0.18.0.tar.gz) = 41957
 SIZE (hackage/memory-0.18.0_1.cabal) = 4581
-SIZE (hackage/mlkem-0.2.1.0.tar.gz) = 33308
+SIZE (hackage/mlkem-0.2.2.0.tar.gz) = 34520
 SIZE (hackage/monad-control-1.0.3.1.tar.gz) = 13985
 SIZE (hackage/monad-logger-0.3.42.tar.gz) = 11984
 SIZE (hackage/monad-loops-0.4.3.tar.gz) = 4996

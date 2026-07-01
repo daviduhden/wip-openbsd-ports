@@ -106,7 +106,7 @@ post-patch:
 		'packages: ${WRKDIR}/android-support/android-support.cabal' \
 		'packages: ${WRKDIR}/zip/zip.cabal' \
 		'package simplexmq' \
-		'    flags: -client_library' \
+		'    flags: +client_library' \
 		'package *' \
 		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
 		>> ${WRKSRC}/cabal.project.local
@@ -163,7 +163,7 @@ cabal-inc: patch
 		'packages: ${WRKDIR}/android-support/android-support.cabal' \
 		'packages: ${WRKDIR}/zip/zip.cabal' \
 		'package simplexmq' \
-		'    flags: -client_library' \
+		'    flags: +client_library' \
 		'package *' \
 		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
 		> ${WRKSRC}/cabal.project.local
@@ -213,6 +213,9 @@ do-test:
 		-j${MAKE_JOBS} \
 		--flags="${MODCABAL_FLAGS}" ${MODCABAL_BUILD_ARGS} \
 		test:simplex-chat-test
+
+# Keep the local harness entry point used by `make do-tests`.
+do-tests: test
 
 .include "cabal.inc"
 

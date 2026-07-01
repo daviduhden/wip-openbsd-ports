@@ -199,6 +199,9 @@ do-test:
 		--flags="${MODCABAL_FLAGS}" ${MODCABAL_BUILD_ARGS} \
 		test:simplexmq-test
 
+# Keep the local harness entry point used by `make do-tests`.
+do-tests: test
+
 .include "cabal.inc"
 
 .include <bsd.port.mk>

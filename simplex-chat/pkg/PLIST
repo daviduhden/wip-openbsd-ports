@@ -1,1 +1,3 @@
 @bin bin/${MODCABAL_STEM}
+share/doc/${PKGSTEM}/LICENSE
+@man man/man1/simplex-chat.1

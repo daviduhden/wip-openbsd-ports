@@ -185,6 +185,14 @@ cabal-inc: patch
 			${WRKDIR}/simplexmq.test.plan.json \
 			> ${.CURDIR}/cabal.inc
 
+post-install:
+	${INSTALL_DATA} ${PKGDIR}/LICENSE \
+		${PREFIX}/share/doc/${PKGSTEM}/LICENSE
+	${INSTALL_MAN} ${FILESDIR}/smp-server.1 \
+		${PREFIX}/man/man1/smp-server.1
+	${INSTALL_MAN} ${FILESDIR}/xftp-server.1 \
+		${PREFIX}/man/man1/xftp-server.1
+
 do-test:
 	printf '%s\n' \
 		'package *' \

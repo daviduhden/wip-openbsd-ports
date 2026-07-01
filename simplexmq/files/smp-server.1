@@ -1,0 +1,65 @@
+.Dd $Mdocdate$
+.Dt SMP-SERVER 1
+.Os
+.Sh NAME
+.Nm smp-server
+.Nd SimpleX Messaging Protocol server
+.Sh SYNOPSIS
+.Nm
+.Cm init
+.Op Fl l
+.Op Fl p Ar port
+.Op Ar host
+.Nm
+.Cm start
+.Op Fl l
+.Nm
+.Cm delete
+.Nm
+.Cm help
+.Sh DESCRIPTION
+.Nm
+is a message broker that implements the SimpleX Messaging Protocol
+(SMP). It provides end-to-end encrypted message relay without
+storing user identifiers or unencrypted message content.
+.Pp
+The server must be initialized once before first use.
+The
+.Cm init
+command creates configuration files, TLS credentials, and
+persistent storage under
+.Pa /etc/simplex/smp-server/
+and
+.Pa /var/simplex/smp-server/ .
+.Pp
+The
+.Cm start
+command runs the server in the foreground.
+The
+.Cm delete
+command removes the server configuration and all stored data.
+.Pp
+The
+.Fl l
+flag enables logging to stdout in addition
+to the log file.
+The
+.Fl p Ar port
+option overrides the default port 5223.
+.Sh FILES
+.Bl -tag -width Ds
+.It Pa /etc/simplex/smp-server/
+Configuration files and TLS credentials.
+.It Pa /var/simplex/smp-server/
+Persistent message store, queues, and logs.
+.El
+.Sh SEE ALSO
+.Xr simplex-chat 1 ,
+.Xr xftp-server 1
+.Sh STANDARDS
+.Rs
+.%T SimpleX Messaging Protocol
+.%U https://github.com/simplex-chat/simplexmq/blob/stable/protocol/simplex-messaging.md
+.Re
+.Sh AUTHORS
+.An SimpleX Chat contributors

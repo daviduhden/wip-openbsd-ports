@@ -1,4 +1,4 @@
-$OpenBSD: user.list,v 1.488 2026/05/26 12:22:17 sthen Exp $
+$OpenBSD: user.list,v 1.490 2026/06/06 10:18:19 danj Exp $
 
 This file lists all users and groups that are created by ports. All
 ports' users/groups have to start with an underscore and have to use
@@ -282,7 +282,7 @@ id  user		group		port
 771 _serf		_serf		sysutils/serf
 772 _vault		_vault		security/vault
 773 _consul		_consul		sysutils/consul
-774 _facette		_facette	sysutils/facette
+#774 _facette		_facette	sysutils/facette
 775 _ntfy		_ntfy		net/ntfy
 776 _ioq3		_ioq3		games/ioquake3
 777 _svnserve		_svnserve	devel/subversion
@@ -322,7 +322,7 @@ id  user		group		port
 811 			_openvpnusers	net/openvpn_bsdauth
 812 _mactelnet		_mactelnet	net/mac-telnet
 813 _bitcoind		_bitcoind	net/bitcoin
-#814 _fastnetmon		_fastnetmon	net/fastnetmon
+814 _fastnetmon		_fastnetmon	net/fastnetmon
 815 _osrm_routed	_osrm_routed	geo/osrm-backend
 816 			_libpostal	geo/libpostal
 #817 _netshot		_netshot	sysutils/netshot
@@ -378,7 +378,7 @@ id  user		group		port
 867 _notify_push			www/nextcloud_notify_push
 868 _igmpproxy		_igmpproxy	net/igmpproxy
 869 _headscale		_headscale	net/headscale
-870 _unit		_unit		www/unit
+#870 _unit		_unit		www/unit
 871 _gelatod		_gelatod	net/gelatod
 872 _vmetrics		_vmetrics	databases/victoriametrics
 873 _alertmanager	_alertmanager	sysutils/alertmanager
@@ -414,6 +414,7 @@ id  user		group		port
 903 _iaxmodem		_iaxmodem	telephony/iaxmodem
 904 _neighbot		_neighbot	net/neighbot
 905 _pgweb		_pgweb		www/pgweb
+
 906 _simplexmq		_simplexmq	net/simplexmq
 907 _monerod		_monerod	net/monero
 908 _xd			_xd		net/xd-torrent

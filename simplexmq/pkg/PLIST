@@ -5,6 +5,7 @@
 @bin bin/smp-server
 @bin bin/xftp-server
 share/doc/pkg-readmes/${PKGSTEM}
+share/doc/${PKGSTEM}/LICENSE
 @mode 755
 @owner _${MODCABAL_STEM}
 @group _${MODCABAL_STEM}
@@ -14,3 +15,5 @@ share/doc/pkg-readmes/${PKGSTEM}
 @sample ${LOCALSTATEDIR}/simplex/
 @sample ${LOCALSTATEDIR}/simplex/smp-server/
 @sample ${LOCALSTATEDIR}/simplex/xftp-server/
+@man man/man1/smp-server.1
+@man man/man1/xftp-server.1

@@ -1,10 +1,20 @@
-SimpleX Chat is a terminal-based messaging application that uses
-SimpleXMQ as its messaging backend. It provides:
+SimpleX Chat is a terminal-based messaging application built on top
+of SimpleXMQ. It provides:
 
-- End-to-end encrypted messaging
-- No user identifiers (no phone numbers, no email required)
-- Group chats and direct messaging
-- File sharing via XFTP
-- Multiple user profiles
-- Markdown message formatting
-- No crypto keys stored on servers (only on client devices)
+- End-to-end encrypted messaging using the SMP and XFTP protocols.
+
+- No user identifiers: no phone number, no email, no username is
+  required to create an account or start a conversation.
+
+- Group chats and direct messaging with support for multiple user
+  profiles.
+
+- File sharing via XFTP with end-to-end encryption.
+
+- Markdown message formatting and message reactions.
+
+- Crypto keys are never stored on servers; all keys and message
+  decryption happen exclusively on client devices.
+
+- A command-line interface that runs in any terminal, making it
+  suitable for headless servers and resource-constrained systems.

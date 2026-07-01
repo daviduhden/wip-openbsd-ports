@@ -200,6 +200,12 @@ cabal-inc: patch
 			${WRKDIR}/simplex-chat.test.plan.json \
 			> ${.CURDIR}/cabal.inc
 
+post-install:
+	${INSTALL_DATA} ${PKGDIR}/LICENSE \
+		${PREFIX}/share/doc/${PKGSTEM}/LICENSE
+	${INSTALL_MAN} ${FILESDIR}/simplex-chat.1 \
+		${PREFIX}/man/man1/simplex-chat.1
+
 do-test:
 	printf '%s\n' \
 		'package *' \

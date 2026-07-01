@@ -1,0 +1,52 @@
+.Dd $Mdocdate$
+.Dt SIMPLEX-CHAT 1
+.Os
+.Sh NAME
+.Nm simplex-chat
+.Nd SimpleX Chat terminal client
+.Sh SYNOPSIS
+.Nm
+.Op Fl d Ar database
+.Op Fl e Ar server
+.Op Fl h
+.Op Fl v
+.Nm
+.Cm help
+.Ar command
+.Sh DESCRIPTION
+.Nm
+is a terminal-based messaging application built on the
+SimpleX Chat platform.
+It provides end-to-end encrypted messaging without
+requiring phone numbers, email addresses, or usernames.
+All cryptographic keys are stored exclusively on client
+devices.
+.Pp
+The client connects to SMP servers for message relay
+and XFTP servers for file transfers.
+Multiple user profiles are supported.
+.Pp
+The
+.Fl d Ar database
+option specifies a custom database file path
+(default:
+.Pa ~/.simplex/simplex_v1 ) .
+The
+.Fl e Ar server
+option specifies a default SMP server to connect to.
+.Sh FILES
+.Bl -tag -width Ds
+.It Pa ~/.simplex/
+Default directory for user profiles, database files, and
+configuration.
+.El
+.Sh SEE ALSO
+.Xr smp-server 1 ,
+.Xr xftp-server 1
+.Sh STANDARDS
+.Rs
+.%T SimpleX Chat CLI Guide
+.%U https://github.com/simplex-chat/simplex-chat/blob/stable/docs/CLI.md
+.Re
+.Sh AUTHORS
+.An SimpleX Chat contributors

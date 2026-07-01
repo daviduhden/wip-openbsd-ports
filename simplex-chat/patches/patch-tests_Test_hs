@@ -1,0 +1,117 @@
+$OpenBSD$
+
+Skip server-backed integration tests that require simplexmq server modules.
+The port builds simplexmq with +client_library to avoid the server dependency
+set, so keep only tests that compile against the client library.
+
+--- tests/Test.hs.orig
++++ tests/Test.hs
+@@ -3,12 +3,13 @@
+ {-# LANGUAGE NamedFieldPuns #-}
+ {-# LANGUAGE TupleSections #-}
+ 
+-import Bots.BroadcastTests
+-import Bots.DirectoryTests
+-import ChatClient
+-import ChatTests
+-import ChatTests.DBUtils
+-import ChatTests.Utils (xdescribe'')
++-- import Bots.BroadcastTests
++-- import Bots.DirectoryTests
++-- import ChatClient
++-- import ChatTests
++-- import ChatTests.DBUtils
++-- import ChatTests.Utils (xdescribe'')
++import Control.Exception (bracket_)
+ import Control.Logger.Simple
+ import Data.Time.Clock.System
+ import BadgeTests
+@@ -19,21 +20,21 @@
+ import ProtocolTests
+ import OperatorTests
+ import RandomServers
+-import RemoteTests
++-- import RemoteTests
++import System.Directory (createDirectoryIfMissing, removeDirectoryRecursive)
+ import Test.Hspec hiding (it)
+ import UnliftIO.Temporary (withTempDirectory)
+ import ValidNames
+ import ViewTests
+ #if defined(dbPostgres)
+-import Control.Exception (bracket_)
+ import PostgresSchemaDump
+ import Simplex.Chat.Store.Postgres.Migrations (migrations)
+ import Simplex.Messaging.Agent.Store.Postgres.Util (createDBAndUserIfNotExists, dropDatabaseAndUser)
+-import System.Directory (createDirectoryIfMissing, removePathForcibly)
++import System.Directory (removePathForcibly)
+ #else
+ import APIDocs
+-import qualified Simplex.Messaging.TMap as TM
+-import MobileTests
++-- import qualified Simplex.Messaging.TMap as TM
++-- import MobileTests
+ import SchemaDump
+ import WebRTCTests
+ #endif
+@@ -41,10 +42,6 @@
+ main :: IO ()
+ main = do
+   setLogLevel LogError
+-#if !defined(dbPostgres)
+-  chatQueryStats <- TM.emptyIO
+-  agentQueryStats <- TM.emptyIO
+-#endif
+   withGlobalLogging logCfg . hspec
+     $ do
+ #if defined(dbPostgres)
+@@ -71,36 +68,30 @@
+       describe "Message batching" batchingTests
+       describe "Operators" operatorTests
+       describe "Random servers" randomServersTests
+-#if defined(dbPostgres)
+-      createdDropDb . around testBracket
+-#else
+-      around (testBracket chatQueryStats agentQueryStats)
+-#endif
+-        $ do
+-#if !defined(dbPostgres)
+-          describe "Mobile API Tests" mobileTests
+-#endif
+-          describe "SimpleX chat client" chatTests
+-          xdescribe'' "SimpleX Broadcast bot" broadcastBotTests
+-          xdescribe'' "SimpleX Directory service bot" directoryServiceTests
+-          describe "Remote session" remoteTests
+-#if !defined(dbPostgres)
+-          xdescribe'' "Save query plans" saveQueryPlans
+-#endif
++      -- The OpenBSD port builds simplexmq with +client_library, so the
++      -- SMP/XFTP server-backed integration tests cannot compile here.
++      -- Disabled groups:
++      --   Mobile API Tests
++      --   SimpleX chat client
++      --   SimpleX Broadcast bot
++      --   SimpleX Directory service bot
++      --   Remote session
++      --   Save query plans
+   where
+ #if defined(dbPostgres)
+     createdDropDb =
+       before_ (dropDatabaseAndUser testDBConnectInfo >> createDBAndUserIfNotExists testDBConnectInfo)
+         . after_ (dropDatabaseAndUser testDBConnectInfo)
+-    testBracket test = withSmpServer $ tmpBracket $ \tmpPath -> test TestParams {tmpPath, printOutput = False}
+-#else
+-    testBracket chatQueryStats agentQueryStats test =
+-      withSmpServer $ tmpBracket $ \tmpPath -> test TestParams {tmpPath, chatQueryStats, agentQueryStats, printOutput = False}
+ #endif
+     tmpBracket test = do
+       t <- getSystemTime
+       let ts = show (systemSeconds t) <> show (systemNanoseconds t)
+       withTmpFiles $ withTempDirectory "tests/tmp" ts test
++    withTmpFiles :: IO a -> IO a
++    withTmpFiles =
++      bracket_
++        (createDirectoryIfMissing False "tests/tmp")
++        (removeDirectoryRecursive "tests/tmp")
+ 
+ logCfg :: LogConfig
+ logCfg = LogConfig {lc_file = Nothing, lc_stderr = True}

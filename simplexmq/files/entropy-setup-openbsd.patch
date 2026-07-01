@@ -2,8 +2,8 @@
 
 Disable entropy build-time probes on OpenBSD.
 
---- Setup.hs.orig	Mon Jun  1 02:50:04 2026
-+++ Setup.hs	Mon Jun  1 02:50:04 2026
+--- Setup.hs.orig
++++ Setup.hs
 @@ -53,8 +53,12 @@
    where cArgs = ["-DHAVE_RDRAND"]
  

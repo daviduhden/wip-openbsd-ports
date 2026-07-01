@@ -1,0 +1,33 @@
+Disable Bun-backed plugin support because Bun is not available on
+OpenBSD. External plugin resolution must fail before npm or local plugin
+package handling can install, cache, import, or execute plugins.
+
+Index: packages/opencode/src/plugin/shared.ts
+--- packages/opencode/src/plugin/shared.ts.orig
++++ packages/opencode/src/plugin/shared.ts
+@@ -4,8 +4,9 @@ import npa from "npm-package-arg"
+ import semver from "semver"
+ import { Filesystem } from "@/util/filesystem"
+ import { isRecord } from "@/util/record"
+-import { Npm } from "@opencode-ai/core/npm"
+ 
++export const PLUGIN_DISABLED_MESSAGE = "plugin support is disabled in the OpenBSD port"
++
+ // Old npm package names for plugins that are now built-in
+ export const DEPRECATED_PLUGIN_PACKAGES = ["opencode-openai-codex-auth", "opencode-copilot-auth"]
+ 
+@@ -204,12 +205,8 @@ export async function checkPluginCompatibility(target: stri
+   }
+ }
+ 
+-export async function resolvePluginTarget(spec: string) {
+-  if (isPathPluginSpec(spec)) return resolvePathPluginTarget(spec)
+-  const hit = parse(spec)
+-  const pkg = hit?.name && hit.raw === hit.name ? `${hit.name}@latest` : spec
+-  const result = await Npm.add(pkg)
+-  return result.directory
++export async function resolvePluginTarget(_spec: string): Promise<string> {
++  throw new Error(PLUGIN_DISABLED_MESSAGE)
+ }
+ 
+ export async function readPluginPackage(target: string): Promise<PluginPackage> {

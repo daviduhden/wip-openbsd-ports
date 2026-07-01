@@ -1,0 +1,22 @@
+Replace Bun.stringWidth with the string-width package. The OpenBSD port
+runs under Node and must not require the Bun global at runtime.
+
+Index: packages/tui/src/prompt/display.ts
+--- packages/tui/src/prompt/display.ts.orig
++++ packages/tui/src/prompt/display.ts
+@@ -1,10 +1,13 @@
++import stringWidth from "string-width"
++
+ const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" })
+ 
+ export function promptOffsetWidth(value: string) {
+   let width = 0
+   for (const part of graphemes.segment(value)) {
+-    // Textarea offsets count newlines as one position; Bun.stringWidth counts them as zero.
+-    width += part.segment === "\n" ? 1 : Bun.stringWidth(part.segment)
++    // Textarea offsets treat newlines as one position; stringWidth
++    // them as zero.
++    width += part.segment === "\n" ? 1 : stringWidth(part.segment)
+   }
+   return width
+ }

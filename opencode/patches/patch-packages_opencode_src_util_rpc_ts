@@ -1,0 +1,42 @@
+Declare and guard Web Worker globals that are available in Bun
+but not in the Node.js main thread. The RPC module assigns
+onmessage and calls postMessage which only exist as Worker
+globals in Bun. Wrap in typeof guards and declare the types.
+
+Index: packages/opencode/src/util/rpc.ts
+--- packages/opencode/src/util/rpc.ts.orig
++++ packages/opencode/src/util/rpc.ts
+@@ -1,19 +1,27 @@
++declare var onmessage: ((this: any, ev: MessageEvent<any>) => any) | null;
++declare function postMessage(data: string): void;
+ type Definition = {
+   [method: string]: (input: any) => any
+ }
+ 
+ export function listen(rpc: Definition) {
+-  onmessage = async (evt) => {
+-    const parsed = JSON.parse(evt.data)
+-    if (parsed.type === "rpc.request") {
+-      const result = await rpc[parsed.method](parsed.input)
+-      postMessage(JSON.stringify({ type: "rpc.result", result, id: parsed.id }))
++  if (typeof onmessage !== "undefined") {
++    onmessage = async (evt) => {
++      const parsed = JSON.parse(evt.data)
++      if (parsed.type === "rpc.request") {
++        const result = await rpc[parsed.method](parsed.input)
++        if (typeof postMessage !== "undefined") {
++          postMessage(JSON.stringify({ type: "rpc.result", result, id: parsed.id }))
++        }
++      }
+     }
+   }
+ }
+ 
+ export function emit(event: string, data: unknown) {
+-  postMessage(JSON.stringify({ type: "rpc.event", event, data }))
++  if (typeof postMessage !== "undefined") {
++    postMessage(JSON.stringify({ type: "rpc.event", event, data }))
++  }
+ }
+ 
+ export function client<T extends Definition>(target: {

@@ -1,0 +1,32 @@
+Replace Bun-only helpers with Node equivalents. The OpenBSD port runs
+under Node and must not require Bun imports or Bun.stringWidth.
+
+Index: packages/tui/src/component/prompt/autocomplete.tsx
+--- packages/tui/src/component/prompt/autocomplete.tsx.orig
++++ packages/tui/src/component/prompt/autocomplete.tsx
+@@ -1,5 +1,6 @@
+ import type { BoxRenderable, TextareaRenderable, ScrollBoxRenderable } from "@opentui/core"
+-import { pathToFileURL } from "bun"
++import stringWidth from "string-width"
++import { pathToFileURL } from "url"
+ import fuzzysort from "fuzzysort"
+ import path from "path"
+ import { firstBy } from "remeda"
+@@ -187,7 +188,7 @@ export function createPromptAutocomplete(props: PromptAutoc
+ 
+     const virtualText = "@" + text
+     const extmarkStart = store.index
+-    const extmarkEnd = extmarkStart + Bun.stringWidth(virtualText)
++    const extmarkEnd = extmarkStart + stringWidth(virtualText)
+ 
+     const styleId = part.type === "file" ? props.fileStyleId : part.type === "agent" ? props.agentStyleId : undefined
+ 
+@@ -458,7 +459,7 @@ export function createPromptAutocomplete(props: PromptAutoc
+           const cursor = props.input().logicalCursor
+           props.input().deleteRange(0, 0, cursor.row, cursor.col)
+           props.input().insertText(newText)
+-          props.input().cursorOffset = Bun.stringWidth(newText)
++          props.input().cursorOffset = stringWidth(newText)
+         },
+       })
+     }

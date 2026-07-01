@@ -1,0 +1,87 @@
+Disable Bun-backed plugin support because Bun is not available on
+OpenBSD. The OpenBSD port must not prepare plugin dependency directories
+or install @opencode-ai/plugin at runtime.
+
+Index: packages/opencode/src/config/config.ts
+--- packages/opencode/src/config/config.ts.orig
++++ packages/opencode/src/config/config.ts
+@@ -11,14 +11,13 @@ import { ConfigPluginV1 } from "@opencode-ai/core/v1/confi
+ import { Auth } from "../auth"
+ import { Env } from "../env"
+ import { applyEdits, modify } from "jsonc-parser"
+-import { InstallationLocal, InstallationVersion } from "@opencode-ai/core/installation/version"
+ import { existsSync } from "fs"
+ import { Account } from "@/account/account"
+ import { isRecord } from "@/util/record"
+ import type { ConsoleState } from "@opencode-ai/core/v1/config/console-state"
+ import { FSUtil } from "@opencode-ai/core/fs-util"
+ import { InstanceState } from "@/effect/instance-state"
+-import { Context, Duration, Effect, Exit, Fiber, Layer, Option, Schema } from "effect"
++import { Context, Duration, Effect, Fiber, Layer, Option, Schema } from "effect"
+ import { FetchHttpClient, HttpClient, HttpClientRequest } from "effect/unstable/http"
+ import { EffectFlock } from "@opencode-ai/core/util/effect-flock"
+ import { containsPath, type InstanceContext } from "../project/instance-context"
+@@ -33,7 +32,6 @@ import { ConfigManaged } from "./managed"
+ import { ConfigPaths } from "./paths"
+ import { ConfigPlugin } from "./plugin"
+ import { ConfigVariable } from "./variable"
+-import { Npm } from "@opencode-ai/core/npm"
+ import { withTransientReadRetry } from "@/util/effect-http-client"
+ 
+ // Custom merge function that concatenates array fields instead of replacing them
+@@ -179,7 +177,6 @@ const layer = Layer.effect(
+     const authSvc = yield* Auth.Service
+     const accountSvc = yield* Account.Service
+     const env = yield* Env.Service
+-    const npmSvc = yield* Npm.Service
+     const http = yield* HttpClient.HttpClient
+ 
+     const readConfigFile = (filepath: string) => fs.readFileStringSafe(filepath).pipe(Effect.orDie)
+@@ -434,34 +431,14 @@ const layer = Layer.effect(
+ 
+           yield* ensureGitignore(dir).pipe(Effect.orDie)
+ 
+-          const dep = yield* npmSvc
+-            .install(dir, {
+-              add: [
+-                {
+-                  name: "@opencode-ai/plugin",
+-                  version: InstallationLocal ? undefined : InstallationVersion,
+-                },
+-              ],
+-            })
+-            .pipe(
+-              Effect.exit,
+-              Effect.tap((exit) =>
+-                Exit.isFailure(exit)
+-                  ? Effect.logWarning("background dependency install failed", { dir, error: String(exit.cause) })
+-                  : Effect.void,
+-              ),
+-              Effect.asVoid,
+-              Effect.forkDetach,
+-            )
+-          deps.push(dep)
++          // OpenBSD port: plugin dependency setup is disabled.
++          // Do not create package.json, package-lock.json, or install
++          // @opencode-ai/plugin at runtime.
+ 
+           result.command = mergeDeep(result.command ?? {}, yield* Effect.promise(() => ConfigCommand.load(dir)))
+           result.agent = mergeDeep(result.agent ?? {}, yield* Effect.promise(() => ConfigAgent.load(dir)))
+           result.agent = mergeDeep(result.agent ?? {}, yield* Effect.promise(() => ConfigAgent.loadMode(dir)))
+-          // Auto-discovered plugins under `.opencode/plugin(s)` are already local files, so ConfigPlugin.load
+-          // returns normalized Specs and we only need to attach origin metadata here.
+-          const list = yield* Effect.promise(() => ConfigPlugin.load(dir))
+-          yield* mergePluginOrigins(dir, list)
++          // OpenBSD port: local plugin auto-discovery is disabled.
+         }
+ 
+         if (process.env.OPENCODE_CONFIG_CONTENT) {
+@@ -674,7 +651,7 @@ const layer = Layer.effect(
+ export const node = LayerNode.make({
+   service: Service,
+   layer: layer,
+-  deps: [FSUtil.node, Auth.node, Account.node, Env.node, Npm.node, httpClient],
++  deps: [FSUtil.node, Auth.node, Account.node, Env.node, httpClient],
+ })
+ 
+ export * as Config from "./config"

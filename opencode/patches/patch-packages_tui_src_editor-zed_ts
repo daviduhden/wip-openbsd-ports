@@ -1,0 +1,41 @@
+Disable Zed SQLite integration because upstream uses bun:sqlite here.
+This prevents the OpenBSD Node runtime from resolving a Bun-only module.
+
+Index: packages/tui/src/editor-zed.ts
+--- packages/tui/src/editor-zed.ts.orig
++++ packages/tui/src/editor-zed.ts
+@@ -1,4 +1,3 @@
+-import { Database } from "bun:sqlite"
+ import { statSync } from "node:fs"
+ import { readFile as readFileAsync } from "node:fs/promises"
+ import os from "node:os"
+@@ -6,6 +5,29 @@ import path from "node:path"
+ import { Option, Schema } from "effect"
+ import type { EditorSelection } from "./context/editor"
+ 
++class Database {
++  constructor(_dbPath: string, _options: { readonly: boolean }) {
++    // Zed sqlite support is disabled in the OpenBSD port.
++    // The stub must not throw so that callers that guard with
++    // try/catch or null checks degrade gracefully.
++  }
++
++  query(_sql: string) {
++    return {
++      all(_params?: Record<string, unknown>) {
++        return [] as unknown[]
++      },
++      get(_params: Record<string, unknown>) {
++        return undefined as unknown
++      },
++    }
++  }
++
++  close() {
++    return
++  }
++}
++
+ const ZedEditorRowSchema = Schema.Struct({
+   item_kind: Schema.String,
+   editor_id: Schema.NullOr(Schema.Number),

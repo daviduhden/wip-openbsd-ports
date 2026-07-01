@@ -1,0 +1,7 @@
+#!/bin/sh
+exec /usr/local/bin/node \
+	--require /usr/local/lib/node_modules/opencode/bun-prelude.cjs \
+	/usr/local/lib/node_modules/opencode/node_modules/.bin/tsx \
+	--tsconfig /usr/local/lib/node_modules/opencode/packages/opencode/tsconfig.json \
+	/usr/local/lib/node_modules/opencode/packages/opencode/src/index.ts \
+	"$@"

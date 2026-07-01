@@ -1,0 +1,27 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+opencode is a terminal coding agent. Run it from a project directory:
+
+    $ opencode
+
+Node.js ${MODNODE_DEFAULT_VERSION} or newer is required for the
+TypeScript source support (--experimental-strip-types).
+
+Self-upgrade and package-manager uninstall paths are disabled. Updates
+must come from OpenBSD packages, not opencode's npm, pnpm, yarn, bun,
+brew, scoop, choco, or curl upgrade paths.
+
+Plugin support is disabled intentionally in this port. Upstream plugin
+support normally depends on Bun-backed plugin and dependency handling.
+Bun is not available on OpenBSD, so the port rejects plugin use instead
+of trying to install, load, cache, import, or execute npm or local
+plugins.
+
+Users should not expect npm plugins, local plugins, or plugin
+configuration to work. If upstream makes plugin support independent from
+Bun in the future, the port can be revisited.
+
+Zed editor selection integration is disabled in this initial port
+because upstream reads Zed state through Bun's sqlite bindings.

@@ -1,0 +1,13 @@
+Use Node's URL helper instead of Bun's re-export. The OpenBSD port runs
+under Node and Bun is not available.
+
+Index: packages/tui/src/component/dialog-status.tsx
+--- packages/tui/src/component/dialog-status.tsx.orig
++++ packages/tui/src/component/dialog-status.tsx
+@@ -1,5 +1,5 @@
+ import { TextAttributes } from "@opentui/core"
+-import { fileURLToPath } from "bun"
++import { fileURLToPath } from "url"
+ import { useTheme } from "../context/theme"
+ import { useDialog } from "../ui/dialog"
+ import { useSync } from "../context/sync"

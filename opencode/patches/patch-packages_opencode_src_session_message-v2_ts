@@ -1,0 +1,24 @@
+Remove the Bun type import from session message handling. Node errors
+only need the small code and syscall shape used below.
+
+Index: packages/opencode/src/session/message-v2.ts
+--- packages/opencode/src/session/message-v2.ts.orig
++++ packages/opencode/src/session/message-v2.ts
+@@ -32,11 +32,15 @@ import { ProviderError } from "@/provider/error"
+ import { iife } from "@/util/iife"
+ import { errorMessage } from "@/util/error"
+ import { isMedia } from "@/util/media"
+-import type { SystemError } from "bun"
+ import type { Provider } from "@/provider/provider"
+ import { Effect, Schema } from "effect"
+ 
+-/** Error shape thrown by Bun's fetch() when gzip/br decompression fails mid-stream */
++type SystemError = Error & {
++  code?: string
++  syscall?: string
++}
++
++/** Error shape thrown when gzip/br decompression fails mid-stream */
+ interface FetchDecompressionError extends Error {
+   code: "ZlibError"
+   errno: number

@@ -1,0 +1,6 @@
+opencode is an open source terminal coding agent. It provides an
+interactive and non-interactive CLI for working with code through
+supported language models.
+
+This OpenBSD port targets the core CLI. External plugin support
+is disabled.

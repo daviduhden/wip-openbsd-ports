@@ -1,0 +1,27 @@
+Use Node WebSocket options and avoid probing Bun at runtime on OpenBSD.
+
+Index: packages/opencode/src/plugin/openai/ws.ts
+--- packages/opencode/src/plugin/openai/ws.ts.orig
++++ packages/opencode/src/plugin/openai/ws.ts
+@@ -5,7 +5,6 @@
+ import { APICallError } from "ai"
+ import { ProviderError } from "@/provider/error"
+ import { errorMessage } from "@/util/error"
+-import { ProxyEnv } from "@/util/proxy-env"
+ import { isRecord } from "@/util/record"
+ 
+ export const PROTOCOL_HEADER = "responses_websockets=2026-02-06"
+@@ -81,12 +80,7 @@
+     }
+     delete headers["content-length"]
+ 
+-    // Bun does not apply HTTP(S)_PROXY to WebSockets unless the proxy is supplied explicitly.
+-    const proxy =
+-      typeof Bun === "undefined"
+-        ? undefined
+-        : ProxyEnv.getProxyForUrl(options.url.replace(/^wss:/, "https:").replace(/^ws:/, "http:"))
+-    const connect = { headers, ...(proxy ? { proxy } : {}) }
++    const connect = { headers }
+     const socket = new WebSocket(options.url, connect)
+     const timeout = options.timeout
+       ? setTimeout(() => {

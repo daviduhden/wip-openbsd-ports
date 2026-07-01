@@ -1,0 +1,22 @@
+Disable Bun-backed uninstall paths because Bun is not available on
+OpenBSD.
+
+Index: packages/opencode/src/cli/cmd/uninstall.ts
+--- packages/opencode/src/cli/cmd/uninstall.ts.orig
++++ packages/opencode/src/cli/cmd/uninstall.ts
+@@ -131,7 +131,6 @@ export const UninstallCommand = cmd({
+     const cmds: Record<string, string> = {
+       npm: "npm uninstall -g opencode-ai",
+       pnpm: "pnpm uninstall -g opencode-ai",
+-      bun: "bun remove -g opencode-ai",
+       yarn: "yarn global remove opencode-ai",
+       brew: "brew uninstall opencode",
+       choco: "choco uninstall opencode",
+@@ -182,7 +181,6 @@ async function uninstallSelf(installatio
+     const cmds: Record<string, string[]> = {
+       npm: ["npm", "uninstall", "-g", "opencode-ai"],
+       pnpm: ["pnpm", "uninstall", "-g", "opencode-ai"],
+-      bun: ["bun", "remove", "-g", "opencode-ai"],
+       yarn: ["yarn", "global", "remove", "opencode-ai"],
+       brew: ["brew", "uninstall", "opencode"],
+       choco: ["choco", "uninstall", "opencode"],

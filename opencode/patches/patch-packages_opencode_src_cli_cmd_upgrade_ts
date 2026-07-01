@@ -1,0 +1,35 @@
+Disable self-upgrade because OpenBSD packages are managed by ports. The
+command fails closed before it can query or run package managers.
+
+Index: packages/opencode/src/cli/cmd/upgrade.ts
+--- packages/opencode/src/cli/cmd/upgrade.ts.orig
++++ packages/opencode/src/cli/cmd/upgrade.ts
+@@ -17,7 +17,7 @@ export const UpgradeCommand = {
+         alias: "m",
+         describe: "installation method to use",
+         type: "string",
+-        choices: ["curl", "npm", "pnpm", "bun", "brew", "choco", "scoop"],
++        choices: ["curl", "npm", "pnpm", "brew", "choco", "scoop"],
+       })
+   },
+   handler: async (args: { target?: string; method?: string }) => {
+@@ -25,6 +25,10 @@
+     UI.println(UI.logo("  "))
+     UI.empty()
+     prompts.intro("Upgrade")
++    prompts.log.error("self-upgrade is disabled in the OpenBSD port")
++    prompts.outro("Done")
++    return
++
+     const detectedMethod = await Installation.method()
+     const method = (args.method as Installation.Method) ?? detectedMethod
+     if (method === "unknown") {
+@@ -43,7 +47,7 @@
+       }
+     }
+     prompts.log.info("Using method: " + method)
+-    const target = args.target ? args.target.replace(/^v/, "") : await Installation.latest()
++    const target = args.target ? String(args.target).replace(/^v/, "") : await Installation.latest()
+ 
+     if (InstallationVersion === target) {
+       prompts.log.warn(`opencode upgrade skipped: ${target} is already installed`)

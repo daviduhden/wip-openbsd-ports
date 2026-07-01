@@ -1,0 +1,27 @@
+Disable Bun-specific installation test data because Bun is not available
+on OpenBSD.
+
+Index: packages/opencode/test/installation/installation.test.ts
+--- packages/opencode/test/installation/installation.test.ts.orig
++++ packages/opencode/test/installation/installation.test.ts
+@@ -100,20 +100,6 @@
+       }),
+     )
+ 
+-    const bunCalls: string[] = []
+-    testEffect(
+-      testLayer((request) => {
+-        bunCalls.push(request.url)
+-        return jsonResponse({ version: "1.6.0" })
+-      }),
+-    ).effect("reads bun versions via registry", () =>
+-      Effect.gen(function* () {
+-        const result = yield* Installation.use.latest("bun")
+-        expect(result).toBe("1.6.0")
+-        expect(bunCalls).toContain(`https://registry.npmjs.org/opencode-ai/${InstallationChannel}`)
+-      }),
+-    )
+-
+     const pnpmCalls: string[] = []
+     testEffect(
+       testLayer((request) => {

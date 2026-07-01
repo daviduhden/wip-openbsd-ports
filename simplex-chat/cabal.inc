@@ -84,7 +84,7 @@ MODCABAL_MANIFEST	= \
 	libyaml-clib	0.2.5	0	\
 	lifted-base	0.2.3.12	0	\
 	memory	0.18.0	1	\
-	mlkem	0.2.1.0	0	\
+	mlkem	0.2.2.0	0	\
 	monad-control	1.0.3.1	0	\
 	monad-logger	0.3.42	0	\
 	monad-loops	0.4.3	0	\

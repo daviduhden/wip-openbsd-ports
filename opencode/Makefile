@@ -1,6 +1,6 @@
 COMMENT =		open source coding agent
 
-V =			1.17.12
+V =			1.17.13
 GH_ACCOUNT =		anomalyco
 GH_PROJECT =		opencode
 GH_TAGNAME =		v${V}

@@ -13,7 +13,6 @@ Key features:
 - Session management with compaction and summaries
 - Configurable via opencode.json (providers, models, permissions)
 
-This OpenBSD port targets the core CLI.  Plugin support, self-upgrade,
-and the bundled ripgrep binary are disabled; file search uses a pure
-Node.js implementation instead.  Startup time is approximately 20
+This OpenBSD port targets the core CLI.  Plugin support and
+self-upgrade are disabled.  Startup time is approximately 20
 seconds due to TypeScript transpilation at runtime.

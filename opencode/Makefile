@@ -13,7 +13,8 @@ HOMEPAGE =		https://opencode.ai/
 PERMIT_PACKAGE =	Yes
 
 BUILD_DEPENDS =		lang/node
-RUN_DEPENDS =		lang/node
+RUN_DEPENDS =		lang/node \
+			textproc/ripgrep
 
 NO_TEST =		Yes
 
@@ -51,16 +52,16 @@ pre-build:
 import json, glob
 with open('package.json') as f:
     cat = json.load(f).get('workspaces',{}).get('catalog',{})
-if not cat:
-    import sys; sys.exit(0)
 for p in glob.glob('**/package.json', recursive=True):
+    if 'node_modules' in p: continue
     try:
         with open(p) as f: content = f.read()
         changed = False
         for n,v in cat.items():
-            old = f'\"{n}\": \"catalog:\"'
+            old = '\"{}\": \"catalog:\"'.format(n)
+            new = '\"{}\": \"{}\"'.format(n, v)
             if old in content:
-                content = content.replace(old, f'\"{n}\": \"{v}\"')
+                content = content.replace(old, new)
                 changed = True
         if '\"workspace:*\"' in content:
             content = content.replace('\"workspace:*\"', '\"*\"')

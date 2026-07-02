@@ -12,6 +12,11 @@ HOMEPAGE =		https://opencode.ai/
 # MIT License
 PERMIT_PACKAGE =	Yes
 
+# The TUI rendering library (OpenTUI) is Zig-native and ships
+# precompiled binaries only for amd64/arm64.  ripgrep has the
+# same limitation (Rust).  Limit the port accordingly.
+ONLY_FOR_ARCHS =	amd64 arm64
+
 # lang/zig is needed to compile the OpenTUI native rendering
 # library for the interactive terminal UI (opencode tui).
 BUILD_DEPENDS =		lang/node \

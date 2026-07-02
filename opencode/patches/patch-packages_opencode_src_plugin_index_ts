@@ -2,6 +2,7 @@ Disable Bun-backed plugin support because Bun is not available on
 OpenBSD. Configured external server plugins are rejected without running
 dependency setup or dynamic imports.
 
+SPDX-License-Identifier: MIT
 Index: packages/opencode/src/plugin/index.ts
 --- packages/opencode/src/plugin/index.ts.orig
 +++ packages/opencode/src/plugin/index.ts

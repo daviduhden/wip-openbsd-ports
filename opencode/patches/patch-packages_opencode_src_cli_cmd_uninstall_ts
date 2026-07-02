@@ -1,6 +1,7 @@
 Disable Bun-backed uninstall paths because Bun is not available on
 OpenBSD.
 
+SPDX-License-Identifier: MIT
 Index: packages/opencode/src/cli/cmd/uninstall.ts
 --- packages/opencode/src/cli/cmd/uninstall.ts.orig
 +++ packages/opencode/src/cli/cmd/uninstall.ts

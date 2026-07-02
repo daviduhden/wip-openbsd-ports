@@ -2,6 +2,7 @@ Fix CJS/ESM interop for @npmcli/config. Under Node the named
 imports from this CommonJS module resolve keys on the default
 export, not named exports. Use a default import and destructure.
 
+SPDX-License-Identifier: MIT
 Index: packages/core/src/npm-config.ts
 --- packages/core/src/npm-config.ts.orig
 +++ packages/core/src/npm-config.ts

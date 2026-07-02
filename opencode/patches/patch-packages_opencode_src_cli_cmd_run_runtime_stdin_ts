@@ -1,6 +1,7 @@
 Add a Node stdin text reader for the OpenBSD port. This replaces
 Bun.stdin.text call sites without changing interactive terminal setup.
 
+SPDX-License-Identifier: MIT
 Index: packages/opencode/src/cli/cmd/run/runtime.stdin.ts
 --- packages/opencode/src/cli/cmd/run/runtime.stdin.ts.orig
 +++ packages/opencode/src/cli/cmd/run/runtime.stdin.ts

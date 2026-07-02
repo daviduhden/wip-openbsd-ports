@@ -1,8 +1,11 @@
+$OpenBSD$
+
+SPDX-License-Identifier: MIT
+
 Disable Bun-backed plugin support because Bun is not available on
 OpenBSD. The CLI plugin install command must fail closed before package
 resolution or config patching can run.
 
-SPDX-License-Identifier: MIT
 Index: packages/opencode/src/cli/cmd/plug.ts
 --- packages/opencode/src/cli/cmd/plug.ts.orig
 +++ packages/opencode/src/cli/cmd/plug.ts

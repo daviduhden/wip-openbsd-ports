@@ -1,8 +1,11 @@
+$OpenBSD$
+
+SPDX-License-Identifier: MIT
+
 Disable Bun-backed plugin support because Bun is not available on
 OpenBSD. External plugin resolution must fail before npm or local plugin
 package handling can install, cache, import, or execute plugins.
 
-SPDX-License-Identifier: MIT
 Index: packages/opencode/src/plugin/shared.ts
 --- packages/opencode/src/plugin/shared.ts.orig
 +++ packages/opencode/src/plugin/shared.ts

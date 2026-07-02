@@ -1,8 +1,11 @@
+$OpenBSD$
+
+SPDX-License-Identifier: MIT
+
 Disable self-upgrade and package-manager probing because OpenBSD
 packages are managed by ports. This avoids checking for or running Bun
 at runtime.
 
-SPDX-License-Identifier: MIT
 Index: packages/opencode/src/installation/index.ts
 --- packages/opencode/src/installation/index.ts.orig
 +++ packages/opencode/src/installation/index.ts

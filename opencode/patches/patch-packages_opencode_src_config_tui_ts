@@ -1,8 +1,11 @@
+$OpenBSD$
+
+SPDX-License-Identifier: MIT
+
 Disable Bun-backed plugin support because Bun is not available on
 OpenBSD. TUI config must not install @opencode-ai/plugin or prepare
 plugin dependency directories at runtime.
 
-SPDX-License-Identifier: MIT
 Index: packages/opencode/src/config/tui.ts
 --- packages/opencode/src/config/tui.ts.orig
 +++ packages/opencode/src/config/tui.ts

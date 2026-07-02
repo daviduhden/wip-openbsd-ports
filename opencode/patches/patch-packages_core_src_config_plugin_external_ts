@@ -1,9 +1,12 @@
+$OpenBSD$
+
+SPDX-License-Identifier: MIT
+
 Disable Bun-backed plugin support because Bun is not available on
 OpenBSD. V2 external plugins are ignored without scanning local plugin
 directories, installing npm packages, importing modules, or executing
 plugin setup code.
 
-SPDX-License-Identifier: MIT
 Index: packages/core/src/config/plugin/external.ts
 --- packages/core/src/config/plugin/external.ts.orig
 +++ packages/core/src/config/plugin/external.ts

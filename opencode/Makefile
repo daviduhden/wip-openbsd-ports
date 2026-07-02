@@ -17,8 +17,9 @@ PERMIT_PACKAGE =	Yes
 # same limitation (Rust).  Limit the port accordingly.
 ONLY_FOR_ARCHS =	amd64 arm64
 
-# lang/zig is needed to compile the OpenTUI native rendering
-# library for the interactive terminal UI (opencode tui).
+# lang/zig compiles the OpenTUI native rendering library for the
+# interactive terminal UI.  The compiled binary is bundled in the
+# distfile; rebuild it only when bumping the opentui version.
 BUILD_DEPENDS =		lang/node \
 			lang/zig
 RUN_DEPENDS =		lang/node \

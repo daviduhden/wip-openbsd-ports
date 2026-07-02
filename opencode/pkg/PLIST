@@ -1,4 +1,3 @@
-@conflict opencode-<1.17.12
 bin/opencode
 lib/node_modules/opencode/
 lib/node_modules/opencode/package.json

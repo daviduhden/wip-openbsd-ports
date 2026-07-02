@@ -1,7 +1,10 @@
+$OpenBSD$
+
+SPDX-License-Identifier: MIT
+
 Disable Bun-specific installation test data because Bun is not available
 on OpenBSD.
 
-SPDX-License-Identifier: MIT
 Index: packages/opencode/test/installation/installation.test.ts
 --- packages/opencode/test/installation/installation.test.ts.orig
 +++ packages/opencode/test/installation/installation.test.ts

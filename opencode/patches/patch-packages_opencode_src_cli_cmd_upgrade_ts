@@ -1,7 +1,11 @@
+$OpenBSD$
+
+SPDX-License-Identifier: MIT
+
+
 Disable self-upgrade because OpenBSD packages are managed by ports. The
 command fails closed before it can query or run package managers.
 
-SPDX-License-Identifier: MIT
 Index: packages/opencode/src/cli/cmd/upgrade.ts
 --- packages/opencode/src/cli/cmd/upgrade.ts.orig
 +++ packages/opencode/src/cli/cmd/upgrade.ts

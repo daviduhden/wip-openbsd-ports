@@ -1,9 +1,12 @@
+$OpenBSD$
+
+SPDX-License-Identifier: MIT
+
 Declare and guard Web Worker globals that are available in Bun
 but not in the Node.js main thread. The RPC module assigns
 onmessage and calls postMessage which only exist as Worker
 globals in Bun. Wrap in typeof guards and declare the types.
 
-SPDX-License-Identifier: MIT
 Index: packages/opencode/src/util/rpc.ts
 --- packages/opencode/src/util/rpc.ts.orig
 +++ packages/opencode/src/util/rpc.ts

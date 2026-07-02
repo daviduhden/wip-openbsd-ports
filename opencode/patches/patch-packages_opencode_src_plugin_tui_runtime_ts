@@ -1,8 +1,11 @@
+$OpenBSD$
+
+SPDX-License-Identifier: MIT
+
 Disable Bun-backed plugin support because Bun is not available on
 OpenBSD. External TUI plugins are not resolved, installed, loaded, or
 activated by the OpenBSD port.
 
-SPDX-License-Identifier: MIT
 Index: packages/opencode/src/plugin/tui/runtime.ts
 --- packages/opencode/src/plugin/tui/runtime.ts.orig
 +++ packages/opencode/src/plugin/tui/runtime.ts

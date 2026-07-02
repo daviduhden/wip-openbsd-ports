@@ -2,6 +2,7 @@ Remove the suggestion to use the rg (ripgrep) command from the
 grep tool description. ripgrep is not a dependency of the
 OpenBSD port and may not be available on the user's system.
 
+SPDX-License-Identifier: MIT
 Index: packages/opencode/src/tool/grep.txt
 --- packages/opencode/src/tool/grep.txt.orig
 +++ packages/opencode/src/tool/grep.txt

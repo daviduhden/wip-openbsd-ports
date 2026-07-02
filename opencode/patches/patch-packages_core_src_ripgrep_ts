@@ -4,6 +4,7 @@ for file discovery and built-in RegExp for content search. No
 external ripgrep binary is needed, which makes the port
 compatible with all architectures supported by OpenBSD's Node.js.
 
+SPDX-License-Identifier: MIT
 Index: packages/core/src/ripgrep.ts
 --- packages/core/src/ripgrep.ts.orig
 +++ packages/core/src/ripgrep.ts

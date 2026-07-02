@@ -3,6 +3,7 @@ dependencies (opentui/core, opentui/solid) during CLI startup.
 The TUI command is only imported when the "tui" subcommand runs.
 This is safe because the TUI command is not needed for CLI mode.
 
+SPDX-License-Identifier: MIT
 Index: packages/opencode/src/index.ts
 --- packages/opencode/src/index.ts.orig
 +++ packages/opencode/src/index.ts

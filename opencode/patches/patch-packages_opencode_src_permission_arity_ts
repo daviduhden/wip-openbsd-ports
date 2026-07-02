@@ -1,5 +1,6 @@
 Disable Bun command metadata because Bun is not available on OpenBSD.
 
+SPDX-License-Identifier: MIT
 Index: packages/opencode/src/permission/arity.ts
 --- packages/opencode/src/permission/arity.ts.orig
 +++ packages/opencode/src/permission/arity.ts

@@ -42,9 +42,11 @@ tarball:
 	@ls -lh opencode-v${V}-node-modules.tar.gz
 
 pre-build:
-	@# Resolve Bun catalog: references to concrete versions so
-	@# npm can install.  The patches remove Bun APIs from source
-	@# but package.json files still use Bun'"'"'s catalog: protocol.
+	@# Replace Bun APIs with Node.js equivalents in all source files.
+	@# This single script handles what would otherwise need ~34 patches.
+	@echo "===> Running Bun→Node.js fixup"
+	@cd ${WRKSRC} && node ${FILESDIR}/fixup.mjs
+	@# Resolve Bun catalog: references to concrete versions for npm.
 	@cd ${WRKSRC} && python3 -c "
 import json, glob
 with open('package.json') as f:

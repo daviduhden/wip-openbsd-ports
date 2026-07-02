@@ -9,10 +9,13 @@ CATEGORIES =		devel
 
 HOMEPAGE =		https://opencode.ai/
 
-# MIT
+# MIT License
 PERMIT_PACKAGE =	Yes
 
-BUILD_DEPENDS =		lang/node
+# lang/zig is needed to compile the OpenTUI native rendering
+# library for the interactive terminal UI (opencode tui).
+BUILD_DEPENDS =		lang/node \
+			lang/zig
 RUN_DEPENDS =		lang/node \
 			textproc/ripgrep
 

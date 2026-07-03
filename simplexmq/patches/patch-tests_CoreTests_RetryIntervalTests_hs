@@ -1,8 +1,11 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Scale retry interval timing tests to avoid OpenBSD scheduler granularity
 turning exact 10ms bucket assertions into runtime failures.
 
+Index: tests/CoreTests/RetryIntervalTests.hs
 --- tests/CoreTests/RetryIntervalTests.hs.orig
 +++ tests/CoreTests/RetryIntervalTests.hs
 @@ -11,6 +11,15 @@

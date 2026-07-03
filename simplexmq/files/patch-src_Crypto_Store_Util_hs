@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: BSD-3-Clause
+
 Use ram's Cabal version macro after building cryptostore against ram.
 
+Index: src/Crypto/Store/Util.hs
 --- src/Crypto/Store/Util.hs.orig
 +++ src/Crypto/Store/Util.hs
 @@ -39,7 +39,7 @@

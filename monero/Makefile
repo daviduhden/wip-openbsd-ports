@@ -15,7 +15,7 @@ CATEGORIES = net
 HOMEPAGE = https://getmonero.org
 MAINTAINER = David Uhden Collado <daviduhden@gmail.com>
 
-# BSD
+# BSD 3-Clause "New" or "Revised" License
 PERMIT_PACKAGE = Yes
 ONLY_FOR_ARCHS = amd64 i386 arm64 armv7 riscv64
 

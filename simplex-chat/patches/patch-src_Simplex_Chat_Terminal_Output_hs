@@ -1,9 +1,12 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Handle the Underlining constructor added in newer terminal library
 versions. Underlining is a text decoration, not a color layer, so
 fall back to the foreground color as a sensible default.
 
+Index: src/Simplex/Chat/Terminal/Output.hs
 --- src/Simplex/Chat/Terminal/Output.hs.orig
 +++ src/Simplex/Chat/Terminal/Output.hs
 @@ -409,6 +409,7 @@

@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Use the ports-provided dependency set and relax bounds for newer GHC.
 
+Index: cabal.project
 --- cabal.project.orig
 +++ cabal.project
 @@ -11,64 +11,15 @@

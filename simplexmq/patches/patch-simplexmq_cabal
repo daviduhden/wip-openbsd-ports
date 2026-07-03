@@ -1,8 +1,11 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Use the crypton-era ASN.1 packages, time-hourglass and ram byte
 arrays. The upstream source at v6.5.5.0 still uses the old deps.
 
+Index: simplexmq.cabal
 --- simplexmq.cabal.orig
 +++ simplexmq.cabal
 @@ -340,8 +340,8 @@

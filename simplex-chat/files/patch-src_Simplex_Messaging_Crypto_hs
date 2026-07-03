@@ -1,5 +1,19 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Bring PubKey and PrivKey constructors into unqualified scope so
+that their ASN1Object instances (from crypton-x509 >= 1.9) are
+visible to encodeASNObj and decodeKey when crypton-x509 >= 1.9
+is pulled in via allow-newer.
+
+Index: src/Simplex/Messaging/Crypto.hs
 --- src/Simplex/Messaging/Crypto.hs.orig
 +++ src/Simplex/Messaging/Crypto.hs
+
+Bring PubKey and PrivKey constructors into unqualified scope so
+that their ASN1Object instances (from crypton-x509 >= 1.9) are
+visible to encodeASNObj and decodeKey with allow-newer.
 @@ -243,6 +243,7 @@
  import Data.Typeable (Proxy (Proxy), Typeable)
  import Data.Word (Word32)
@@ -8,4 +22,3 @@
  import Data.X509.Validation (Fingerprint (..), getFingerprint)
  import GHC.TypeLits (ErrorMessage (..), KnownNat, Nat, TypeError, natVal, type (+))
  import Network.Transport.Internal (decodeWord16, encodeWord16)
-

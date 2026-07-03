@@ -1,5 +1,7 @@
 $OpenBSD$
 
+SPDX-License-Identifier: BSD-3-Clause
+
 Change build-type from Custom to Simple so that entropy's custom setup
 script does not run its platform-specific C probes. On OpenBSD, those
 probes include <sys/random.h> and <linux/random.h>, neither of which

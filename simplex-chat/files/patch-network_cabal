@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: BSD-3-Clause
+
 Use the static config header installed by the port instead of running configure.
 
+Index: network.cabal
 --- network.cabal.orig
 +++ network.cabal
 @@ -50,7 +50,7 @@

@@ -36,7 +36,7 @@ HOMEPAGE = https://simplex.chat/
 
 MAINTAINER = David Uhden Collado <daviduhden@gmail.com>
 
-# AGPL-3
+# GNU Affero General Public License v3.0 only (AGPL-3.0-only)
 PERMIT_PACKAGE = Yes
 
 WANTLIB = ${COMPILER_LIBCXX} c crypto ffi gmp iconv m pthread sqlcipher util z zstd
@@ -201,6 +201,10 @@ do-test:
 		'    tests: True' \
 		>> ${WRKSRC}/cabal.project.local
 	cd ${WRKBUILD} && exec ${SETENV} ${MAKE_ENV} \
+		HOME=${CABAL_INC_HOME} \
+		CABAL_DIR=${CABAL_INC_HOME}/.cabal \
+		XDG_CACHE_HOME=${CABAL_INC_HOME}/.cache \
+		XDG_CONFIG_HOME=${CABAL_INC_HOME}/.config \
 		${_MODCABAL_CABAL} v2-test --offline --disable-benchmarks \
 		-w ${LOCALBASE}/bin/ghc \
 		-j${MAKE_JOBS} \

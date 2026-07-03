@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Use OpenBSD-style default configuration and log directories for xftp-server.
 
+Index: apps/xftp-server/Main.hs
 --- apps/xftp-server/Main.hs.orig
 +++ apps/xftp-server/Main.hs
 @@ -9,6 +9,6 @@

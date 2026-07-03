@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Keep schema tests independent from the server-backed ChatClient helper.
 
+Index: tests/SchemaDump.hs
 --- tests/SchemaDump.hs.orig
 +++ tests/SchemaDump.hs
 @@ -5,10 +5,10 @@

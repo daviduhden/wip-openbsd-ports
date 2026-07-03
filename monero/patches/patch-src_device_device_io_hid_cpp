@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: BSD-3-Clause
+
 OpenBSD's hidapi package renames hid_init to avoid a usbhid.h conflict.
 
+Index: src/device/device_io_hid.cpp
 --- src/device/device_io_hid.cpp.orig
 +++ src/device/device_io_hid.cpp
 @@ -92,7 +92,11 @@

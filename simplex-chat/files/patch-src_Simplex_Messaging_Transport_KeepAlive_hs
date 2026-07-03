@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 OpenBSD does not expose the TCP keepalive tuning options used on Linux.
 
+Index: src/Simplex/Messaging/Transport/KeepAlive.hs
 --- src/Simplex/Messaging/Transport/KeepAlive.hs.orig
 +++ src/Simplex/Messaging/Transport/KeepAlive.hs
 @@ -30,6 +30,10 @@

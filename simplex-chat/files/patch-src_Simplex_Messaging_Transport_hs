@@ -1,8 +1,11 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Use tls's public TLS unique channel binding API (getTLSUnique)
 instead of the deprecated peer-specific functions.
 
+Index: src/Simplex/Messaging/Transport.hs
 --- src/Simplex/Messaging/Transport.hs.orig
 +++ src/Simplex/Messaging/Transport.hs
 @@ -373,12 +373,8 @@

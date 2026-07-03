@@ -1,8 +1,11 @@
 $OpenBSD$
 
+SPDX-License-Identifier: MIT
+
 auto-update does not export the Reaper constructor. Use its public
 accessor functions instead of record patterns.
 
+Index: Network/Wai/Handler/Warp/FileInfoCache.hs
 --- Network/Wai/Handler/Warp/FileInfoCache.hs.orig
 +++ Network/Wai/Handler/Warp/FileInfoCache.hs
 @@ -61,8 +61,8 @@

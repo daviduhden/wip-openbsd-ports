@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: BSD-3-Clause
+
 Find devel/readline as ereadline on OpenBSD instead of base libedit/readline.
 
+Index: cmake/FindReadline.cmake
 --- cmake/FindReadline.cmake.orig
 +++ cmake/FindReadline.cmake
 @@ -21,20 +21,30 @@

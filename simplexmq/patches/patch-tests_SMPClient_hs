@@ -1,0 +1,22 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Exercise service authentication through the SMP handshake, not TLS client
+authentication, matching the runtime service-client path.
+
+Index: tests/SMPClient.hs
+--- tests/SMPClient.hs.orig
++++ tests/SMPClient.hs
+@@ -172,10 +172,7 @@
+   Right serviceSignKey <- pure $ C.x509ToPrivate' $ snd tlsNtfServerCreds
+   let service = ServiceCredentials {serviceRole = SRNotifier, serviceCreds = tlsNtfServerCreds, serviceCertHash, serviceSignKey}
+-      tcConfig =
+-        defaultTransportClientConfig
+-          { clientCredentials = Just tlsNtfServerCreds,
+-            clientALPN = Just alpnSupportedSMPHandshakes
+-          }
++      tcConfig = defaultTransportClientConfig {clientALPN = Just alpnSupportedSMPHandshakes} :: TransportClientConfig
+   runTransportClient tcConfig Nothing "localhost" testPort (Just testKeyHash) $ \h ->
+     runExceptT (smpClientHandshake h Nothing testKeyHash supportedClientSMPRelayVRange False $ Just (service, keys)) >>= \case
+       Right th -> client th

@@ -1,8 +1,11 @@
 $OpenBSD$
 
+SPDX-License-Identifier: BSD-3-Clause
+
 Relax the ghc-prim upper bound so this aeson fork builds with GHC 9.10+,
 and allow the fixed text-iso8601 version for HSEC-2026-0007.
 
+Index: aeson.cabal
 --- aeson.cabal.orig
 +++ aeson.cabal
 @@ -100,7 +100,7 @@

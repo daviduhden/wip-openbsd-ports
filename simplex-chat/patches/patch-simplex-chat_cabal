@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Use ram byte arrays consistently with the vendored simplexmq library.
 
+Index: simplex-chat.cabal
 --- simplex-chat.cabal.orig
 +++ simplex-chat.cabal
 @@ -322,7 +322,7 @@

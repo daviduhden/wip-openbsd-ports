@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Pattern match the optional password hash instead of using list unzip on Maybe.
 
+Index: src/Simplex/Chat/Store/Profiles.hs
 --- src/Simplex/Chat/Store/Profiles.hs.orig
 +++ src/Simplex/Chat/Store/Profiles.hs
 @@ -297,3 +297,5 @@

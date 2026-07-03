@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Avoid ambiguous ByteArray conversions in XFTP web tests with GHC 9.10.
 
+Index: tests/XFTPWebTests.hs
 --- tests/XFTPWebTests.hs.orig
 +++ tests/XFTPWebTests.hs
 @@ -54,6 +54,9 @@

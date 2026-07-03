@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Enable DuplicateRecordFields explicitly when GHC 9.10 requires it.
 
+Index: src/Simplex/Chat/Store.hs
 --- src/Simplex/Chat/Store.hs.orig
 +++ src/Simplex/Chat/Store.hs
 @@ -1,2 +1,5 @@

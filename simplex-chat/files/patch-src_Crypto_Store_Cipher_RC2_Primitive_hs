@@ -1,8 +1,11 @@
 $OpenBSD$
 
+SPDX-License-Identifier: BSD-3-Clause
+
 Allocate the RC2 expansion buffer as ram Bytes before converting it to
 basement's internal Block representation.
 
+Index: src/Crypto/Store/Cipher/RC2/Primitive.hs
 --- src/Crypto/Store/Cipher/RC2/Primitive.hs.orig
 +++ src/Crypto/Store/Cipher/RC2/Primitive.hs
 @@ -187,7 +187,7 @@

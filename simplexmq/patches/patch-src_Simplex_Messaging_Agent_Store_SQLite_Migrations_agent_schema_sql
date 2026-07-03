@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Keep generated migration SQL column definitions consistently indented.
 
+Index: src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql
 --- src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql.orig
 +++ src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql
 @@ -202,10 +202,10 @@

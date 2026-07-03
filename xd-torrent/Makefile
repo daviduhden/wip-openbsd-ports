@@ -10,7 +10,7 @@ CATEGORIES = net
 HOMEPAGE = https://xd-torrent.github.io/
 MAINTAINER = David Uhden Collado <daviduhden@gmail.com>
 
-# MIT
+# MIT License
 PERMIT_PACKAGE = Yes
 ONLY_FOR_ARCHS = ${GO_ARCHS}
 

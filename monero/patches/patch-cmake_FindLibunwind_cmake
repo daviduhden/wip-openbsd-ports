@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: BSD-3-Clause
+
 Do not add liblzma to libunwind on OpenBSD; base libunwind does not need it.
 
+Index: cmake/FindLibunwind.cmake
 --- cmake/FindLibunwind.cmake.orig
 +++ cmake/FindLibunwind.cmake
 @@ -23,6 +23,7 @@

@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Resolve embedded web assets relative to the project root during Cabal builds.
 
+Index: apps/common/Web/Embedded.hs
 --- apps/common/Web/Embedded.hs.orig
 +++ apps/common/Web/Embedded.hs
 @@ -4,3 +4,3 @@

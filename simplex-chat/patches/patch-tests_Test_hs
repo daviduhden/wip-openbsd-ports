@@ -1,9 +1,12 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Skip server-backed integration tests that require simplexmq server modules.
 The port builds simplexmq with +client_library to avoid the server dependency
 set, so keep only tests that compile against the client library.
 
+Index: tests/Test.hs
 --- tests/Test.hs.orig
 +++ tests/Test.hs
 @@ -3,12 +3,13 @@

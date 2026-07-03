@@ -1,7 +1,10 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Resolve embedded XFTP web assets relative to the project root in Cabal builds.
 
+Index: apps/xftp-server/XFTPWeb.hs
 --- apps/xftp-server/XFTPWeb.hs.orig
 +++ apps/xftp-server/XFTPWeb.hs
 @@ -12,3 +12,3 @@

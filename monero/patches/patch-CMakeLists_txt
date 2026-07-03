@@ -1,8 +1,11 @@
 $OpenBSD$
 
+SPDX-License-Identifier: BSD-3-Clause
+
 Avoid -Ofast and use the ports readline/curses libraries when building
 through the depends CMake path on OpenBSD.
 
+Index: CMakeLists.txt
 --- CMakeLists.txt.orig
 +++ CMakeLists.txt
 @@ -343,7 +343,7 @@

@@ -1,9 +1,12 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 Adapt the client callback and configuration to http2 5.x. http2 5.x
 removed the ClientConfig constructor; use H.defaultClientConfig and
 pass the configuration argument to the client callback.
 
+Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
 --- src/Simplex/Messaging/Transport/HTTP2/Client.hs.orig
 +++ src/Simplex/Messaging/Transport/HTTP2/Client.hs
 @@ -28,11 +28,12 @@

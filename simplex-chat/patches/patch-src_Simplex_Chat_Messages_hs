@@ -1,9 +1,12 @@
 $OpenBSD$
 
+SPDX-License-Identifier: AGPL-3.0-only
+
 GHC 9.14 moved (:<>:) from being a type-level operator to a regular
 export. Keep compatibility with both GHC 9.10 (current OpenBSD) and
 GHC 9.14+ (future OpenBSD) via CPP.
 
+Index: src/Simplex/Chat/Messages.hs
 --- src/Simplex/Chat/Messages.hs.orig
 +++ src/Simplex/Chat/Messages.hs
 @@ -1,3 +1,4 @@

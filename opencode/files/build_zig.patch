@@ -1,27 +1,33 @@
-Adapt OpenTUI build.zig for Zig 0.16.0 (partial).
+Adapt OpenTUI build.zig for Zig 0.16.0 (lang/zig on OpenBSD).
 
-lang/zig on OpenBSD provides 0.16.0; upstream opentui v0.3.4
-targets 0.15.2.  The Zig 0.15->0.16 stdlib removed several APIs
-used by this build script.  This patch adds 0.16.0 to the
-supported versions list and marks the remaining incompatibilities
-with FIXME comments for manual resolution:
+15 API migrations needed for the Zig 0.15→0.16 stdlib and
+build-system overhaul:
 
- - std.fs.cwd() removed (0.16 requires explicit Dir handles)
- - std.mem.trimRight removed (replace with index-based slicing)
- - b.graph.host removed (use b.host or another API)
- - b.graph.env_map removed (use std.process.getEnvVarOwned
-   or the new env var API)
+  nativeExecutableTarget  b.graph.host.query → b.host
+  pathExists              std.fs.cwd() removed → stub (macOS only)
+  isMacOSSDKPath           std.mem.trimRight removed → manual slice
+  resolveMacOSSDKPath      b.graph.env_map → b.graph.environ_map
+  SUPPORTED_ZIG_VERSIONS   add 0.16.0
+  macOS SDK detection      drop removed darwin.isSdkInstalled
 
-The uucode vendored dependency needs a manual fix:
-  b.modules.put(b.dupe(...), ...)  ->  b.modules.put(b.allocator, b.dupe(...), ...)
+  addIncludePath           → artifact.root_module.addIncludePath
+  addCSourceFile           → artifact.root_module.addCSourceFile
+  addSystemIncludePath     → artifact.root_module.addSystemIncludePath
+  addSystemFrameworkPath   → artifact.root_module.addSystemFrameworkPath
+  addFrameworkPath         → artifact.root_module.addFrameworkPath
+  addLibraryPath           → artifact.root_module.addLibraryPath
+  linkLibC()               → artifact.root_module.link_libc = true
+  linkFramework(name)      → artifact.root_module.linkFramework(name, .{})
+  linkSystemLibrary(name)  → artifact.root_module.linkSystemLibrary(name, .{})
 
-Override via: zig build --system uucode=/path/to/patched/uucode
-
-Remove this patch when upstream opentui supports Zig 0.16.
+The vendored uucode dependency (0.1.0) uses @Type and
+std.time.Instant, both removed in Zig 0.16.  Override with a
+newer uucode that targets 0.16, or patch the vendored copy
+manually.  Pass --system uucode=/path/to/patched/uucode.
 
 Index: packages/core/src/zig/build.zig
---- build.zig.orig	2026-07-02 20:53:17.983760797 +0200
-+++ build.zig	2026-07-02 20:53:18.013920298 +0200
+--- build.zig.orig	2026-07-03 19:48:32.244114902 +0200
++++ build.zig	2026-07-03 19:51:08.481402973 +0200
 @@ -9,6 +9,7 @@
  
  const SUPPORTED_ZIG_VERSIONS = [_]SupportedZigVersion{
@@ -30,36 +36,101 @@ Index: packages/core/src/zig/build.zig
  };
  
  const SupportedTarget = struct {
-@@ -42,7 +43,7 @@
-     // Zig 0.15.2's ELF linker currently fails on newer glibc startup objects
-     // that ship .sframe relocations. Keep shipped libraries on linux-gnu, but
-     // use musl for local native executables so test/debug/bench still work.
+@@ -35,27 +36,17 @@
+ const ROOT_SOURCE_FILE = "lib.zig";
+ 
+ fn nativeExecutableTarget(b: *std.Build) std.Build.ResolvedTarget {
+-    if (builtin.os.tag != .linux) {
+-        return b.resolveTargetQuery(.{});
+-    }
+-
+-    // Zig 0.15.2's ELF linker currently fails on newer glibc startup objects
+-    // that ship .sframe relocations. Keep shipped libraries on linux-gnu, but
+-    // use musl for local native executables so test/debug/bench still work.
 -    var query = b.graph.host.query;
-+    var query = b.graph.host.query /* FIXME: graph.host removed in Zig 0.16 */;
-     query.abi = .musl;
-     query.glibc_version = null;
-     return b.resolveTargetQuery(query);
-@@ -50,12 +51,12 @@
+-    query.abi = .musl;
+-    query.glibc_version = null;
+-    return b.resolveTargetQuery(query);
++    if (builtin.os.tag != .linux) return b.host;
++    return b.resolveTargetQuery(.{ .abi = .musl });
+ }
  
  fn pathExists(path: []const u8) bool {
-     if (path.len == 0) return false;
+-    if (path.len == 0) return false;
 -    std.fs.cwd().access(path, .{}) catch return false;
-+    std.fs.cwd().access(path, .{}) /* FIXME: cwd() removed in Zig 0.16 */ catch return false;
-     return true;
+-    return true;
++    _ = path;
++    return false; // Zig 0.16: std.fs.cwd() removed
  }
  
  fn isMacOSSDKPath(path: []const u8) bool {
 -    const trimmed_path = std.mem.trimRight(u8, path, "/");
-+    const trimmed_path = std.mem.trimRight(u8, path, "/") /* FIXME: trimRight removed in Zig 0.16 */;
++    const trimmed_path = if (path.len > 0 and path[path.len - 1] == '/') path[0 .. path.len - 1] else path;
      if (trimmed_path.len == 0) return false;
  
      const base_name = std.fs.path.basename(trimmed_path);
-@@ -83,7 +84,7 @@
+@@ -83,12 +74,12 @@
  
      const env_vars = [_][]const u8{ "SDKROOT", "MACOS_SDK_PATH", "MACOSX_SDK_PATH" };
      for (env_vars) |env_var| {
 -        if (b.graph.env_map.get(env_var)) |sdk_path| {
-+        if (b.graph.env_map.get(env_var) /* FIXME: env_map removed in Zig 0.16 */) |sdk_path| {
++        if (b.graph.environ_map.get(env_var)) |sdk_path| {
              if (isMacOSSDKAvailable(b, sdk_path)) return sdk_path;
          }
+     }
+ 
+-    if (builtin.os.tag == .macos and std.zig.system.darwin.isSdkInstalled(b.allocator)) {
++    if (builtin.os.tag == .macos) {
+         const sdk_target = b.resolveTargetQuery(.{ .cpu_arch = .aarch64, .os_tag = .macos });
+         if (std.zig.system.darwin.getSdk(b.allocator, &sdk_target.result)) |sdk_path| {
+             if (isMacOSSDKAvailable(b, sdk_path)) return sdk_path;
+@@ -124,9 +115,9 @@
+         else => &.{"-std=c99"},
+     };
+ 
+-    artifact.addIncludePath(b.path("."));
+-    artifact.linkLibC();
+-    artifact.addCSourceFile(.{
++    artifact.root_module.addIncludePath(b.path("."));
++    artifact.root_module.link_libc = true;
++    artifact.root_module.addCSourceFile(.{
+         .file = b.path("miniaudio_shim.c"),
+         .flags = c_flags,
+     });
+@@ -137,17 +128,17 @@
+     const framework_path = b.pathJoin(&.{ sdk_path, "System", "Library", "Frameworks" });
+     const lib_path = b.pathJoin(&.{ sdk_path, "usr", "lib" });
+ 
+-    artifact.addSystemIncludePath(.{ .cwd_relative = include_path });
+-    artifact.addSystemFrameworkPath(.{ .cwd_relative = framework_path });
+-    artifact.addFrameworkPath(.{ .cwd_relative = framework_path });
+-    artifact.addLibraryPath(.{ .cwd_relative = lib_path });
++    artifact.root_module.addSystemIncludePath(.{ .cwd_relative = include_path });
++    artifact.root_module.addSystemFrameworkPath(.{ .cwd_relative = framework_path });
++    artifact.root_module.addFrameworkPath(.{ .cwd_relative = framework_path });
++    artifact.root_module.addLibraryPath(.{ .cwd_relative = lib_path });
+ }
+ 
+ fn addMacOSSystemLibraries(b: *std.Build, artifact: *std.Build.Step.Compile, sdk_path: []const u8) void {
+-    artifact.linkFramework("CoreFoundation");
+-    artifact.linkFramework("CoreAudio");
+-    artifact.linkFramework("AudioToolbox");
+-    artifact.linkSystemLibrary("pthread");
++    artifact.root_module.linkFramework("CoreFoundation", .{});
++    artifact.root_module.linkFramework("CoreAudio", .{});
++    artifact.root_module.linkFramework("AudioToolbox", .{});
++    artifact.root_module.linkSystemLibrary("pthread", .{});
+     addMacOSSDKSearchPaths(b, artifact, sdk_path);
+ }
+ 
+@@ -162,8 +153,8 @@
+     switch (target.result.os.tag) {
+         .macos => addMacOSSystemLibraries(b, artifact, macos_sdk_path.?),
+         .linux => {
+-            artifact.linkSystemLibrary("dl");
+-            artifact.linkSystemLibrary("pthread");
++            artifact.root_module.linkSystemLibrary("dl", .{});
++            artifact.root_module.linkSystemLibrary("pthread", .{});
+         },
+         else => {},
      }

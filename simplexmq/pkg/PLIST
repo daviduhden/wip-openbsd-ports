@@ -4,7 +4,16 @@
 @rcscript ${RCDIR}/xftp_server
 @bin bin/smp-server
 @bin bin/xftp-server
+@mode 755
+@owner _${MODCABAL_STEM}
+@group _${MODCABAL_STEM}
+@man man/man1/smp-server.1
+@man man/man1/xftp-server.1
+@mode
+@owner
+@group
 share/doc/pkg-readmes/${PKGSTEM}
+share/doc/${PKGSTEM}/
 share/doc/${PKGSTEM}/LICENSE
 @mode 755
 @owner _${MODCABAL_STEM}
@@ -15,5 +24,3 @@ share/doc/${PKGSTEM}/LICENSE
 @sample ${LOCALSTATEDIR}/simplex/
 @sample ${LOCALSTATEDIR}/simplex/smp-server/
 @sample ${LOCALSTATEDIR}/simplex/xftp-server/
-@man man/man1/smp-server.1
-@man man/man1/xftp-server.1

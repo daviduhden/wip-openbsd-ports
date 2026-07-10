@@ -79,7 +79,7 @@ MODCABAL_MANIFEST	= \
 	http-date	0.0.11	0	\
 	http-semantics	0.4.0	0	\
 	http-types	0.12.5	0	\
-	http2	5.4.1	0	\
+	http2	5.4.1	1	\
 	indexed-traversable	0.1.5	0	\
 	indexed-traversable-instances	0.1.2.1	0	\
 	ini	0.5.1	0	\

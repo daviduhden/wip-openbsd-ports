@@ -2,23 +2,27 @@ $OpenBSD$
 
 SPDX-License-Identifier: AGPL-3.0-only
 
-Use tls's public TLS unique channel binding API (getTLSUnique)
-instead of the deprecated peer-specific functions.
+Use tls's public TLS unique channel binding API when available, but
+fall back to tls-exporter for sessions where TLS unique is not
+exposed.
 
 Index: src/Simplex/Messaging/Transport.hs
 --- src/Simplex/Messaging/Transport.hs.orig
 +++ src/Simplex/Messaging/Transport.hs
-@@ -373,12 +373,8 @@
+@@ -373,12 +373,10 @@
  
  withTlsUnique :: forall c p. TransportPeerI p => T.Context -> (ByteString -> IO (c p)) -> IO (c p)
  withTlsUnique cxt f =
 -  cxtFinished cxt
-+  T.getTLSUnique cxt
-     >>= maybe (closeTLS cxt >> ioe_EOF) f
+-    >>= maybe (closeTLS cxt >> ioe_EOF) f
 -  where
 -    cxtFinished = case sTransportPeer @p of
 -      STServer -> T.getPeerFinished
 -      STClient -> T.getFinished
++  T.getTLSUnique cxt >>= \case
++    Just tlsUniq -> f tlsUniq
++    Nothing ->
++      T.getTLSExporter cxt >>= maybe (closeTLS cxt >> ioe_EOF) f
  
  closeTLS :: T.Context -> IO ()
  closeTLS ctx =

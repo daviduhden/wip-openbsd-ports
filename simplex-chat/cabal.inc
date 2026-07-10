@@ -1,162 +1,166 @@
 MODCABAL_MANIFEST	= \
-	Diff	1.0.2	0	\
 	HUnit	1.6.2.0	0	\
-	OneTuple	0.4.3	0	\
+	OneTuple	0.4.1.1	1	\
 	Only	0.1	2	\
-	QuickCheck	2.18.0.0	0	\
+	QuickCheck	2.14.3	0	\
 	SHA	1.6.4.4	0	\
 	StateVar	1.2.2	0	\
-	ansi-terminal	1.1.5	0	\
-	ansi-terminal-types	1.1.3	0	\
+	ansi-terminal	1.0	0	\
+	ansi-terminal-types	0.11.5	1	\
 	appar	0.1.8	0	\
-	assoc	1.1.1	2	\
-	async	2.2.6	0	\
+	asn1-encoding	0.9.6	2	\
+	asn1-parse	0.9.5	0	\
+	asn1-types	0.3.4	0	\
+	assoc	1.1	1	\
+	async	2.2.5	4	\
 	attoparsec	0.14.4	6	\
-	auto-update	0.2.6	0	\
-	base-compat	0.15.0	0	\
-	base-orphans	0.9.4	0	\
-	base16	1.0	4	\
-	base16-bytestring	1.0.2.0	1	\
-	base64	1.0	3	\
+	auto-update	0.1.6	0	\
+	base-orphans	0.9.1	0	\
 	base64-bytestring	1.2.1.0	1	\
 	basement	0.0.16	0	\
-	bifunctors	5.6.3	1	\
-	bitvec	1.1.6.0	0	\
-	blaze-builder	0.4.4.1	0	\
+	bifunctors	5.6.1	3	\
+	bitvec	1.1.5.0	3	\
+	blaze-builder	0.4.2.3	0	\
+	blaze-html	0.9.1.2	0	\
+	blaze-markup	0.8.3.0	0	\
 	blaze-textual	0.2.3.1	0	\
-	boring	0.2.2.1	0	\
+	boring	0.2.1	1	\
+	bsb-http-chunked	0.0.0.4	4	\
 	byteorder	1.0.4	0	\
+	bytestring-builder	0.10.8.2.0	0	\
+	cabal-doctest	1.0.9	0	\
 	call-stack	0.4.0	0	\
 	case-insensitive	1.2.1.0	0	\
-	cborg	0.2.10.0	3	\
 	cereal	0.5.8.3	0	\
-	colour	2.3.7	0	\
-	comonad	5.0.10	0	\
-	composition	2.0	0	\
-	conduit	1.3.6.1	0	\
-	conduit-extra	1.3.8	1	\
-	constraints	0.14.4	0	\
-	contravariant	1.5.6	0	\
+	clock	0.8.4	0	\
+	colour	2.3.6	0	\
+	comonad	5.0.8	2	\
+	composition	1.0.2.2	0	\
+	conduit	1.3.5	0	\
+	conduit-extra	1.3.6	0	\
+	constraints	0.14	0	\
+	contravariant	1.5.5	0	\
+	cookie	0.4.6	0	\
 	cryptohash-md5	0.11.101.0	6	\
 	cryptohash-sha1	0.11.101.0	6	\
-	crypton	1.1.4	0	\
-	crypton-asn1-encoding	0.10.0	0	\
-	crypton-asn1-parse	0.10.0	0	\
-	crypton-asn1-types	0.4.1	0	\
-	crypton-pem	0.3.0	0	\
-	crypton-x509	1.9.1	0	\
-	crypton-x509-store	1.9.0	0	\
-	crypton-x509-validation	1.9.1	1	\
-	cryptostore	0.5.0.0	1	\
-	data-default	0.8.0.2	0	\
-	data-fix	0.3.4	2	\
-	digest	0.0.2.1	0	\
-	distributive	0.6.3	0	\
+	crypton	0.34	0	\
+	crypton-x509	1.7.6	3	\
+	crypton-x509-store	1.6.9	1	\
+	crypton-x509-validation	1.6.12	1	\
+	cryptostore	0.3.0.1	0	\
+	data-default	0.7.1.1	0	\
+	data-default-class	0.1.2.0	0	\
+	data-default-instances-containers	0.0.1	0	\
+	data-default-instances-dlist	0.0.1	0	\
+	data-default-instances-old-locale	0.0.1	0	\
+	data-fix	0.3.2	5	\
+	digest	0.0.1.7	1	\
+	distributive	0.6.2.1	1	\
 	dlist	1.0	2	\
 	easy-file	0.2.5	0	\
-	ech-config	0.0.1	1	\
-	email-validate	2.3.2.21	0	\
-	entropy	0.4.1.11	1	\
-	fast-logger	3.2.6	0	\
-	file-embed	0.0.16.0	0	\
-	generic-deriving	1.14.7	0	\
+	email-validate	2.3.2.19	0	\
+	entropy	0.4.1.10	2	\
+	fast-logger	3.2.2	0	\
+	file-embed	0.0.15.0	0	\
 	generic-random	1.5.0.1	0	\
 	generically	0.1.1	5	\
-	half	0.3.3	2	\
-	hashable	1.5.1.0	0	\
-	haskell-lexer	1.2.1	0	\
-	hpke	0.1.0	0	\
+	hashable	1.4.3.0	1	\
+	haskell-lexer	1.1.1	0	\
+	hourglass	0.2.12	1	\
 	hsc2hs	0.68.10	5	\
-	hspec	2.11.17	0	\
-	hspec-core	2.11.17	0	\
-	hspec-discover	2.11.17	0	\
+	hspec	2.11.7	0	\
+	hspec-core	2.11.7	0	\
+	hspec-discover	2.11.7	0	\
 	hspec-expectations	0.8.4	0	\
-	http-semantics	0.4.0	0	\
-	http-types	0.12.5	0	\
-	http2	5.4.0	1	\
-	indexed-traversable	0.1.5	0	\
-	indexed-traversable-instances	0.1.2.1	0	\
-	integer-conversion	0.1.1	2	\
-	integer-logarithms	1.0.5	0	\
-	iproute	1.7.15	0	\
+	http-date	0.0.11	0	\
+	http-types	0.12.4	1	\
+	http2	5.0.0	0	\
+	indexed-traversable	0.1.3	0	\
+	indexed-traversable-instances	0.1.1.2	2	\
+	ini	0.4.2	0	\
+	integer-conversion	0.1.0.1	1	\
+	integer-logarithms	1.0.3.1	6	\
+	iproute	1.7.12	0	\
 	iso8601-time	0.1.5	0	\
-	libyaml	0.1.4	0	\
-	libyaml-clib	0.2.5	0	\
+	libyaml	0.1.2	1	\
 	lifted-base	0.2.3.12	0	\
 	memory	0.18.0	1	\
-	mlkem	0.2.2.0	0	\
+	mime-types	0.1.2.0	0	\
 	monad-control	1.0.3.1	0	\
-	monad-logger	0.3.42	0	\
+	monad-logger	0.3.40	0	\
 	monad-loops	0.4.3	0	\
-	mono-traversable	1.0.21.0	0	\
-	network	3.2.8.0	0	\
-	network-byte-order	0.1.8	0	\
-	network-control	0.1.7	0	\
+	mono-traversable	1.0.15.3	0	\
+	network	3.1.4.0	1	\
+	network-byte-order	0.1.7	0	\
+	network-control	0.0.2	0	\
 	network-info	0.2.1	0	\
-	network-transport	0.5.9	0	\
+	network-transport	0.5.6	1	\
 	network-udp	0.0.0	0	\
 	network-uri	2.6.4.2	1	\
 	old-locale	1.0.0.7	2	\
-	old-time	1.1.1.0	0	\
-	optparse-applicative	0.19.0.0	1	\
-	prettyprinter	1.7.2	0	\
-	prettyprinter-ansi-terminal	1.1.4	0	\
-	primitive	0.9.1.0	1	\
-	psqueues	0.2.8.3	2	\
-	quickcheck-instances	0.4	0	\
+	old-time	1.1.0.4	0	\
+	optparse-applicative	0.18.1.0	1	\
+	pem	0.2.4	0	\
+	prettyprinter	1.7.1	0	\
+	prettyprinter-ansi-terminal	1.1.3	0	\
+	primitive	0.9.0.0	2	\
+	psqueues	0.2.8.0	2	\
 	quickcheck-io	0.2.0	0	\
-	ram	0.22.0	0	\
-	random	1.3.1	0	\
-	record-hasfield	1.0.1	0	\
+	random	1.2.1.1	1	\
+	record-hasfield	1.0	0	\
+	recv	0.1.0	0	\
 	resourcet	1.3.0	0	\
 	safe-exceptions	0.1.7.4	1	\
-	scientific	0.3.8.1	0	\
-	semialign	1.4	0	\
-	semigroupoids	6.0.2	1	\
-	serialise	0.2.6.1	5	\
-	silently	1.2.5.4	0	\
+	scientific	0.3.7.0	7	\
+	semialign	1.3	1	\
+	semigroupoids	6.0.0.1	1	\
+	silently	1.2.5.3	0	\
 	simple-logger	0.1.1	0	\
-	split	0.2.5	0	\
-	splitmix	0.1.3.2	0	\
-	stm-chans	3.0.0.11	0	\
-	streaming-commons	0.2.3.1	0	\
-	strict	0.5.1	1	\
-	tagged	0.8.10	1	\
-	tasty	1.5.4	0	\
-	tasty-golden	2.3.6	0	\
-	tasty-hunit	0.10.2	0	\
-	tasty-quickcheck	0.11.1	0	\
+	simple-sendfile	0.2.32	0	\
+	split	0.2.4	0	\
+	splitmix	0.1.0.5	1	\
+	stm-chans	3.0.0.9	0	\
+	streaming-commons	0.2.2.6	1	\
+	strict	0.5	1	\
+	tagged	0.8.8	1	\
 	temporary	1.3	0	\
-	text-iso8601	0.2.0.0	0	\
-	text-short	0.1.6.1	0	\
-	th-abstraction	0.7.2.0	0	\
-	th-compat	0.1.7	0	\
-	th-lift	0.8.7	0	\
+	text-iso8601	0.1	1	\
+	text-short	0.1.5	3	\
+	tf-random	0.5	0	\
+	th-abstraction	0.6.0.0	2	\
+	th-compat	0.1.4	4	\
+	th-lift	0.8.4	3	\
 	th-lift-instances	0.1.20	0	\
-	these	1.2.1	3	\
-	time-compat	1.9.9	1	\
-	time-hourglass	0.3.0	0	\
-	time-manager	0.3.2	0	\
-	tls	2.4.3	0	\
-	transformers-base	0.4.6.1	0	\
-	transformers-compat	0.8	0	\
-	typed-process	0.2.13.0	0	\
-	unicode-data	0.8.0	1	\
+	these	1.2	1	\
+	time-compat	1.9.6.1	6	\
+	time-manager	0.0.1	0	\
+	tls	1.9.0	1	\
+	tls-session-manager	0.0.4	1	\
+	transformers-base	0.4.6	0	\
+	transformers-compat	0.7.2	0	\
+	type-equality	1	6	\
+	typed-process	0.2.11.1	0	\
+	unicode-data	0.4.0.1	3	\
 	unicode-transforms	0.4.0.1	9	\
-	unix-compat	0.7.4.1	0	\
-	unix-time	0.5.0	0	\
-	unliftio	0.2.25.1	0	\
+	unix-compat	0.7.1	0	\
+	unix-time	0.4.11	0	\
+	unliftio	0.2.25.0	0	\
 	unliftio-core	0.2.1.0	4	\
-	unordered-containers	0.2.21	2	\
-	uri-bytestring	0.4.0.1	0	\
-	utf8-string	1.0.2	0	\
-	uuid	1.3.16.1	0	\
-	uuid-types	1.0.6.1	0	\
-	vector	0.13.2.0	5	\
-	vector-algorithms	0.9.1.0	1	\
-	vector-stream	0.1.0.1	4	\
-	websockets	0.13.0.0	6	\
-	witherable	0.5	2	\
+	unordered-containers	0.2.19.1	3	\
+	uri-bytestring	0.3.3.1	0	\
+	uuid	1.3.15	3	\
+	uuid-types	1.0.5.1	0	\
+	vault	0.3.1.5	10	\
+	vector	0.13.1.0	3	\
+	vector-algorithms	0.9.0.1	3	\
+	vector-stream	0.1.0.0	4	\
+	wai	3.2.4	0	\
+	wai-app-static	3.1.8	0	\
+	wai-extra	3.1.13.0	0	\
+	wai-logger	2.4.0	0	\
+	websockets	0.12.7.3	2	\
+	witherable	0.4.2	5	\
+	word8	0.1.3	0	\
 	yaml	0.11.11.2	0	\
-	zlib	0.7.1.1	0	\
+	zlib	0.6.3.0	5	\
 	zstd	0.1.3.0	0

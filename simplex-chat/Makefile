@@ -62,6 +62,7 @@ CABAL_INC_HOME ?= ${WRKDIR}/.cabal-inc-home
 CABAL_INC_SKIP = simplexmq,aeson,socks,direct-sqlcipher,sqlcipher-simple,terminal,android-support,zip
 CABAL_INC_EXTRA = yaml:0.11.11.2:0
 AESON_PATCHES = \
+	patch-aeson_cabal \
 	patch-src_Data_Aeson_Types_FromJSON_hs \
 	patch-src_Data_Aeson_KeyMap_hs
 CRYPTOSTORE_PATCHES = \

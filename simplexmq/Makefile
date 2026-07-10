@@ -186,6 +186,7 @@ cabal-inc: patch
 			> ${.CURDIR}/cabal.inc
 
 post-install:
+	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/${PKGSTEM}
 	${INSTALL_DATA} ${PKGDIR}/LICENSE \
 		${PREFIX}/share/doc/${PKGSTEM}/LICENSE
 	${INSTALL_MAN} ${FILESDIR}/smp-server.1 \

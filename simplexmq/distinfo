@@ -102,6 +102,7 @@ SHA256 (hackage/http-date-0.0.11.tar.gz) = MvkjrBrZvf6tznxSoDybpiJbpg3BQTfLHN8y6
 SHA256 (hackage/http-semantics-0.4.0.tar.gz) = nUAGXrhcGcG9NysxvTKYqqA6z+ZkbqTtq/plMQgIvHM=
 SHA256 (hackage/http-types-0.12.5.tar.gz) = 3m1QvEeJ13kMREhOaoOnqtMVGCLKGUg1uVXjRBcO/g0=
 SHA256 (hackage/http2-5.4.1.tar.gz) = 8Z73o4JW29XD8VX7IyUJK5VHN6CmrzYa6s3lkQBWvc0=
+SHA256 (hackage/http2-5.4.1_1.cabal) = KhWqWJ6YduPocyfA8BNon5cpHBARSpjzoN/ZBzoIh/U=
 SHA256 (hackage/indexed-traversable-0.1.5.tar.gz) = ZCNZfTUorGbFS+qrn1QIQpwKKbjLmMRaFkXyVa73/vA=
 SHA256 (hackage/indexed-traversable-instances-0.1.2.1.tar.gz) = 5p1B8jqVRjwuA67gM3Sk9InHL3vyNb4lFJnEzKlBH+w=
 SHA256 (hackage/ini-0.5.1.tar.gz) = MeSTmsUpUsyfbbBbxb4pm6FNJhJeGz00K/fHQGb1Y+8=
@@ -329,6 +330,7 @@ SIZE (hackage/http-date-0.0.11.tar.gz) = 5351
 SIZE (hackage/http-semantics-0.4.0.tar.gz) = 15054
 SIZE (hackage/http-types-0.12.5.tar.gz) = 25272
 SIZE (hackage/http2-5.4.1.tar.gz) = 5502152
+SIZE (hackage/http2-5.4.1_1.cabal) = 10621
 SIZE (hackage/indexed-traversable-0.1.5.tar.gz) = 9532
 SIZE (hackage/indexed-traversable-instances-0.1.2.1.tar.gz) = 3690
 SIZE (hackage/ini-0.5.1.tar.gz) = 6552

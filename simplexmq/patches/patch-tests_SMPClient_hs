@@ -2,13 +2,14 @@ $OpenBSD$
 
 SPDX-License-Identifier: AGPL-3.0-only
 
-Exercise service authentication through the SMP handshake, not TLS client
-authentication, matching the runtime service-client path.
+Exercise service authentication through the SMP handshake, not TLS
+client authentication, matching the runtime service-client path.
 
 Index: tests/SMPClient.hs
 --- tests/SMPClient.hs.orig
 +++ tests/SMPClient.hs
-@@ -172,10 +172,7 @@
+@@ -171,11 +171,7 @@
+   serviceCertHash <- loadFingerprint ntfTestServerCredentials
    Right serviceSignKey <- pure $ C.x509ToPrivate' $ snd tlsNtfServerCreds
    let service = ServiceCredentials {serviceRole = SRNotifier, serviceCreds = tlsNtfServerCreds, serviceCertHash, serviceSignKey}
 -      tcConfig =

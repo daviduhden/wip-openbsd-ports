@@ -79,7 +79,7 @@ MODCABAL_MANIFEST	= \
 	http-date	0.0.11	0	\
 	http-semantics	0.4.0	0	\
 	http-types	0.12.5	0	\
-	http2	5.4.0	1	\
+	http2	5.4.1	0	\
 	indexed-traversable	0.1.5	0	\
 	indexed-traversable-instances	0.1.2.1	0	\
 	ini	0.5.1	0	\
@@ -158,7 +158,7 @@ MODCABAL_MANIFEST	= \
 	unordered-containers	0.2.21	2	\
 	utf8-string	1.0.2	0	\
 	uuid-types	1.0.6.1	0	\
-	vault	0.3.1.6	0	\
+	vault	0.3.2.0	0	\
 	vector	0.13.2.0	5	\
 	vector-algorithms	0.9.1.0	1	\
 	vector-stream	0.1.0.1	4	\

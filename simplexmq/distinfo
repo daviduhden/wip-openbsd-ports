@@ -101,8 +101,7 @@ SHA256 (hackage/http-client-0.7.19.tar.gz) = oCwb4ILo9IyVmscVCkikBfjUOD4JQmOUgeh
 SHA256 (hackage/http-date-0.0.11.tar.gz) = MvkjrBrZvf6tznxSoDybpiJbpg3BQTfLHN8y6oTM9NM=
 SHA256 (hackage/http-semantics-0.4.0.tar.gz) = nUAGXrhcGcG9NysxvTKYqqA6z+ZkbqTtq/plMQgIvHM=
 SHA256 (hackage/http-types-0.12.5.tar.gz) = 3m1QvEeJ13kMREhOaoOnqtMVGCLKGUg1uVXjRBcO/g0=
-SHA256 (hackage/http2-5.4.0.tar.gz) = uD33j+79Ld4h7cx6QV1nStpSSYCMIg2TOc01wJxCEic=
-SHA256 (hackage/http2-5.4.0_1.cabal) = Ll5BpOipHn/PBrAtzVbdOCg+33hWB2N+wR1wNZZeXiM=
+SHA256 (hackage/http2-5.4.1.tar.gz) = 8Z73o4JW29XD8VX7IyUJK5VHN6CmrzYa6s3lkQBWvc0=
 SHA256 (hackage/indexed-traversable-0.1.5.tar.gz) = ZCNZfTUorGbFS+qrn1QIQpwKKbjLmMRaFkXyVa73/vA=
 SHA256 (hackage/indexed-traversable-instances-0.1.2.1.tar.gz) = 5p1B8jqVRjwuA67gM3Sk9InHL3vyNb4lFJnEzKlBH+w=
 SHA256 (hackage/ini-0.5.1.tar.gz) = MeSTmsUpUsyfbbBbxb4pm6FNJhJeGz00K/fHQGb1Y+8=
@@ -206,7 +205,7 @@ SHA256 (hackage/unordered-containers-0.2.21.tar.gz) = OyrRUitUbmGWAVMlfR5dI57uxe
 SHA256 (hackage/unordered-containers-0.2.21_2.cabal) = xd4fszd+08X0zYUadx0azFw30va+8KSZKVwOiFfaVgU=
 SHA256 (hackage/utf8-string-1.0.2.tar.gz) = 7kjeradgA3ByjEFWywAkQd53DQEhrjOmgTmp7ZwZsJo=
 SHA256 (hackage/uuid-types-1.0.6.1.tar.gz) = nwDyeLlxEQS2rMFATZ8NRcEYO0mHz5wHQDvrwFwMMCQ=
-SHA256 (hackage/vault-0.3.1.6.tar.gz) = N6Sxab+VEgGTwDwQOdDNwhp8RDgigcjEz/T4YbHQl2Y=
+SHA256 (hackage/vault-0.3.2.0.tar.gz) = juTI5x/rJoQeZn7iPkHXo4D2TBRwPak7Ok6pFk2nkCM=
 SHA256 (hackage/vector-0.13.2.0.tar.gz) = KPIDx4bL+Kxtw/6jN47DbzQXPVBftKHdYPyEGK2RxCM=
 SHA256 (hackage/vector-0.13.2.0_5.cabal) = PsEt5YDuMc6sibMU/QC1BX7UAZjAs9np2vpUwZQeaUI=
 SHA256 (hackage/vector-algorithms-0.9.1.0.tar.gz) = 0rZ0Z2gCZw2KaCs1faa2tXQbSjOxkfD/5fKyvEBVjrI=
@@ -329,8 +328,7 @@ SIZE (hackage/http-client-0.7.19.tar.gz) = 96836
 SIZE (hackage/http-date-0.0.11.tar.gz) = 5351
 SIZE (hackage/http-semantics-0.4.0.tar.gz) = 15054
 SIZE (hackage/http-types-0.12.5.tar.gz) = 25272
-SIZE (hackage/http2-5.4.0.tar.gz) = 5501532
-SIZE (hackage/http2-5.4.0_1.cabal) = 11047
+SIZE (hackage/http2-5.4.1.tar.gz) = 5502152
 SIZE (hackage/indexed-traversable-0.1.5.tar.gz) = 9532
 SIZE (hackage/indexed-traversable-instances-0.1.2.1.tar.gz) = 3690
 SIZE (hackage/ini-0.5.1.tar.gz) = 6552
@@ -434,7 +432,7 @@ SIZE (hackage/unordered-containers-0.2.21.tar.gz) = 68227
 SIZE (hackage/unordered-containers-0.2.21_2.cabal) = 3987
 SIZE (hackage/utf8-string-1.0.2.tar.gz) = 10726
 SIZE (hackage/uuid-types-1.0.6.1.tar.gz) = 11231
-SIZE (hackage/vault-0.3.1.6.tar.gz) = 5658
+SIZE (hackage/vault-0.3.2.0.tar.gz) = 7547
 SIZE (hackage/vector-0.13.2.0.tar.gz) = 185739
 SIZE (hackage/vector-0.13.2.0_5.cabal) = 8804
 SIZE (hackage/vector-algorithms-0.9.1.0.tar.gz) = 29426

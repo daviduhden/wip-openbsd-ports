@@ -1,0 +1,26 @@
+$OpenBSD$
+
+SPDX-License-Identifier: BSD-3-Clause
+
+Do not add liblzma to libunwind on OpenBSD; base libunwind does not need it.
+
+Index: cmake/FindLibunwind.cmake
+--- cmake/FindLibunwind.cmake.orig
++++ cmake/FindLibunwind.cmake
+@@ -23,6 +23,7 @@
+   endif()
+ endif()
+ 
++if(NOT CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+ # some versions of libunwind need liblzma, and we don't use pkg-config
+ # so we just look whether liblzma is installed, and add it if it is.
+ # It might not be actually needed, but doesn't hurt if it is not.
+@@ -34,6 +35,8 @@
+   set(LIBUNWIND_LIBRARIES "${LIBUNWIND_LIBRARIES};${LIBLZMA_LIBRARIES}")
+ endif()
+ 
++endif()
++
+ include(FindPackageHandleStandardArgs)
+ find_package_handle_standard_args(Libunwind "Could not find libunwind" LIBUNWIND_INCLUDE_DIR LIBUNWIND_LIBRARIES)
+ # show the LIBUNWIND_INCLUDE_DIR and LIBUNWIND_LIBRARIES variables only in the advanced view

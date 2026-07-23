@@ -4,9 +4,9 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-GH_TAGNAME = v6.5.6
+GH_TAGNAME = v7.0.0-beta.5
 
-V = 6.5.6.1
+V = 7.0.0.10
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -15,7 +15,7 @@ WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 
 DIST_TUPLE += github simplex-chat simplexmq \
-		92598c2ddb06cfc2c19797a2c900cffcb8af4d5c ../simplexmq
+		f7e8ed52bf4005f914916bd209f3d10f37d8ef70 ../simplexmq
 DIST_TUPLE += github supranational blst \
 		db3defd0d501cc2bb1cdd59cb955d1a421821441 ../simplexmq/cbits/blst
 DIST_TUPLE += github simplex-chat libbbs \

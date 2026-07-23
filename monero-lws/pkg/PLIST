@@ -1,0 +1,6 @@
+@bin bin/monero-lws-admin
+@bin bin/monero-lws-client
+@bin bin/monero-lws-daemon
+@sample ${SYSCONFDIR}/monero-lws/
+@sample ${LOCALSTATEDIR}/lib/monero-lws/
+@sample ${LOCALSTATEDIR}/log/monero-lws/

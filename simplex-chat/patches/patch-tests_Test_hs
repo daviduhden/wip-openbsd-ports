@@ -4,12 +4,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 Skip server-backed integration tests that require simplexmq server modules.
 The port builds simplexmq with +client_library to avoid the server dependency
-set, so keep only tests that compile against the client library.
+set, so keep only tests that compile against the client library. v7 restructured
+the test entry point to use tmpTestBracket; remove all withSmpServer-reliant
+blocks and the ChatClient dependency.
 
 Index: tests/Test.hs
 --- tests/Test.hs.orig
 +++ tests/Test.hs
-@@ -3,12 +3,13 @@
+@@ -3,13 +3,14 @@
  {-# LANGUAGE NamedFieldPuns #-}
  {-# LANGUAGE TupleSections #-}
  
@@ -18,18 +20,20 @@ Index: tests/Test.hs
 -import ChatClient
 -import ChatTests
 -import ChatTests.DBUtils
+-import ChatTests.Names (chatNamesTests)
 -import ChatTests.Utils (xdescribe'')
 +-- import Bots.BroadcastTests
 +-- import Bots.DirectoryTests
 +-- import ChatClient
 +-- import ChatTests
 +-- import ChatTests.DBUtils
++-- import ChatTests.Names (chatNamesTests)
 +-- import ChatTests.Utils (xdescribe'')
 +import Control.Exception (bracket_)
  import Control.Logger.Simple
  import Data.Time.Clock.System
  import BadgeTests
-@@ -19,21 +20,21 @@
+@@ -20,21 +21,21 @@
  import ProtocolTests
  import OperatorTests
  import RandomServers
@@ -56,7 +60,7 @@ Index: tests/Test.hs
  import SchemaDump
  import WebRTCTests
  #endif
-@@ -41,10 +42,6 @@
+@@ -42,14 +43,10 @@
  main :: IO ()
  main = do
    setLogLevel LogError
@@ -67,10 +71,19 @@ Index: tests/Test.hs
    withGlobalLogging logCfg . hspec
      $ do
  #if defined(dbPostgres)
-@@ -71,36 +68,30 @@
+-      createdDropDb . around_ (bracket_ (createDirectoryIfMissing False "tests/tmp") (removePathForcibly "tests/tmp")) $
++      createdDropDb . around_ (bracket_ (createDirectoryIfMissing False "tests/tmp") (removeDirectoryRecursive "tests/tmp")) $
+         describe "Postgres schema dump" $
+           postgresSchemaDumpTest
+             migrations
+@@ -72,42 +69,32 @@
        describe "Message batching" batchingTests
        describe "Operators" operatorTests
        describe "Random servers" randomServersTests
+-#if !defined(dbPostgres)
+-      around (tmpTestBracket chatQueryStats agentQueryStats) $ describe "names tests" chatNamesTests
+-      around (tmpTestBracket chatQueryStats agentQueryStats) $ xdescribe'' "SimpleX Directory names" directoryNameTests
+-#endif
 -#if defined(dbPostgres)
 -      createdDropDb . around testBracket
 -#else
@@ -90,6 +103,8 @@ Index: tests/Test.hs
 +      -- The OpenBSD port builds simplexmq with +client_library, so the
 +      -- SMP/XFTP server-backed integration tests cannot compile here.
 +      -- Disabled groups:
++      --   names tests
++      --   Directory names
 +      --   Mobile API Tests
 +      --   SimpleX chat client
 +      --   SimpleX Broadcast bot
@@ -105,6 +120,8 @@ Index: tests/Test.hs
 -#else
 -    testBracket chatQueryStats agentQueryStats test =
 -      withSmpServer $ tmpBracket $ \tmpPath -> test TestParams {tmpPath, chatQueryStats, agentQueryStats, printOutput = False}
+-    tmpTestBracket chatQueryStats agentQueryStats test =
+-      tmpBracket $ \tmpPath -> test TestParams {tmpPath, chatQueryStats, agentQueryStats, printOutput = False}
  #endif
      tmpBracket test = do
        t <- getSystemTime

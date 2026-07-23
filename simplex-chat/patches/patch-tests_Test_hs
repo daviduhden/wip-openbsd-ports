@@ -33,7 +33,7 @@ Index: tests/Test.hs
  import Control.Logger.Simple
  import Data.Time.Clock.System
  import BadgeTests
-@@ -20,21 +21,21 @@
+@@ -20,21 +20,21 @@
  import ProtocolTests
  import OperatorTests
  import RandomServers
@@ -60,7 +60,7 @@ Index: tests/Test.hs
  import SchemaDump
  import WebRTCTests
  #endif
-@@ -42,14 +43,10 @@
+@@ -42,14 +42,10 @@
  main :: IO ()
  main = do
    setLogLevel LogError
@@ -76,7 +76,7 @@ Index: tests/Test.hs
          describe "Postgres schema dump" $
            postgresSchemaDumpTest
              migrations
-@@ -72,42 +69,32 @@
+@@ -72,42 +72,32 @@
        describe "Message batching" batchingTests
        describe "Operators" operatorTests
        describe "Random servers" randomServersTests
@@ -135,3 +135,4 @@ Index: tests/Test.hs
  
  logCfg :: LogConfig
  logCfg = LogConfig {lc_file = Nothing, lc_stderr = True}
+

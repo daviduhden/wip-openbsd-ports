@@ -8,7 +8,7 @@ client authentication, matching the runtime service-client path.
 Index: tests/SMPClient.hs
 --- tests/SMPClient.hs.orig
 +++ tests/SMPClient.hs
-@@ -171,11 +171,7 @@
+@@ -171,11 +195,7 @@
    serviceCertHash <- loadFingerprint ntfTestServerCredentials
    Right serviceSignKey <- pure $ C.x509ToPrivate' $ snd tlsNtfServerCreds
    let service = ServiceCredentials {serviceRole = SRNotifier, serviceCreds = tlsNtfServerCreds, serviceCertHash, serviceSignKey}
@@ -21,3 +21,4 @@ Index: tests/SMPClient.hs
    runTransportClient tcConfig Nothing "localhost" testPort (Just testKeyHash) $ \h ->
      runExceptT (smpClientHandshake h Nothing testKeyHash supportedClientSMPRelayVRange False $ Just (service, keys)) >>= \case
        Right th -> client th
+

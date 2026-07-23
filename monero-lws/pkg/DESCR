@@ -1,0 +1,7 @@
+The Monero Light Wallet Server (monero-lws) is an
+alternative backend for Monero wallets that provides a
+lightweight, privacy-preserving interface for scanning the
+blockchain.
+
+Users connect to monero-lws from wallet software such that
+the wallet never needs to download or scan the full blockchain.

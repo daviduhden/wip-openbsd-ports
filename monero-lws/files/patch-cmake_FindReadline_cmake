@@ -1,0 +1,43 @@
+$OpenBSD$
+
+SPDX-License-Identifier: BSD-3-Clause
+
+Find devel/readline as ereadline on OpenBSD instead of base libedit/readline.
+
+Index: cmake/FindReadline.cmake
+--- cmake/FindReadline.cmake.orig
++++ cmake/FindReadline.cmake
+@@ -21,20 +21,30 @@
+ #  GNU_READLINE_LIBRARY      The GNU readline library or empty string.
+ #  LIBEDIT_LIBRARY           The libedit library or empty string.
+ 
++if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
++  set(_READLINE_ROOT_NAME include/ereadline/readline/readline.h)
++  set(_READLINE_INCLUDE_SUBDIR "/include/ereadline")
++  set(_READLINE_LIBRARY_NAME ereadline)
++else()
++  set(_READLINE_ROOT_NAME include/readline/readline.h)
++  set(_READLINE_INCLUDE_SUBDIR "/include")
++  set(_READLINE_LIBRARY_NAME readline)
++endif()
++
+ find_path(Readline_ROOT_DIR
+-    NAMES include/readline/readline.h
++    NAMES ${_READLINE_ROOT_NAME}
+     PATHS /usr/local/opt/readline/ /opt/homebrew/opt/readline/ /opt/local/ /usr/local/ /usr/
+     NO_DEFAULT_PATH
+ )
+ 
+ find_path(Readline_INCLUDE_DIR
+     NAMES readline/readline.h
+-    PATHS ${Readline_ROOT_DIR}/include
++    PATHS ${Readline_ROOT_DIR}${_READLINE_INCLUDE_SUBDIR}
+     NO_DEFAULT_PATH
+ )
+ 
+ find_library(Readline_LIBRARY
+-    NAMES readline
++    NAMES ${_READLINE_LIBRARY_NAME}
+     PATHS ${Readline_ROOT_DIR}/lib
+     NO_DEFAULT_PATH
+ )

@@ -1,0 +1,25 @@
+$OpenBSD$
+
+SPDX-License-Identifier: BSD-3-Clause
+
+Teach the depends toolchain file to use OpenBSD's ereadline and curses paths.
+
+Index: contrib/depends/toolchain.cmake.in
+--- contrib/depends/toolchain.cmake.in.orig
++++ contrib/depends/toolchain.cmake.in
+@@ -20,9 +20,15 @@
+ SET(ENV{PKG_CONFIG_PATH} @prefix@/lib/pkgconfig)
+ 
+ SET(Readline_ROOT_DIR @prefix@)
++if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
++SET(Readline_INCLUDE_DIR @prefix@/include/ereadline)
++SET(Readline_LIBRARY @prefix@/lib/libereadline.so)
++SET(Terminfo_LIBRARY /usr/lib/libcurses.so)
++else()
+ SET(Readline_INCLUDE_DIR @prefix@/include)
+ SET(Readline_LIBRARY @prefix@/lib/libreadline.a)
+ SET(Terminfo_LIBRARY @prefix@/lib/libtinfo.a)
++endif()
+ 
+ SET(UNBOUND_INCLUDE_DIR @prefix@/include)
+ SET(UNBOUND_LIBRARIES @prefix@/lib/libunbound.a)

@@ -25,7 +25,7 @@ Index: cabal.project
 -source-repository-package
 -    type: git
 -    location: https://github.com/simplex-chat/simplexmq.git
--    tag: 92598c2ddb06cfc2c19797a2c900cffcb8af4d5c
+-    tag: f7e8ed52bf4005f914916bd209f3d10f37d8ef70
 -
 -source-repository-package
 -    type: git

@@ -158,6 +158,7 @@ cabal-inc: patch
 	fi
 	printf '%s\n' \
 		'allow-newer: *' \
+		'packages: .' \
 		'packages: ${WRKDIR}/simplexmq/simplexmq.cabal' \
 		'packages: ${WRKDIR}/hs-socks/socks.cabal' \
 		'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \
@@ -187,6 +188,7 @@ cabal-inc: patch
 	# Test builds need simplexmq to expose the server modules imported by tests.
 	printf '%s\n' \
 		'allow-newer: *' \
+		'packages: .' \
 		'packages: ${WRKDIR}/simplexmq/simplexmq.cabal' \
 		'packages: ${WRKDIR}/hs-socks/socks.cabal' \
 		'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \

@@ -97,7 +97,7 @@ Index: tests/XFTPWebTests.hs
            hsEncrypted = B.concat [hdrEnc, srcEnc, padEnc, tag]
        tsEncrypted <-
          callNode $
-@@ -1042,7 +1024,7 @@
+@@ -1042,7 +1059,7 @@
            padLen = encSize - 16 - fileSize' - 8
            padding = B.replicate (fromIntegral padLen) 0x23
            (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
@@ -106,7 +106,7 @@ Index: tests/XFTPWebTests.hs
            encrypted = B.concat [hdrEnc, srcEnc, padEnc, tag]
        tsResult <-
          callNode $
-@@ -1104,7 +1024,7 @@
+@@ -1104,7 +1121,7 @@
            padLen = encSize - 16 - fileSize' - 8
            padding = B.replicate (fromIntegral padLen) 0x23
            (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
@@ -115,7 +115,7 @@ Index: tests/XFTPWebTests.hs
            encrypted = B.concat [hdrEnc, srcEnc, padEnc, tag]
            (chunk1, rest) = B.splitAt 50 encrypted
            (chunk2, chunk3) = B.splitAt 50 rest
-@@ -1141,7 +1024,7 @@
+@@ -1141,7 +1158,7 @@
            padLen = encSize - 16 - fileSize' - 8
            padding = B.replicate (fromIntegral padLen) 0x23
            (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
@@ -155,7 +155,7 @@ Index: tests/XFTPWebTests.hs
            -- AlgorithmIdentifier for Ed25519 (7 bytes)
            algId = B.pack [0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70]
            -- BIT STRING wrapper (3 + 64 = 67 bytes)
-@@ -1748,15 +1732,15 @@
+@@ -1748,15 +1765,15 @@
        let signSeed = B.pack [1 .. 32]
            signSk = throwCryptoError $ Ed25519.secretKey signSeed
            signPk = Ed25519.toPublic signSk
@@ -174,7 +174,7 @@ Index: tests/XFTPWebTests.hs
            algId = B.pack [0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70]
            bitString = B.pack [0x03, 0x41, 0x00] <> sigRaw
            content = spkiDer <> algId <> bitString
-@@ -1827,7 +1732,7 @@
+@@ -1827,7 +1844,7 @@
        let signSeed = B.pack [1 .. 32]
            signSk = throwCryptoError $ Ed25519.secretKey signSeed
            signPk = Ed25519.toPublic signSk
@@ -183,7 +183,7 @@ Index: tests/XFTPWebTests.hs
            leafCertDer = mkFakeCertDer signPkRaw
            idCertDer = B.pack [1 .. 50]
            keyHash = C.sha256Hash idCertDer
-@@ -1835,11 +1737,11 @@
+@@ -1835,11 +1852,11 @@
            dhSeed = B.pack [41 .. 72]
            dhSk = throwCryptoError $ X25519.secretKey dhSeed
            dhPk = X25519.toPublic dhSk
@@ -206,7 +206,7 @@ Index: tests/XFTPWebTests.hs
        tsResult <-
          callNode $
            impId
-@@ -1879,7 +1732,7 @@
+@@ -1879,7 +1896,7 @@
        let signSeed = B.pack [1 .. 32]
            signSk = throwCryptoError $ Ed25519.secretKey signSeed
            signPk = Ed25519.toPublic signSk
@@ -215,7 +215,7 @@ Index: tests/XFTPWebTests.hs
            leafCertDer = mkFakeCertDer signPkRaw
            idCertDer = B.pack [1 .. 50]
            wrongKeyHash = B.replicate 32 0xff
-@@ -1887,18 +1737,18 @@
+@@ -1887,18 +1904,18 @@
            dhSeed = B.pack [41 .. 72]
            dhSk = throwCryptoError $ X25519.secretKey dhSeed
            dhPk = X25519.toPublic dhSk
@@ -237,7 +237,7 @@ Index: tests/XFTPWebTests.hs
        tsResult <-
          callNode $
            impId
-@@ -1930,7 +1732,7 @@
+@@ -1930,7 +1947,7 @@
        let signSeed = B.pack [1 .. 32]
            signSk = throwCryptoError $ Ed25519.secretKey signSeed
            signPk = Ed25519.toPublic signSk
@@ -246,7 +246,7 @@ Index: tests/XFTPWebTests.hs
            leafCertDer = mkFakeCertDer signPkRaw
            idCertDer = B.pack [1 .. 50]
            keyHash = C.sha256Hash idCertDer
-@@ -1938,11 +1737,11 @@
+@@ -1938,11 +1955,11 @@
            dhSeed = B.pack [41 .. 72]
            dhSk = throwCryptoError $ X25519.secretKey dhSeed
            dhPk = X25519.toPublic dhSk
@@ -269,7 +269,7 @@ Index: tests/XFTPWebTests.hs
        tsResult <-
          callNode $
            impId
-@@ -1982,7 +1732,7 @@
+@@ -1982,7 +1999,7 @@
        let signSeed = B.pack [1 .. 32]
            signSk = throwCryptoError $ Ed25519.secretKey signSeed
            signPk = Ed25519.toPublic signSk
@@ -278,7 +278,7 @@ Index: tests/XFTPWebTests.hs
            leafCertDer = mkFakeCertDer signPkRaw
            idCertDer = B.pack [1 .. 50]
            keyHash = C.sha256Hash idCertDer
-@@ -1993,18 +1737,18 @@
+@@ -1993,18 +2010,18 @@
            dhSeed = B.pack [41 .. 72]
            dhSk = throwCryptoError $ X25519.secretKey dhSeed
            dhPk = X25519.toPublic dhSk
@@ -339,7 +339,7 @@ Index: tests/XFTPWebTests.hs
            encData = cipher <> tag
        tsResult <-
          callNode $
-@@ -2516,11 +2315,11 @@
+@@ -2516,11 +2533,11 @@
    let privARaw = B.pack [1 .. 32]
        privA = throwCryptoError $ X25519.secretKey privARaw
        pubA = X25519.toPublic privA
@@ -406,7 +406,7 @@ Index: tests/XFTPWebTests.hs
            encData = cipher <> tag
        tsResult <-
          callNode $
-@@ -2630,14 +1024,14 @@
+@@ -2630,14 +2647,14 @@
            padLen = encSize - 16 - fileSize' - 8
            padding = B.replicate (fromIntegral padLen) 0x23
            (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
@@ -424,7 +424,7 @@ Index: tests/XFTPWebTests.hs
            transportEncData = transportCipher <> transportTag
        -- Step 3: TS decrypts transport, then file-level
        tsResult <-
-@@ -2675,7 +1024,7 @@
+@@ -2675,7 +2692,7 @@
            padLen = encSize - 16 - fileSize' - 8
            padding = B.replicate (fromIntegral padLen) 0x23
            (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
@@ -466,7 +466,7 @@ Index: tests/XFTPWebTests.hs
            encData = cipher <> tag
            -- Simulate server response: FILE <serverPubKey> <nonce>
            -- Server sends pubA (client has privB to do DH)
-@@ -2771,7 +1024,7 @@
+@@ -2771,7 +2788,7 @@
            padLen = encSize - 16 - fileSize' - 8
            padding = B.replicate (fromIntegral padLen) 0x23
            (padEnc, sb3) = LC.sbEncryptChunk sb2 padding

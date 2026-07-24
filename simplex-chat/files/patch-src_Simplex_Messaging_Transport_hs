@@ -9,20 +9,14 @@ exposed.
 Index: src/Simplex/Messaging/Transport.hs
 --- src/Simplex/Messaging/Transport.hs.orig
 +++ src/Simplex/Messaging/Transport.hs
-@@ -373,12 +373,10 @@
- 
- withTlsUnique :: forall c p. TransportPeerI p => T.Context -> (ByteString -> IO (c p)) -> IO (c p)
- withTlsUnique cxt f =
--  cxtFinished cxt
--    >>= maybe (closeTLS cxt >> ioe_EOF) f
--  where
--    cxtFinished = case sTransportPeer @p of
--      STServer -> T.getPeerFinished
--      STClient -> T.getFinished
-+  T.getTLSUnique cxt >>= \case
-+    Just tlsUniq -> f tlsUniq
-+    Nothing ->
-+      T.getTLSExporter cxt >>= maybe (closeTLS cxt >> ioe_EOF) f
- 
- closeTLS :: T.Context -> IO ()
- closeTLS ctx =
+Common subdirectories: /tmp/sx.rgmts5/before/cbits and /tmp/sx.rgmts5/simplexmq-f7e8ed52bf4005f914916bd209f3d10f37d8ef70/cbits
+Common subdirectories: /tmp/sx.rgmts5/before/contributing and /tmp/sx.rgmts5/simplexmq-f7e8ed52bf4005f914916bd209f3d10f37d8ef70/contributing
+Common subdirectories: /tmp/sx.rgmts5/before/design and /tmp/sx.rgmts5/simplexmq-f7e8ed52bf4005f914916bd209f3d10f37d8ef70/design
+Common subdirectories: /tmp/sx.rgmts5/before/img and /tmp/sx.rgmts5/simplexmq-f7e8ed52bf4005f914916bd209f3d10f37d8ef70/img
+Common subdirectories: /tmp/sx.rgmts5/before/plans and /tmp/sx.rgmts5/simplexmq-f7e8ed52bf4005f914916bd209f3d10f37d8ef70/plans
+Common subdirectories: /tmp/sx.rgmts5/before/protocol and /tmp/sx.rgmts5/simplexmq-f7e8ed52bf4005f914916bd209f3d10f37d8ef70/protocol
+Common subdirectories: /tmp/sx.rgmts5/before/rfcs and /tmp/sx.rgmts5/simplexmq-f7e8ed52bf4005f914916bd209f3d10f37d8ef70/rfcs
+Common subdirectories: /tmp/sx.rgmts5/before/scripts and /tmp/sx.rgmts5/simplexmq-f7e8ed52bf4005f914916bd209f3d10f37d8ef70/scripts
+Common subdirectories: /tmp/sx.rgmts5/before/src and /tmp/sx.rgmts5/simplexmq-f7e8ed52bf4005f914916bd209f3d10f37d8ef70/src
+Common subdirectories: /tmp/sx.rgmts5/before/tests and /tmp/sx.rgmts5/simplexmq-f7e8ed52bf4005f914916bd209f3d10f37d8ef70/tests
+Common subdirectories: /tmp/sx.rgmts5/before/xftp-web and /tmp/sx.rgmts5/simplexmq-f7e8ed52bf4005f914916bd209f3d10f37d8ef70/xftp-web

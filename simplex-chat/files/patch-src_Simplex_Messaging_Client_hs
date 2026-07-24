@@ -8,7 +8,7 @@ credentials, avoiding TLS client-auth EKU restrictions for service certs.
 Index: src/Simplex/Messaging/Client.hs
 --- src/Simplex/Messaging/Client.hs.orig
 +++ src/Simplex/Messaging/Client.hs
-@@ -600,7 +600,7 @@
+@@ -606,7 +612,7 @@
      runClient :: (ServiceName, ATransport 'TClient) -> TransportHost -> PClient v err msg -> IO (Either (ProtocolClientError err) (ProtocolClient v err msg))
      runClient (port', ATransport t) useHost c = do
        cVar <- newEmptyTMVarIO
@@ -17,3 +17,4 @@ Index: src/Simplex/Messaging/Client.hs
            socksCreds = clientSocksCredentials networkConfig proxySessTs transportSession
        tId <-
          runTransportClient tcConfig socksCreds useHost port' (Just $ keyHash srv) (client t c cVar)
+

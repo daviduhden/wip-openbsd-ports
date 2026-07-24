@@ -136,6 +136,7 @@ cabal-inc: patch
 			${CABAL_INC_HOME}/.cabal/config; \
 	fi
 	printf '%s\n' \
+		'packages: .' \
 		'packages: ${WRKDIR}/aeson/aeson.cabal' \
 		'packages: ${WRKDIR}/hs-socks/socks.cabal' \
 		'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \

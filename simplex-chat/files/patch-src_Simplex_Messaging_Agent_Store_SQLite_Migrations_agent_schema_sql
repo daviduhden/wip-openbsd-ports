@@ -7,7 +7,7 @@ Keep generated migration SQL column definitions consistently indented.
 Index: src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql
 --- src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql.orig
 +++ src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql
-@@ -202,10 +202,10 @@
+@@ -203,10 +204,10 @@
    ntf_port TEXT NOT NULL,
    tkn_id BLOB, -- token ID assigned by notifications server
    tkn_pub_key BLOB NOT NULL, -- client's public key to verify token commands(used by server, for repeat registraions)
@@ -22,7 +22,7 @@ Index: src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql
    tkn_status TEXT NOT NULL,
    tkn_action BLOB,
    created_at TEXT NOT NULL DEFAULT(datetime('now')),
-@@ -422,8 +422,8 @@
+@@ -423,8 +424,8 @@
    ntf_key_hash BLOB NOT NULL,
    tkn_id BLOB NOT NULL, -- token ID assigned by notifications server
    tkn_priv_key BLOB NOT NULL, -- client's private key to sign token commands,
@@ -33,3 +33,4 @@ Index: src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql
  ) STRICT;
  CREATE TABLE snd_message_bodies(
    snd_message_body_id INTEGER PRIMARY KEY,
+

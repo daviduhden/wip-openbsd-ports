@@ -14,7 +14,7 @@ Index: src/Simplex/Messaging/Crypto.hs
 Bring PubKey and PrivKey constructors into unqualified scope so
 that their ASN1Object instances (from crypton-x509 >= 1.9) are
 visible to encodeASNObj and decodeKey with allow-newer.
-@@ -243,6 +243,7 @@
+@@ -246,6 +249,7 @@
  import Data.Typeable (Proxy (Proxy), Typeable)
  import Data.Word (Word32)
  import qualified Data.X509 as X
@@ -22,3 +22,4 @@ visible to encodeASNObj and decodeKey with allow-newer.
  import Data.X509.Validation (Fingerprint (..), getFingerprint)
  import GHC.TypeLits (ErrorMessage (..), KnownNat, Nat, TypeError, natVal, type (+))
  import Network.Transport.Internal (decodeWord16, encodeWord16)
+

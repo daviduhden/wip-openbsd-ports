@@ -9,7 +9,7 @@ pass the configuration argument to the client callback.
 Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
 --- src/Simplex/Messaging/Transport/HTTP2/Client.hs.orig
 +++ src/Simplex/Messaging/Transport/HTTP2/Client.hs
-@@ -28,11 +28,12 @@
+@@ -35,11 +35,12 @@
  import qualified Control.Exception as E
  import Control.Monad
  import Data.Functor (($>))
@@ -23,7 +23,7 @@ Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
  import qualified Network.HTTP2.Client as H
  import Network.Socket (HostName, ServiceName)
  import Network.Socks5 (SocksCredentials)
-@@ -146,7 +147,7 @@
+@@ -153,7 +161,7 @@
          Nothing -> cancel action $> Left (HCNetworkError NETimeoutError)
  
      client :: HClient -> TMVar (Either HTTP2ClientError HTTP2Client) -> TLS p -> H.Client HTTP2Response
@@ -32,7 +32,7 @@ Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
        sessionTs <- getCurrentTime
        let c' =
              HTTP2Client
-@@ -164,10 +165,10 @@
+@@ -171,10 +179,10 @@
        atomically $ do
          writeTVar (connected c) True
          putTMVar cVar (Right c')
@@ -45,7 +45,7 @@ Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
        (req, respVar) <- atomically $ readTBQueue reqQ
        sendReq req $ \r -> do
          respBody <- getHTTP2Body r (bodyHeadSize config)
-@@ -213,4 +214,10 @@
+@@ -220,4 +228,10 @@
  runHTTP2ClientWith bufferSize host setup client = setup $ \tls -> withHTTP2 bufferSize (run tls) (pure ()) tls
    where
      run :: TLS p -> H.Config -> IO a
@@ -57,3 +57,5 @@ Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
 +          H.authority = B.unpack $ strEncode host,
 +          H.cacheLimit = 20
 +        }
+
+

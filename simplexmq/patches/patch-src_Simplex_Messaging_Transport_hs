@@ -9,8 +9,8 @@ exposed.
 Index: src/Simplex/Messaging/Transport.hs
 --- src/Simplex/Messaging/Transport.hs.orig
 +++ src/Simplex/Messaging/Transport.hs
-@@ -373,12 +384,10 @@
- 
+@@ -384,12 +395,10 @@
+
  withTlsUnique :: forall c p. TransportPeerI p => T.Context -> (ByteString -> IO (c p)) -> IO (c p)
  withTlsUnique cxt f =
 -  cxtFinished cxt
@@ -23,7 +23,6 @@ Index: src/Simplex/Messaging/Transport.hs
 +    Just tlsUniq -> f tlsUniq
 +    Nothing ->
 +      T.getTLSExporter cxt >>= maybe (closeTLS cxt >> ioe_EOF) f
- 
+
  closeTLS :: T.Context -> IO ()
  closeTLS ctx =
-

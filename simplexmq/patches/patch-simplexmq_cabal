@@ -8,7 +8,7 @@ arrays. The upstream source at v6.5.5.0 still uses the old deps.
 Index: simplexmq.cabal
 --- simplexmq.cabal.orig
 +++ simplexmq.cabal
-@@ -340,8 +346,8 @@
+@@ -346,8 +352,8 @@
          bcrypt
    build-depends:
        aeson ==2.2.*
@@ -19,7 +19,7 @@ Index: simplexmq.cabal
      , async ==2.2.*
      , attoparsec ==0.14.*
      , base >=4.14 && <5
-@@ -357,12 +363,12 @@
+@@ -363,12 +369,12 @@
      , data-default ==0.7.*
      , directory ==1.3.*
      , filepath ==1.4.*
@@ -34,7 +34,7 @@ Index: simplexmq.cabal
      , mtl >=2.3.1 && <3.0
      , network >=3.1.2.7 && <3.2
      , network-info ==0.2.*
-@@ -602,7 +617,7 @@
+@@ -611,7 +626,7 @@
      , ini
      , iso8601-time
      , main-tester ==0.2.*

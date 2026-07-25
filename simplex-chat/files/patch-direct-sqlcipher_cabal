@@ -1,0 +1,13 @@
+$OpenBSD$
+
+Use the OpenBSD SQLCipher shared library when systemlib is enabled.
+
+Index: direct-sqlcipher.cabal
+--- direct-sqlcipher.cabal.orig
++++ direct-sqlcipher.cabal
+@@ -80,3 +80,4 @@
+   if flag(systemlib)
+-    extra-libraries: sqlite3
++    extra-libraries: sqlcipher
++    include-dirs: /usr/local/include/sqlcipher
+     cpp-options:     -Ddirect_sqlite_systemlib

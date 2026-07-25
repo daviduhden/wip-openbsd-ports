@@ -8,7 +8,7 @@ client authentication, matching the runtime service-client path.
 Index: tests/SMPClient.hs
 --- tests/SMPClient.hs.orig
 +++ tests/SMPClient.hs
-@@ -171,11 +195,7 @@
+@@ -195,11 +219,7 @@
    serviceCertHash <- loadFingerprint ntfTestServerCredentials
    Right serviceSignKey <- pure $ C.x509ToPrivate' $ snd tlsNtfServerCreds
    let service = ServiceCredentials {serviceRole = SRNotifier, serviceCreds = tlsNtfServerCreds, serviceCertHash, serviceSignKey}

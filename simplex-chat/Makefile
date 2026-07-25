@@ -43,7 +43,7 @@ MAINTAINER = David Uhden Collado <daviduhden@gmail.com>
 # GNU Affero General Public License v3.0 only (AGPL-3.0-only)
 PERMIT_PACKAGE = Yes
 
-WANTLIB = ${COMPILER_LIBCXX} c crypto ffi gmp iconv m pthread sqlcipher util z zstd
+WANTLIB = c crypto ffi gmp iconv m pthread sqlcipher util z zstd
 
 MODULES = devel/cabal
 MODCABAL_STEM = simplex-chat
@@ -85,11 +85,11 @@ SIMPLEXMQ_PATCHES = \
 	patch-src_Simplex_Messaging_Transport_KeepAlive_hs \
 	patch-src_Simplex_Messaging_Transport_Server_hs
 
-LIB_DEPENDS = converters/libiconv \
+LIB_DEPENDS = archivers/zstd \
+			converters/libiconv \
 			databases/sqlcipher \
 			devel/gmp \
-			devel/libffi \
-			archivers/zstd
+			devel/libffi
 
 BUILD_DEPENDS = converters/dos2unix
 
@@ -98,6 +98,8 @@ post-patch:
 	find ${WRKDIR} -type f \( -name '*.hs' -o -name '*.cabal' \
 		-o -name '*.sql' -o -name '*.h' -o -name '*.c' \) \
 		-exec ${LOCALBASE}/bin/dos2unix -q {} +
+	patch -d ${WRKDIR}/direct-sqlcipher -p0 \
+		< ${FILESDIR}/patch-direct-sqlcipher_cabal
 	printf '%s\n' \
 		'allow-newer: *' \
 		'packages: ${WRKDIR}/simplexmq/simplexmq.cabal' \
@@ -110,6 +112,10 @@ post-patch:
 		'packages: ${WRKDIR}/zip/zip.cabal' \
 		'package simplexmq' \
 		'    flags: +client_library' \
+		'package direct-sqlcipher' \
+		'    flags: +systemlib' \
+		'package zstd' \
+		'    flags: -standalone' \
 		'package *' \
 		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
 		>> ${WRKSRC}/cabal.project.local
@@ -169,6 +175,10 @@ cabal-inc: patch
 		'packages: ${WRKDIR}/zip/zip.cabal' \
 		'package simplexmq' \
 		'    flags: +client_library' \
+		'package direct-sqlcipher' \
+		'    flags: +systemlib' \
+		'package zstd' \
+		'    flags: -standalone' \
 		'package *' \
 		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
 		> ${WRKSRC}/cabal.project.local
@@ -199,6 +209,10 @@ cabal-inc: patch
 		'packages: ${WRKDIR}/zip/zip.cabal' \
 		'package simplexmq' \
 		'    flags: -client_library' \
+		'package direct-sqlcipher' \
+		'    flags: +systemlib' \
+		'package zstd' \
+		'    flags: -standalone' \
 		'package *' \
 		'    tests: False' \
 		'package simplex-chat' \
@@ -240,6 +254,10 @@ do-test:
 		'packages: ${WRKDIR}/zip/zip.cabal' \
 		'package simplexmq' \
 		'    flags: -client_library' \
+		'package direct-sqlcipher' \
+		'    flags: +systemlib' \
+		'package zstd' \
+		'    flags: -standalone' \
 		'package *' \
 		'    tests: False' \
 		'package simplex-chat' \

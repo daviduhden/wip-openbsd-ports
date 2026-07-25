@@ -18,7 +18,7 @@ Index: src/Simplex/Messaging/Server/MsgStore/Journal.hs
  
  data JournalMsgStore s = JournalMsgStore
    { config :: JournalStoreConfig s,
-@@ -819,6 +843,12 @@
+@@ -841,6 +865,12 @@
  newJournalId :: TVar StdGen -> IO ByteString
  newJournalId g = strEncode <$> atomically (stateTVar g $ genByteString 12)
  

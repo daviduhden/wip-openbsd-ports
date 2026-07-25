@@ -7,7 +7,7 @@ Pattern match the optional password hash instead of using list unzip on Maybe.
 Index: src/Simplex/Chat/Store/Profiles.hs
 --- src/Simplex/Chat/Store/Profiles.hs.orig
 +++ src/Simplex/Chat/Store/Profiles.hs
-@@ -297,3 +297,5 @@
+@@ -296,3 +296,5 @@
    where
 -    hashSalt = L.unzip . fmap (\UserPwdHash {hash, salt} -> (hash, salt))
 +    hashSalt = \case

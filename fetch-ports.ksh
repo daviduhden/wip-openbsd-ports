@@ -63,7 +63,7 @@ set_cvsroot() {
 
 # Function to remove the ports content
 remove_ports_content() {
-	rm -rf /usr/ports/*
+	find /usr/ports -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
 }
 
 # Function to checkout the ports tree using CVS (removes old tree first)

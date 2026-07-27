@@ -4,9 +4,9 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplexmq
-GH_COMMIT = f7e8ed52bf4005f914916bd209f3d10f37d8ef70
+GH_COMMIT = efaad8e73436d60f5052f07dda6b71151ad5039b
 
-V = 7.0.0.5
+V = 7.0.0.6
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -57,6 +57,32 @@ ENTROPY_V = 0.4.1.11
 CABAL_INC_HOME ?= ${WRKDIR}/.cabal-inc-home
 CABAL_INC_SKIP = aeson,socks,direct-sqlcipher,sqlcipher-simple,warp-tls,warp
 CABAL_INC_EXTRA = wai-app-static:3.2.1:0,wai-extra:3.1.18:0,yaml:0.11.11.2:0
+SIMPLEXMQ_CABAL_PACKAGES = \
+	'packages: ${WRKDIR}/aeson/aeson.cabal' \
+	'packages: ${WRKDIR}/hs-socks/socks.cabal' \
+	'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \
+	'packages: ${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal' \
+	'packages: ${WRKDIR}/yesod-wai/warp-tls/warp-tls.cabal' \
+	'packages: ${WRKDIR}/simplex-wai/warp/warp.cabal'
+SIMPLEXMQ_CABAL_PACKAGE_PATHS = \
+	${WRKDIR}/aeson/aeson.cabal \
+	${WRKDIR}/hs-socks/socks.cabal \
+	${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal \
+	${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal \
+	${WRKDIR}/yesod-wai/warp-tls/warp-tls.cabal \
+	${WRKDIR}/simplex-wai/warp/warp.cabal
+SIMPLEXMQ_CABAL_COMMON_OPTIONS = \
+	'package direct-sqlcipher' \
+	'    flags: +systemlib' \
+	'package zstd' \
+	'    flags: -standalone' \
+	'package *' \
+	'    ghc-options: -w -optP-Wno-expansion-to-defined'
+SIMPLEXMQ_CABAL_TEST_OPTIONS = \
+	'package *' \
+	'    tests: False' \
+	'package simplexmq' \
+	'    tests: True'
 AESON_PATCHES = \
 	patch-aeson_cabal \
 	patch-src_Data_Aeson_Types_FromJSON_hs \
@@ -77,6 +103,14 @@ LIB_DEPENDS = archivers/zstd \
 
 BUILD_DEPENDS = converters/dos2unix
 
+SIMPLEXMQ_CABAL_CHECK_PATHS = \
+	for _pkg in ${SIMPLEXMQ_CABAL_PACKAGE_PATHS}; do \
+		if [ ! -f "$$_pkg" ]; then \
+			echo "missing cabal package: $$_pkg" >&2; \
+			exit 1; \
+		fi; \
+	done
+
 post-patch:
 	# Normalize source to LF before applying patches.
 	find ${WRKDIR} -type f \( -name '*.hs' -o -name '*.cabal' \
@@ -84,19 +118,10 @@ post-patch:
 		-exec ${LOCALBASE}/bin/dos2unix -q {} +
 	patch -d ${WRKDIR}/direct-sqlcipher -p0 \
 		< ${FILESDIR}/patch-direct-sqlcipher_cabal
+	${SIMPLEXMQ_CABAL_CHECK_PATHS}
 	printf '%s\n' \
-		'packages: ${WRKDIR}/aeson/aeson.cabal' \
-		'packages: ${WRKDIR}/hs-socks/socks.cabal' \
-		'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \
-		'packages: ${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal' \
-		'packages: ${WRKDIR}/yesod-wai/warp-tls/warp-tls.cabal' \
-		'packages: ${WRKDIR}/simplex-wai/warp/warp.cabal' \
-		'package direct-sqlcipher' \
-		'    flags: +systemlib' \
-		'package zstd' \
-		'    flags: -standalone' \
-		'package *' \
-		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
+		${SIMPLEXMQ_CABAL_PACKAGES} \
+		${SIMPLEXMQ_CABAL_COMMON_OPTIONS} \
 		>> ${WRKSRC}/cabal.project.local
 .for _p in ${AESON_PATCHES}
 	patch -d ${WRKDIR}/aeson -p0 < ${FILESDIR}/${_p}
@@ -141,20 +166,10 @@ cabal-inc: patch
 		cp ${CABAL_INC_HOME}/.config/cabal/config \
 			${CABAL_INC_HOME}/.cabal/config; \
 	fi
+	${SIMPLEXMQ_CABAL_CHECK_PATHS}
 	printf '%s\n' \
-		'packages: .' \
-		'packages: ${WRKDIR}/aeson/aeson.cabal' \
-		'packages: ${WRKDIR}/hs-socks/socks.cabal' \
-		'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \
-		'packages: ${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal' \
-		'packages: ${WRKDIR}/yesod-wai/warp-tls/warp-tls.cabal' \
-		'packages: ${WRKDIR}/simplex-wai/warp/warp.cabal' \
-		'package direct-sqlcipher' \
-		'    flags: +systemlib' \
-		'package zstd' \
-		'    flags: -standalone' \
-		'package *' \
-		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
+		${SIMPLEXMQ_CABAL_PACKAGES} \
+		${SIMPLEXMQ_CABAL_COMMON_OPTIONS} \
 		> ${WRKSRC}/cabal.project.local
 	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
 		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
@@ -177,10 +192,7 @@ cabal-inc: patch
 		${MODCABAL_STEM}-${MODCABAL_VERSION} \
 		> ${WRKDIR}/simplexmq.xftp.inc
 	printf '%s\n' \
-		'package *' \
-		'    tests: False' \
-		'package simplexmq' \
-		'    tests: True' \
+		${SIMPLEXMQ_CABAL_TEST_OPTIONS} \
 		>> ${WRKSRC}/cabal.project.local
 	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
 		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
@@ -206,11 +218,11 @@ post-install:
 		${PREFIX}/man/man1/xftp-server.1
 
 do-test:
+	${SIMPLEXMQ_CABAL_CHECK_PATHS}
 	printf '%s\n' \
-		'package *' \
-		'    tests: False' \
-		'package simplexmq' \
-		'    tests: True' \
+		${SIMPLEXMQ_CABAL_PACKAGES} \
+		${SIMPLEXMQ_CABAL_COMMON_OPTIONS} \
+		${SIMPLEXMQ_CABAL_TEST_OPTIONS} \
 		>> ${WRKSRC}/cabal.project.local
 	cd ${WRKBUILD} && exec ${SETENV} ${MAKE_ENV} \
 		HOME=${CABAL_INC_HOME} \

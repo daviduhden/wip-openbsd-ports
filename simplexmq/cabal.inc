@@ -48,9 +48,12 @@ MODCABAL_MANIFEST	= \
 	crypton-asn1-encoding	0.10.0	0	\
 	crypton-asn1-parse	0.10.0	0	\
 	crypton-asn1-types	0.4.1	0	\
+	crypton-connection	0.4.6	1	\
 	crypton-pem	0.3.0	0	\
+	crypton-socks	0.6.2	0	\
 	crypton-x509	1.9.1	0	\
 	crypton-x509-store	1.9.0	0	\
+	crypton-x509-system	1.9.0	0	\
 	crypton-x509-validation	1.9.1	1	\
 	cryptostore	0.5.0.0	1	\
 	data-default	0.8.0.2	0	\
@@ -76,10 +79,11 @@ MODCABAL_MANIFEST	= \
 	hspec-discover	2.11.17	0	\
 	hspec-expectations	0.8.4	0	\
 	http-client	0.7.19	0	\
+	http-client-tls	0.4.0	0	\
 	http-date	0.0.11	0	\
-	http-semantics	0.4.0	0	\
+	http-semantics	0.4.1	0	\
 	http-types	0.12.5	0	\
-	http2	5.4.1	1	\
+	http2	5.4.3	0	\
 	indexed-traversable	0.1.5	0	\
 	indexed-traversable-instances	0.1.2.1	0	\
 	ini	0.5.1	0	\

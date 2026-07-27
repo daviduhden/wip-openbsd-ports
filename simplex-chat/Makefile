@@ -4,9 +4,9 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-GH_TAGNAME = v7.0.0-beta.5
+GH_TAGNAME = v7.0.0-beta.6
 
-V = 7.0.0.10
+V = 7.0.0.11
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -15,7 +15,7 @@ WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 
 DIST_TUPLE += github simplex-chat simplexmq \
-		f7e8ed52bf4005f914916bd209f3d10f37d8ef70 ../simplexmq
+		efaad8e73436d60f5052f07dda6b71151ad5039b ../simplexmq
 DIST_TUPLE += github supranational blst \
 		db3defd0d501cc2bb1cdd59cb955d1a421821441 ../simplexmq/cbits/blst
 DIST_TUPLE += github simplex-chat libbbs \
@@ -54,13 +54,53 @@ MODCABAL_EXECUTABLES = simplex-chat
 MODCABAL_BUILD_ARGS = -v2
 .endif
 
+CABAL_INC_HOME ?= ${WRKDIR}/.cabal-inc-home
+CABAL_INC_SKIP = simplexmq,aeson,socks,direct-sqlcipher,sqlcipher-simple,terminal,android-support,zip
+CABAL_INC_EXTRA = yaml:0.11.11.2:0
 NETWORK_V = 3.2.8.0
 UNIX_TIME_V = 0.5.0
 CRYPTOSTORE_V = 0.5.0.0
 ENTROPY_V = 0.4.1.11
-CABAL_INC_HOME ?= ${WRKDIR}/.cabal-inc-home
-CABAL_INC_SKIP = simplexmq,aeson,socks,direct-sqlcipher,sqlcipher-simple,terminal,android-support,zip
-CABAL_INC_EXTRA = yaml:0.11.11.2:0
+WITHERABLE_V = 0.5
+WITHERABLE_TARBALL = ${DISTDIR}/hackage/witherable-${WITHERABLE_V}.tar.gz
+WITHERABLE_DIR = ${WRKDIR}/witherable-${WITHERABLE_V}
+CHAT_CABAL_PACKAGES = \
+	'packages: ${WRKDIR}/simplexmq/simplexmq.cabal' \
+	'packages: ${WRKDIR}/hs-socks/socks.cabal' \
+	'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \
+	'packages: ${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal' \
+	'packages: ${WRKDIR}/aeson/aeson.cabal' \
+	'packages: ${WRKDIR}/witherable-${WITHERABLE_V}/witherable.cabal' \
+	'packages: ${WRKDIR}/haskell-terminal/terminal.cabal' \
+	'packages: ${WRKDIR}/android-support/android-support.cabal' \
+	'packages: ${WRKDIR}/zip/zip.cabal'
+CHAT_CABAL_PACKAGE_PATHS = \
+	${WRKDIR}/simplexmq/simplexmq.cabal \
+	${WRKDIR}/hs-socks/socks.cabal \
+	${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal \
+	${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal \
+	${WRKDIR}/aeson/aeson.cabal \
+	${WRKDIR}/witherable-${WITHERABLE_V}/witherable.cabal \
+	${WRKDIR}/haskell-terminal/terminal.cabal \
+	${WRKDIR}/android-support/android-support.cabal \
+	${WRKDIR}/zip/zip.cabal
+CHAT_CABAL_COMMON_OPTIONS = \
+	'package direct-sqlcipher' \
+	'    flags: +systemlib' \
+	'package zstd' \
+	'    flags: -standalone' \
+	'package *' \
+	'    ghc-options: -w -optP-Wno-expansion-to-defined'
+CHAT_CABAL_BUILD_OPTIONS = \
+	'package simplexmq' \
+	'    flags: +client_library'
+CHAT_CABAL_TEST_OPTIONS = \
+	'package simplexmq' \
+	'    flags: -client_library' \
+	'package *' \
+	'    tests: False' \
+	'package simplex-chat' \
+	'    tests: True'
 AESON_PATCHES = \
 	patch-aeson_cabal \
 	patch-src_Data_Aeson_Types_FromJSON_hs \
@@ -93,6 +133,14 @@ LIB_DEPENDS = archivers/zstd \
 
 BUILD_DEPENDS = converters/dos2unix
 
+CHAT_CABAL_CHECK_PATHS = \
+	for _pkg in ${CHAT_CABAL_PACKAGE_PATHS}; do \
+		if [ ! -f "$$_pkg" ]; then \
+			echo "missing cabal package: $$_pkg" >&2; \
+			exit 1; \
+		fi; \
+	done
+
 post-patch:
 	# Normalize source to LF before applying patches.
 	find ${WRKDIR} -type f \( -name '*.hs' -o -name '*.cabal' \
@@ -100,24 +148,15 @@ post-patch:
 		-exec ${LOCALBASE}/bin/dos2unix -q {} +
 	patch -d ${WRKDIR}/direct-sqlcipher -p0 \
 		< ${FILESDIR}/patch-direct-sqlcipher_cabal
+	if [ ! -f ${WITHERABLE_DIR}/witherable.cabal ]; then \
+		${TAR} -C ${WRKDIR} -xzf ${WITHERABLE_TARBALL}; \
+	fi
+	${CHAT_CABAL_CHECK_PATHS}
 	printf '%s\n' \
 		'allow-newer: *' \
-		'packages: ${WRKDIR}/simplexmq/simplexmq.cabal' \
-		'packages: ${WRKDIR}/hs-socks/socks.cabal' \
-		'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \
-		'packages: ${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal' \
-		'packages: ${WRKDIR}/aeson/aeson.cabal' \
-		'packages: ${WRKDIR}/haskell-terminal/terminal.cabal' \
-		'packages: ${WRKDIR}/android-support/android-support.cabal' \
-		'packages: ${WRKDIR}/zip/zip.cabal' \
-		'package simplexmq' \
-		'    flags: +client_library' \
-		'package direct-sqlcipher' \
-		'    flags: +systemlib' \
-		'package zstd' \
-		'    flags: -standalone' \
-		'package *' \
-		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
+		${CHAT_CABAL_PACKAGES} \
+		${CHAT_CABAL_COMMON_OPTIONS} \
+		${CHAT_CABAL_BUILD_OPTIONS} \
 		>> ${WRKSRC}/cabal.project.local
 .for _p in ${SIMPLEXMQ_PATCHES}
 	patch -d ${WRKDIR}/simplexmq -p0 < ${FILESDIR}/${_p}
@@ -162,25 +201,12 @@ cabal-inc: patch
 		cp ${CABAL_INC_HOME}/.config/cabal/config \
 			${CABAL_INC_HOME}/.cabal/config; \
 	fi
+	${CHAT_CABAL_CHECK_PATHS}
 	printf '%s\n' \
 		'allow-newer: *' \
 		'packages: .' \
-		'packages: ${WRKDIR}/simplexmq/simplexmq.cabal' \
-		'packages: ${WRKDIR}/hs-socks/socks.cabal' \
-		'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \
-		'packages: ${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal' \
-		'packages: ${WRKDIR}/aeson/aeson.cabal' \
-		'packages: ${WRKDIR}/haskell-terminal/terminal.cabal' \
-		'packages: ${WRKDIR}/android-support/android-support.cabal' \
-		'packages: ${WRKDIR}/zip/zip.cabal' \
-		'package simplexmq' \
-		'    flags: +client_library' \
-		'package direct-sqlcipher' \
-		'    flags: +systemlib' \
-		'package zstd' \
-		'    flags: -standalone' \
-		'package *' \
-		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
+		${CHAT_CABAL_PACKAGES} \
+		${CHAT_CABAL_OPTIONS} \
 		> ${WRKSRC}/cabal.project.local
 	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
 		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
@@ -196,29 +222,13 @@ cabal-inc: patch
 		${MODCABAL_STEM}-${MODCABAL_VERSION} \
 		> ${WRKDIR}/simplex-chat.raw.inc
 	# Test builds need simplexmq to expose the server modules imported by tests.
+	${CHAT_CABAL_CHECK_PATHS}
 	printf '%s\n' \
 		'allow-newer: *' \
 		'packages: .' \
-		'packages: ${WRKDIR}/simplexmq/simplexmq.cabal' \
-		'packages: ${WRKDIR}/hs-socks/socks.cabal' \
-		'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \
-		'packages: ${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal' \
-		'packages: ${WRKDIR}/aeson/aeson.cabal' \
-		'packages: ${WRKDIR}/haskell-terminal/terminal.cabal' \
-		'packages: ${WRKDIR}/android-support/android-support.cabal' \
-		'packages: ${WRKDIR}/zip/zip.cabal' \
-		'package simplexmq' \
-		'    flags: -client_library' \
-		'package direct-sqlcipher' \
-		'    flags: +systemlib' \
-		'package zstd' \
-		'    flags: -standalone' \
-		'package *' \
-		'    tests: False' \
-		'package simplex-chat' \
-		'    tests: True' \
-		'package *' \
-		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
+		${CHAT_CABAL_PACKAGES} \
+		${CHAT_CABAL_COMMON_OPTIONS} \
+		${CHAT_CABAL_TEST_OPTIONS} \
 		> ${WRKSRC}/cabal.project.local
 	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
 		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
@@ -243,27 +253,11 @@ post-install:
 
 do-test:
 	# Keep simplexmq unflagged here so the test suite can import its server APIs.
+	${CHAT_CABAL_CHECK_PATHS}
 	printf '%s\n' \
-		'packages: ${WRKDIR}/simplexmq/simplexmq.cabal' \
-		'packages: ${WRKDIR}/hs-socks/socks.cabal' \
-		'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \
-		'packages: ${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal' \
-		'packages: ${WRKDIR}/aeson/aeson.cabal' \
-		'packages: ${WRKDIR}/haskell-terminal/terminal.cabal' \
-		'packages: ${WRKDIR}/android-support/android-support.cabal' \
-		'packages: ${WRKDIR}/zip/zip.cabal' \
-		'package simplexmq' \
-		'    flags: -client_library' \
-		'package direct-sqlcipher' \
-		'    flags: +systemlib' \
-		'package zstd' \
-		'    flags: -standalone' \
-		'package *' \
-		'    tests: False' \
-		'package simplex-chat' \
-		'    tests: True' \
-		'package *' \
-		'    ghc-options: -w -optP-Wno-expansion-to-defined' \
+		${CHAT_CABAL_PACKAGES} \
+		${CHAT_CABAL_COMMON_OPTIONS} \
+		${CHAT_CABAL_TEST_OPTIONS} \
 		> ${WRKSRC}/cabal.project.local
 	cd ${WRKBUILD} && exec ${SETENV} ${MAKE_ENV} \
 		HOME=${CABAL_INC_HOME} \

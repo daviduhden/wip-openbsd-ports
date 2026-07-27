@@ -23,11 +23,11 @@ MODCABAL_MANIFEST	= \
 	bifunctors	5.6.3	1	\
 	bitvec	1.1.6.0	0	\
 	blaze-builder	0.4.4.1	0	\
-	blaze-html	0.9.2.0	0	\
-	blaze-markup	0.8.3.0	0	\
+	blaze-html	0.9.2.0	1	\
+	blaze-markup	0.8.3.0	2	\
 	blaze-textual	0.2.3.1	0	\
 	boring	0.2.2.1	0	\
-	bsb-http-chunked	0.0.0.4	0	\
+	bsb-http-chunked	0.0.0.4	4	\
 	byteorder	1.0.4	0	\
 	call-stack	0.4.0	0	\
 	case-insensitive	1.2.1.0	0	\
@@ -49,9 +49,12 @@ MODCABAL_MANIFEST	= \
 	crypton-asn1-encoding	0.10.0	0	\
 	crypton-asn1-parse	0.10.0	0	\
 	crypton-asn1-types	0.4.1	0	\
+	crypton-connection	0.4.6	1	\
 	crypton-pem	0.3.0	0	\
+	crypton-socks	0.6.2	0	\
 	crypton-x509	1.9.1	0	\
 	crypton-x509-store	1.9.0	0	\
+	crypton-x509-system	1.9.0	0	\
 	crypton-x509-validation	1.9.1	1	\
 	cryptostore	0.5.0.0	1	\
 	data-default	0.8.0.2	0	\
@@ -79,10 +82,11 @@ MODCABAL_MANIFEST	= \
 	hspec-discover	2.11.17	0	\
 	hspec-expectations	0.8.4	0	\
 	http-client	0.7.19	0	\
+	http-client-tls	0.4.0	0	\
 	http-date	0.0.11	0	\
-	http-semantics	0.4.0	0	\
+	http-semantics	0.4.1	0	\
 	http-types	0.12.5	0	\
-	http2	5.4.1	1	\
+	http2	5.4.3	0	\
 	indexed-traversable	0.1.5	0	\
 	indexed-traversable-instances	0.1.2.1	0	\
 	ini	0.5.1	0	\
@@ -153,7 +157,7 @@ MODCABAL_MANIFEST	= \
 	time-manager	0.3.2	0	\
 	timeit	2.0	0	\
 	tls	2.4.3	0	\
-	tls-session-manager	0.1.0	0	\
+	tls-session-manager	0.1.0	1	\
 	transformers-base	0.4.6.1	0	\
 	transformers-compat	0.8	0	\
 	typed-process	0.2.13.0	0	\
@@ -176,10 +180,9 @@ MODCABAL_MANIFEST	= \
 	wai-app-static	3.2.1	0	\
 	wai-extra	3.1.18	0	\
 	wai-logger	2.5.0	0	\
-	warp	3.4.13.1	0	\
+	warp	3.4.14	0	\
 	warp-tls	3.4.14	0	\
 	websockets	0.13.0.0	6	\
-	witherable	0.5	2	\
 	word8	0.1.3	0	\
 	yaml	0.11.11.2	0	\
 	zlib	0.7.1.1	0	\

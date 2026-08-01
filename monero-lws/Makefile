@@ -12,7 +12,7 @@ SITES = https://github.com/vtnerd/monero-lws/archive/refs/heads/
 SITES.${MONERO_DIST} = https://downloads.getmonero.org/cli/
 
 WRKDIST = ${WRKDIR}/monero-lws-${LWS_VERSION}
-MONERO_WRKSRC = ${WRKDIR}/monero-v${VERSION}
+MONERO_WRKSRC = ${WRKDIR}/monero-source-v${VERSION}
 MONERO_WRKBUILD = ${WRKDIR}/monero-build
 LWS_WRKBUILD = ${WRKDIR}/lws-build
 
@@ -27,7 +27,8 @@ ONLY_FOR_ARCHS = amd64 i386 arm64 armv7 riscv64
 WANTLIB += ${COMPILER_LIBCXX} boost_chrono-mt boost_date_time-mt
 WANTLIB += boost_filesystem-mt boost_locale-mt boost_program_options-mt
 WANTLIB += boost_serialization-mt boost_thread-mt c crypto curses
-WANTLIB += ereadline execinfo hidapi-libusb m sodium ssl unbound zmq
+WANTLIB += ereadline execinfo hidapi-libusb iconv m protobuf
+WANTLIB += sodium ssl unbound zmq
 
 COMPILER = base-clang ports-gcc
 MODULES = devel/cmake
@@ -42,8 +43,6 @@ LIB_DEPENDS = devel/boost \
 		net/libunbound \
 		converters/libiconv \
 		comms/libhidapi
-
-USE_GMAKE = Yes
 
 # Apply monero patches to the vendored monero source.
 MONERO_PATCHES += patch-cmake_FindLibunwind_cmake
@@ -61,6 +60,7 @@ do-build:
 	cd ${MONERO_WRKSRC} && cmake -S ${MONERO_WRKSRC} -B ${MONERO_WRKBUILD} \
 	    -GNinja \
 	    -DCMAKE_BUILD_TYPE=Release \
+	    -Wno-dev \
 	    -DDEPENDS=ON \
 	    -DMANUAL_SUBMODULES=ON \
 	    -DBUILD_DOCUMENTATION=OFF

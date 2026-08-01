@@ -17,13 +17,15 @@ ONLY_FOR_ARCHS = amd64 i386 arm64 armv7 riscv64
 WANTLIB += ${COMPILER_LIBCXX} boost_chrono-mt boost_date_time-mt
 WANTLIB += boost_filesystem-mt boost_locale-mt boost_program_options-mt
 WANTLIB += boost_serialization-mt boost_thread-mt c crypto curses
-WANTLIB += ereadline execinfo hidapi-libusb m sodium ssl unbound zmq
+WANTLIB += ereadline execinfo hidapi-libusb iconv m protobuf
+WANTLIB += sodium ssl unbound zmq
 
 COMPILER = base-clang ports-gcc
 MODULES = devel/cmake
 BUILD_DEPENDS = devel/ninja
 
-CONFIGURE_ARGS += -Wno-dev \
+CONFIGURE_ARGS += -GNinja \
+		  -Wno-dev \
 		  -DDEPENDS=ON \
 		  -DMANUAL_SUBMODULES=ON \
 		  -DBUILD_DOCUMENTATION=OFF
@@ -37,8 +39,6 @@ LIB_DEPENDS = devel/boost \
 		comms/libhidapi
 
 TEST_DEPENDS = lang/python/3
-
-USE_GMAKE = Yes
 
 do-install:
 	${INSTALL_PROGRAM} ${WRKBUILD}/bin/* ${PREFIX}/bin/

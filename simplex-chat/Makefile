@@ -4,7 +4,7 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-GH_TAGNAME = v7.0.0-beta.6
+GH_TAGNAME = v7.0.0
 
 V = 7.0.0.11
 DISTNAME = ${GH_PROJECT}-${V}

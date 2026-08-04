@@ -6,13 +6,14 @@
 # purpose with or without fee is hereby granted, provided that the above
 # copyright notice and this permission notice appear in all copies.
 #
-# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
+# WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE
+# AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+# DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA
+# OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+# TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
 #
 # Merge cabal-bundler output from multiple executables and/or cabal
 # plan.json files into a single MODCABAL_MANIFEST, skipping vendored
@@ -23,7 +24,8 @@
 #   EXTRA  comma-separated name:version:revision triplets to inject
 #
 # Usage:
-#   env SKIP=... EXTRA=... perl cabal-deps-merge.pl inc1 inc2 plan.json > cabal.inc
+#   env SKIP=... EXTRA=... perl cabal-deps-merge.pl \
+#       inc1 inc2 plan.json > cabal.inc
 
 use strict;
 use warnings;
@@ -53,10 +55,12 @@ for my $file (@ARGV) {
         my $plan = decode_json($json);
         for my $unit ( @{ $plan->{'install-plan'} // [] } ) {
             my $src = $unit->{'pkg-src'} // next;
-            next unless ref $src eq 'HASH' && ( $src->{type} // '' ) eq 'repo-tar';
+            next unless ref $src eq 'HASH'
+                && ( $src->{type} // '' ) eq 'repo-tar';
             my $n = $unit->{'pkg-name'} // next;
             my $v = $unit->{'pkg-version'} // next;
-            my ($r) = ( $src->{'cabal-file-url'} // '' ) =~ m{/revision/(\d+)};
+            my ($r) = ( $src->{'cabal-file-url'} // '' )
+                =~ m{/revision/(\d+)};
             $r //= 0;
             next if $skip{$n};
             next if $seen_nv{"$n\t$v"};

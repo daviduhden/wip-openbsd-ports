@@ -38,10 +38,10 @@ my %seen_nv;
 for my $dep ( split /,/, $ENV{EXTRA} // '' ) {
     next unless length $dep;
     my ( $n, $v, $r ) = split /:/, $dep;
-    next                    if $skip{$n};
+    next if $skip{$n};
     if ( defined $r ) {
         $seen{"$n\t$v\t$r"} = 1;
-        $seen_nv{"$n\t$v"} = 1;
+        $seen_nv{"$n\t$v"}  = 1;
     }
 }
 
@@ -55,17 +55,17 @@ for my $file (@ARGV) {
         my $plan = decode_json($json);
         for my $unit ( @{ $plan->{'install-plan'} // [] } ) {
             my $src = $unit->{'pkg-src'} // next;
-            next unless ref $src eq 'HASH'
-                && ( $src->{type} // '' ) eq 'repo-tar';
-            my $n = $unit->{'pkg-name'} // next;
-            my $v = $unit->{'pkg-version'} // next;
-            my ($r) = ( $src->{'cabal-file-url'} // '' )
-                =~ m{/revision/(\d+)};
+            next
+              unless ref $src eq 'HASH'
+              && ( $src->{type} // '' ) eq 'repo-tar';
+            my $n   = $unit->{'pkg-name'}    // next;
+            my $v   = $unit->{'pkg-version'} // next;
+            my ($r) = ( $src->{'cabal-file-url'} // '' ) =~ m{/revision/(\d+)};
             $r //= 0;
             next if $skip{$n};
             next if $seen_nv{"$n\t$v"};
             $seen{"$n\t$v\t$r"} = 1;
-            $seen_nv{"$n\t$v"} = 1;
+            $seen_nv{"$n\t$v"}  = 1;
         }
         next;
     }
@@ -75,7 +75,7 @@ for my $file (@ARGV) {
         my ( $n, $v, $r ) = ( $1, $2, $3 );
         next if $skip{$n};
         $seen{"$n\t$v\t$r"} = 1;
-        $seen_nv{"$n\t$v"} = 1;
+        $seen_nv{"$n\t$v"}  = 1;
     }
 }
 

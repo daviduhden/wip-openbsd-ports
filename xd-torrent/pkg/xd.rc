@@ -12,4 +12,4 @@ rc_start() {
 	rc_exec "${daemon} ${daemon_flags} > /dev/null 2>&1 &"
 }
 
-rc_cmd $1
+rc_cmd "$1"

@@ -10,4 +10,4 @@ rc_bg=YES
 rc_reload=NO
 rc_stop_signal=KILL
 
-rc_cmd $1
+rc_cmd "$1"

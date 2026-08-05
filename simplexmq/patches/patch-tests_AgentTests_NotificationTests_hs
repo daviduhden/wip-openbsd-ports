@@ -1,0 +1,27 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Bound the notification server wrong-certificate test with the common timeout
+assertion so a TLS cleanup regression cannot hang the port build.
+
+Index: tests/AgentTests/NotificationTests.hs
+--- tests/AgentTests/NotificationTests.hs.orig
++++ tests/AgentTests/NotificationTests.hs
+@@ -27,6 +27,7 @@
+     runRight,
+     runRight_,
+     sendMessage,
++    shouldRespond,
+     switchComplete,
+     testServerMatrix2,
+     withAgent,
+@@ -137,7 +138,7 @@
+     it "should pass" $ testRunNTFServerTests t testNtfServer `shouldReturn` Nothing
+     let srv1 = testNtfServer {keyHash = "1234"}
+     it "should fail with incorrect fingerprint" $ do
+-      testRunNTFServerTests t srv1 `shouldReturn` Just (ProtocolTestFailure TSConnect $ BROKER (B.unpack $ strEncode srv1) $ NETWORK NEUnknownCAError)
++      testRunNTFServerTests t srv1 `shouldRespond` Just (ProtocolTestFailure TSConnect $ BROKER (B.unpack $ strEncode srv1) $ NETWORK NEUnknownCAError)
+   describe "Managing notification subscriptions" $ do
+     describe "should create notification subscription for existing connection" $
+       testNtfMatrix ps testNotificationSubscriptionExistingConnection

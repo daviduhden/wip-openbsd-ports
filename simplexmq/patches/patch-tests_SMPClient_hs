@@ -2,34 +2,27 @@ $OpenBSD$
 
 SPDX-License-Identifier: AGPL-3.0-only
 
-Use a dedicated client-service certificate for notification service tests.
-The server fixture is restricted to the serverAuth EKU and cannot be used
-as a TLS client certificate with tls 2.4.  Generated service credentials
-match the production path and remain bound to both TLS and the SMP
-handshake.
+Accept a dedicated client-service credential in notification service tests.
+The server fixture is restricted to the serverAuth EKU and cannot be used as
+a TLS client certificate with tls 2.4.  Each test generates one unrestricted
+credential through the production helper and reuses it for all reconnects,
+preserving the certificate fingerprint and SMP service identity.
 
 Index: tests/SMPClient.hs
 --- tests/SMPClient.hs.orig
 +++ tests/SMPClient.hs
-@@ -36,6 +36,7 @@
- import Simplex.Messaging.Server.QueueStore.Postgres.Config (PostgresStoreCfg (..))
- import Simplex.Messaging.Transport
- import Simplex.Messaging.Transport.Client
-+import Simplex.Messaging.Transport.Credentials (genCredentials, tlsCredentials)
- import Simplex.Messaging.Transport.Server
- import Simplex.Messaging.Transport.Shared (ChainCertificates (..), chainIdCaCerts)
- import Simplex.Messaging.Util (ifM)
-@@ -191,13 +192,15 @@
+@@ -189,15 +189,14 @@
+ runSMPServiceClient :: Transport c => TProxy c 'TServer -> (TLS.Credential, C.KeyPairEd25519) -> (THandleSMP c 'TClient -> IO a) -> IO a
+ runSMPServiceClient _ serviceCreds test' = testSMPServiceClient serviceCreds test'
  
- testNtfServiceClient :: Transport c => TProxy c 'TServer -> C.KeyPairEd25519 -> (THandleSMP c 'TClient -> IO a) -> IO a
- testNtfServiceClient _ keys client = do
+-testNtfServiceClient :: Transport c => TProxy c 'TServer -> C.KeyPairEd25519 -> (THandleSMP c 'TClient -> IO a) -> IO a
+-testNtfServiceClient _ keys client = do
 -  tlsNtfServerCreds <- loadServerCredential ntfTestServerCredentials
 -  serviceCertHash <- loadFingerprint ntfTestServerCredentials
 -  Right serviceSignKey <- pure $ C.x509ToPrivate' $ snd tlsNtfServerCreds
 -  let service = ServiceCredentials {serviceRole = SRNotifier, serviceCreds = tlsNtfServerCreds, serviceCertHash, serviceSignKey}
-+  g <- C.newRandom
-+  cred <- genCredentials g Nothing (0, 2400) "simplex-ntf-service"
-+  let (C.KeyHash kh, serviceCreds) = tlsCredentials [cred]
++testNtfServiceClient :: Transport c => TProxy c 'TServer -> (C.KeyHash, TLS.Credential) -> C.KeyPairEd25519 -> (THandleSMP c 'TClient -> IO a) -> IO a
++testNtfServiceClient _ (C.KeyHash kh, serviceCreds) keys client = do
 +  Right serviceSignKey <- pure $ C.x509ToPrivate' $ snd serviceCreds
 +  let serviceCertHash = XV.Fingerprint kh
 +      service = ServiceCredentials {serviceRole = SRNotifier, serviceCreds, serviceCertHash, serviceSignKey}
@@ -40,18 +33,3 @@ Index: tests/SMPClient.hs
              clientALPN = Just alpnSupportedSMPHandshakes
            }
    runTransportClient tcConfig Nothing "localhost" testPort (Just testKeyHash) $ \h ->
-@@ -205,14 +208,6 @@
-       Right th -> client th
-       Left e -> error $ show e
- 
--ntfTestServerCredentials :: ServerCredentials
--ntfTestServerCredentials =
--  ServerCredentials
--    { caCertificateFile = Just "tests/fixtures/ca.crt",
--      privateKeyFile = "tests/fixtures/server.key",
--      certificateFile = "tests/fixtures/server.crt"
--    }
--
- cfg :: AServerConfig
- cfg = cfgMS (ASType SQSMemory SMSJournal)
- 

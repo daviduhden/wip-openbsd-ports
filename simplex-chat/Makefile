@@ -113,7 +113,6 @@ CRYPTOSTORE_PATCHES = \
 SIMPLEXMQ_PATCHES = \
 	patch-simplexmq_cabal \
 	patch-src_Simplex_Messaging_Agent_Store_SQLite_Migrations_agent_schema_sql \
-	patch-src_Simplex_Messaging_Client_hs \
 	patch-src_Simplex_Messaging_Crypto_hs \
 	patch-src_Simplex_Messaging_Notifications_Server_hs \
 	patch-src_Simplex_Messaging_Server_MsgStore_Journal_hs \
@@ -206,7 +205,8 @@ cabal-inc: patch
 		'allow-newer: *' \
 		'packages: .' \
 		${CHAT_CABAL_PACKAGES} \
-		${CHAT_CABAL_OPTIONS} \
+		${CHAT_CABAL_COMMON_OPTIONS} \
+		${CHAT_CABAL_BUILD_OPTIONS} \
 		> ${WRKSRC}/cabal.project.local
 	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
 		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \

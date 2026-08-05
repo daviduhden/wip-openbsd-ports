@@ -2,14 +2,26 @@ $OpenBSD$
 
 SPDX-License-Identifier: AGPL-3.0-only
 
-Use tls's public TLS unique channel binding API when available, but
-fall back to tls-exporter for sessions where TLS unique is not
-exposed.
+Abort incomplete TLS contexts without a graceful TLS shutdown.  tls 2.4's
+bye waits for the TLS 1.3 final flight, which can deadlock when either peer
+rejects a certificate during the handshake.  Reserve bye for established
+sessions and close the backend directly on handshake errors.
+
+Also use tls's public TLS unique channel binding API when available, but
+fall back to tls-exporter for sessions where TLS unique is not exposed.
 
 Index: src/Simplex/Messaging/Transport.hs
 --- src/Simplex/Messaging/Transport.hs.orig
 +++ src/Simplex/Messaging/Transport.hs
-@@ -384,12 +395,10 @@
+@@ -368,6 +368,6 @@
+ connectTLS :: T.TLSParams p => Maybe HostName -> TransportConfig -> p -> Socket -> IO T.Context
+ connectTLS host_ TransportConfig {logTLSErrors} params sock =
+-  E.bracketOnError (T.contextNew sock params) closeTLS $ \ctx ->
++  E.bracketOnError (T.contextNew sock params) abortTLS $ \ctx ->
+     logHandshakeErrors (T.handshake ctx) $> ctx
+   where
+     logHandshakeErrors = if logTLSErrors then (`catchAll` logThrow) else id
+@@ -384,12 +384,13 @@
 
  withTlsUnique :: forall c p. TransportPeerI p => T.Context -> (ByteString -> IO (c p)) -> IO (c p)
  withTlsUnique cxt f =
@@ -23,6 +35,9 @@ Index: src/Simplex/Messaging/Transport.hs
 +    Just tlsUniq -> f tlsUniq
 +    Nothing ->
 +      T.getTLSExporter cxt >>= maybe (closeTLS cxt >> ioe_EOF) f
++
++abortTLS :: T.Context -> IO ()
++abortTLS ctx = T.contextClose ctx `catchAll_` pure ()
 
  closeTLS :: T.Context -> IO ()
  closeTLS ctx =

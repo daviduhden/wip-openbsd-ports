@@ -1,0 +1,39 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Export and use the common timeout assertion for intentional
+wrong-certificate connections.  A TLS cleanup regression must fail the test
+instead of hanging the complete port build.
+
+Index: tests/AgentTests/FunctionalAPITests.hs
+--- tests/AgentTests/FunctionalAPITests.hs.orig
++++ tests/AgentTests/FunctionalAPITests.hs
+@@ -33,6 +33,7 @@
+     createConnection,
+     joinConnection,
+     sendMessage,
++    shouldRespond,
+     runRight,
+     runRight_,
+     inAnyOrder,
+@@ -537,7 +538,7 @@
+     it "should pass without basic auth" $ testSMPServerConnectionTest ps Nothing (noAuthSrv testSMPServer2) `shouldReturn` Nothing
+     let srv1 = testSMPServer2 {keyHash = "1234"}
+     it "should fail with incorrect fingerprint" $ do
+-      testSMPServerConnectionTest ps Nothing (noAuthSrv srv1) `shouldReturn` Just (ProtocolTestFailure TSConnect $ BROKER (B.unpack $ strEncode srv1) $ NETWORK NEUnknownCAError)
++      testSMPServerConnectionTest ps Nothing (noAuthSrv srv1) `shouldRespond` Just (ProtocolTestFailure TSConnect $ BROKER (B.unpack $ strEncode srv1) $ NETWORK NEUnknownCAError)
+     describe "server with password" $ do
+       let auth = Just "abcd"
+           srv = ProtoServerWithAuth testSMPServer2
+@@ -4269,7 +4270,9 @@
+     exchangeGreetings alice bobId bob aliceId
+     -- this saves queue with second server identity
+     bob' <- liftIO $ do
+-      Left (BROKER _ (NETWORK _)) <- runExceptT $ joinConnection bob 1 True secondIdentityCReq "bob's connInfo" SMSubscribe
++      runExceptT (joinConnection bob 1 True secondIdentityCReq "bob's connInfo" SMSubscribe) =##> \case
++        Left (BROKER _ (NETWORK _)) -> True
++        _ -> False
+       disposeAgentClient bob
+       threadDelay 250000
+       getSMPAgentClient' 3 agentCfg initAgentServers testDB2

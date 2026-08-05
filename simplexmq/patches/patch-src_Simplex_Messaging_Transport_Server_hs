@@ -4,15 +4,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 Disambiguate getAddrInfo's result type for newer network/GHC combinations.
 
+Prefer the IPv4 wildcard on OpenBSD.  OpenBSD does not accept IPv4-mapped
+connections on an IPv6 socket, while this server opens only one of the
+addresses returned by getAddrInfo.  Choosing IPv6 first therefore makes the
+server unreachable through IPv4 addresses such as 127.0.0.1.
+
 Index: src/Simplex/Messaging/Transport/Server.hs
 --- src/Simplex/Messaging/Transport/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/Server.hs
-@@ -235,7 +235,7 @@
+@@ -235,8 +235,8 @@
    where
      resolve =
        let hints = defaultHints {addrFlags = [AI_PASSIVE], addrSocketType = Stream}
 -       in select <$> getAddrInfo (Just hints) host (Just port)
+-    select as = fromJust $ family AF_INET6 <|> family AF_INET
 +       in select <$> (getAddrInfo (Just hints) host (Just port) :: IO [AddrInfo])
-     select as = fromJust $ family AF_INET6 <|> family AF_INET
++    select as = fromJust $ family AF_INET <|> family AF_INET6
        where
          family f = find ((== f) . addrFamily) as
+     open addr = do

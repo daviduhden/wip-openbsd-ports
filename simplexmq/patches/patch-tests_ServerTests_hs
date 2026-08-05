@@ -1,0 +1,72 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Generate one unrestricted TLS credential for each notification service test
+and reuse it across connections and server restarts.  tls 2.4 rejects the
+server-only fixture for client authentication, while generating a new
+credential for every connection changes the SMP service identity.
+
+Index: tests/ServerTests.hs
+--- tests/ServerTests.hs.orig
++++ tests/ServerTests.hs
+@@ -1402,6 +1402,7 @@
+ testMessageServiceNotifications =
+   it "should create simplex connection, subscribe notifier as service and deliver notifications" $ \(ATransport t, msType) -> do
+     g <- C.newRandom
++    serviceCreds <- tlsCredentials . pure <$> genCredentials g Nothing (0, 2400) "simplex-ntf-service"
+     smpTest2 t msType $ \rh sh -> do
+       (sPub, sKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
+       (sId, rId, rKey, dhShared) <- createAndSecureQueue rh sPub
+@@ -1410,7 +1411,7 @@
+       (rcvNtfPubDhKey, _) <- atomically $ C.generateKeyPair g
+       Resp "1" _ (NID nId _) <- signSendRecv rh rKey ("1", rId, NKEY nPub rcvNtfPubDhKey)
+       serviceKeys@(_, servicePK) <- atomically $ C.generateKeyPair g
+-      testNtfServiceClient t serviceKeys $ \nh1 -> do
++      testNtfServiceClient t serviceCreds serviceKeys $ \nh1 -> do
+         -- can't subscribe without service signature in service connection
+         Resp "2a" _ (ERR SERVICE) <- signSendRecv nh1 nKey ("2a", nId, NSUB)
+         Resp "2b" _ (SOK (Just serviceId)) <- serviceSignSendRecv nh1 nKey servicePK ("2b", nId, NSUB)
+@@ -1418,7 +1419,7 @@
+         Resp "2c" _ (SOK (Just serviceId'')) <- serviceSignSendRecv nh1 nKey servicePK ("2c", nId, NSUB)
+         serviceId'' `shouldBe` serviceId
+         deliverMessage rh rId rKey sh sId sKey nh1 "hello" dec
+-        testNtfServiceClient t serviceKeys $ \nh2 -> do
++        testNtfServiceClient t serviceCreds serviceKeys $ \nh2 -> do
+           Resp "4" _ (SOK (Just serviceId')) <- serviceSignSendRecv nh2 nKey servicePK ("4", nId, NSUB)
+           serviceId' `shouldBe` serviceId
+           -- service subscription is terminated
+@@ -1479,6 +1480,7 @@
+ testServiceNotificationsTwoRestarts =
+   it "subscribe notifier as service and deliver notifications after two restarts" $ \ps@(ATransport t, _) -> do
+     g <- C.newRandom
++    serviceCreds <- tlsCredentials . pure <$> genCredentials g Nothing (0, 2400) "simplex-ntf-service"
+     (sPub, sKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
+     (nPub, nKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
+     serviceKeys@(_, servicePK) <- atomically $ C.generateKeyPair g
+@@ -1487,14 +1489,14 @@
+       (sId, rId, rKey, dhShared) <- createAndSecureQueue rh sPub
+       let dec = decryptMsgV3 dhShared
+       Resp "0" _ (NID nId _) <- signSendRecv rh rKey ("0", rId, NKEY nPub rcvNtfPubDhKey)
+-      testNtfServiceClient t serviceKeys $ \nh -> do
++      testNtfServiceClient t serviceCreds serviceKeys $ \nh -> do
+         Resp "1" _ (SOK (Just serviceId)) <- serviceSignSendRecv nh nKey servicePK ("1", nId, NSUB)
+         deliverMessage rh rId rKey sh sId sKey nh "hello" dec
+         pure (rId, rKey, sId, dec, nId, serviceId)
+     let idsHash = queueIdsHash [nId]
+     threadDelay 250000
+     withSmpServerStoreLogOn ps testPort $ runTest2 t $ \sh rh ->
+-      testNtfServiceClient t serviceKeys $ \nh -> do
++      testNtfServiceClient t serviceCreds serviceKeys $ \nh -> do
+         Resp "2.1" serviceId' (SOKS n _) <- signSendRecv nh (C.APrivateAuthKey C.SEd25519 servicePK) ("2.1", serviceId, NSUBS 1 idsHash)
+         n `shouldBe` 1
+         Resp "2.2" _ (SOK Nothing) <- signSendRecv rh rKey ("2.2", rId, SUB)
+@@ -1502,7 +1504,7 @@
+         deliverMessage rh rId rKey sh sId sKey nh "hello 2" dec
+     threadDelay 250000
+     withSmpServerStoreLogOn ps testPort $ runTest2 t $ \sh rh ->
+-      testNtfServiceClient t serviceKeys $ \nh -> do
++      testNtfServiceClient t serviceCreds serviceKeys $ \nh -> do
+         Resp "3.1" _ (SOKS n _) <- signSendRecv nh (C.APrivateAuthKey C.SEd25519 servicePK) ("3.1", serviceId, NSUBS 1 idsHash)
+         n `shouldBe` 1
+         Resp "3.2" _ (SOK Nothing) <- signSendRecv rh rKey ("3.2", rId, SUB)

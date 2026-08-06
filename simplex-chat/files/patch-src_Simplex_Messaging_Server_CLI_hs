@@ -1,0 +1,20 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Make the shared X.509 configuration portable to LibreSSL too, so new callers
+of the credential-generation helper cannot accidentally restore the
+unsupported ED448 default.
+
+Index: src/Simplex/Messaging/Server/CLI.hs
+--- src/Simplex/Messaging/Server/CLI.hs.orig
++++ src/Simplex/Messaging/Server/CLI.hs
+@@ -117,7 +117,7 @@
+ defaultX509Config =
+   X509Config
+     { commonName = "127.0.0.1",
+-      signAlgorithm = ED448,
++      signAlgorithm = ED25519,
+       caKeyFile = "ca.key",
+       caCrtFile = "ca.crt",
+       serverKeyFile = "server.key",

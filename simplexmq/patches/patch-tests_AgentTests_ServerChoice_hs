@@ -1,0 +1,40 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+This test has no generated inputs, so running it as an ioProperty repeats it
+up to 100 times while leaking every agent and SQLite connection.  Run it once
+and use the existing bracketed agent helper to close the database and worker
+threads.
+
+Index: tests/AgentTests/ServerChoice.hs
+--- tests/AgentTests/ServerChoice.hs.orig
++++ tests/AgentTests/ServerChoice.hs
+@@ -16,14 +16,13 @@
+ import Simplex.Messaging.Client (defaultNetworkConfig)
+ import Simplex.Messaging.Protocol
+ import Test.Hspec hiding (fit, it)
+-import Test.QuickCheck
+ import Util
+ import XFTPClient (testXFTPServer)
+ 
+ serverChoiceTests :: Spec
+ serverChoiceTests = do
+   describe "Server operators" $ do
+-    it "should choose server of different operator" $ ioProperty $ testChooseDifferentOperator
++    it "should choose server of different operator" testChooseDifferentOperator
+ 
+ operatorSimpleX :: Maybe OperatorId
+ operatorSimpleX = Just 1
+@@ -70,9 +69,8 @@
+     }
+ 
+ testChooseDifferentOperator :: IO ()
+-testChooseDifferentOperator = do
+-  c <- getSMPAgentClient' 1 agentCfg initServers testDB
+-  runRight_ $ do
++testChooseDifferentOperator =
++  withAgent 1 agentCfg initServers testDB $ \c -> runRight_ $ do
+     -- chooses the only operator with storage role
+     srv1 <- withAgentEnv c $ getNextServer c 1 storageSrvs []
+     liftIO $ srv1 == testOp1Srv1 || srv1 == testOp1Srv2 `shouldBe` True

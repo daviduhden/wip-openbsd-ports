@@ -5,6 +5,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 Bound the XFTP server wrong-certificate test with the common timeout assertion
 so a TLS cleanup regression cannot hang the port build.
 
+Exercise the advertised new-sender/old-recipient combinations instead of
+accidentally repeating the new/new cases in the version matrix.
+
 Index: tests/XFTPAgent.hs
 --- tests/XFTPAgent.hs.orig
 +++ tests/XFTPAgent.hs
@@ -26,3 +29,18 @@ Index: tests/XFTPAgent.hs
          describe "server with password" $ do
            let auth = Just "abcd"
                srv = ProtoServerWithAuth testXFTPServer2
+@@ -267,12 +267,12 @@
+ testXFTPAgentSendReceiveMatrix = do
+   describe "old server" $ do
+     it "new clients" $ run oldServer newClient newClient
+-    it "new sender, old recipient" $ run oldServer newClient newClient
++    it "new sender, old recipient" $ run oldServer newClient oldClient
+     it "old sender, new recipient" $ run oldServer oldClient newClient
+     it "old clients" $ run oldServer oldClient oldClient
+   describe "new server" $ do
+     it "new clients" $ run newServer newClient newClient
+-    it "new sender, old recipient" $ run newServer newClient newClient
++    it "new sender, old recipient" $ run newServer newClient oldClient
+     it "old sender, new recipient" $ run newServer oldClient newClient
+     it "old clients" $ run newServer oldClient oldClient
+   where

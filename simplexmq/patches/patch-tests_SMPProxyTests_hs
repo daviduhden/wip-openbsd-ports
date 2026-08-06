@@ -1,0 +1,28 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+The default test network timeout is only 500 ms.  Give the relay-session
+restart case the same four-second connection budget already used by the
+module's slow-network tests, while retaining the outer test timeout.
+
+Index: tests/SMPProxyTests.hs
+--- tests/SMPProxyTests.hs.orig
++++ tests/SMPProxyTests.hs
+@@ -437,7 +437,15 @@
+           pure ()
+   where
+     withServer2 = withSmpServerConfigOn (transport @TLS) proxyCfgJ2 testPort2
+-    servers srv = initAgentServersProxy {smp = userServers [srv]}
++    servers srv =
++      initAgentServersProxy
++        { smp = userServers [srv],
++          netCfg =
++            (netCfg initAgentServersProxy)
++              { tcpTimeout = NetworkTimeout 4000000 4000000,
++                tcpConnectTimeout = NetworkTimeout 4000000 4000000
++              }
++        }
+ 
+ testNoProxy :: AStoreType -> IO ()
+ testNoProxy msType = do

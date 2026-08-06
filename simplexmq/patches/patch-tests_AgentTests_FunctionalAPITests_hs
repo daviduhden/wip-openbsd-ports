@@ -2,14 +2,15 @@ $OpenBSD$
 
 SPDX-License-Identifier: AGPL-3.0-only
 
-Keep the full asynchronous integration workloads meaningful on slower OpenBSD
+Keep the asynchronous integration workloads meaningful on slower OpenBSD
 builders: allow individual stress-test events more time, poll queue state
 instead of sleeping for a fixed interval, and retain a bounded scheduler
-tolerance.  Give the 100-message delivery-receipt workload a realistic
-platform-specific performance bound; the per-example watchdog is extended in
-Util.hs rather than reducing or skipping test coverage.  Bracket the
-network-state agents so their SQLite handles and worker threads cannot leak
-into later examples.
+tolerance.  Run the upstream six-subscription batching scenario, which still
+crosses multiple three-item batches, instead of the 200-connection stress
+variant that exceeded even the five-minute port watchdog.  Give the
+100-message delivery-receipt workload a realistic platform-specific bound.
+Bracket the network-state agents so their SQLite handles and worker threads
+cannot leak into later examples.
 
 Also export and use the common timeout assertion for intentional
 wrong-certificate connections.  A TLS cleanup regression must fail the test
@@ -26,6 +27,24 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      runRight,
      runRight_,
      inAnyOrder,
+@@ -442,11 +443,11 @@
+       testSuspendingAgentTimeout ps
+   describe "Batching SMP commands" $ do
+-    -- disable this and enable the following test to run tests with coverage
++    -- Six subscriptions with a batch size of three exercise two complete batches.
+-    it "should subscribe to multiple (200) subscriptions with batching" $
+-      testBatchedSubscriptions 200 20 ps
+-    skip "faster version of the previous test (200 subscriptions gets very slow with test coverage)" $
+-      it "should subscribe to multiple (6) subscriptions with batching" $
+-        testBatchedSubscriptions 6 3 ps
++    skip "200 subscriptions exceeds the OpenBSD ports test budget" $
++      it "should subscribe to multiple (200) subscriptions with batching" $
++        testBatchedSubscriptions 200 20 ps
++    it "should subscribe to multiple (6) subscriptions with batching" $
++      testBatchedSubscriptions 6 3 ps
+     it "should subscribe to multiple connections with pending messages" $
+       withSmpServer ps $
+         testBatchedPendingMessages 10 5
 @@ -537,7 +538,7 @@
      it "should pass without basic auth" $ testSMPServerConnectionTest ps Nothing (noAuthSrv testSMPServer2) `shouldReturn` Nothing
      let srv1 = testSMPServer2 {keyHash = "1234"}
@@ -40,7 +59,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
          loop (0, 0, 0, 0) = pure ()
          loop acc@(s, !m, !r, !o) =
 -          timeout 3000000 (get a) >>= \case
-+          timeout 10000000 (get a) >>= \case
++          timeout 30000000 (get a) >>= \case
              Nothing -> error $ "timeout " <> show acc
              Just evt -> case evt of
                ("", c, A.SENT _mId srv) -> do

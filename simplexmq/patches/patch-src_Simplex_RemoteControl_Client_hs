@@ -1,0 +1,33 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Send multicast announcements through the IPv4 interface advertised in the
+signed XRCP invitation.  On a multihomed OpenBSD host the kernel's default
+multicast route need not match the first address returned by network-info;
+using the advertised interface keeps the packet source and invitation host
+consistent.
+
+Index: src/Simplex/RemoteControl/Client.hs
+--- src/Simplex/RemoteControl/Client.hs.orig
++++ src/Simplex/RemoteControl/Client.hs
+@@ -116,7 +116,7 @@
+   when multicast $ case knownHost of
+     Nothing -> throwE RCENewController
+     Just KnownHostPairing {hostDhPubKey} -> do
+-      ann <- liftIO . async . runExceptT $ announceRC drg 60 idPrivKey hostDhPubKey hostKeys invitation
++      ann <- liftIO . async . runExceptT $ announceRC drg 60 idPrivKey hostDhPubKey hostKeys address invitation
+       atomically $ putTMVar announcer ann
+   pure (found, signedInv, RCHostClient {action, client_ = c}, r)
+   where
+@@ -362,8 +362,8 @@
+ 
+ -- * Multicast discovery
+ 
+-announceRC :: TVar ChaChaDRG -> Int -> C.PrivateKeyEd25519 -> C.PublicKeyX25519 -> RCHostKeys -> RCInvitation -> ExceptT RCErrorType IO ()
+-announceRC drg maxCount idPrivKey knownDhPub RCHostKeys {sessKeys, dhKeys} inv = ExceptT $ withSender $ \sender -> runExceptT $ do
++announceRC :: TVar ChaChaDRG -> Int -> C.PrivateKeyEd25519 -> C.PublicKeyX25519 -> RCHostKeys -> TransportHost -> RCInvitation -> ExceptT RCErrorType IO ()
++announceRC drg maxCount idPrivKey knownDhPub RCHostKeys {sessKeys, dhKeys} host inv = ExceptT $ withSender host $ \sender -> runExceptT $ do
+   replicateM_ maxCount $ do
+     logDebug "Announcing..."
+     nonce <- atomically $ C.randomCbNonce drg

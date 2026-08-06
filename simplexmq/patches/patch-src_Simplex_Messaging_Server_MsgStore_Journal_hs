@@ -7,29 +7,35 @@ Replace random's removed genByteString helper with a small local equivalent.
 Index: src/Simplex/Messaging/Server/MsgStore/Journal.hs
 --- src/Simplex/Messaging/Server/MsgStore/Journal.hs.orig
 +++ src/Simplex/Messaging/Server/MsgStore/Journal.hs
-@@ -92,7 +92,9 @@
+@@ -57,6 +57,7 @@
+ import Control.Monad
+ import Control.Monad.Trans.Except
+ import qualified Data.Attoparsec.ByteString.Char8 as A
++import qualified Data.ByteString as BS
+ import Data.ByteString.Char8 (ByteString)
+ import qualified Data.ByteString.Char8 as B
+ import Data.Either (fromRight, partitionEithers)
+@@ -92,7 +93,7 @@
  import System.FilePath (takeFileName, (</>))
  import System.IO (BufferMode (..), Handle, IOMode (..), SeekMode (..))
  import qualified System.IO as IO
 -import System.Random (StdGen, genByteString, newStdGen)
 +import System.Random (StdGen, newStdGen, randomR)
-+import Data.ByteString (ByteString)
-+import qualified Data.ByteString as BS
  
  data JournalMsgStore s = JournalMsgStore
    { config :: JournalStoreConfig s,
-@@ -841,6 +865,12 @@
+@@ -841,6 +842,14 @@
  newJournalId :: TVar StdGen -> IO ByteString
  newJournalId g = strEncode <$> atomically (stateTVar g $ genByteString 12)
  
 +genByteString :: Int -> StdGen -> (ByteString, StdGen)
-+genByteString n g = go n g []
++genByteString n = go n []
 +  where
-+    go 0 g' acc = (BS.pack (reverse acc), g')
-+    go i g' acc = let (w, g'') = randomR (0, 255 :: Int) g' in go (i - 1) g'' (fromIntegral w : acc)
++    go 0 acc g = (BS.pack (reverse acc), g)
++    go i acc g =
++      let (w, g') = randomR (0, 255) g
++       in go (i - 1) (w : acc) g'
 +
  openJournals :: JournalMsgStore s -> FilePath -> MsgQueueState -> Handle -> IO (MsgQueueState, Handle, Maybe Handle)
  openJournals ms dir st@MsgQueueState {readState = rs, writeState = ws} sh = do
    let rjId = journalId rs
-
-

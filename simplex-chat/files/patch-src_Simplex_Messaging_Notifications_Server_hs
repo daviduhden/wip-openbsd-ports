@@ -8,7 +8,7 @@ subscriptions are ready before the server begins accepting traffic.
 Index: src/Simplex/Messaging/Notifications/Server.hs
 --- src/Simplex/Messaging/Notifications/Server.hs.orig
 +++ src/Simplex/Messaging/Notifications/Server.hs
-@@ -114,7 +114,7 @@
+@@ -115,7 +115,7 @@
      liftIO $ putStrLn "Server started in 'maintenance' mode, exiting"
      stopServer
      liftIO $ exitSuccess

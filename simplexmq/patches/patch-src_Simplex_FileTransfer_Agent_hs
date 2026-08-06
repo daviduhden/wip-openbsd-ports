@@ -1,0 +1,62 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Retry an XFTP download once when the incremental HTTP/2 reader reports a SIZE
+response.  Under http2 5.x a prematurely terminated response can surface as
+SIZE after partial body consumption; retrying on a fresh client connection
+recovers without accepting unchecked data.  A repeated size mismatch remains
+permanent, and the retry is still subject to all size, digest and authentication
+checks.
+
+Index: src/Simplex/FileTransfer/Agent.hs
+--- src/Simplex/FileTransfer/Agent.hs.orig
++++ src/Simplex/FileTransfer/Agent.hs
+@@ -193,12 +193,12 @@
+           rcvWorkerInternalError c rcvFileId rcvFileEntityId redirectEntityId_ (Just fileTmpPath) (INTERNAL "chunk has no replicas")
+         (fc@RcvFileChunk {userId, rcvFileId, rcvFileEntityId, digest, fileTmpPath, replicas = replica@RcvFileChunkReplica {rcvChunkReplicaId, server, delay} : _}, approvedRelays, redirectEntityId_) -> do
+           let ri' = maybe ri (\d -> ri {initialInterval = d, increaseAfter = 0}) delay
+-          withRetryIntervalLimit xftpConsecutiveRetries ri' $ \delay' loop -> do
++          withRetryIntervalLimitCount xftpConsecutiveRetries ri' $ \n delay' loop -> do
+             liftIO $ waitWhileSuspended c
+             liftIO $ waitForUserNetwork c
+             atomically $ incXFTPServerStat c userId srv downloadAttempts
+             downloadFileChunk fc replica approvedRelays
+-              `catchAllErrors` \e -> retryOnError "XFTP rcv worker" (retryLoop loop e delay') (retryDone e) e
++              `catchAllErrors` \e -> retryOnErrorWhen (retryableDownloadError n) "XFTP rcv worker" (retryLoop loop e delay') (retryDone e) e
+           where
+             retryLoop loop e replicaDelay = do
+               flip catchAllErrors (\_ -> pure ()) $ do
+@@ -252,17 +252,28 @@
+ 
+ -- The first call of action has n == 0, maxN is max number of retries
+ withRetryIntervalLimit :: forall m. MonadIO m => Int -> RetryInterval -> (Int64 -> m () -> m ()) -> m ()
+-withRetryIntervalLimit maxN ri action =
++withRetryIntervalLimit maxN ri action = withRetryIntervalLimitCount maxN ri $ \_ -> action
++
++withRetryIntervalLimitCount :: forall m. MonadIO m => Int -> RetryInterval -> (Int -> Int64 -> m () -> m ()) -> m ()
++withRetryIntervalLimitCount maxN ri action =
+   withRetryIntervalCount ri $ \n delay loop ->
+-    when (n < maxN) $ action delay loop
++    when (n < maxN) $ action n delay loop
+ 
+ retryOnError :: Text -> AM a -> AM a -> AgentErrorType -> AM a
+-retryOnError name loop done e = do
++retryOnError = retryOnErrorWhen temporaryOrHostError
++
++retryOnErrorWhen :: (AgentErrorType -> Bool) -> Text -> AM a -> AM a -> AgentErrorType -> AM a
++retryOnErrorWhen retryable name loop done e = do
+   logError $ name <> " error: " <> tshow e
+-  if temporaryOrHostError e
++  if retryable e
+     then loop
+     else done
+ 
++retryableDownloadError :: Int -> AgentErrorType -> Bool
++retryableDownloadError n e = temporaryOrHostError e || case e of
++  BROKER _ (RESPONSE "SIZE") -> n == 0
++  _ -> False
++
+ rcvWorkerInternalError :: AgentClient -> DBRcvFileId -> RcvFileId -> Maybe RcvFileId -> Maybe FilePath -> AgentErrorType -> AM ()
+ rcvWorkerInternalError c rcvFileId rcvFileEntityId redirectEntityId_ tmpPath err = do
+   lift $ forM_ tmpPath (removePath <=< toFSFilePath)

@@ -202,7 +202,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
 +              && (qSubThread <$> qiSub) == qiSubThread_
 +              && qiSize == qiSize'
 +              && (msgType <$> qiMsg) == msgType_
-+              && (qDelivered <$> qiSub) == Just (msgId <$> qiMsg)
++              && (qDelivered <$> qiSub) == Just ((\MsgInfo {msgId = mid} -> mid) <$> qiMsg)
 +            then pure info
 +            else liftIO (threadDelay 100000) >> waitQInfo (n - 1)
  

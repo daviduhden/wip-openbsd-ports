@@ -14,7 +14,7 @@ Example:
 doas rcctl enable smp_server xftp_server
 doas -u _simplexmq /usr/local/bin/smp-server init
 doas -u _simplexmq /usr/local/bin/xftp-server init \
-    --sign-algorithm ED25519 --path /var/simplex/xftp-server/files \
+    --path /var/simplex/xftp-server/files \
     --quota 100gb
 doas rcctl start smp_server
 doas rcctl start xftp_server
@@ -23,5 +23,6 @@ doas rcctl start xftp_server
 The servers store configuration under `/etc/simplex/` and runtime
 data under `/var/simplex/`.
 
-The explicit ED25519 option is required because LibreSSL does not
-provide the ED448 algorithm selected by the upstream XFTP default.
+The OpenBSD port defaults XFTP certificate generation to ED25519 because
+LibreSSL does not provide ED448.  ED448 can still be selected explicitly
+when using a compatible openssl(1) implementation.

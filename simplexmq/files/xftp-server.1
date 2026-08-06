@@ -36,11 +36,14 @@ The
 .Cm start
 command runs the server in the foreground.
 .Pp
-On LibreSSL systems, the
+The OpenBSD port defaults the
 .Fl -sign-algorithm Ar alg
-option must be set to
+option to
 .Ar ED25519
-because LibreSSL does not provide the ED448 algorithm.
+because LibreSSL does not provide ED448.
+ED448 remains selectable with a compatible
+.Xr openssl 1
+implementation.
 .Pp
 The
 .Fl p Ar port

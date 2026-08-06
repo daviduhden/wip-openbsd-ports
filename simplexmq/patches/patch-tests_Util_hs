@@ -1,0 +1,21 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+The upstream 120-second per-example watchdog is too short for the complete
+200-subscription and 100-message concurrent workloads on OpenBSD builders.
+Keep those tests intact and raise only their outer cleanup-safe bound.
+
+Index: tests/Util.hs
+--- tests/Util.hs.orig
++++ tests/Util.hs
+@@ -56,7 +56,7 @@
+     ci <- envCI
+     runTest `E.catches` [E.Handler (onTestFailure ci), E.Handler (onTestException ci)]
+     where
+-      tt = 120
++      tt = 300
+       runTest =
+         timeout (tt * 1000000) (evaluateExample action params hooks state) `finally` callCommand "sync" >>= \case
+           Just r -> pure r
+

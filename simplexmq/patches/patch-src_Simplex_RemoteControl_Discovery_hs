@@ -1,0 +1,89 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Bind multicast receivers to the wildcard address and join the group on every
+socket, as required by BSD sockets.  Construct the listener directly because
+network-udp's wildcard path requires IP_PKTINFO, which OpenBSD does not have;
+recvfrom is sufficient here because discovery only needs the peer address.
+Use SO_REUSEPORT as well as SO_REUSEADDR so concurrent discovery listeners can
+bind the same multicast port on OpenBSD.
+
+Index: src/Simplex/RemoteControl/Discovery.hs
+--- src/Simplex/RemoteControl/Discovery.hs.orig
++++ src/Simplex/RemoteControl/Discovery.hs
+@@ -2,7 +2,6 @@
+ {-# LANGUAGE DuplicateRecordFields #-}
+ {-# LANGUAGE FlexibleContexts #-}
+ {-# LANGUAGE GADTs #-}
+-{-# LANGUAGE LambdaCase #-}
+ {-# LANGUAGE NamedFieldPuns #-}
+ {-# LANGUAGE OverloadedStrings #-}
+ {-# LANGUAGE PatternSynonyms #-}
+@@ -104,41 +103,34 @@
+ withSender = bracket (UDP.clientSocket MULTICAST_ADDR_V4 DISCOVERY_PORT False) (UDP.close)
+ 
+ withListener :: TMVar Int -> (UDP.ListenSocket -> IO a) -> IO a
+-withListener subscribers = bracket (openListener subscribers) (closeListener subscribers)
++withListener _subscribers = bracket openListener closeListener
+ 
+-openListener :: TMVar Int -> IO UDP.ListenSocket
+-openListener subscribers = do
+-  sock <- UDP.serverSocket (MULTICAST_ADDR_V4, read DISCOVERY_PORT)
++openListener :: IO UDP.ListenSocket
++openListener = bracketOnError (N.socket N.AF_INET N.Datagram N.defaultProtocol) N.close $ \raw -> do
++  N.setSocketOption raw N.ReuseAddr 1
++  N.setSocketOption raw N.ReusePort 1
++  N.withFdSocket raw N.setCloseOnExecIfNeeded
++  N.bind raw listenerSockAddr4
++  let sock = UDP.ListenSocket raw listenerSockAddr4 False
+   logDebug $ "Discovery listener socket: " <> tshow sock
+-  let raw = UDP.listenSocket sock
+-  -- N.setSocketOption raw N.Broadcast 1
+-  joinMulticast subscribers raw (listenerHostAddr4 sock)
++  joinMulticast raw multicastHostAddr4
+   pure sock
+ 
+-closeListener :: TMVar Int -> UDP.ListenSocket -> IO ()
+-closeListener subscribers sock =
+-  partMulticast subscribers (UDP.listenSocket sock) (listenerHostAddr4 sock) `finally` UDP.stop sock
+-
+-joinMulticast :: TMVar Int -> N.Socket -> N.HostAddress -> IO ()
+-joinMulticast subscribers sock group = do
+-  now <- atomically $ takeTMVar subscribers
+-  when (now == 0) $ do
+-    setMembership sock group True >>= \case
+-      Left e -> atomically (putTMVar subscribers now) >> logError ("setMembership failed " <> tshow e)
+-      Right () -> atomically $ putTMVar subscribers (now + 1)
+-
+-partMulticast :: TMVar Int -> N.Socket -> N.HostAddress -> IO ()
+-partMulticast subscribers sock group = do
+-  now <- atomically $ takeTMVar subscribers
+-  when (now == 1) $
+-    setMembership sock group False >>= \case
+-      Left e -> atomically (putTMVar subscribers now) >> logError ("setMembership failed " <> tshow e)
+-      Right () -> atomically $ putTMVar subscribers (now - 1)
+-
+-listenerHostAddr4 :: UDP.ListenSocket -> N.HostAddress
+-listenerHostAddr4 sock = case UDP.mySockAddr sock of
+-  N.SockAddrInet _port host -> host
+-  _ -> error "MULTICAST_ADDR_V4 is V4"
++closeListener :: UDP.ListenSocket -> IO ()
++closeListener sock =
++  partMulticast (UDP.listenSocket sock) multicastHostAddr4 `finally` UDP.stop sock
++
++joinMulticast :: N.Socket -> N.HostAddress -> IO ()
++joinMulticast sock group = setMembership sock group True
++
++partMulticast :: N.Socket -> N.HostAddress -> IO ()
++partMulticast sock group = setMembership sock group False
++
++listenerSockAddr4 :: N.SockAddr
++listenerSockAddr4 = N.SockAddrInet (read DISCOVERY_PORT) (N.tupleToHostAddress (0, 0, 0, 0))
++
++multicastHostAddr4 :: N.HostAddress
++multicastHostAddr4 = N.tupleToHostAddress (224, 0, 0, 251)
+ 
+ recvAnnounce :: UDP.ListenSocket -> IO (N.SockAddr, ByteString)
+ recvAnnounce sock = do
+

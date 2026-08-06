@@ -1,0 +1,18 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+OpenBSD builders need more than the upstream 90-second per-example watchdog
+for the complete asynchronous chat integration workloads.  Keep every test
+and assertion intact while retaining a finite cleanup-safe bound.
+
+Index: tests/ChatTests/Utils.hs
+--- tests/ChatTests/Utils.hs.orig
++++ tests/ChatTests/Utils.hs
+@@ -96,5 +96,5 @@
+   Hspec.it name $ \tmp -> timeout t (test tmp) >>= maybe (error "test timed out") pure
+   where
+-    t = 90 * 1000000
++    t = 300 * 1000000
+ 
+ xit' :: HasCallStack => String -> (ps -> Expectation) -> SpecWith (Arg (ps -> Expectation))

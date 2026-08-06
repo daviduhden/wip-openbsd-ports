@@ -1,0 +1,20 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Credential rotation is a finite CLI command, not a daemon.  Do not cancel it
+after 100 ms and suppress the resulting exception: that can leave a partial
+certificate set and makes the assertion inspect empty captured output.
+
+Index: tests/CLITests.hs
+--- tests/CLITests.hs.orig
++++ tests/CLITests.hs
+@@ -122,7 +122,7 @@
+     XF.readSignedObject certPath >>= \case
+       [cert'] -> pure . X.signedObject $ X.getSigned cert'
+       _ -> error "bad crt format"
+-  r' <- lines <$> capture_ (withArgs ["cert"] $ (100000 `timeout` smpServerCLI cfgPath logPath) `catchAll_` pure (Just ()))
++  r' <- lines <$> capture_ (withArgs ["cert"] $ smpServerCLI cfgPath logPath)
+   r' `shouldContain` ["Generated new server credentials"]
+   newCrt <-
+     XF.readSignedObject certPath >>= \case

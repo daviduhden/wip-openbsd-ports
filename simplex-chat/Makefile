@@ -112,9 +112,12 @@ CRYPTOSTORE_PATCHES = \
 	patch-src_Crypto_Store_Util_hs
 SIMPLEXMQ_PATCHES = \
 	patch-simplexmq_cabal \
+	patch-src_Simplex_FileTransfer_Server_Main_hs \
 	patch-src_Simplex_Messaging_Agent_Store_SQLite_Migrations_agent_schema_sql \
 	patch-src_Simplex_Messaging_Crypto_hs \
+	patch-src_Simplex_Messaging_Notifications_Server_Main_hs \
 	patch-src_Simplex_Messaging_Notifications_Server_hs \
+	patch-src_Simplex_Messaging_Server_CLI_hs \
 	patch-src_Simplex_Messaging_Server_MsgStore_Journal_hs \
 	patch-src_Simplex_Messaging_Transport_hs \
 	patch-src_Simplex_Messaging_Transport_Client_hs \
@@ -122,7 +125,9 @@ SIMPLEXMQ_PATCHES = \
 	patch-src_Simplex_Messaging_Transport_HTTP2_Client_hs \
 	patch-src_Simplex_Messaging_Transport_HTTP2_Server_hs \
 	patch-src_Simplex_Messaging_Transport_KeepAlive_hs \
-	patch-src_Simplex_Messaging_Transport_Server_hs
+	patch-src_Simplex_Messaging_Transport_Server_hs \
+	patch-src_Simplex_RemoteControl_Discovery_hs \
+	patch-src_Simplex_RemoteControl_Discovery_Multicast_hsc
 
 LIB_DEPENDS = archivers/zstd \
 			converters/libiconv \

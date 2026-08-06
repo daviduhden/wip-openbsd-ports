@@ -2,6 +2,10 @@ $OpenBSD$
 
 SPDX-License-Identifier: AGPL-3.0-only
 
+Compare the median of three adjacent AUTH timing samples so scheduler noise
+cannot make the constant-time regression check fail spuriously.  Keep the
+original relative-difference limits.
+
 Generate one unrestricted TLS credential for each notification service test
 and reuse it across connections and server restarts.  tls 2.4 rejects the
 server-only fixture for client authentication, while generating a new
@@ -10,7 +14,64 @@ credential for every connection changes the SMP service identity.
 Index: tests/ServerTests.hs
 --- tests/ServerTests.hs.orig
 +++ tests/ServerTests.hs
-@@ -1402,6 +1402,7 @@
+@@ -33,7 +33,7 @@
+ import Data.Hashable (hash)
+ import qualified Data.IntSet as IS
+ import Data.List.NonEmpty (NonEmpty)
+-import Data.List (isPrefixOf)
++import Data.List (isPrefixOf, sort)
+ import Data.Maybe (catMaybes)
+ import Data.String (IsString (..))
+ import Text.Read (readMaybe)
+@@ -1290,14 +1290,11 @@
+         (C.AuthAlg C.SX25519, C.AuthAlg C.SX25519, 200) -- correct key type
+       ]
+     timeRepeat n = fmap fst . timeItT . forM_ (replicate n ()) . const
+-    similarTime t1 t2 msType
+-      | t1 <= t2 = abs (1 - t1 / t2) < diff
+-      | otherwise = similarTime t2 t1 msType
+-      where
+-        -- normally the difference between "no queue" and "wrong key" is less than 5%, but it's higher on PostgreSQL and on CI
+-        diff = case msType of
+-          ASType SQSPostgres _ -> 0.45
+-          _ -> 0.3
++    relativeDiff t1 t2 = abs (1 - min t1 t2 / max t1 t2)
++    -- normally the difference between "no queue" and "wrong key" is less than 5%, but it's higher on PostgreSQL and on CI
++    allowedDiff = \case
++      ASType SQSPostgres _ -> 0.45
++      _ -> 0.3
+     testSameTiming :: forall c. Transport c => THandleSMP c 'TClient -> THandleSMP c 'TClient -> (C.AuthAlg, C.AuthAlg, Int) -> AStoreType -> Expectation
+     testSameTiming rh sh (C.AuthAlg goodKeyAlg, C.AuthAlg badKeyAlg, n) msType = do
+       g <- C.newRandom
+@@ -1329,9 +1326,12 @@
+-          threadDelay 100000
+-          timeWrongKey <- timeRepeat n $ do
+-            Resp "cdab" _ (ERR AUTH) <- signSendRecv h badKey ("cdab", qId, cmd)
+-            return ()
+-          threadDelay 100000
+-          timeNoQueue <- timeRepeat n $ do
+-            Resp "dabc" _ (ERR AUTH) <- signSendRecv h badKey ("dabc", EntityId "1234", cmd)
+-            return ()
+-          let ok = similarTime timeNoQueue timeWrongKey msType
++          timings <- replicateM 3 $ do
++            threadDelay 100000
++            timeWrongKey <- timeRepeat n $ do
++              Resp "cdab" _ (ERR AUTH) <- signSendRecv h badKey ("cdab", qId, cmd)
++              return ()
++            threadDelay 100000
++            timeNoQueue <- timeRepeat n $ do
++              Resp "dabc" _ (ERR AUTH) <- signSendRecv h badKey ("dabc", EntityId "1234", cmd)
++              return ()
++            pure (timeWrongKey, timeNoQueue)
++          let timingDiffs = sort $ map (uncurry relativeDiff) timings
++              ok = timingDiffs !! 1 < allowedDiff msType
+@@ -1341,3 +1341,2 @@
+-              show timeWrongKey,
+-              show timeNoQueue,
+-              show $ timeWrongKey / timeNoQueue - 1
++              show timings,
++              show timingDiffs
+@@ -1402,6 +1401,7 @@
  testMessageServiceNotifications =
    it "should create simplex connection, subscribe notifier as service and deliver notifications" $ \(ATransport t, msType) -> do
      g <- C.newRandom
@@ -18,7 +79,7 @@ Index: tests/ServerTests.hs
      smpTest2 t msType $ \rh sh -> do
        (sPub, sKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
        (sId, rId, rKey, dhShared) <- createAndSecureQueue rh sPub
-@@ -1410,7 +1411,7 @@
+@@ -1410,7 +1410,7 @@
        (rcvNtfPubDhKey, _) <- atomically $ C.generateKeyPair g
        Resp "1" _ (NID nId _) <- signSendRecv rh rKey ("1", rId, NKEY nPub rcvNtfPubDhKey)
        serviceKeys@(_, servicePK) <- atomically $ C.generateKeyPair g
@@ -27,7 +88,7 @@ Index: tests/ServerTests.hs
          -- can't subscribe without service signature in service connection
          Resp "2a" _ (ERR SERVICE) <- signSendRecv nh1 nKey ("2a", nId, NSUB)
          Resp "2b" _ (SOK (Just serviceId)) <- serviceSignSendRecv nh1 nKey servicePK ("2b", nId, NSUB)
-@@ -1418,7 +1419,7 @@
+@@ -1418,7 +1418,7 @@
          Resp "2c" _ (SOK (Just serviceId'')) <- serviceSignSendRecv nh1 nKey servicePK ("2c", nId, NSUB)
          serviceId'' `shouldBe` serviceId
          deliverMessage rh rId rKey sh sId sKey nh1 "hello" dec
@@ -36,7 +97,7 @@ Index: tests/ServerTests.hs
            Resp "4" _ (SOK (Just serviceId')) <- serviceSignSendRecv nh2 nKey servicePK ("4", nId, NSUB)
            serviceId' `shouldBe` serviceId
            -- service subscription is terminated
-@@ -1479,6 +1480,7 @@
+@@ -1479,6 +1479,7 @@
  testServiceNotificationsTwoRestarts =
    it "subscribe notifier as service and deliver notifications after two restarts" $ \ps@(ATransport t, _) -> do
      g <- C.newRandom
@@ -44,7 +105,7 @@ Index: tests/ServerTests.hs
      (sPub, sKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
      (nPub, nKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
      serviceKeys@(_, servicePK) <- atomically $ C.generateKeyPair g
-@@ -1487,14 +1489,14 @@
+@@ -1487,14 +1488,14 @@
        (sId, rId, rKey, dhShared) <- createAndSecureQueue rh sPub
        let dec = decryptMsgV3 dhShared
        Resp "0" _ (NID nId _) <- signSendRecv rh rKey ("0", rId, NKEY nPub rcvNtfPubDhKey)
@@ -61,7 +122,7 @@ Index: tests/ServerTests.hs
          Resp "2.1" serviceId' (SOKS n _) <- signSendRecv nh (C.APrivateAuthKey C.SEd25519 servicePK) ("2.1", serviceId, NSUBS 1 idsHash)
          n `shouldBe` 1
          Resp "2.2" _ (SOK Nothing) <- signSendRecv rh rKey ("2.2", rId, SUB)
-@@ -1502,7 +1504,7 @@
+@@ -1502,7 +1503,7 @@
          deliverMessage rh rId rKey sh sId sKey nh "hello 2" dec
      threadDelay 250000
      withSmpServerStoreLogOn ps testPort $ runTest2 t $ \sh rh ->

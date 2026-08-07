@@ -64,14 +64,16 @@ do-configure:
 	    -Wno-dev \
 	    -DDEPENDS=ON \
 	    -DMANUAL_SUBMODULES=ON \
-	    -DBUILD_DOCUMENTATION=OFF
-	cd ${WRKSRC} && cmake -S ${WRKSRC} -B ${LWS_WRKBUILD} \
-	    -DCMAKE_BUILD_TYPE=Release \
-	    -DMONERO_SOURCE_DIR=${MONERO_WRKSRC} \
-	    -DMONERO_BUILD_DIR=${MONERO_WRKBUILD}
+	    -DBUILD_DOCUMENTATION=OFF \
+	    -DCMAKE_CXX_STANDARD=17
 
 do-build:
 	cmake --build ${MONERO_WRKBUILD}
+	cd ${WRKSRC} && cmake -S ${WRKSRC} -B ${LWS_WRKBUILD} \
+	    -DCMAKE_BUILD_TYPE=Release \
+	    -DMONERO_SOURCE_DIR=${MONERO_WRKSRC} \
+	    -DMONERO_BUILD_DIR=${MONERO_WRKBUILD} \
+	    -DCMAKE_CXX_STANDARD=17
 	cmake --build ${LWS_WRKBUILD}
 
 do-install:

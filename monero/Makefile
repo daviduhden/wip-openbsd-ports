@@ -28,7 +28,8 @@ CONFIGURE_ARGS += -GNinja \
 		  -Wno-dev \
 		  -DDEPENDS=ON \
 		  -DMANUAL_SUBMODULES=ON \
-		  -DBUILD_DOCUMENTATION=OFF
+		  -DBUILD_DOCUMENTATION=OFF \
+		  -DCMAKE_CXX_STANDARD=17
 
 LIB_DEPENDS = devel/boost \
 		devel/protobuf \

@@ -1,0 +1,19 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Associate each worker action with its own completion signal so shutdown can
+join delivery, notification and XFTP workers before their shared SQLite store
+is closed.
+
+Index: src/Simplex/Messaging/Agent/Env/SQLite.hs
+--- src/Simplex/Messaging/Agent/Env/SQLite.hs.orig
++++ src/Simplex/Messaging/Agent/Env/SQLite.hs
+@@ -323,7 +323,7 @@
+ data Worker = Worker
+   { workerId :: Int,
+     doWork :: TMVar (),
+-    action :: TMVar (Maybe (Weak ThreadId)),
++    action :: TMVar (Maybe (Weak ThreadId, TMVar ())),
+     restarts :: TVar RestartCount
+   }

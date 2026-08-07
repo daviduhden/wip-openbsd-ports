@@ -8,13 +8,18 @@ a TLS client certificate with tls 2.4.  Each test generates one unrestricted
 credential through the production helper and reuses it for all reconnects,
 preserving the certificate fingerprint and SMP service identity.
 
+Make the server fixture wait for the complete server action, not merely the
+transport's listening-socket notification.  Store saving, proxy shutdown and
+connection finalizers all run after that notification and must finish before
+the next test can reuse their paths and ports.
+
 Index: tests/SMPClient.hs
 --- tests/SMPClient.hs.orig
 +++ tests/SMPClient.hs
 @@ -189,15 +189,14 @@
  runSMPServiceClient :: Transport c => TProxy c 'TServer -> (TLS.Credential, C.KeyPairEd25519) -> (THandleSMP c 'TClient -> IO a) -> IO a
  runSMPServiceClient _ serviceCreds test' = testSMPServiceClient serviceCreds test'
- 
+
 -testNtfServiceClient :: Transport c => TProxy c 'TServer -> C.KeyPairEd25519 -> (THandleSMP c 'TClient -> IO a) -> IO a
 -testNtfServiceClient _ keys client = do
 -  tlsNtfServerCreds <- loadServerCredential ntfTestServerCredentials
@@ -33,3 +38,37 @@ Index: tests/SMPClient.hs
              clientALPN = Just alpnSupportedSMPHandshakes
            }
    runTransportClient tcConfig Nothing "localhost" testPort (Just testKeyHash) $ \h ->
+@@ -380,20 +379,24 @@
+ serverBracket :: HasCallStack => (TMVar Bool -> IO ()) -> IO () -> (HasCallStack => ThreadId -> IO a) -> IO a
+ serverBracket process afterProcess f = do
+   started <- newEmptyTMVarIO
++  stopped <- newEmptyTMVarIO
+   E.bracket
+-    (forkIOWithUnmask (\unmask -> unmask (process started) `E.catchAny` handleStartError started))
+-    (\t -> killThread t >> afterProcess >> waitFor started "stop")
+-    (\t -> waitFor started "start" >> f t >>= \r -> r <$ threadDelay 100000)
++    (forkIOWithUnmask (\unmask -> (unmask (process started) `E.catchAny` handleStartError started) `E.finally` atomically (putTMVar stopped ())))
++    (\t -> killThread t >> waitFor 60_000_000 stopped "terminate" >> afterProcess)
++    ( \t ->
++        waitFor 5_000_000 started "start" >>= \case
++          True -> f t >>= \r -> r <$ threadDelay 100000
++          False -> error "server did not start"
++    )
+   where
+-    -- it putTMVar is called twise to unlock both parts of the bracket in case of start failure
+     handleStartError started e = do
+-      atomically $ putTMVar started False
+-      atomically $ putTMVar started False
++      atomically . void $ tryPutTMVar started False
+       E.throwIO e
++    waitFor :: Int -> TMVar a -> String -> IO a
+-    waitFor started s =
+-      5_000_000 `timeout` atomically (takeTMVar started) >>= \case
++    waitFor t var s =
++      t `timeout` atomically (takeTMVar var) >>= \case
+         Nothing -> error $ "server did not " <> s
+-        _ -> pure ()
++        Just r -> pure r
+
+ -- A TCP server that accepts connections but never performs a TLS handshake, so a client
+ -- connecting to it stays blocked in the TLS handshake until its connection timeout.

@@ -114,7 +114,12 @@ SIMPLEXMQ_PATCHES = \
 	patch-simplexmq_cabal \
 	patch-src_Simplex_FileTransfer_Agent_hs \
 	patch-src_Simplex_FileTransfer_Server_Main_hs \
+	patch-src_Simplex_Messaging_Agent_hs \
+	patch-src_Simplex_Messaging_Agent_Client_hs \
+	patch-src_Simplex_Messaging_Agent_Env_SQLite_hs \
 	patch-src_Simplex_Messaging_Agent_Store_SQLite_Migrations_agent_schema_sql \
+	patch-src_Simplex_Messaging_Client_hs \
+	patch-src_Simplex_Messaging_Client_Agent_hs \
 	patch-src_Simplex_Messaging_Crypto_hs \
 	patch-src_Simplex_Messaging_Notifications_Server_Main_hs \
 	patch-src_Simplex_Messaging_Notifications_Server_hs \

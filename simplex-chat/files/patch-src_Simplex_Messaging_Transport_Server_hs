@@ -9,10 +9,41 @@ connections on an IPv6 socket, while this server opens only one of the
 addresses returned by getAddrInfo.  Choosing IPv6 first therefore makes the
 server unreachable through IPv4 addresses such as 127.0.0.1.
 
+Make shutdown synchronous.  Keep each accepted connection registered until
+its socket finalizer completes, close the registration race around fork, and
+do not report the listening socket as stopped while connection finalizers are
+still running.  Otherwise a restarted server can overlap the previous TLS
+sessions and stores.
+
 Index: src/Simplex/Messaging/Transport/Server.hs
 --- src/Simplex/Messaging/Transport/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/Server.hs
-@@ -235,8 +235,8 @@
+@@ -177,11 +177,12 @@
+       cId <- atomically $ stateTVar accepted $ \cId -> let cId' = cId + 1 in cId' `seq` (cId', cId')
+       closed <- newTVarIO False
+       let closeConn _ = do
+-            atomically $ writeTVar closed True >> modifyTVar' clients (IM.delete cId)
++            atomically $ writeTVar closed True
+             gracefulClose conn 5000 `catchAll_` pure () -- catchAll_ is needed here in case the connection was closed earlier
+-            atomically $ modifyTVar' gracefullyClosed (+ 1)
+-      tId <- mkWeakThreadId =<< server conn `forkFinally` closeConn
+-      atomically $ unlessM (readTVar closed) $ modifyTVar' clients $ IM.insert cId tId
++            atomically $ modifyTVar' clients (IM.delete cId) >> modifyTVar' gracefullyClosed (+ 1)
++      E.mask_ $ do
++        tId <- mkWeakThreadId =<< server conn `forkFinally` closeConn
++        atomically $ unlessM (readTVar closed) $ modifyTVar' clients $ IM.insert cId tId
+
+ -- | Recover from errors in `accept` whenever it is safe.
+ -- Some errors are safe to ignore, while blindly restaring `accept` may trigger a busy loop.
+@@ -228,6 +229,7 @@
+ closeServer started clients sock = do
+   close sock
+   readTVarIO clients >>= mapM_ (deRefWeak >=> mapM_ killThread)
++  atomically $ unlessM (IM.null <$> readTVar clients) retry
+   void . atomically $ tryPutTMVar started False
+
+ startTCPServer :: TMVar Bool -> Maybe HostName -> ServiceName -> IO Socket
+@@ -235,8 +237,8 @@
    where
      resolve =
        let hints = defaultHints {addrFlags = [AI_PASSIVE], addrSocketType = Stream}

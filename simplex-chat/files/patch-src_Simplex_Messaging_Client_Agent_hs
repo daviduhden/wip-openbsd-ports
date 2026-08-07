@@ -1,0 +1,92 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Wait for proxy-agent reconnect workers and protocol clients during shutdown,
+publish worker/client creation atomically, and reject connections completed
+after shutdown began.  Detached relay TLS sessions could otherwise survive
+their owner and overlap a subsequent server instance.
+
+Index: src/Simplex/Messaging/Client/Agent.hs
+--- src/Simplex/Messaging/Client/Agent.hs.orig
++++ src/Simplex/Messaging/Client/Agent.hs
+@@ -34,8 +34,7 @@
+   )
+ where
+
+-import Control.Concurrent (forkIO)
+-import Control.Concurrent.Async (Async, uninterruptibleCancel)
++import Control.Concurrent.Async (Async, mapConcurrently_, uninterruptibleCancel)
+ import Control.Concurrent.STM (retry)
+ import qualified Control.Exception as E
+ import Control.Logger.Simple
+@@ -203,7 +202,7 @@
+ {-# INLINE getSMPServerClient' #-}
+
+ getSMPServerClient'' :: SMPClientAgent p -> SMPServer -> ExceptT SMPClientError IO (OwnServer, SMPClient)
+-getSMPServerClient'' ca@SMPClientAgent {agentCfg, smpClients, smpSessions, workerSeq} srv = do
++getSMPServerClient'' ca@SMPClientAgent {active, agentCfg, smpClients, smpSessions, workerSeq} srv = do
+   ts <- liftIO getCurrentTime
+   withGetSessVar workerSeq srv smpClients ts (ExceptT . newSMPClient) waitForSMPClient
+   where
+@@ -227,14 +226,20 @@
+       r <- connectClient ca srv v `E.catches` clientHandlers
+       case r of
+         Right smp -> do
+-          logInfo . decodeUtf8 $ "Agent connected to " <> showServer srv
+           let !owned = isOwnServer ca srv
+               !c = (owned, smp)
+-          atomically $ do
+-            putTMVar (sessionVar v) (Right c)
+-            TM.insert (sessionId $ thParams smp) c smpSessions
+-          notify ca $ CAConnected srv $ smpClientServiceId smp
+-          pure $ Right c
++          isActive <- atomically $ do
++            isActive <- readTVar active
++            when isActive $ do
++              putTMVar (sessionVar v) (Right c)
++              TM.insert (sessionId $ thParams smp) c smpSessions
++            pure isActive
++          if isActive
++            then do
++              logInfo . decodeUtf8 $ "Agent connected to " <> showServer srv
++              notify ca $ CAConnected srv $ smpClientServiceId smp
++              pure $ Right c
++            else closeProtocolClient smp >> E.throwIO E.ThreadKilled
+         Left e -> do
+           let ei = persistErrorInterval agentCfg
+           if ei == 0
+@@ -313,7 +318,7 @@
+ reconnectClient :: SMPClientAgent p -> SMPServer -> IO ()
+ reconnectClient ca@SMPClientAgent {active, agentCfg, smpSubWorkers, workerSeq} srv = do
+   ts <- getCurrentTime
+-  whenM (readTVarIO active) $ atomically (getWorkerVar ts) >>= mapM_ (either newSubWorker (\_ -> pure ()))
++  E.mask_ $ atomically (ifM (readTVar active) (getWorkerVar ts) (pure Nothing)) >>= mapM_ (either newSubWorker (\_ -> pure ()))
+   where
+     getWorkerVar ts =
+       ifM
+@@ -388,18 +393,19 @@
+ closeSMPClientAgent :: SMPClientAgent p -> IO ()
+ closeSMPClientAgent c = do
+   atomically $ writeTVar (active c) False
++  atomically (swapTVar (smpSubWorkers c) M.empty) >>= mapConcurrently_ cancelReconnect
+   closeSMPServerClients c
+-  atomically (swapTVar (smpSubWorkers c) M.empty) >>= mapM_ cancelReconnect
+   where
+     cancelReconnect :: SessionVar (Async ()) -> IO ()
+-    cancelReconnect v = void . forkIO $ atomically (readTMVar $ sessionVar v) >>= uninterruptibleCancel
++    cancelReconnect v = atomically (readTMVar $ sessionVar v) >>= uninterruptibleCancel
+
+ closeSMPServerClients :: SMPClientAgent p -> IO ()
+-closeSMPServerClients c = atomically (smpClients c `swapTVar` M.empty) >>= mapM_ (forkIO . closeClient)
++closeSMPServerClients c@SMPClientAgent {agentCfg = SMPClientAgentConfig {smpCfg = ProtocolClientConfig {networkConfig = NetworkConfig {tcpConnectTimeout}}}} =
++  atomically (smpClients c `swapTVar` M.empty) >>= mapConcurrently_ closeClient
+   where
+     closeClient v =
+-      atomically (readTMVar $ sessionVar v) >>= \case
+-        Right (_, smp) -> closeProtocolClient smp `catchAll_` pure ()
++      netTimeoutInt tcpConnectTimeout NRMBackground `timeout` atomically (readTMVar $ sessionVar v) >>= \case
++        Just (Right (_, smp)) -> closeProtocolClient smp `catchAll_` pure ()
+         _ -> pure ()
+
+ cancelActions :: Foldable f => TVar (f (Async ())) -> IO ()

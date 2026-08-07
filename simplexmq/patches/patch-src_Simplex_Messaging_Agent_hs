@@ -1,0 +1,43 @@
+$OpenBSD$
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Dispose agents in ownership order.  The previous test/runtime helper ran a
+second disconnect concurrently with the still-live main agent thread and
+then closed SQLite.  Let the main thread's sole finalizer perform shutdown,
+wait for it, and only then close the database.
+
+Index: src/Simplex/Messaging/Agent.hs
+--- src/Simplex/Messaging/Agent.hs.orig
++++ src/Simplex/Messaging/Agent.hs
+@@ -273,10 +273,11 @@
+       liftIO $ checkServers "SMP" smp >> checkServers "XFTP" xftp
+       currentTs <- liftIO getCurrentTime
+       notices <- liftIO $ withTransaction store (`getClientNotices` presetServers) `catchAll_` pure []
+-      c@AgentClient {acThread} <- liftIO . newAgentClient clientId initServers currentTs notices =<< ask
+-      t <- runAgentThreads c `forkFinally` const (liftIO $ disconnectAgentClient c)
+-      atomically . writeTVar acThread . Just =<< mkWeakThreadId t
+-      pure c
++      c@AgentClient {acThread, acThreadDone} <- liftIO . newAgentClient clientId initServers currentTs notices =<< ask
++      E.mask_ $ do
++        t <- runAgentThreads c `forkFinally` const (liftIO $ disconnectAgentClient c `E.finally` atomically (putTMVar acThreadDone ()))
++        atomically . writeTVar acThread . Just =<< mkWeakThreadId t
++        pure c
+     checkServers protocol srvs =
+       forM_ (M.assocs srvs) $ \(userId, srvs') -> checkUserServers ("getSMPAgentClient " <> protocol <> " " <> tshow userId) srvs'
+     runAgentThreads c
+@@ -335,10 +336,10 @@
+
+ -- only used in the tests
+ disposeAgentClient :: AgentClient -> IO ()
+-disposeAgentClient c@AgentClient {acThread, agentEnv = Env {store}} = do
+-  t_ <- atomically (swapTVar acThread Nothing) $>>= (liftIO . deRefWeak)
+-  disconnectAgentClient c
+-  mapM_ killThread t_
++disposeAgentClient AgentClient {acThread, acThreadDone, agentEnv = Env {store}} = do
++  t_ <- atomically $ swapTVar acThread Nothing
++  mapM_ (deRefWeak >=> mapM_ killThread) t_
++  mapM_ (const $ atomically $ readTMVar acThreadDone) t_
+   liftIO $ closeDBStore store
+
+ resumeAgentClient :: AgentClient -> IO ()

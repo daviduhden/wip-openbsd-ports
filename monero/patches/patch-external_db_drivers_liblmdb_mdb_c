@@ -1,0 +1,24 @@
+$OpenBSD$
+
+SPDX-License-Identifier: BSD-3-Clause
+
+Enforce MDB_WRITEMAP on OpenBSD because we lack a Unified Buffer Cache,
+so mmap and write/read are not coherent. All I/O must go through the mmap.
+
+See databases/openldap/patches/patch-servers_slapd_back-mdb_init_c
+and databases/lmdb/patches/patch-mdb_c for the same pattern.
+
+Index: external/db_drivers/liblmdb/mdb.c
+--- external/db_drivers/liblmdb/mdb.c.orig
++++ external/db_drivers/liblmdb/mdb.c
+@@ -5506,9 +5506,10 @@
+ 	flags |= MDB_ENV_ACTIVE;	/* tell mdb_env_close0() to clean up */
+
+ 	if (flags & MDB_RDONLY) {
+ 		/* silently ignore WRITEMAP when we're only getting read access */
+ 		flags &= ~MDB_WRITEMAP;
+ 	} else {
++		flags |= MDB_WRITEMAP;
+ 		if (!((env->me_free_pgs = mdb_midl_alloc(MDB_IDL_UM_MAX)) &&
+ 			  (env->me_dirty_list = calloc(MDB_IDL_UM_SIZE, sizeof(MDB_ID2)))))
+ 			rc = ENOMEM;

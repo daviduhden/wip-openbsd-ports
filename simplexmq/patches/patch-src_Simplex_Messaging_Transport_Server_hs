@@ -18,6 +18,12 @@ sessions and stores.
 Index: src/Simplex/Messaging/Transport/Server.hs
 --- src/Simplex/Messaging/Transport/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/Server.hs
+@@ -34,4 +34,5 @@
+ import Control.Applicative ((<|>))
++import Control.Concurrent.STM (retry)
+ import Control.Logger.Simple
+ import Control.Monad
+ import qualified Crypto.Store.X509 as SX
 @@ -177,11 +177,12 @@
        cId <- atomically $ stateTVar accepted $ \cId -> let cId' = cId + 1 in cId' `seq` (cId', cId')
        closed <- newTVarIO False

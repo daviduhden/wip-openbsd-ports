@@ -10,6 +10,15 @@ TLS and store users from outliving their owner.
 Index: src/Simplex/Messaging/Agent/Client.hs
 --- src/Simplex/Messaging/Agent/Client.hs.orig
 +++ src/Simplex/Messaging/Agent/Client.hs
+@@ -195,7 +195,7 @@
+ import Control.Applicative ((<|>))
+ import Control.Concurrent (ThreadId, killThread)
+ import Control.Concurrent.Async (Async, uninterruptibleCancel)
+-import Control.Concurrent.STM (retry)
++import Control.Concurrent.STM (retry, throwSTM)
+ import Control.Exception (AsyncException (..), BlockedIndefinitelyOnSTM (..))
+ import Control.Logger.Simple
+ import Control.Monad
 @@ -317,7 +317,7 @@
  import System.Random (randomR)
  import UnliftIO (mapConcurrently, timeout)

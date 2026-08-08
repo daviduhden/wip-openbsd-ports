@@ -57,6 +57,8 @@ post-patch:
 	patch -d ${MONERO_WRKSRC} -p0 < ${FILESDIR}/${_p}
 .endfor
 
+CONFIGURE_ENV += CXXFLAGS="${CXXFLAGS} -std=gnu++17"
+
 do-configure:
 	cd ${MONERO_WRKSRC} && cmake -S ${MONERO_WRKSRC} -B ${MONERO_WRKBUILD} \
 	    -GNinja \
@@ -64,16 +66,14 @@ do-configure:
 	    -Wno-dev \
 	    -DDEPENDS=ON \
 	    -DMANUAL_SUBMODULES=ON \
-	    -DBUILD_DOCUMENTATION=OFF \
-	    -DCMAKE_CXX_STANDARD=17
+	    -DBUILD_DOCUMENTATION=OFF
 
 do-build:
 	cmake --build ${MONERO_WRKBUILD}
 	cd ${WRKSRC} && cmake -S ${WRKSRC} -B ${LWS_WRKBUILD} \
 	    -DCMAKE_BUILD_TYPE=Release \
 	    -DMONERO_SOURCE_DIR=${MONERO_WRKSRC} \
-	    -DMONERO_BUILD_DIR=${MONERO_WRKBUILD} \
-	    -DCMAKE_CXX_STANDARD=17
+	    -DMONERO_BUILD_DIR=${MONERO_WRKBUILD}
 	cmake --build ${LWS_WRKBUILD}
 
 do-install:

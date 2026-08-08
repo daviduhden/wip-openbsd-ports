@@ -30,8 +30,6 @@ CONFIGURE_ARGS += -GNinja \
 		  -DMANUAL_SUBMODULES=ON \
 		  -DBUILD_DOCUMENTATION=OFF
 
-CXXFLAGS += -std=gnu++17
-
 LIB_DEPENDS = devel/boost \
 		devel/protobuf \
 		devel/readline \

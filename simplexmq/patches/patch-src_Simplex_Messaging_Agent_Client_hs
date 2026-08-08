@@ -56,14 +56,6 @@ Index: src/Simplex/Messaging/Agent/Client.hs
        where
          runWork :: m ()
          runWork = tryAllErrors' (work w) >>= restartOrDelete
-@@ -428,7 +428,7 @@
-           | wId == workerId (toW w') = do
-               rc <- readTVar restarts
--              isActive <- readTVar $ active c
-+              isActive <- readTVar active
-               checkRestarts isActive $ updateRestartCount t rc
-           | otherwise =
-               pure False -- there is a new worker in the map, no action
 @@ -457,14 +458,17 @@
    restarts <- newTVar $ RestartCount 0 0
    pure Worker {workerId, doWork, action, restarts}

@@ -20,7 +20,7 @@ WANTLIB += boost_serialization-mt boost_thread-mt c crypto curses
 WANTLIB += ereadline execinfo hidapi-libusb iconv m protobuf
 WANTLIB += sodium ssl unbound zmq
 
-COMPILER = base-clang ports-gcc
+COMPILER = base-clang
 MODULES = devel/cmake
 BUILD_DEPENDS = devel/ninja
 

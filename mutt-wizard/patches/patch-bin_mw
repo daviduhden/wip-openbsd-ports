@@ -1,0 +1,36 @@
+$OpenBSD$
+
+fix account number switch macro
+fix account deletion
+publish gpg using gpg-wks protocol
+dynamically load mailboxes
+
+Index: bin/mw
+--- bin/mw.orig
++++ bin/mw
+@@ -152,7 +152,7 @@
+ 	sed -ibu "/IMAPStore $fulladdr-remote$/,/# End profile/d" "$mbsyncrc" 2>/dev/null
+ 	rm -f "$mbsyncrc"bu
+ 	rm -rf "${cachedir:?}/${fulladdr:?}" "$accdir/$fulladdr.muttrc" "$accdir/"[0-9]-"$fulladdr.muttrc"
+-	sed -ibu "/\([0-9]-\)\?$fulladdr.muttrc/d" "$muttrc" 2>/dev/null
++	sed -ibu "/macro.*i[0-9].*$fulladdr.muttrc/d" "$muttrc" 2>/dev/null
+ 	rm -f "$muttrc"bu
+ 	sed -ibu "/account $fulladdr$/,/^\(\s*$\|account\)/d" "$msmtprc" 2>/dev/null
+ 	rm -f "$msmtprc"bu
+@@ -225,14 +225,11 @@
+ 		mailboxes="$(echo "$info" | grep -v HasChildren | sed "s/.*\" //;s/\"//g" | tr -d '\r')"
+ 	fi
+ 	[ "$type" = "pop" ] && mailboxes="INBOX"
+-	for x in $(
+-		sed -n "/^macro.* i[0-9] / s/\(^macro.* i\| .*\)//gp " "$muttrc" 2>/dev/null | sort -u
+-		echo 0
+-	); do
++	for x in $(ggrep -Eo "^macro.* i[0-9] " "$muttrc" | sed "s/^macro.* i//g" | sort -u; echo 0); do
+ 		idnum=$((idnum + 1))
+ 		[ "$idnum" -eq "$x" ] || break
+ 	done
+-	toappend="mailboxes $(echo "$mailboxes" | sed "s/^/\"=/;s/$/\"/;s/'/\\\'/g" | paste -sd ' ' -)"
++	toappend="mailboxes `mdir=$maildir/$fulladdr/; find \$mdir -mindepth 1 -type d -name cur | sed -e 's:/cur\$:":' -e \"s:\$mdir:\\"=:\" | sort | tr '\\\n' ' '`"
+ }
+ 
+ finalize() {

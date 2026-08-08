@@ -1,0 +1,30 @@
+$OpenBSD$
+
+SPDX-License-Identifier: BSD-3-Clause
+
+Set C++23 for protobuf compatibility and improve OpenBSD detection
+for EXTRA_LIBRARIES.
+
+Index: CMakeLists.txt
+--- CMakeLists.txt.orig
++++ CMakeLists.txt
+@@ -95,8 +95,8 @@
+
+ # Require C11/C++11 and disable extensions for all targets
+ set(CMAKE_C_STANDARD 11)
+ set(CMAKE_C_STANDARD_REQUIRED ON)
+ set(CMAKE_C_EXTENSIONS OFF)
+-set(CMAKE_CXX_STANDARD 14)
++set(CMAKE_CXX_STANDARD 23)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ set(CMAKE_CXX_EXTENSIONS OFF)
+
+@@ -1134,7 +1134,7 @@
+   endif()
+ elseif(APPLE)
+   set(EXTRA_LIBRARIES "-framework AppKit")
+-elseif(APPLE OR OPENBSD OR ANDROID)
++elseif(CMAKE_SYSTEM_NAME MATCHES "kOpenBSD.*|OpenBSD.*" OR OPENBSD OR ANDROID)
+   set(EXTRA_LIBRARIES "")
+ elseif(FREEBSD)
+   set(EXTRA_LIBRARIES execinfo)

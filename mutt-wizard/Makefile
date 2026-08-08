@@ -16,17 +16,12 @@ PERMIT_PACKAGE =	Yes
 RUN_DEPENDS =	mail/neomutt,gpgme,sasl,notmuch \
 		mail/isync \
 		mail/msmtp \
-		security/password-store \
-		sysutils/ggrep
+		security/password-store
 
 NO_BUILD =	Yes
 NO_TEST =	Yes
 USE_GMAKE =	Yes
 
 FAKE_FLAGS =	PREFIX=${TRUEPREFIX} MANPREFIX=${PREFIX}/man
-
-post-extract:
-	cd ${WRKSRC} && \
-	sed -e "s/\<grep\>/ggrep/g" -i bin/mw bin/mailsync
 
 .include <bsd.port.mk>

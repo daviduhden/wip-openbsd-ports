@@ -33,3 +33,4 @@ Index: src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql
  ) STRICT;
  CREATE TABLE snd_message_bodies(
    snd_message_body_id INTEGER PRIMARY KEY,
+

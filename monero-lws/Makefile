@@ -51,7 +51,6 @@ MONERO_PATCHES += patch-CMakeLists_txt
 MONERO_PATCHES += patch-contrib_depends_toolchain_cmake_in
 MONERO_PATCHES += patch-external_db_drivers_liblmdb_mdb_c
 MONERO_PATCHES += patch-src_device_device_io_hid_cpp
-MONERO_PATCHES += monero-CMakeLists_txt
 
 post-patch:
 .for _p in ${MONERO_PATCHES}

@@ -2,24 +2,23 @@ $OpenBSD$
 
 SPDX-License-Identifier: BSD-3-Clause
 
-Avoid -Ofast, set C++23 for protobuf compatibility, improve OpenBSD
+Avoid -Ofast, set C++17 for protobuf compatibility, improve OpenBSD
 detection for EXTRA_LIBRARIES, and use the ports readline/curses
 libraries when building through the depends CMake path on OpenBSD.
 
 Index: CMakeLists.txt
 --- CMakeLists.txt.orig
 +++ CMakeLists.txt
-@@ -96,7 +96,8 @@
+@@ -96,7 +96,7 @@
  set(CMAKE_C_STANDARD 11)
  set(CMAKE_C_STANDARD_REQUIRED ON)
  set(CMAKE_C_EXTENSIONS OFF)
 -set(CMAKE_CXX_STANDARD 14)
-+set(CMAKE_CXX_STANDARD 23)
-+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23")
++set(CMAKE_CXX_STANDARD 17)
  set(CMAKE_CXX_STANDARD_REQUIRED ON)
  set(CMAKE_CXX_EXTENSIONS OFF)
  
-@@ -343,7 +344,7 @@
+@@ -343,7 +343,7 @@
  if(WIN32 OR ARM OR PPC64LE OR PPC64 OR PPC)
    set(OPT_FLAGS_RELEASE "-O2")
  else()
@@ -28,7 +27,7 @@ Index: CMakeLists.txt
  endif()
  
  # BUILD_TAG is used to select the build type to check for a new version
-@@ -1134,7 +1135,7 @@
+@@ -1134,7 +1134,7 @@
      set(ICU_LIBRARIES ${ICUIO_LIBRARIES} ${ICUIN_LIBRARIES} ${ICUUC_LIBRARIES} ${ICUDT_LIBRARIES} ${ICUTU_LIBRARIES} ${ICONV_LIBRARIES})
      set(CMAKE_FIND_LIBRARY_SUFFIXES ${OLD_LIB_SUFFIXES})
    endif()
@@ -37,7 +36,7 @@ Index: CMakeLists.txt
    set(EXTRA_LIBRARIES "")
  elseif(FREEBSD)
    set(EXTRA_LIBRARIES execinfo)
-@@ -1180,9 +1181,15 @@
+@@ -1180,9 +1180,15 @@
      message(STATUS "Could not find GNU readline library so building without readline support")
    endif()
  elseif(USE_READLINE AND DEPENDS AND NOT MINGW)

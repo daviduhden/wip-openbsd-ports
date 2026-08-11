@@ -1,0 +1,19 @@
+$OpenBSD$
+
+SPDX-License-Identifier: BSD-3-Clause
+
+Compile the Protobuf compatibility probe with C++17, the minimum standard
+required by the packaged Protobuf and Abseil headers.
+
+Index: cmake/CheckTrezor.cmake
+--- cmake/CheckTrezor.cmake.orig
++++ cmake/CheckTrezor.cmake
+@@ -107,7 +107,7 @@
+         "${CMAKE_CURRENT_LIST_DIR}/test-protobuf.cpp"
+         CMAKE_FLAGS
+         "-DINCLUDE_DIRECTORIES=${Protobuf_INCLUDE_DIR};${CMAKE_BINARY_DIR}"
+-        "-DCMAKE_CXX_STANDARD=11"
++        "-DCMAKE_CXX_STANDARD=17"
+         LINK_LIBRARIES ${Protobuf_LIBRARY}
+         OUTPUT_VARIABLE OUTPUT
+     )

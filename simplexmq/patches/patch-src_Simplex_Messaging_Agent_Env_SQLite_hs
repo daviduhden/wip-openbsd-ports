@@ -17,3 +17,4 @@ Index: src/Simplex/Messaging/Agent/Env/SQLite.hs
 +    action :: TMVar (Maybe (Weak ThreadId, TMVar ())),
      restarts :: TVar RestartCount
    }
+ 

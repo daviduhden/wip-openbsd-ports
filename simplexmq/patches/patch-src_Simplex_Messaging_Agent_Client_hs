@@ -64,9 +64,10 @@ Index: src/Simplex/Messaging/Agent/Client.hs
                checkRestarts isActive $ updateRestartCount t rc
            | otherwise =
                pure False -- there is a new worker in the map, no action
-@@ -457,12 +458,15 @@
+@@ -457,14 +458,17 @@
    restarts <- newTVar $ RestartCount 0 0
    pure Worker {workerId, doWork, action, restarts}
+ 
 -runWorkerAsync :: MonadUnliftIO m => Worker -> m () -> m ()
 -runWorkerAsync Worker {action} work =
 +runWorkerAsync :: MonadUnliftIO m => TVar Bool -> Worker -> m () -> m ()
@@ -82,6 +83,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
 +      done <- newEmptyTMVarIO
 +      t <- work `forkFinally` const (atomically $ putTMVar done ())
 +      atomically . putTMVar action . Just . (,done) =<< mkWeakThreadId t
+ 
  data AgentOperation = AONtfNetwork | AORcvNetwork | AOMsgDelivery | AOSndNetwork | AODatabase
    deriving (Eq, Show)
 @@ -514,6 +518,7 @@

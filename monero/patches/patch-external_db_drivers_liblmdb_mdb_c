@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: BSD-3-Clause
 
 Enforce MDB_WRITEMAP on OpenBSD because we lack a Unified Buffer Cache,

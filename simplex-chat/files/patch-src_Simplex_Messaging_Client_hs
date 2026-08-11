@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: AGPL-3.0-only
 
 Make protocol-client shutdown synchronous.  The old close operation only sent

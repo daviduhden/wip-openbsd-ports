@@ -1,5 +1,3 @@
- $OpenBSD$
-
 SPDX-License-Identifier: BSD-3-Clause
 
 Disable entropy build-time probes on OpenBSD.

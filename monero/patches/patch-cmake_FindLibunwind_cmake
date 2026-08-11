@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: BSD-3-Clause
 
 Do not add liblzma to libunwind on OpenBSD; base libunwind does not need it.

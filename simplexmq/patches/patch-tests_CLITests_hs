@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: AGPL-3.0-only
 
 Credential rotation is a finite CLI command, not a daemon.  Do not cancel it

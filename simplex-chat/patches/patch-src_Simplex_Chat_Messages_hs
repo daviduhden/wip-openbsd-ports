@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: AGPL-3.0-only
 
 GHC 9.14 moved (:<>:) from being a type-level operator to a regular

@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: BSD-3-Clause
 
 Bridge basement's UTF-8 representation and ram byte arrays explicitly.

@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: BSD-3-Clause
 
 Find devel/readline as ereadline on OpenBSD instead of base libedit/readline.

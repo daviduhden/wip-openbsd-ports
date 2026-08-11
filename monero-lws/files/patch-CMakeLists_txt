@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: BSD-3-Clause
 
 Avoid -Ofast, set C++17 for protobuf compatibility, improve OpenBSD

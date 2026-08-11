@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: MIT
 
 Build with http2 5.x using its public configuration templates, qualified

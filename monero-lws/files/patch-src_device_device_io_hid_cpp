@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: BSD-3-Clause
 
 OpenBSD's hidapi package renames hid_init to avoid a usbhid.h conflict.

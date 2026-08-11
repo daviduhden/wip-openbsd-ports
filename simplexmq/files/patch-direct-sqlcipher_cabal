@@ -1,5 +1,3 @@
-$OpenBSD$
-
 Use the OpenBSD SQLCipher shared library when systemlib is enabled.
 
 Index: direct-sqlcipher.cabal

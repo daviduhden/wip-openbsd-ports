@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: AGPL-3.0-only
 
 Disambiguate getAddrInfo's result type for newer network/GHC combinations.

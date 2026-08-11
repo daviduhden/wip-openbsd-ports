@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: AGPL-3.0-only
 
 This test has no generated inputs, so running it as an ioProperty repeats it

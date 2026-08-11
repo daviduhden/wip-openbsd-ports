@@ -5,10 +5,17 @@ fix account deletion
 publish gpg using gpg-wks protocol
 dynamically load mailboxes
 replace GNU grep \S with POSIX [^[:space:]]
+use /bin/sh instead of /bin/bash, remove non-POSIX PWR signal
 
 Index: bin/mw
 --- bin/mw.orig
 +++ bin/mw
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/bin/sh
+ 
+ # New mw muttwizard
+ # Please see README and LICENSE
 @@ -64,7 +64,7 @@
  	}
  }
@@ -42,7 +49,12 @@ Index: bin/mw
 -	toappend="mailboxes $(echo "$mailboxes" | sed "s/^/\"=/;s/$/\"/;s/'/\\\'/g" | paste -sd ' ' -)"
 +	toappend="mailboxes \`mdir=$maildir/$fulladdr/; find \$mdir -mindepth 1 -type d -name cur | sed -e 's:/cur\$:\":' -e \"s:\$mdir:\\\"=:\" | sort | tr '\\\n' ' '\`"
  }
- 
+
++@@ -313,7 +310,7 @@
++ 	tempfile="$(mktemp -u)"
++-	trap 'rm -f $tempfile' HUP INT QUIT TERM PWR EXIT
+++	trap 'rm -f $tempfile' HUP INT QUIT TERM EXIT
++
  finalize() {
 @@ -318,7 +315,7 @@
  	/ i[0-9] / s?\(.* i\|'<sync.*/\|\.muttrc.*\)??g p

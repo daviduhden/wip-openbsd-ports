@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: BSD-3-Clause
 
 Change build-type from Custom to Simple so that entropy's custom setup

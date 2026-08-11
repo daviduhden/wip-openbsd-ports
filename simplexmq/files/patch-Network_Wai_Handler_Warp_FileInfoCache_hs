@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: MIT
 
 auto-update does not export the Reaper constructor. Use its public

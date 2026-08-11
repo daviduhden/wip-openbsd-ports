@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: AGPL-3.0-only
 
 Adapt the client callback and configuration to http2 5.x. http2 5.x

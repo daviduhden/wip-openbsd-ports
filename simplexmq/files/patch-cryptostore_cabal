@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: BSD-3-Clause
 
 Build cryptostore against ram when using crypton 1.1+, whose bytearray

@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: BSD-3-Clause
 
 Backport the aeson 2.3.0.0 fix for HSEC-2026-0007: reject very large

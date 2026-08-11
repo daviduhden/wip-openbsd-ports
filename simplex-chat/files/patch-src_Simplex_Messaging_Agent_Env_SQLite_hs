@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: AGPL-3.0-only
 
 Associate each worker action with its own completion signal so shutdown can

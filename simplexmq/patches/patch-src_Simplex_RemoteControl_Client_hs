@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: AGPL-3.0-only
 
 Send multicast announcements through the IPv4 interface advertised in the

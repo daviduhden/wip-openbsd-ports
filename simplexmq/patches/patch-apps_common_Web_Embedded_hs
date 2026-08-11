@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: AGPL-3.0-only
 
 Resolve embedded web assets relative to the project root during Cabal builds.

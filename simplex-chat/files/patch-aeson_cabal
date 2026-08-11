@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: BSD-3-Clause
 
 Relax the ghc-prim upper bound so this aeson fork builds with GHC 9.10+,

@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: AGPL-3.0-only
 
 Bring PubKey and PrivKey constructors into unqualified scope so

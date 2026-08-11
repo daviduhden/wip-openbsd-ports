@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: AGPL-3.0-only
 
 Abort incomplete TLS contexts without a graceful TLS shutdown.  tls 2.4's

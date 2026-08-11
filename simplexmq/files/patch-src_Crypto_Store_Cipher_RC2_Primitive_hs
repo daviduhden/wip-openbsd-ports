@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: BSD-3-Clause
 
 Allocate the RC2 expansion buffer as ram Bytes before converting it to

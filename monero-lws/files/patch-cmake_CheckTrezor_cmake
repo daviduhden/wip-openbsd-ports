@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: BSD-3-Clause
 
 Compile the Protobuf compatibility probe with C++17, the minimum standard

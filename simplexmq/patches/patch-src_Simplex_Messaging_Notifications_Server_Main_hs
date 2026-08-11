@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: AGPL-3.0-only
 
 LibreSSL's openssl(1) does not implement ED448.  Use ED25519 as the portable

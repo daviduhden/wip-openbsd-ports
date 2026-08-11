@@ -1,5 +1,3 @@
-$OpenBSD$
-
 SPDX-License-Identifier: AGPL-3.0-only
 
 Scale retry interval timing tests to avoid OpenBSD scheduler granularity

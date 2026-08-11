@@ -1,5 +1,3 @@
-$OpenBSD$
-
 OpenBSD pgrep does not support -ax, use -x instead
 
 Index: bin/mailsync
@@ -11,6 +9,6 @@ Index: bin/mailsync
  	# remember if a display server is running since `ps` doesn't always contain a display
 -	pgrepoutput="$(pgrep -ax X\(\|org\|wayland\))"
 +	pgrepoutput="$(pgrep X\(\|org\|wayland\))"
- 	displays="$(echo "$pgrepoutput" | grep -wo "[0-9]*:[0-9]\+" | sort -u)"
+ 	displays="$(echo "$pgrepoutput" | ggrep -wo "[0-9]*:[0-9]\+" | sort -u)"
  	[ -z "$displays" ] && [ -d /tmp/.X11-unix ] && displays=$(cd /tmp/.X11-unix && for x in X*; do echo ":${x#X}"; done)
  

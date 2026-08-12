@@ -138,7 +138,7 @@ SIMPLEXMQ_PATCHES = \
 
 LIB_DEPENDS = archivers/zstd \
 			converters/libiconv \
-			databases/sqlcipher \
+			databases/sqlcipher>=4.17.0 \
 			devel/gmp \
 			devel/libffi
 

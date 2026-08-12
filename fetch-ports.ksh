@@ -316,6 +316,17 @@ copy_selected_directories() {
 	done
 }
 
+# Install the user/group registry carried with the custom ports.  Its base is
+# kept in sync with upstream and the final entries reserve IDs for these ports.
+copy_user_list() {
+	if [ ! -f user.list ]; then
+		warn "user.list not found; package user validation may fail."
+		return
+	fi
+	cp user.list "$TARGET_TREE/infrastructure/db/user.list"
+	log "user.list copied to $TARGET_TREE/infrastructure/db/user.list"
+}
+
 # Function to create the user 'user' with a random password
 create_user_with_random_password() {
 	USER_TO_CREATE="user"
@@ -378,6 +389,7 @@ main() {
 			list_tree_subdirectories
 			copy_directory
 		fi
+		copy_user_list
 	else
 		log "Skipping copy from wip-openbsd-ports."
 	fi

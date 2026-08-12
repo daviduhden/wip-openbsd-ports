@@ -16,4 +16,3 @@ Index: tests/Util.hs
        runTest =
          timeout (tt * 1000000) (evaluateExample action params hooks state) `finally` callCommand "sync" >>= \case
            Just r -> pure r
-

@@ -473,6 +473,3 @@ Index: tests/XFTPWebTests.hs
            fileEncrypted = B.concat [hdrEnc, srcEnc, padEnc, fileTag]
        -- TS: call processDownloadedFile with a minimal FileDescription-like object
        tsResult <-
-
-
-

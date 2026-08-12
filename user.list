@@ -416,5 +416,5 @@ id  user		group		port
 905 _pgweb		_pgweb		www/pgweb
 
 906 _simplexmq		_simplexmq	net/simplexmq
-907 _monerod		_monerod	net/monero
+907 _monerod		_monerod	net/{monero,monero-lws}
 908 _xd			_xd		net/xd-torrent

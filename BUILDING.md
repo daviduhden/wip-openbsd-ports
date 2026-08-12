@@ -3,12 +3,20 @@
 This repository carries custom OpenBSD ports for:
 
 - `net/monero`
+- `net/monero-lws`
 - `net/simplexmq`
 - `net/simplex-chat`
 - `net/xd-torrent`
 
 The working copies in this repository are meant to be copied into
 `/usr/ports/net/` or kept in sync with the same layout there.
+
+The ports that create daemon accounts also require the accompanying
+`user.list` registry. When copying ports manually, install it with:
+
+```sh
+doas cp ./user.list /usr/ports/infrastructure/db/user.list
+```
 
 ## Prerequisites
 
@@ -21,6 +29,7 @@ Configure the ports tree in the usual OpenBSD way:
 
 The repository includes `fetch-ports.ksh` to bootstrap a ports tree
 and copy the custom ports into place under `/usr/ports/net/`.
+It also installs the synchronized `user.list` automatically.
 
 For the SimpleX ports, `sync-simplex-ports.pl` helps keep the shared
 Hackage pins in sync and normalizes `patches/` filenames so they

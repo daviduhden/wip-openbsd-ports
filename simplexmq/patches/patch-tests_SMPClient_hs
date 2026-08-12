@@ -11,9 +11,18 @@ transport's listening-socket notification.  Store saving, proxy shutdown and
 connection finalizers all run after that notification and must finish before
 the next test can reuse their paths and ports.
 
+Import tryPutTMVar explicitly for the start-error path added below.
+
 Index: tests/SMPClient.hs
 --- tests/SMPClient.hs.orig
 +++ tests/SMPClient.hs
+@@ -46,5 +46,5 @@
+ import UnliftIO.Concurrent
+ import qualified UnliftIO.Exception as E
+-import UnliftIO.STM (TMVar, atomically, newEmptyTMVarIO, putTMVar, takeTMVar)
++import UnliftIO.STM (TMVar, atomically, newEmptyTMVarIO, putTMVar, takeTMVar, tryPutTMVar)
+ import UnliftIO.Timeout (timeout)
+ import Util
 @@ -189,15 +189,14 @@
  runSMPServiceClient :: Transport c => TProxy c 'TServer -> (TLS.Credential, C.KeyPairEd25519) -> (THandleSMP c 'TClient -> IO a) -> IO a
  runSMPServiceClient _ serviceCreds test' = testSMPServiceClient serviceCreds test'

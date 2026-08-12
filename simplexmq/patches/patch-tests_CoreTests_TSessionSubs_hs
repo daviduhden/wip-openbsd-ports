@@ -1,0 +1,47 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Cover the worker shutdown contract directly: the first cancellation waits for
+an in-progress startup to publish its action, while subsequent cancellations
+return without consuming the action TMVar again.
+
+Index: tests/CoreTests/TSessionSubs.hs
+--- tests/CoreTests/TSessionSubs.hs.orig
++++ tests/CoreTests/TSessionSubs.hs
+@@ -13,6 +13,8 @@
+ import Data.List (foldl')
+ import qualified Data.Map as M
+ import Data.String (IsString (..))
++import Simplex.Messaging.Agent.Client (cancelWorker)
++import Simplex.Messaging.Agent.Env.SQLite (RestartCount (..), Worker (..))
+ import Simplex.Messaging.Agent.Protocol (ConnId, QueueStatus (..), UserId)
+ import Simplex.Messaging.Agent.Store (RcvQueueSub (..))
+ import qualified Simplex.Messaging.Agent.TSessionSubs as SS
+@@ -25,10 +27,27 @@
+ import Util
+
+ tSessionSubsTests :: Spec
+-tSessionSubsTests = it "subscription lifecycle" $ testSessionSubs
++tSessionSubsTests = do
++  it "subscription lifecycle" testSessionSubs
++  it "worker cancellation waits for startup and is idempotent" testWorkerCancellation
+
+ instance IsString EntityId where fromString = EntityId . B.pack
+
++testWorkerCancellation :: IO ()
++testWorkerCancellation = do
++  doWork <- newTMVarIO ()
++  action <- newEmptyTMVarIO
++  cancelled <- newTVarIO False
++  restarts <- newTVarIO $ RestartCount 0 0
++  let worker = Worker {workerId = 0, doWork, action, cancelled, restarts}
++  finished <- newEmptyTMVarIO
++  void . forkIO $ cancelWorker worker >> atomically (putTMVar finished ())
++  threadDelay 10000
++  atomically (tryReadTMVar finished) `shouldReturn` Nothing
++  atomically $ putTMVar action Nothing
++  timeout 1000000 (atomically $ readTMVar finished) `shouldReturn` Just ()
++  timeout 1000000 (cancelWorker worker) `shouldReturn` Just ()
++
+ dumpSessionSubs :: SS.TSessionSubs -> IO (M.Map SMPTransportSession (Maybe SessionId, (M.Map RecipientId RcvQueueSub, M.Map RecipientId RcvQueueSub)))
+ dumpSessionSubs =
+   readTVarIO . SS.sessionSubs

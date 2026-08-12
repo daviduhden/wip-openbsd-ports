@@ -1,9 +1,11 @@
 SPDX-License-Identifier: AGPL-3.0-only
 
 Give AgentClient a completion signal and make its shutdown join reconnect
-workers, protocol clients and each concrete worker execution.  Worker startup
-and late client publication are made atomic with shutdown, preventing detached
-TLS and store users from outliving their owner.
+workers, protocol clients and each concrete worker execution.  A per-worker
+cancellation flag makes cancellation idempotent while allowing its first caller
+to wait for a concurrent startup to publish the thread it must stop.  Worker
+startup and late client publication are made atomic with shutdown, preventing
+detached TLS and store users from outliving their owner.
 
 Index: src/Simplex/Messaging/Agent/Client.hs
 --- src/Simplex/Messaging/Agent/Client.hs.orig
@@ -62,17 +64,20 @@ Index: src/Simplex/Messaging/Agent/Client.hs
                checkRestarts isActive $ updateRestartCount t rc
            | otherwise =
                pure False -- there is a new worker in the map, no action
-@@ -457,14 +458,17 @@
+@@ -456,15 +457,18 @@
+-  action <- newTMVar Nothing
++  (action, cancelled) <- (,) <$> newTMVar Nothing <*> newTVar False
    restarts <- newTVar $ RestartCount 0 0
-   pure Worker {workerId, doWork, action, restarts}
+-  pure Worker {workerId, doWork, action, restarts}
++  pure Worker {workerId, doWork, action, cancelled, restarts}
  
 -runWorkerAsync :: MonadUnliftIO m => Worker -> m () -> m ()
 -runWorkerAsync Worker {action} work =
 +runWorkerAsync :: MonadUnliftIO m => TVar Bool -> Worker -> m () -> m ()
-+runWorkerAsync active Worker {action} work =
++runWorkerAsync active Worker {action, cancelled} work =
    E.bracket
 -    (atomically $ takeTMVar action) -- get current action, locking to avoid race conditions
-+    (atomically $ unlessM (readTVar active) (throwSTM ThreadKilled) >> takeTMVar action) -- get current action, locking to avoid race conditions
++    (atomically $ unlessM (readTVar active) (throwSTM ThreadKilled) >> whenM (readTVar cancelled) (throwSTM ThreadKilled) >> takeTMVar action) -- get current action, locking to avoid race conditions
      (atomically . tryPutTMVar action) -- if it was running (or if start crashes), put it back and unlock (don't lock if it was just started)
      (\a -> when (isNothing a) start) -- start worker if it's not running
    where
@@ -169,10 +174,11 @@ Index: src/Simplex/Messaging/Agent/Client.hs
 +    cancelReconnect v = atomically (readTMVar $ sessionVar v) >>= uninterruptibleCancel
  
  cancelWorker :: Worker -> IO ()
- cancelWorker Worker {doWork, action} = do
+-cancelWorker Worker {doWork, action} = do
++cancelWorker Worker {doWork, action, cancelled} = do
    noWorkToDo doWork
 -  atomically (tryTakeTMVar action) >>= mapM_ (mapM_ $ deRefWeak >=> mapM_ killThread)
-+  atomically (takeTMVar action) >>= mapM_ (\(t, done) -> deRefWeak t >>= mapM_ killThread >> atomically (readTMVar done))
++  atomically (ifM (stateTVar cancelled $ \b -> (b, True)) (pure Nothing) (Just <$> takeTMVar action)) >>= mapM_ (mapM_ $ \(t, done) -> deRefWeak t >>= mapM_ killThread >> atomically (readTMVar done))
  
  waitUntilActive :: AgentClient -> IO ()
  waitUntilActive AgentClient {active} = unlessM (readTVarIO active) $ atomically $ unlessM (readTVar active) retry

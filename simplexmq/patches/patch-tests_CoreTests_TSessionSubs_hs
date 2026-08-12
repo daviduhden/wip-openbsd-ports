@@ -16,7 +16,10 @@ Index: tests/CoreTests/TSessionSubs.hs
  import Simplex.Messaging.Agent.Protocol (ConnId, QueueStatus (..), UserId)
  import Simplex.Messaging.Agent.Store (RcvQueueSub (..))
  import qualified Simplex.Messaging.Agent.TSessionSubs as SS
-@@ -25,10 +27,27 @@
+@@ -23,12 +25,30 @@
+ import Test.Hspec hiding (fit, it)
+ import UnliftIO
++import UnliftIO.Concurrent (forkIO, threadDelay)
  import Util
 
  tSessionSubsTests :: Spec

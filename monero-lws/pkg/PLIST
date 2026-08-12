@@ -6,5 +6,3 @@
 @sample ${SYSCONFDIR}/monero-lws/
 @sample ${LOCALSTATEDIR}/lib/monero-lws/
 @sample ${LOCALSTATEDIR}/log/monero-lws/
-@owner
-@group

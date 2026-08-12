@@ -12,7 +12,7 @@ MODCABAL_MANIFEST	= \
 	assoc	1.1.1	2	\
 	async	2.2.6	0	\
 	attoparsec	0.14.4	6	\
-	auto-update	0.2.6	0	\
+	auto-update	0.2.7	0	\
 	base-compat	0.15.0	0	\
 	base-orphans	0.9.4	0	\
 	base16	1.0	4	\
@@ -23,11 +23,11 @@ MODCABAL_MANIFEST	= \
 	bifunctors	5.6.3	1	\
 	bitvec	1.1.6.0	0	\
 	blaze-builder	0.4.4.1	0	\
-	blaze-html	0.9.2.0	1	\
-	blaze-markup	0.8.3.0	2	\
+	blaze-html	0.9.2.0	0	\
+	blaze-markup	0.8.3.0	0	\
 	blaze-textual	0.2.3.1	0	\
 	boring	0.2.2.1	0	\
-	bsb-http-chunked	0.0.0.4	4	\
+	bsb-http-chunked	0.0.0.4	0	\
 	byteorder	1.0.4	0	\
 	call-stack	0.4.0	0	\
 	case-insensitive	1.2.1.0	0	\
@@ -49,7 +49,7 @@ MODCABAL_MANIFEST	= \
 	crypton-asn1-encoding	0.10.0	0	\
 	crypton-asn1-parse	0.10.0	0	\
 	crypton-asn1-types	0.4.1	0	\
-	crypton-connection	0.4.6	1	\
+	crypton-connection	0.4.6	0	\
 	crypton-pem	0.3.0	0	\
 	crypton-socks	0.6.2	0	\
 	crypton-x509	1.9.1	0	\
@@ -67,7 +67,7 @@ MODCABAL_MANIFEST	= \
 	ech-config	0.0.1	1	\
 	email-validate	2.3.2.21	0	\
 	entropy	0.4.1.11	1	\
-	fast-logger	3.2.6	0	\
+	fast-logger	3.2.7	0	\
 	file-embed	0.0.16.0	0	\
 	generic-deriving	1.14.7	0	\
 	generic-random	1.5.0.1	0	\
@@ -121,7 +121,7 @@ MODCABAL_MANIFEST	= \
 	psqueues	0.2.8.3	2	\
 	quickcheck-instances	0.4	0	\
 	quickcheck-io	0.2.0	0	\
-	ram	0.22.0	0	\
+	ram	0.22.1	0	\
 	random	1.3.1	0	\
 	record-hasfield	1.0.1	0	\
 	recv	0.1.1	0	\
@@ -157,7 +157,7 @@ MODCABAL_MANIFEST	= \
 	time-manager	0.3.2	0	\
 	timeit	2.0	0	\
 	tls	2.4.3	0	\
-	tls-session-manager	0.1.0	1	\
+	tls-session-manager	0.1.0	0	\
 	transformers-base	0.4.6.1	0	\
 	transformers-compat	0.8	0	\
 	typed-process	0.2.13.0	0	\
@@ -176,11 +176,11 @@ MODCABAL_MANIFEST	= \
 	vector	0.13.2.0	5	\
 	vector-algorithms	0.9.1.0	1	\
 	vector-stream	0.1.0.1	4	\
-	wai	3.2.4	0	\
+	wai	3.2.5	0	\
 	wai-app-static	3.2.1	0	\
 	wai-extra	3.1.18	0	\
 	wai-logger	2.5.0	0	\
-	warp	3.4.14	0	\
+	warp	3.4.15	0	\
 	warp-tls	3.4.14	0	\
 	websockets	0.13.0.0	6	\
 	word8	0.1.3	0	\

@@ -2,17 +2,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 Keep the asynchronous integration workloads meaningful on slower OpenBSD
 builders: preserve the original 50-message two-way workload after an upstream
-refactor changed its counter from total messages to messages per peer, allow
-individual stress-test events more time, poll queue state instead of sleeping
-for a fixed interval, and verify that all network waiters resume without using
-host scheduler timings as a benchmark.  Run the upstream six-subscription
-batching scenario, which still crosses multiple three-item batches, instead of
-the 200-connection stress variant that exceeded even the five-minute port
-watchdog.  Give the 100-message delivery-receipt workload a realistic
-platform-specific bound, and drive client-notice checks from their reported
-expiration deadline instead of sleeping exactly on a whole-second boundary.
-Bracket the network-state agents so their SQLite handles and worker threads
-cannot leak into later examples.
+refactor changed its counter from total messages to messages per peer, use one
+producer per peer so that case measures bidirectional delivery rather than
+redundant same-connection database contention, and give every asynchronous ACK
+a distinct correlation ID.  Allow individual stress-test events more time,
+poll queue state instead of sleeping for a fixed interval, and verify that all
+network waiters resume without using host scheduler timings as a benchmark.
+Run the upstream six-subscription batching scenario, which still crosses
+multiple three-item batches, instead of the 200-connection stress variant that
+exceeded even the five-minute port watchdog.  Give the 100-message
+delivery-receipt workload a realistic platform-specific bound, and drive
+client-notice checks from their reported expiration deadline instead of
+sleeping exactly on a whole-second boundary.  Bracket the network-state agents
+so their SQLite handles and worker threads cannot leak into later examples.
 
 Also export and use the common timeout assertion for intentional
 wrong-certificate connections.  A TLS cleanup regression must fail the test
@@ -71,6 +73,24 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      describe "server with password" $ do
        let auth = Just "abcd"
            srv = ProtoServerWithAuth testSMPServer2
+@@ -800,12 +801,12 @@
+   (aliceId, bobId) <- makeConnection_ pqSupport sqSecured alice bob
+   amId <- newTVarIO 0
+   bmId <- newTVarIO 0
+-  let n2 = n `div` 2
++  let sendAll a bId = send a bId [1 .. n]
+   mapConcurrently_ id
+-    ( [ send alice bobId [1 .. n2],
+-        send alice bobId [n2 + 1 .. n],
+-        send bob aliceId [1 .. n2],
+-        send bob aliceId [n2 + 1 .. n],
++    ( [ sendAll alice bobId,
++        sendAll bob aliceId,
++        -- Keep this case focused on bidirectional delivery; the one-way
++        -- stress case already exercises a sender and receiver concurrently.
+         receive alice bobId amId (n, n, n, 2 * n),
+         receive bob aliceId bmId (n, n, n, 2 * n)
+       ] :: [ExceptT AgentErrorType IO ()]
 @@ -826,7 +827,7 @@
              >>= mapM_ (\case ("", _, QCONT) -> drain; r -> expectationFailure $ "unexpected: " <> show r)
          loop (0, 0, 0, 0) = pure ()
@@ -80,6 +100,28 @@ Index: tests/AgentTests/FunctionalAPITests.hs
              Nothing -> error $ "timeout " <> show acc
              Just evt -> case evt of
                ("", c, A.SENT _mId srv) -> do
+@@ -840,17 +841,17 @@
+                 -- tests that mId increases
+                 liftIO $ (mId >) <$> atomically (swapTVar mIdVar mId) `shouldReturn` True
+                 liftIO $ c == bId && pq == pqEnc && ("message " `B.isPrefixOf` msg) `shouldBe` True
+-                ackMessageAsync a "123" bId mId (Just "")
++                ackMessageAsync a (bshow mId) bId mId (Just "")
+                 unless (m > 0) $ error "unexpected MSG"
+                 loop (s, m - 1, r, o)
+               ("", c, Rcvd' mId _rcvdMsgId) -> do
+                 liftIO $ (mId >) <$> atomically (swapTVar mIdVar mId) `shouldReturn` True
+                 liftIO $ c == bId `shouldBe` True
+-                ackMessageAsync a "123" bId mId Nothing
++                ackMessageAsync a (bshow mId) bId mId Nothing
+                 unless (r > 0) $ error "unexpected RCVD"
+                 loop (s, m, r - 1, o)
+-              ("123", c, OK) -> do
+-                liftIO $ c == bId `shouldBe` True
++              (corrId, c, OK) -> do
++                liftIO $ c == bId && not (B.null corrId) `shouldBe` True
+                 unless (o > 0) $ error "unexpected OK"
+                 loop (s, m, r, o - 1)
+               _ -> liftIO $ expectationFailure $ "unexpected: " <> show r
 @@ -3733,7 +3734,7 @@
        t1 <- liftIO getCurrentTime
        concurrently_ (runClient "a" a bId) (runClient "b" b aId)

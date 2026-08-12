@@ -25,12 +25,9 @@ PERMIT_PACKAGE = Yes
 ONLY_FOR_ARCHS = amd64 i386 arm64 armv7 riscv64
 
 WANTLIB += ${COMPILER_LIBCXX} boost_chrono-mt boost_context-mt
-WANTLIB += boost_coroutine-mt boost_date_time-mt
-WANTLIB += boost_filesystem-mt boost_locale-mt boost_program_options-mt
+WANTLIB += boost_coroutine-mt boost_filesystem-mt boost_program_options-mt
 WANTLIB += boost_regex-mt boost_serialization-mt boost_thread-mt
-WANTLIB += c crypto curses
-WANTLIB += ereadline execinfo hidapi-libusb iconv m protobuf
-WANTLIB += sodium ssl unbound zmq
+WANTLIB += c crypto hidapi-libusb m sodium ssl unbound usb-1.0 zmq
 
 COMPILER = base-clang
 MODULES = devel/cmake
@@ -40,6 +37,7 @@ RUN_DEPENDS = net/monero=${VERSION}
 
 # Boost.Context and Boost.Coroutine are provided by the -md subpackage.
 LIB_DEPENDS = devel/boost,-md \
+		devel/libusb1 \
 		devel/protobuf \
 		devel/readline \
 		net/zeromq \

@@ -15,29 +15,17 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 
-if [ -t 1 ] && [ "${NO_COLOR:-}" != "1" ]; then
-	GREEN="\033[32m"
-	YELLOW="\033[33m"
-	RED="\033[31m"
-	RESET="\033[0m"
-else
-	GREEN=""
-	YELLOW=""
-	RED=""
-	RESET=""
-fi
-
 log() {
 	print "$(date '+%Y-%m-%d %H:%M:%S')" \
-		"${GREEN}[INFO]${RESET} $*"
+		"[INFO] $*"
 }
 warn() {
 	print "$(date '+%Y-%m-%d %H:%M:%S')" \
-		"${YELLOW}[WARN]${RESET} $*" >&2
+		"[WARN] $*" >&2
 }
 error() {
 	print "$(date '+%Y-%m-%d %H:%M:%S')" \
-		"${RED}[ERROR]${RESET} $*" >&2
+		"[ERROR] $*" >&2
 }
 
 # Verify that the script is run as root

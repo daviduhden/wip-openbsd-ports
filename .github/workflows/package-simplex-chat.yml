@@ -1,0 +1,83 @@
+---
+name: Package SimpleX Chat for OpenBSD
+
+"on":
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Release tag that will receive the package
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: package-simplex-chat-${{ inputs.release_tag }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - vm_arch: x86_64
+            package_arch: amd64
+          - vm_arch: aarch64
+            package_arch: arm64
+    steps:
+      # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Build package
+        # v1.4.6
+        uses: >-
+          vmactions/openbsd-vm@e6c68b637a12e83519688d115d57d5b0b53923cd
+        with:
+          release: "7"
+          arch: ${{ matrix.vm_arch }}
+          cpu: 2
+          mem: 4096
+          usesh: true
+          run: |
+            openbsd_mirror="https://cdn.openbsd.org/pub/OpenBSD"
+            openbsd_release="$(uname -r)"
+            ports_url="$openbsd_mirror/$openbsd_release/ports.tar.gz"
+            ftp -o /tmp/ports.tar.gz "$ports_url"
+            tar -xzf /tmp/ports.tar.gz -C /usr
+            cp -R "$GITHUB_WORKSPACE/simplex-chat" /usr/ports/net/
+            pkg_path="$openbsd_mirror/snapshots/packages/$(uname -m)/"
+            package_repo="$GITHUB_WORKSPACE/packages"
+            PKG_PATH="$pkg_path" PACKAGE_REPOSITORY="$package_repo" \
+              make -C /usr/ports/net/simplex-chat install-depends package
+
+      - name: Name release asset
+        shell: sh
+        run: |
+          set -- packages/*/all/simplex-chat-*.tgz
+          test "$#" -eq 1
+          asset="simplex-chat-openbsd-${{ matrix.package_arch }}.tgz"
+          cp "$1" "$asset"
+
+      - name: Publish package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          ASSET: simplex-chat-openbsd-${{ matrix.package_arch }}.tgz
+        run: |
+          test -f "$ASSET"
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$ASSET" --clobber
+          else
+            gh release create "$RELEASE_TAG" "$ASSET" \
+              --target "$GITHUB_SHA" --generate-notes \
+              --notes "Install with: pkg_add -D unsigned ./$ASSET"
+          fi

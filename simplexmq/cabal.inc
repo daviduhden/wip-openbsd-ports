@@ -12,7 +12,7 @@ MODCABAL_MANIFEST	= \
 	assoc	1.1.1	2	\
 	async	2.2.6	0	\
 	attoparsec	0.14.4	6	\
-	auto-update	0.2.6	0	\
+	auto-update	0.2.7	0	\
 	base-compat	0.15.0	0	\
 	base-orphans	0.9.4	0	\
 	base16	1.0	4	\
@@ -64,7 +64,7 @@ MODCABAL_MANIFEST	= \
 	easy-file	0.2.5	0	\
 	ech-config	0.0.1	1	\
 	entropy	0.4.1.11	1	\
-	fast-logger	3.2.6	0	\
+	fast-logger	3.2.7	0	\
 	file-embed	0.0.16.0	0	\
 	generic-deriving	1.14.7	0	\
 	generic-random	1.5.0.1	0	\
@@ -82,7 +82,7 @@ MODCABAL_MANIFEST	= \
 	http-client-tls	0.4.0	0	\
 	http-date	0.0.11	0	\
 	http-semantics	0.4.1	0	\
-	http-types	0.12.5	0	\
+	http-types	0.12.6	0	\
 	http2	5.4.3	0	\
 	indexed-traversable	0.1.5	0	\
 	indexed-traversable-instances	0.1.2.1	0	\
@@ -118,7 +118,7 @@ MODCABAL_MANIFEST	= \
 	psqueues	0.2.8.3	2	\
 	quickcheck-instances	0.4	0	\
 	quickcheck-io	0.2.0	0	\
-	ram	0.22.0	0	\
+	ram	0.22.1	0	\
 	random	1.3.1	0	\
 	recv	0.1.1	0	\
 	resourcet	1.3.0	0	\
@@ -166,7 +166,7 @@ MODCABAL_MANIFEST	= \
 	vector	0.13.2.0	5	\
 	vector-algorithms	0.9.1.0	1	\
 	vector-stream	0.1.0.1	4	\
-	wai	3.2.4	0	\
+	wai	3.2.5	0	\
 	wai-app-static	3.2.1	0	\
 	wai-extra	3.1.18	0	\
 	wai-logger	2.5.0	0	\

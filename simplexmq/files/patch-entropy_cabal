@@ -5,6 +5,7 @@ script does not run its platform-specific C probes. On OpenBSD, those
 probes include <sys/random.h> and <linux/random.h>, neither of which
 exist.
 
+Index: entropy.cabal
 --- entropy.cabal.orig
 +++ entropy.cabal
 @@ -17,7 +17,7 @@

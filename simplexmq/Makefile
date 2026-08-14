@@ -150,9 +150,9 @@ post-patch:
 	fi
 	if [ -f ${WRKDIR}/entropy-${ENTROPY_V}/entropy.cabal ]; then \
 		patch -d ${WRKDIR}/entropy-${ENTROPY_V} -p0 \
-			< ${FILESDIR}/entropy-cabal.patch; \
+			< ${FILESDIR}/patch-entropy_cabal; \
 		patch -d ${WRKDIR}/entropy-${ENTROPY_V} -p0 \
-			< ${FILESDIR}/entropy-setup-openbsd.patch; \
+			< ${FILESDIR}/patch-Setup_hs; \
 	fi
 
 cabal-inc: patch

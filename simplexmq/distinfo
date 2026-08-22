@@ -169,7 +169,7 @@ SHA256 (hackage/simplex-chat-hs-socks-a30cc7a79a08d8108316094f8f2f82a0c5e1ac51.t
 SHA256 (hackage/simplex-chat-libbbs-59a0f4bf32e195cb6883de8374825c0f4764c717.tar.gz) = +IO5U+NE2ZU5kuBosY675mH+iu2onMwHhY2FQvITzDA=
 SHA256 (hackage/simplex-chat-sqlcipher-simple-a46bd361a19376c5211f1058908fc0ae6bf42446.tar.gz) = auSadSOW/uytUWtOoTpzaKQ0sIojPO0ksmNQQGUEojE=
 SHA256 (hackage/simplex-chat-wai-2f6e5aa5f05ba9140ac99e195ee647b4f7d926b0.tar.gz) = zSMSPZTp80fji+YvSDF/5oiRZKXQQDQJPjaXjdblOuA=
-SHA256 (hackage/simplexmq-7.0.1-27a37387.tar.gz) = UVR2ibdEZmRYFAqXTuUYVZhEZ1z1DoNGwUu2nBaL/NA=
+SHA256 (hackage/simplexmq-7.0.1.tar.gz) = QoaQsXN2FY2ANQFIrkm4Jqy9YJ3P/5NGCZk2Ut+nEdc=
 SHA256 (hackage/split-0.2.5.tar.gz) = UtpAToOXwasjg1TI1P2afpxcrIhJzCzi5F+syF50qRM=
 SHA256 (hackage/splitmix-0.1.3.2.tar.gz) = ph1OizD1oWUm19MRcbZ0rnkk0iB/N4Bg0TNjvYeU3ow=
 SHA256 (hackage/stm-chans-3.0.0.11.tar.gz) = spPvhH48eqCADSCxiRKgabppUefS41FxrOzW/5N5dfI=
@@ -401,7 +401,7 @@ SIZE (hackage/simplex-chat-hs-socks-a30cc7a79a08d8108316094f8f2f82a0c5e1ac51.tar
 SIZE (hackage/simplex-chat-libbbs-59a0f4bf32e195cb6883de8374825c0f4764c717.tar.gz) = 59001
 SIZE (hackage/simplex-chat-sqlcipher-simple-a46bd361a19376c5211f1058908fc0ae6bf42446.tar.gz) = 36327
 SIZE (hackage/simplex-chat-wai-2f6e5aa5f05ba9140ac99e195ee647b4f7d926b0.tar.gz) = 255670
-SIZE (hackage/simplexmq-7.0.1-27a37387.tar.gz) = 2696968
+SIZE (hackage/simplexmq-7.0.1.tar.gz) = 2695303
 SIZE (hackage/split-0.2.5.tar.gz) = 16008
 SIZE (hackage/splitmix-0.1.3.2.tar.gz) = 11373
 SIZE (hackage/stm-chans-3.0.0.11.tar.gz) = 10187

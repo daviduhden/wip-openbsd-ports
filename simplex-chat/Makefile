@@ -8,6 +8,7 @@ GH_TAGNAME = v7.0.1
 
 V = 7.0.1
 DISTNAME = ${GH_PROJECT}-${V}
+REVISION = 0
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
 WRKDIST = ${WRKDIR}/${GH_PROJECT}-${GH_TAGNAME:S/^v//}
@@ -57,7 +58,7 @@ MODCABAL_BUILD_ARGS = -v2
 CABAL_INC_HOME ?= ${WRKDIR}/.cabal-inc-home
 CABAL_INC_SKIP = simplexmq,aeson,socks,direct-sqlcipher,sqlcipher-simple,terminal,android-support,zip
 CABAL_INC_EXTRA = yaml:0.11.11.2:0
-NETWORK_V = 3.2.8.0
+NETWORK_V = 3.2.9.0
 UNIX_TIME_V = 0.5.0
 CRYPTOSTORE_V = 0.5.0.0
 ENTROPY_V = 0.4.1.11
@@ -85,6 +86,7 @@ CHAT_CABAL_PACKAGE_PATHS = \
 	${WRKDIR}/android-support/android-support.cabal \
 	${WRKDIR}/zip/zip.cabal
 CHAT_CABAL_COMMON_OPTIONS = \
+	'constraints: network ==${NETWORK_V}' \
 	'package direct-sqlcipher' \
 	'    flags: +systemlib' \
 	'package zstd' \
@@ -182,13 +184,11 @@ post-patch:
 			< ${FILESDIR}/${_p}; \
 	fi
 .endfor
-	if [ -f ${WRKDIR}/network-${NETWORK_V}/network.cabal ]; then \
-		patch -d ${WRKDIR}/network-${NETWORK_V} -p0 \
-			< ${FILESDIR}/patch-network_cabal; \
-		${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include; \
-		${INSTALL_DATA} ${FILESDIR}/HsNetworkConfig.h \
-			${WRKDIR}/network-${NETWORK_V}/include/HsNetworkConfig.h; \
-	fi
+	patch -d ${WRKDIR}/network-${NETWORK_V} -p0 \
+		< ${FILESDIR}/patch-network_cabal
+	${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include
+	${INSTALL_DATA} ${FILESDIR}/HsNetworkConfig.h \
+		${WRKDIR}/network-${NETWORK_V}/include/HsNetworkConfig.h
 	if [ -f ${WRKDIR}/unix-time-${UNIX_TIME_V}/unix-time.cabal ]; then \
 		patch -d ${WRKDIR}/unix-time-${UNIX_TIME_V} -p0 \
 			< ${FILESDIR}/patch-unix-time_cabal; \

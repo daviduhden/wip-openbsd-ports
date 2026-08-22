@@ -8,7 +8,7 @@ GH_TAGNAME = v7.0.1
 
 V = 7.0.1
 DISTNAME = ${GH_PROJECT}-${V}
-REVISION = 0
+REVISION = 1
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
 WRKDIST = ${WRKDIR}/${GH_PROJECT}-${GH_TAGNAME:S/^v//}
@@ -51,7 +51,7 @@ MODCABAL_EXECUTABLES = smp-server xftp-server
 MODCABAL_BUILD_ARGS = -v2
 .endif
 
-NETWORK_V = 3.2.8.0
+NETWORK_V = 3.2.9.0
 UNIX_TIME_V = 0.5.0
 CRYPTOSTORE_V = 0.5.0.0
 ENTROPY_V = 0.4.1.11
@@ -73,6 +73,7 @@ SIMPLEXMQ_CABAL_PACKAGE_PATHS = \
 	${WRKDIR}/yesod-wai/warp-tls/warp-tls.cabal \
 	${WRKDIR}/simplex-wai/warp/warp.cabal
 SIMPLEXMQ_CABAL_COMMON_OPTIONS = \
+	'constraints: network ==${NETWORK_V}' \
 	'package direct-sqlcipher' \
 	'    flags: +systemlib' \
 	'package zstd' \
@@ -94,6 +95,7 @@ CRYPTOSTORE_PATCHES = \
 	patch-src_Crypto_Store_PKCS5_PBES1_hs \
 	patch-src_Crypto_Store_Util_hs
 WARP_PATCHES = \
+	patch-warp_cabal \
 	patch-Network_Wai_Handler_Warp_FileInfoCache_hs \
 	patch-Network_Wai_Handler_Warp_HTTP2_hs
 LIB_DEPENDS = archivers/zstd \
@@ -137,13 +139,11 @@ post-patch:
 .for _p in ${WARP_PATCHES}
 	patch -d ${WRKDIR}/simplex-wai/warp -p0 < ${FILESDIR}/${_p}
 .endfor
-	if [ -f ${WRKDIR}/network-${NETWORK_V}/network.cabal ]; then \
-		patch -d ${WRKDIR}/network-${NETWORK_V} -p0 \
-			< ${FILESDIR}/patch-network_cabal; \
-		${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include; \
-		${INSTALL_DATA} ${FILESDIR}/HsNetworkConfig.h \
-			${WRKDIR}/network-${NETWORK_V}/include/HsNetworkConfig.h; \
-	fi
+	patch -d ${WRKDIR}/network-${NETWORK_V} -p0 \
+		< ${FILESDIR}/patch-network_cabal
+	${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include
+	${INSTALL_DATA} ${FILESDIR}/HsNetworkConfig.h \
+		${WRKDIR}/network-${NETWORK_V}/include/HsNetworkConfig.h
 	if [ -f ${WRKDIR}/unix-time-${UNIX_TIME_V}/unix-time.cabal ]; then \
 		patch -d ${WRKDIR}/unix-time-${UNIX_TIME_V} -p0 \
 			< ${FILESDIR}/patch-unix-time_cabal; \

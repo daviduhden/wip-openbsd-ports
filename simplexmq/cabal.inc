@@ -97,12 +97,12 @@ MODCABAL_MANIFEST	= \
 	main-tester	0.2.0.1	0	\
 	memory	0.18.0	1	\
 	mime-types	0.1.2.2	0	\
-	mlkem	0.2.2.0	0	\
+	mlkem	0.2.3.0	0	\
 	monad-control	1.0.3.1	0	\
 	monad-logger	0.3.42	0	\
 	monad-loops	0.4.3	0	\
 	mono-traversable	1.0.21.0	0	\
-	network	3.2.8.0	0	\
+	network	3.2.9.0	0	\
 	network-byte-order	0.1.8	0	\
 	network-control	0.1.7	0	\
 	network-info	0.2.1	0	\

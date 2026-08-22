@@ -105,7 +105,7 @@ SHA256 (hackage/http-client-0.7.19.tar.gz) = oCwb4ILo9IyVmscVCkikBfjUOD4JQmOUgeh
 SHA256 (hackage/http-client-tls-0.4.0.tar.gz) = YRzxTPBGZXuxeIpNrAlxC0sQTAN9QrGJFIwC5t2Erjw=
 SHA256 (hackage/http-date-0.0.11.tar.gz) = MvkjrBrZvf6tznxSoDybpiJbpg3BQTfLHN8y6oTM9NM=
 SHA256 (hackage/http-semantics-0.4.1.tar.gz) = oC3xHfjV6rrQKM5MLR76iJrmjlVtupSw0Tp1AXl0U9s=
-SHA256 (hackage/http-types-0.12.5.tar.gz) = 3m1QvEeJ13kMREhOaoOnqtMVGCLKGUg1uVXjRBcO/g0=
+SHA256 (hackage/http-types-0.12.6.tar.gz) = togEKstOU/H17+0mBWzx/cOuXca4XPvjIe3/wwecEGw=
 SHA256 (hackage/http2-5.4.3.tar.gz) = RvvgA6jQDbn1nK3B8oZUgiAqRmWvd7lshC99Qa3qrII=
 SHA256 (hackage/indexed-traversable-0.1.5.tar.gz) = ZCNZfTUorGbFS+qrn1QIQpwKKbjLmMRaFkXyVa73/vA=
 SHA256 (hackage/indexed-traversable-instances-0.1.2.1.tar.gz) = 5p1B8jqVRjwuA67gM3Sk9InHL3vyNb4lFJnEzKlBH+w=
@@ -122,12 +122,12 @@ SHA256 (hackage/main-tester-0.2.0.1.tar.gz) = zwb1k043Thly8sx2cBwD1nxVNgNNmtMsrO
 SHA256 (hackage/memory-0.18.0.tar.gz) = /U629jjiS4G05s3Wh3KlMXJvL2dobIlp00B9gveGLj4=
 SHA256 (hackage/memory-0.18.0_1.cabal) = n03pZzUvgLbxdMmhZvMVOT3egLd9e2fkEmiufewDGfk=
 SHA256 (hackage/mime-types-0.1.2.2.tar.gz) = 5W5HR3jXLDhwOdNRS1KprzSF9KvjHmIJbzgUha9JSUA=
-SHA256 (hackage/mlkem-0.2.2.0.tar.gz) = zV0H2lk2D2L/TmVqRvvapYEkkmvJikgObNWNgCSSroE=
+SHA256 (hackage/mlkem-0.2.3.0.tar.gz) = u2sk/PM30EgKZMi1FS2X7PKCCHKCTXkqtGqftFrLCCk=
 SHA256 (hackage/monad-control-1.0.3.1.tar.gz) = rguuoE2ZN173iBQDZxeZlKcXjUAKjODZAmhGVGdycTw=
 SHA256 (hackage/monad-logger-0.3.42.tar.gz) = ZiNEbNQqofWKniH0q8GM//E7iZHWrIUtk1LQ/+oSUBA=
 SHA256 (hackage/monad-loops-0.4.3.tar.gz) = fqqva8Q2YenobjEP+MVvvqFutr8TwxouKBAxOKwWTBg=
 SHA256 (hackage/mono-traversable-1.0.21.0.tar.gz) = Tdk+ozTAFpUAQC8HqjnJjbt7/+Vdxj/fIo2izCLHxc0=
-SHA256 (hackage/network-3.2.8.0.tar.gz) = UXiOXut9dyZPJgrNSN+AVaTbwkd+jWNKhJNne7FcX8g=
+SHA256 (hackage/network-3.2.9.0.tar.gz) = o+HYvdWMZ/5L8h8v60G1BBuJJvPVd5+AYUlEt8MHW7U=
 SHA256 (hackage/network-byte-order-0.1.8.tar.gz) = UpdmgW6eP9uC/hsUf4SZ70gsMNFTMNcgiNghbvZA50E=
 SHA256 (hackage/network-control-0.1.7.tar.gz) = BdQNOB5ccr7vsgm36Ch3tFf7yiiA5g7YSbrUgLZ5WxA=
 SHA256 (hackage/network-info-0.2.1.tar.gz) = my2IMS/IKANR1QAyAMwH3su4ZfhdOqexCUsji9aotAQ=
@@ -347,7 +347,7 @@ SIZE (hackage/http-client-0.7.19.tar.gz) = 96836
 SIZE (hackage/http-client-tls-0.4.0.tar.gz) = 8290
 SIZE (hackage/http-date-0.0.11.tar.gz) = 5351
 SIZE (hackage/http-semantics-0.4.1.tar.gz) = 15278
-SIZE (hackage/http-types-0.12.5.tar.gz) = 25272
+SIZE (hackage/http-types-0.12.6.tar.gz) = 25246
 SIZE (hackage/http2-5.4.3.tar.gz) = 5504150
 SIZE (hackage/indexed-traversable-0.1.5.tar.gz) = 9532
 SIZE (hackage/indexed-traversable-instances-0.1.2.1.tar.gz) = 3690
@@ -364,12 +364,12 @@ SIZE (hackage/main-tester-0.2.0.1.tar.gz) = 5310
 SIZE (hackage/memory-0.18.0.tar.gz) = 41957
 SIZE (hackage/memory-0.18.0_1.cabal) = 4581
 SIZE (hackage/mime-types-0.1.2.2.tar.gz) = 12220
-SIZE (hackage/mlkem-0.2.2.0.tar.gz) = 34520
+SIZE (hackage/mlkem-0.2.3.0.tar.gz) = 35254
 SIZE (hackage/monad-control-1.0.3.1.tar.gz) = 13985
 SIZE (hackage/monad-logger-0.3.42.tar.gz) = 11984
 SIZE (hackage/monad-loops-0.4.3.tar.gz) = 4996
 SIZE (hackage/mono-traversable-1.0.21.0.tar.gz) = 43552
-SIZE (hackage/network-3.2.8.0.tar.gz) = 146148
+SIZE (hackage/network-3.2.9.0.tar.gz) = 146197
 SIZE (hackage/network-byte-order-0.1.8.tar.gz) = 6428
 SIZE (hackage/network-control-0.1.7.tar.gz) = 7913
 SIZE (hackage/network-info-0.2.1.tar.gz) = 6387

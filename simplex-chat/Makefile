@@ -4,9 +4,9 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-GH_TAGNAME = v7.0.0
+GH_TAGNAME = v7.0.1
 
-V = 7.0.0.11
+V = 7.0.1
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -47,7 +47,7 @@ WANTLIB = c crypto ffi gmp iconv m pthread sqlcipher util z zstd
 
 MODULES = devel/cabal
 MODCABAL_STEM = simplex-chat
-MODCABAL_VERSION = ${V}
+MODCABAL_VERSION = 7.0.0.11
 MODCABAL_EXECUTABLES = simplex-chat
 
 .if ${DEBUG} == 1
@@ -143,6 +143,7 @@ LIB_DEPENDS = archivers/zstd \
 			devel/libffi
 
 BUILD_DEPENDS = converters/dos2unix
+TEST_DEPENDS = databases/sqlite3
 
 CHAT_CABAL_CHECK_PATHS = \
 	for _pkg in ${CHAT_CABAL_PACKAGE_PATHS}; do \
@@ -153,7 +154,7 @@ CHAT_CABAL_CHECK_PATHS = \
 	done
 
 post-patch:
-	# Normalize source to LF before applying patches.
+	# Normalize extracted source trees to LF before dependency patches.
 	find ${WRKDIR} -type f \( -name '*.hs' -o -name '*.cabal' \
 		-o -name '*.sql' -o -name '*.h' -o -name '*.c' \) \
 		-exec ${LOCALBASE}/bin/dos2unix -q {} +
@@ -197,8 +198,6 @@ post-patch:
 	if [ -f ${WRKDIR}/entropy-${ENTROPY_V}/entropy.cabal ]; then \
 		patch -d ${WRKDIR}/entropy-${ENTROPY_V} -p0 \
 			< ${FILESDIR}/patch-entropy_cabal; \
-		patch -d ${WRKDIR}/entropy-${ENTROPY_V} -p0 \
-			< ${FILESDIR}/patch-Setup_hs; \
 	fi
 
 cabal-inc: patch

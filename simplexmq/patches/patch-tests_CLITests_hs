@@ -4,10 +4,55 @@ Credential rotation is a finite CLI command, not a daemon.  Do not cancel it
 after 100 ms and suppress the resulting exception: that can leave a partial
 certificate set and makes the assertion inspect empty captured output.
 
+The generated configuration should still be checked for the upstream
+production defaults, but the test daemons must not bind privileged port 443.
+Rewrite only the temporary test configurations to use unprivileged ports so
+the tests do not require root solely for low-port binding.
+
 Index: tests/CLITests.hs
 --- tests/CLITests.hs.orig
 +++ tests/CLITests.hs
-@@ -122,7 +122,7 @@
+@@ -79,3 +79,11 @@
++setIniValue :: T.Text -> T.Text -> T.Text -> Ini -> Ini
++setIniValue section key value ini =
++  ini {iniSections = HM.adjust (map update) section $ iniSections ini}
++  where
++    update (key', value')
++      | key' == key = (key, value)
++      | otherwise = (key', value')
++
+ cliTests :: Spec
+ cliTests = do
+   describe "SMP server CLI" $ do
+@@ -99,9 +107,10 @@
+ smpServerTest :: Bool -> Bool -> IO ()
+ smpServerTest storeLog basicAuth = do
++  let iniFile = cfgPath <> "/smp-server.ini"
+   -- init
+   capture_ (withArgs (["init", "-y"] <> ["--disable-store-log" | not storeLog] <> ["--no-password" | not basicAuth]) $ smpServerCLI cfgPath logPath)
+     >>= (`shouldSatisfy` (("Server initialized, please provide additional server information in " <> cfgPath <> "/smp-server.ini") `isPrefixOf`))
+-  Right ini <- readIniFile $ cfgPath <> "/smp-server.ini"
++  Right ini <- readIniFile iniFile
+   lookupValue "STORE_LOG" "enable" ini `shouldBe` Right (if storeLog then "on" else "off")
+   lookupValue "STORE_LOG" "log_stats" ini `shouldBe` Right "off"
+   lookupValue "TRANSPORT" "port" ini `shouldBe` Right "5223,443"
+@@ -109,11 +118,14 @@
+   lookupValue "AUTH" "new_queues" ini `shouldBe` Right "on"
+   lookupValue "INACTIVE_CLIENTS" "disconnect" ini `shouldBe` Right "on"
+   doesFileExist (cfgPath <> "/ca.key") `shouldReturn` True
++  writeIniFile iniFile $
++    setIniValue "WEB" "https" "15223" $
++      setIniValue "TRANSPORT" "port" "15223" ini
+   -- start
+   r <- lines <$> capture_ (withArgs ["start"] $ (100000 `timeout` smpServerCLI cfgPath logPath) `catchAll_` pure (Just ()))
+   r `shouldContain` ["SMP server v" <> simplexmqVersionCommit]
+   r `shouldContain` (if storeLog then ["Store log: " <> logPath <> "/smp-server-store.log"] else ["Store log disabled."])
+-  r `shouldContain` ["Serving SMP protocol on port 5223 (TLS)...", "Serving SMP protocol on port 443 (TLS)...", "Serving static site on port 443 (TLS)..."]
++  r `shouldContain` ["Serving SMP protocol on port 15223 (TLS)...", "Serving static site on port 15223 (TLS)..."]
+   r `shouldContain` ["expiring clients inactive for 21600 seconds every 3600 seconds"]
+   r `shouldContain` (if basicAuth then ["creating new queues requires password"] else ["creating new queues allowed"])
+   -- cert
+@@ -122,7 +134,7 @@
      XF.readSignedObject certPath >>= \case
        [cert'] -> pure . X.signedObject $ X.getSigned cert'
        _ -> error "bad crt format"
@@ -16,3 +61,31 @@ Index: tests/CLITests.hs
    r' `shouldContain` ["Generated new server credentials"]
    newCrt <-
      XF.readSignedObject certPath >>= \case
+@@ -235,10 +247,12 @@
+   lookupValue "TRANSPORT" "port" ini `shouldBe` Right "443"
+   lookupValue "TRANSPORT" "websockets" ini `shouldBe` Right "off"
+   doesFileExist (ntfCfgPath <> "/ca.key") `shouldReturn` True
++  writeIniFile (ntfCfgPath <> "/ntf-server.ini") $
++    setIniValue "TRANSPORT" "port" "16001" ini
+   r <- lines <$> capture_ (withArgs ["start"] $ (100000 `timeout` ntfServerCLI ntfCfgPath ntfLogPath) `catchAll_` pure (Just ()))
+   r `shouldContain` ["SMP notifications server v" <> simplexmqVersionCommit]
+   r `shouldContain` (if storeLog then ["Store log: " <> ntfLogPath <> "/ntf-server-store.log"] else ["Store log disabled."])
+-  r `shouldContain` ["Serving NTF protocol on port 443 (TLS)..."]
++  r `shouldContain` ["Serving NTF protocol on port 16001 (TLS)..."]
+   capture_ (withStdin "Y" . withArgs ["delete"] $ ntfServerCLI ntfCfgPath ntfLogPath)
+     >>= (`shouldSatisfy` ("WARNING: deleting the server will make all queues inaccessible" `isPrefixOf`))
+   doesFileExist (cfgPath <> "/ca.key") `shouldReturn` False
+@@ -253,10 +267,12 @@
+   lookupValue "STORE_LOG" "log_stats" ini `shouldBe` Right "off"
+   lookupValue "TRANSPORT" "port" ini `shouldBe` Right "443"
+   doesFileExist (fileCfgPath <> "/ca.key") `shouldReturn` True
++  writeIniFile (fileCfgPath <> "/file-server.ini") $
++    setIniValue "TRANSPORT" "port" "18000" ini
+   r <- lines <$> capture_ (withArgs ["start"] $ (100000 `timeout` xftpServerCLI fileCfgPath fileLogPath) `catchAll_` pure (Just ()))
+   r `shouldContain` ["SimpleX XFTP server v" <> simplexmqVersionCommit]
+   r `shouldContain` (if storeLog then ["Store log: " <> fileLogPath <> "/file-server-store.log"] else ["Store log disabled."])
+-  r `shouldContain` ["Listening on port 443..."]
++  r `shouldContain` ["Listening on port 18000..."]
+   capture_ (withStdin "Y" . withArgs ["delete"] $ xftpServerCLI fileCfgPath fileLogPath)
+     >>= (`shouldSatisfy` ("WARNING: deleting the server will make all queues inaccessible" `isPrefixOf`))
+   doesFileExist (cfgPath <> "/ca.key") `shouldReturn` False

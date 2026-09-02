@@ -9,7 +9,7 @@ consistent.
 Index: src/Simplex/RemoteControl/Client.hs
 --- src/Simplex/RemoteControl/Client.hs.orig
 +++ src/Simplex/RemoteControl/Client.hs
-@@ -116,7 +116,7 @@
+@@ -116,7 +116,7 @@ connectRCHost drg pairing@RCHostPairing
    when multicast $ case knownHost of
      Nothing -> throwE RCENewController
      Just KnownHostPairing {hostDhPubKey} -> do
@@ -18,7 +18,7 @@ Index: src/Simplex/RemoteControl/Client.hs
        atomically $ putTMVar announcer ann
    pure (found, signedInv, RCHostClient {action, client_ = c}, r)
    where
-@@ -362,8 +362,8 @@
+@@ -362,8 +362,8 @@ prepareCtrlSession
  
  -- * Multicast discovery
  

@@ -6,7 +6,7 @@ field selectors and server configuration argument.
 Index: Network/Wai/Handler/Warp/HTTP2.hs
 --- Network/Wai/Handler/Warp/HTTP2.hs.orig
 +++ Network/Wai/Handler/Warp/HTTP2.hs
-@@ -45,21 +45,21 @@
+@@ -45,21 +45,21 @@ http2 settings ii conn transport app pee
      -- the time handler in both the receiver and the sender.
      let recvN = wrappedRecvN th istatus (S.settingsSlowlorisSize settings) rawRecvN
          sendBS x = connSendAll conn x >> T.tickle th

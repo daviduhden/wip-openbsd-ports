@@ -10,15 +10,15 @@ Index: tests/XFTPAgent.hs
 --- tests/XFTPAgent.hs.orig
 +++ tests/XFTPAgent.hs
 @@ -10,7 +10,7 @@
-
+ 
  module XFTPAgent where
-
+ 
 -import AgentTests.FunctionalAPITests (get, rfGet, runRight, runRight_, sfGet, withAgent)
 +import AgentTests.FunctionalAPITests (get, rfGet, runRight, runRight_, sfGet, shouldRespond, withAgent)
-
+ 
  import Control.Logger.Simple
  import Control.Monad
-@@ -85,7 +85,7 @@
+@@ -85,7 +85,7 @@ xftpAgentTests =
          it "should pass without basic auth" $ \_ -> testXFTPServerTest Nothing (noAuthSrv testXFTPServer2) `shouldReturn` Nothing
          let srv1 = testXFTPServer2 {keyHash = "1234"}
          it "should fail with incorrect fingerprint" $ \_ -> do
@@ -27,7 +27,7 @@ Index: tests/XFTPAgent.hs
          describe "server with password" $ do
            let auth = Just "abcd"
                srv = ProtoServerWithAuth testXFTPServer2
-@@ -267,12 +267,12 @@
+@@ -267,12 +267,12 @@ testXFTPAgentSendReceiveMatrix :: Spec
  testXFTPAgentSendReceiveMatrix = do
    describe "old server" $ do
      it "new clients" $ run oldServer newClient newClient

@@ -12,7 +12,7 @@ Index: src/Simplex/Chat/Messages.hs
  {-# LANGUAGE DataKinds #-}
  {-# LANGUAGE DeriveAnyClass #-}
  {-# LANGUAGE DuplicateRecordFields #-}
-@@ -40,7 +41,11 @@
+@@ -40,7 +41,11 @@ import Data.Text.Encoding (decodeLatin1,
  import Data.Time.Clock (NominalDiffTime, UTCTime, diffUTCTime, nominalDay)
  import Data.Type.Equality
  import Data.Typeable (Typeable)

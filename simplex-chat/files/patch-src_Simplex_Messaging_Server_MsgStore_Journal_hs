@@ -5,7 +5,7 @@ Replace random's removed genByteString helper with a small local equivalent.
 Index: src/Simplex/Messaging/Server/MsgStore/Journal.hs
 --- src/Simplex/Messaging/Server/MsgStore/Journal.hs.orig
 +++ src/Simplex/Messaging/Server/MsgStore/Journal.hs
-@@ -57,6 +57,7 @@
+@@ -57,6 +57,7 @@ import Control.Logger.Simple
  import Control.Monad
  import Control.Monad.Trans.Except
  import qualified Data.Attoparsec.ByteString.Char8 as A
@@ -13,7 +13,7 @@ Index: src/Simplex/Messaging/Server/MsgStore/Journal.hs
  import Data.ByteString.Char8 (ByteString)
  import qualified Data.ByteString.Char8 as B
  import Data.Either (fromRight, partitionEithers)
-@@ -92,7 +93,7 @@
+@@ -92,7 +93,7 @@ import System.Directory
  import System.FilePath (takeFileName, (</>))
  import System.IO (BufferMode (..), Handle, IOMode (..), SeekMode (..))
  import qualified System.IO as IO
@@ -22,7 +22,7 @@ Index: src/Simplex/Messaging/Server/MsgStore/Journal.hs
  
  data JournalMsgStore s = JournalMsgStore
    { config :: JournalStoreConfig s,
-@@ -841,6 +842,14 @@
+@@ -841,6 +842,14 @@ createNewJournal dir journalId = do
  newJournalId :: TVar StdGen -> IO ByteString
  newJournalId g = strEncode <$> atomically (stateTVar g $ genByteString 12)
  

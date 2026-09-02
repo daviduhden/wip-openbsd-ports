@@ -7,7 +7,7 @@ fall back to the foreground color as a sensible default.
 Index: src/Simplex/Chat/Terminal/Output.hs
 --- src/Simplex/Chat/Terminal/Output.hs.orig
 +++ src/Simplex/Chat/Terminal/Output.hs
-@@ -409,6 +409,7 @@
+@@ -409,6 +409,7 @@ setSGR = mapM_ $ \case
      layer = \case
        Foreground -> foreground
        Background -> background

@@ -8,7 +8,7 @@ is pulled in via allow-newer.
 Index: src/Simplex/Messaging/Crypto.hs
 --- src/Simplex/Messaging/Crypto.hs.orig
 +++ src/Simplex/Messaging/Crypto.hs
-@@ -246,6 +246,7 @@
+@@ -246,6 +246,7 @@ import Data.Type.Equality
  import Data.Typeable (Proxy (Proxy), Typeable)
  import Data.Word (Word32)
  import qualified Data.X509 as X

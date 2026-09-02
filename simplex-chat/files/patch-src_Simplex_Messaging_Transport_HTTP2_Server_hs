@@ -6,7 +6,7 @@ H.defaultServerConfig instead of the removed implicit default.
 Index: src/Simplex/Messaging/Transport/HTTP2/Server.hs
 --- src/Simplex/Messaging/Transport/HTTP2/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/HTTP2/Server.hs
-@@ -87,7 +87,7 @@
+@@ -87,7 +87,7 @@ runHTTP2ServerWith_ expCfg_ clientFinish
    tid_ <- mapM (forkIO . expireInactiveClient tls activeAt) expCfg_
    withHTTP2 bufferSize (run sniUsed tls activeAt) (clientFinished $ tlsUniq tls) tls `finally` mapM_ killThread tid_
    where

@@ -5,7 +5,7 @@ Use the config header installed by the port instead of running configure.
 Index: unix-time.cabal
 --- unix-time.cabal.orig
 +++ unix-time.cabal
-@@ -8,7 +8,7 @@
+@@ -8,7 +8,7 @@ author:             Kazu Yamamoto <kazu@
  synopsis:           Unix time parser/formatter and utilities
  description:        Fast parser\/formatter\/utilities for Unix time
  category:           Data

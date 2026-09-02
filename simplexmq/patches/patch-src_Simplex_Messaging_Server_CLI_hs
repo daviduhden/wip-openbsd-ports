@@ -7,7 +7,7 @@ unsupported ED448 default.
 Index: src/Simplex/Messaging/Server/CLI.hs
 --- src/Simplex/Messaging/Server/CLI.hs.orig
 +++ src/Simplex/Messaging/Server/CLI.hs
-@@ -117,7 +117,7 @@
+@@ -117,7 +117,7 @@ defaultX509Config :: X509Config
  defaultX509Config =
    X509Config
      { commonName = "127.0.0.1",

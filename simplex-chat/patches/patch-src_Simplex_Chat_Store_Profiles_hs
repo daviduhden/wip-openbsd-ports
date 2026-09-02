@@ -5,10 +5,14 @@ Pattern match the optional password hash instead of using list unzip on Maybe.
 Index: src/Simplex/Chat/Store/Profiles.hs
 --- src/Simplex/Chat/Store/Profiles.hs.orig
 +++ src/Simplex/Chat/Store/Profiles.hs
-@@ -296,3 +296,5 @@
+@@ -294,7 +294,9 @@ updateUserPrivacy db User {userId, showN
+     |]
+     (hashSalt viewPwdHash :. (BI showNtfs, userId))
    where
 -    hashSalt = L.unzip . fmap (\UserPwdHash {hash, salt} -> (hash, salt))
 +    hashSalt = \case
 +      Nothing -> (Nothing, Nothing)
 +      Just UserPwdHash {hash, salt} -> (Just hash, Just salt)
  
+ updateClientService :: DB.Connection -> UserId -> Bool -> IO ()
+ updateClientService db userId enable =

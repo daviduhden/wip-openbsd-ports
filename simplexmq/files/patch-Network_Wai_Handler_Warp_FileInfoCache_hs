@@ -6,7 +6,7 @@ accessor functions instead of record patterns.
 Index: Network/Wai/Handler/Warp/FileInfoCache.hs
 --- Network/Wai/Handler/Warp/FileInfoCache.hs.orig
 +++ Network/Wai/Handler/Warp/FileInfoCache.hs
-@@ -61,8 +61,8 @@
+@@ -61,8 +61,8 @@ getInfoNaive = getInfo
  ----------------------------------------------------------------
  
  getAndRegisterInfo :: FileInfoCache -> FilePath -> IO FileInfo
@@ -17,7 +17,7 @@ Index: Network/Wai/Handler/Warp/FileInfoCache.hs
      case M.lookup path cache of
          Just Negative     -> UnliftIO.throwIO (userError "FileInfoCache:getAndRegisterInfo")
          Just (Positive x) -> return x
-@@ -70,14 +70,14 @@
+@@ -70,14 +70,14 @@ getAndRegisterInfo reaper@Reaper{..} pat
                                 `UnliftIO.onException` negative reaper path
  
  positive :: FileInfoCache -> FilePath -> IO FileInfo

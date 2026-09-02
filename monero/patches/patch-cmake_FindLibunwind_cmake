@@ -5,7 +5,7 @@ Do not add liblzma to libunwind on OpenBSD; base libunwind does not need it.
 Index: cmake/FindLibunwind.cmake
 --- cmake/FindLibunwind.cmake.orig
 +++ cmake/FindLibunwind.cmake
-@@ -23,6 +23,7 @@
+@@ -23,6 +23,7 @@ if(NOT LIBUNWIND_LIBRARIES STREQUAL "LIB
    endif()
  endif()
  
@@ -13,7 +13,7 @@ Index: cmake/FindLibunwind.cmake
  # some versions of libunwind need liblzma, and we don't use pkg-config
  # so we just look whether liblzma is installed, and add it if it is.
  # It might not be actually needed, but doesn't hurt if it is not.
-@@ -34,6 +35,8 @@
+@@ -34,6 +35,8 @@ if(NOT LIBLZMA_LIBRARIES STREQUAL "LIBLZ
    set(LIBUNWIND_LIBRARIES "${LIBUNWIND_LIBRARIES};${LIBLZMA_LIBRARIES}")
  endif()
  

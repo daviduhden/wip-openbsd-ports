@@ -9,7 +9,7 @@ and databases/lmdb/patches/patch-mdb_c for the same pattern.
 Index: external/db_drivers/liblmdb/mdb.c
 --- external/db_drivers/liblmdb/mdb.c.orig
 +++ external/db_drivers/liblmdb/mdb.c
-@@ -5509,6 +5509,7 @@
+@@ -5509,6 +5509,7 @@ mdb_env_open(MDB_env *env, const char *p
  		/* silently ignore WRITEMAP when we're only getting read access */
  		flags &= ~MDB_WRITEMAP;
  	} else {

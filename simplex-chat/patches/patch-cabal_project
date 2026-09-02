@@ -6,7 +6,7 @@ tls to the API version used by the compatibility patches.
 Index: cabal.project
 --- cabal.project.orig
 +++ cabal.project
-@@ -11,64 +11,17 @@
+@@ -11,64 +11,17 @@ packages: .
  --    coverage: False
  --    library-coverage: False
  
@@ -20,9 +20,6 @@ Index: cabal.project
      flags: +use_crypton
  
 -constraints: zip +disable-bzip2 +disable-zstd
-+constraints:
-+    zip +disable-bzip2 +disable-zstd
-+  , tls == 2.4.3
 -
 -source-repository-package
 -    type: git
@@ -59,6 +56,9 @@ Index: cabal.project
 -    location: https://github.com/simplex-chat/android-support.git
 -    tag: 9aa09f148089d6752ce563b14c2df1895718d806
 -
++constraints:
++    zip +disable-bzip2 +disable-zstd
++  , tls == 2.4.3
  -- TODO this fork is only needed to compile with GHC 8.10.7 - it allows previous base version
 -source-repository-package
 -    type: git

@@ -5,7 +5,7 @@ Use the static config header installed by the port instead of running configure.
 Index: network.cabal
 --- network.cabal.orig
 +++ network.cabal
-@@ -50,7 +50,7 @@
+@@ -50,7 +50,7 @@ description:
      >   build-depends: network-uri-flag
  
  category:           Network

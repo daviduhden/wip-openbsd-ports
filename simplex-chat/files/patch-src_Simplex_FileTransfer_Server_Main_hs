@@ -7,7 +7,7 @@ compatible command-line implementation is installed.
 Index: src/Simplex/FileTransfer/Server/Main.hs
 --- src/Simplex/FileTransfer/Server/Main.hs.orig
 +++ src/Simplex/FileTransfer/Server/Main.hs
-@@ -378,7 +378,7 @@
+@@ -378,7 +378,7 @@ cliCommandP cfgPath logPath iniFile =
            ( long "sign-algorithm"
                <> short 'a'
                <> help "Signature algorithm used for TLS certificates: ED25519, ED448"

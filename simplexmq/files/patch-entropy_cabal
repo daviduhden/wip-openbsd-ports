@@ -8,7 +8,7 @@ exist.
 Index: entropy.cabal
 --- entropy.cabal.orig
 +++ entropy.cabal
-@@ -17,7 +17,7 @@
+@@ -17,7 +17,7 @@ homepage:       https://github.com/TomMD
  bug-reports:    https://github.com/TomMD/entropy/issues
  stability:      stable
  
@@ -17,7 +17,7 @@ Index: entropy.cabal
  
  tested-with:
    GHC == 9.14.1
-@@ -47,13 +47,6 @@
+@@ -47,13 +47,6 @@ Flag DoNotGetEntropy
    Default: False
    Manual: True
  

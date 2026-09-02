@@ -9,7 +9,7 @@ connection attempts.
 Index: src/Simplex/Messaging/Client.hs
 --- src/Simplex/Messaging/Client.hs.orig
 +++ src/Simplex/Messaging/Client.hs
-@@ -202,7 +202,8 @@
+@@ -202,7 +202,8 @@ data PClient v err msg = PClient
      sentCommands :: TMap CorrId (Request err msg),
      sndQ :: TBQueue (Maybe (Request err msg), ByteString),
      rcvQ :: TBQueue (NonEmpty (Transmission (Either err msg))),
@@ -17,9 +17,9 @@ Index: src/Simplex/Messaging/Client.hs
 +    msgQ :: Maybe (TBQueue (ServerTransmissionBatch v err msg)),
 +    clientClosed :: TMVar ()
    }
-
+ 
  smpClientStub :: TVar ChaChaDRG -> ByteString -> VersionSMP -> Maybe (THandleAuth 'TClient) -> IO SMPClient
-@@ -216,6 +217,7 @@
+@@ -216,6 +217,7 @@ smpClientStub g sessionId thVersion thAu
    timeoutErrorCount <- newTVarIO 0
    sndQ <- newTBQueueIO 100
    rcvQ <- newTBQueueIO 100
@@ -27,7 +27,7 @@ Index: src/Simplex/Messaging/Client.hs
    let NetworkConfig {tcpConnectTimeout, tcpTimeout} = defaultNetworkConfig
    return
      ProtocolClient
-@@ -247,7 +249,8 @@
+@@ -247,7 +249,8 @@ smpClientStub g sessionId thVersion thAu
                sentCommands,
                sndQ,
                rcvQ,
@@ -36,8 +36,8 @@ Index: src/Simplex/Messaging/Client.hs
 +              clientClosed
              }
        }
-
-@@ -586,6 +589,7 @@
+ 
+@@ -586,6 +589,7 @@ getProtocolClient g nm transportSession@
        sentCommands <- TM.emptyIO
        sndQ <- newTBQueueIO qSize
        rcvQ <- newTBQueueIO qSize
@@ -45,7 +45,7 @@ Index: src/Simplex/Messaging/Client.hs
        return
          PClient
            { connected,
-@@ -600,24 +604,28 @@
+@@ -600,24 +604,28 @@ getProtocolClient g nm transportSession@
              sentCommands,
              sndQ,
              rcvQ,
@@ -53,7 +53,7 @@ Index: src/Simplex/Messaging/Client.hs
 +            msgQ,
 +            clientClosed
            }
-
+ 
      runClient :: (ServiceName, ATransport 'TClient) -> TransportHost -> PClient v err msg -> IO (Either (ProtocolClientError err) (ProtocolClient v err msg))
 -    runClient (port', ATransport t) useHost c = do
 +    runClient (port', ATransport t) useHost c = E.mask $ \restore -> do
@@ -66,10 +66,10 @@ Index: src/Simplex/Messaging/Client.hs
 +          `forkFinally` \r -> do
              let err = either toNetworkError (const NEFailedError) r
 -             in void $ atomically $ tryPutTMVar cVar $ Left $ PCENetworkError err
+-      c_ <- netTimeoutInt tcpConnectTimeout nm `timeout` atomically (takeTMVar cVar)
 +            atomically $ do
 +              void $ tryPutTMVar cVar $ Left $ PCENetworkError err
 +              putTMVar (clientClosed c) ()
--      c_ <- netTimeoutInt tcpConnectTimeout nm `timeout` atomically (takeTMVar cVar)
 +      let stop = killThread tId >> atomically (readTMVar $ clientClosed c)
 +      c_ <- restore (netTimeoutInt tcpConnectTimeout nm `timeout` atomically (takeTMVar cVar)) `E.onException` stop
        case c_ of
@@ -78,11 +78,11 @@ Index: src/Simplex/Messaging/Client.hs
 -        Nothing -> killThread tId $> Left (PCENetworkError NETimeoutError)
 +        Just (Left e) -> atomically (readTMVar $ clientClosed c) $> Left e
 +        Nothing -> stop $> Left (PCENetworkError NETimeoutError)
-
+ 
      useTransport :: (ServiceName, ATransport 'TClient)
      useTransport = case port srv of
-@@ -747,7 +755,9 @@
-
+@@ -747,7 +755,9 @@ unexpectedResponse = PCEUnexpectedRespon
+ 
  -- | Disconnects client from the server and terminates client threads.
  closeProtocolClient :: ProtocolClient v err msg -> IO ()
 -closeProtocolClient = mapM_ (deRefWeak >=> mapM_ killThread) . action
@@ -90,5 +90,5 @@ Index: src/Simplex/Messaging/Client.hs
 +  mapM_ (deRefWeak >=> mapM_ killThread) action
 +  atomically $ readTMVar clientClosed
  {-# INLINE closeProtocolClient #-}
-
+ 
  -- | SMP client error type.

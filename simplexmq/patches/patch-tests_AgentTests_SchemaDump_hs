@@ -9,25 +9,46 @@ store-lifetime mistakes.
 Index: tests/AgentTests/SchemaDump.hs
 --- tests/AgentTests/SchemaDump.hs.orig
 +++ tests/AgentTests/SchemaDump.hs
-@@ -6,2 +6,3 @@
+@@ -4,6 +4,7 @@
+ module AgentTests.SchemaDump where
+ 
  import Control.DeepSeq
 +import Control.Exception (bracket)
  import Control.Monad (unless, void)
-@@ -56,2 +57,3 @@ testVerifySchemaDump
+ import Data.List (dropWhileEnd)
+ import Data.Maybe (fromJust, isJust)
+@@ -53,16 +54,18 @@ testVerifySchemaDump :: IO ()
+ testVerifySchemaDump = do
+   savedSchema <- ifM (doesFileExist appSchema) (readFile appSchema) (pure "")
+   savedSchema `deepseq` pure ()
 -  void $ createDBStore (DBOpts testDB [] "" False True TQOff) appMigrations (MigrationConfig MCConsole Nothing)
 -  getSchema testDB appSchema `shouldReturn` savedSchema
 +  Right st <- createDBStore (DBOpts testDB [] "" False True TQOff) appMigrations (MigrationConfig MCConsole Nothing)
 +  bracket (pure st) closeDBStore $ \_ ->
 +    getSchema testDB appSchema `shouldReturn` savedSchema
-@@ -64,2 +66,3 @@ testVerifyLintFKeyIndexes
+   removeFile testDB
+ 
+ testVerifyLintFKeyIndexes :: IO ()
+ testVerifyLintFKeyIndexes = do
+   savedLint <- ifM (doesFileExist appLint) (readFile appLint) (pure "")
+   savedLint `deepseq` pure ()
 -  void $ createDBStore (DBOpts testDB [] "" False True TQOff) appMigrations (MigrationConfig MCConsole Nothing)
 -  getLintFKeyIndexes testDB "tests/tmp/agent_lint.sql" `shouldReturn` savedLint
 +  Right st <- createDBStore (DBOpts testDB [] "" False True TQOff) appMigrations (MigrationConfig MCConsole Nothing)
 +  bracket (pure st) closeDBStore $ \_ ->
 +    getLintFKeyIndexes testDB "tests/tmp/agent_lint.sql" `shouldReturn` savedLint
-@@ -95,2 +98,3 @@ testVerifyStrict
+   removeFile testDB
+ 
+ testSchemaMigrations :: IO ()
+@@ -92,8 +95,9 @@ testSchemaMigrations = do
+ testVerifyStrict :: IO ()
+ testVerifyStrict = do
+   Right st <- createDBStore (DBOpts testDB [] "" False True TQOff) appMigrations (MigrationConfig MCConsole Nothing)
 -  withTransaction' st (`SQL.query_` "SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence' AND sql NOT LIKE '% STRICT'")
 -    `shouldReturn` ([] :: [Only Text])
 +  bracket (pure st) closeDBStore $ \st' ->
 +    withTransaction' st' (`SQL.query_` "SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence' AND sql NOT LIKE '% STRICT'")
 +      `shouldReturn` ([] :: [Only Text])
+ 
+ testUsersMigrationNew :: IO ()
+ testUsersMigrationNew = do

@@ -4,9 +4,9 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-GH_TAGNAME = v7.0.1
+GH_TAGNAME = v7.0.2
 
-V = 7.0.1
+V = 7.0.2
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -47,7 +47,7 @@ WANTLIB = c crypto ffi gmp iconv m pthread sqlcipher util z zstd
 
 MODULES = devel/cabal
 MODCABAL_STEM = simplex-chat
-MODCABAL_VERSION = 7.0.0.11
+MODCABAL_VERSION = 7.0.0.12
 MODCABAL_EXECUTABLES = simplex-chat
 
 .if ${DEBUG} == 1

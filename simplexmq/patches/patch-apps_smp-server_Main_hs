@@ -5,7 +5,9 @@ Use OpenBSD-style default configuration and log directories for smp-server.
 Index: apps/smp-server/Main.hs
 --- apps/smp-server/Main.hs.orig
 +++ apps/smp-server/Main.hs
-@@ -9,6 +9,6 @@
+@@ -7,10 +7,10 @@ import Simplex.Messaging.Server.Web (ser
+ import SMPWeb (smpGenerateSite)
+ 
  defaultCfgPath :: FilePath
 -defaultCfgPath = "/etc/opt/simplex"
 +defaultCfgPath = "/etc/simplex/smp-server"
@@ -14,3 +16,5 @@ Index: apps/smp-server/Main.hs
 -defaultLogPath = "/var/opt/simplex"
 +defaultLogPath = "/var/simplex/smp-server"
  
+ logCfg :: LogConfig
+ logCfg = LogConfig {lc_file = Nothing, lc_stderr = True}

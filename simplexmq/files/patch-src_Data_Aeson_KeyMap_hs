@@ -9,7 +9,7 @@ superclass constraints at instance declaration time.
 Index: src/Data/Aeson/KeyMap.hs
 --- src/Data/Aeson/KeyMap.hs.orig
 +++ src/Data/Aeson/KeyMap.hs
-@@ -101,6 +101,8 @@
+@@ -101,6 +101,8 @@ import Prelude ((.), ($))
  import Prelude (Functor(fmap), Monad(..))
  import Prelude (Show, showsPrec, showParen, shows, showString)
  
@@ -18,7 +18,7 @@ Index: src/Data/Aeson/KeyMap.hs
  import Control.Applicative (Applicative)
  import Control.DeepSeq (NFData(..))
  import Data.Aeson.Key (Key)
-@@ -690,21 +692,28 @@
+@@ -690,21 +692,28 @@ instance WI.TraversableWithIndex Key Key
  -- semialign
  -------------------------------------------------------------------------------
  

@@ -12,7 +12,7 @@ finish the bracket.
 Index: src/Simplex/Messaging/Transport/Client.hs
 --- src/Simplex/Messaging/Transport/Client.hs.orig
 +++ src/Simplex/Messaging/Transport/Client.hs
-@@ -183,7 +183,7 @@
+@@ -183,7 +183,7 @@ runTLSTransportClient tlsParams caStore_
      sent <- readIORef clientCredsSent
      client =<< set CHTransport (getTransportConnection tCfg sent chain tls)
    where
@@ -21,7 +21,7 @@ Index: src/Simplex/Messaging/Transport/Client.hs
      closeConn_ = \case
        CHSocket sock -> close sock
        CHContext tls -> closeTLS tls
-@@ -301,7 +301,7 @@
+@@ -301,7 +301,7 @@ mkTLSClientParams supported caStore_ hos
    where
      p = B.pack port
      onServerCert _ _ _ cc = do

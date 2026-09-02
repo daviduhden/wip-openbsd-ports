@@ -12,7 +12,10 @@ the tests do not require root solely for low-port binding.
 Index: tests/CLITests.hs
 --- tests/CLITests.hs.orig
 +++ tests/CLITests.hs
-@@ -79,3 +79,11 @@
+@@ -76,6 +76,14 @@ fileCfgPath = "tests/tmp/cli/etc/opt/sim
+ fileLogPath :: FilePath
+ fileLogPath = "tests/tmp/cli/etc/var/simplex-files"
+ 
 +setIniValue :: T.Text -> T.Text -> T.Text -> Ini -> Ini
 +setIniValue section key value ini =
 +  ini {iniSections = HM.adjust (map update) section $ iniSections ini}
@@ -24,7 +27,8 @@ Index: tests/CLITests.hs
  cliTests :: Spec
  cliTests = do
    describe "SMP server CLI" $ do
-@@ -99,9 +107,10 @@
+@@ -98,10 +106,11 @@ cliTests = do
+ 
  smpServerTest :: Bool -> Bool -> IO ()
  smpServerTest storeLog basicAuth = do
 +  let iniFile = cfgPath <> "/smp-server.ini"
@@ -36,7 +40,7 @@ Index: tests/CLITests.hs
    lookupValue "STORE_LOG" "enable" ini `shouldBe` Right (if storeLog then "on" else "off")
    lookupValue "STORE_LOG" "log_stats" ini `shouldBe` Right "off"
    lookupValue "TRANSPORT" "port" ini `shouldBe` Right "5223,443"
-@@ -109,11 +118,14 @@
+@@ -109,11 +118,14 @@ smpServerTest storeLog basicAuth = do
    lookupValue "AUTH" "new_queues" ini `shouldBe` Right "on"
    lookupValue "INACTIVE_CLIENTS" "disconnect" ini `shouldBe` Right "on"
    doesFileExist (cfgPath <> "/ca.key") `shouldReturn` True
@@ -52,7 +56,7 @@ Index: tests/CLITests.hs
    r `shouldContain` ["expiring clients inactive for 21600 seconds every 3600 seconds"]
    r `shouldContain` (if basicAuth then ["creating new queues requires password"] else ["creating new queues allowed"])
    -- cert
-@@ -122,7 +134,7 @@
+@@ -122,7 +134,7 @@ smpServerTest storeLog basicAuth = do
      XF.readSignedObject certPath >>= \case
        [cert'] -> pure . X.signedObject $ X.getSigned cert'
        _ -> error "bad crt format"
@@ -61,7 +65,7 @@ Index: tests/CLITests.hs
    r' `shouldContain` ["Generated new server credentials"]
    newCrt <-
      XF.readSignedObject certPath >>= \case
-@@ -235,10 +247,12 @@
+@@ -235,10 +247,12 @@ ntfServerTest storeLog = do
    lookupValue "TRANSPORT" "port" ini `shouldBe` Right "443"
    lookupValue "TRANSPORT" "websockets" ini `shouldBe` Right "off"
    doesFileExist (ntfCfgPath <> "/ca.key") `shouldReturn` True
@@ -75,7 +79,7 @@ Index: tests/CLITests.hs
    capture_ (withStdin "Y" . withArgs ["delete"] $ ntfServerCLI ntfCfgPath ntfLogPath)
      >>= (`shouldSatisfy` ("WARNING: deleting the server will make all queues inaccessible" `isPrefixOf`))
    doesFileExist (cfgPath <> "/ca.key") `shouldReturn` False
-@@ -253,10 +267,12 @@
+@@ -253,10 +267,12 @@ xftpServerTest storeLog = do
    lookupValue "STORE_LOG" "log_stats" ini `shouldBe` Right "off"
    lookupValue "TRANSPORT" "port" ini `shouldBe` Right "443"
    doesFileExist (fileCfgPath <> "/ca.key") `shouldReturn` True

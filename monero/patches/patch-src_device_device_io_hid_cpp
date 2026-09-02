@@ -5,7 +5,7 @@ OpenBSD's hidapi package renames hid_init to avoid a usbhid.h conflict.
 Index: src/device/device_io_hid.cpp
 --- src/device/device_io_hid.cpp.orig
 +++ src/device/device_io_hid.cpp
-@@ -92,7 +92,11 @@
+@@ -92,7 +92,11 @@ namespace hw {
   
      void device_io_hid::init() {
        int r;

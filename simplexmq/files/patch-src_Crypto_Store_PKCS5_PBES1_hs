@@ -7,7 +7,7 @@ basement's internal UArray and Block types.
 Index: src/Crypto/Store/PKCS5/PBES1.hs
 --- src/Crypto/Store/PKCS5/PBES1.hs.orig
 +++ src/Crypto/Store/PKCS5/PBES1.hs
-@@ -27,9 +27,7 @@
+@@ -27,9 +27,7 @@ module Crypto.Store.PKCS5.PBES1
      , rc4Combine
      ) where
  
@@ -17,7 +17,7 @@ Index: src/Crypto/Store/PKCS5/PBES1.hs
  import qualified Basement.String as S
  
  import           Crypto.Cipher.Types
-@@ -78,7 +76,7 @@
+@@ -78,7 +76,7 @@ instance Show ProtectionPassword where
          showString "toProtectionPassword " . showsPrec 11 b
  
  instance IsString ProtectionPassword where
@@ -26,7 +26,7 @@ Index: src/Crypto/Store/PKCS5/PBES1.hs
  
  instance ByteArrayAccess ProtectionPassword where
      length = applyPP 0 B.length
-@@ -155,15 +153,16 @@
+@@ -155,15 +153,16 @@ rc4Combine key = Right . snd . RC4.combi
  toUCS2 :: ByteArray bucs2 => ProtectionPassword -> Maybe bucs2
  toUCS2 NullPassword = Just B.empty
  toUCS2 (PasswordUTF8 pwdUTF8)

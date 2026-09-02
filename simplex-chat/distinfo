@@ -164,7 +164,7 @@ SHA256 (hackage/serialise-0.2.6.1_5.cabal) = pn+JtVM7EUitRl3H8kuu7S4unn2B0qFH/H+
 SHA256 (hackage/silently-1.2.5.4.tar.gz) = XiNgiWXBAEsAfcdxYEmYrm2lLBV3IwC/3eMNi1ISdG4=
 SHA256 (hackage/simple-logger-0.1.1.tar.gz) = 5GHyMiwUyOgdtgyFAd/15Y/gYzXrX/4SfXHfoZo5V5k=
 SHA256 (hackage/simple-sendfile-0.2.32.tar.gz) = nyjQpnrD2VbS3XjrGeqSLAqRkru+7urSDTn1YWNoKKM=
-SHA256 (hackage/simplex-chat-7.0.1.tar.gz) = DRTH2aR/e0ioQCPPSMeoQNE22oGkLYBXnQsNol72lW0=
+SHA256 (hackage/simplex-chat-7.0.2.tar.gz) = ViwhJ97ZP5GSWnYJ8/s31d0nEUag+/RGh7O73PwDiIs=
 SHA256 (hackage/simplex-chat-aeson-aab7b5a14d6c5ea64c64dcaee418de1bb00dcc2b.tar.gz) = XO2t/yrjxGA8rkav/bzfFjsZHBIZk5Bhcvs3x4NPMAQ=
 SHA256 (hackage/simplex-chat-android-support-9aa09f148089d6752ce563b14c2df1895718d806.tar.gz) = XwPW0OI+OHwydePToW0Iyti0nr8FS41yPwQYAYxjpVE=
 SHA256 (hackage/simplex-chat-direct-sqlcipher-f814ee68b16a9447fbb467ccc8f29bdd3546bfd9.tar.gz) = vC+/7O4ZuLo85AlJTWE0XPNnKSW+ktRVzMm9fUN9WMY=
@@ -406,7 +406,7 @@ SIZE (hackage/serialise-0.2.6.1_5.cabal) = 8814
 SIZE (hackage/silently-1.2.5.4.tar.gz) = 4640
 SIZE (hackage/simple-logger-0.1.1.tar.gz) = 4159
 SIZE (hackage/simple-sendfile-0.2.32.tar.gz) = 343565
-SIZE (hackage/simplex-chat-7.0.1.tar.gz) = 170006382
+SIZE (hackage/simplex-chat-7.0.2.tar.gz) = 170018824
 SIZE (hackage/simplex-chat-aeson-aab7b5a14d6c5ea64c64dcaee418de1bb00dcc2b.tar.gz) = 415517
 SIZE (hackage/simplex-chat-android-support-9aa09f148089d6752ce563b14c2df1895718d806.tar.gz) = 1778
 SIZE (hackage/simplex-chat-direct-sqlcipher-f814ee68b16a9447fbb467ccc8f29bdd3546bfd9.tar.gz) = 2451897

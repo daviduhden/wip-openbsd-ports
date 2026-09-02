@@ -7,7 +7,7 @@ exactly once before their shared SQLite store is closed.
 Index: src/Simplex/Messaging/Agent/Env/SQLite.hs
 --- src/Simplex/Messaging/Agent/Env/SQLite.hs.orig
 +++ src/Simplex/Messaging/Agent/Env/SQLite.hs
-@@ -323,7 +323,8 @@
+@@ -323,7 +323,8 @@ newXFTPAgent = do
  data Worker = Worker
    { workerId :: Int,
      doWork :: TMVar (),

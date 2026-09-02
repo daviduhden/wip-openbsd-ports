@@ -6,7 +6,7 @@ subscriptions are ready before the server begins accepting traffic.
 Index: src/Simplex/Messaging/Notifications/Server.hs
 --- src/Simplex/Messaging/Notifications/Server.hs.orig
 +++ src/Simplex/Messaging/Notifications/Server.hs
-@@ -115,7 +115,7 @@
+@@ -115,7 +115,7 @@ ntfServer cfg@NtfServerConfig {transport
      liftIO $ putStrLn "Server started in 'maintenance' mode, exiting"
      stopServer
      liftIO $ exitSuccess

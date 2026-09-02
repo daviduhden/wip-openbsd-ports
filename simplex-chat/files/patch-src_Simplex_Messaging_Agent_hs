@@ -8,7 +8,7 @@ wait for it, and only then close the database.
 Index: src/Simplex/Messaging/Agent.hs
 --- src/Simplex/Messaging/Agent.hs.orig
 +++ src/Simplex/Messaging/Agent.hs
-@@ -273,10 +273,11 @@
+@@ -273,10 +273,11 @@ getSMPAgentClient_ clientId cfg initServ
        liftIO $ checkServers "SMP" smp >> checkServers "XFTP" xftp
        currentTs <- liftIO getCurrentTime
        notices <- liftIO $ withTransaction store (`getClientNotices` presetServers) `catchAll_` pure []
@@ -24,8 +24,8 @@ Index: src/Simplex/Messaging/Agent.hs
      checkServers protocol srvs =
        forM_ (M.assocs srvs) $ \(userId, srvs') -> checkUserServers ("getSMPAgentClient " <> protocol <> " " <> tshow userId) srvs'
      runAgentThreads c
-@@ -335,10 +336,10 @@
-
+@@ -335,10 +336,10 @@ disconnectAgentClient c@AgentClient {age
+ 
  -- only used in the tests
  disposeAgentClient :: AgentClient -> IO ()
 -disposeAgentClient c@AgentClient {acThread, agentEnv = Env {store}} = do
@@ -37,5 +37,5 @@ Index: src/Simplex/Messaging/Agent.hs
 +  mapM_ (deRefWeak >=> mapM_ killThread) t_
 +  mapM_ (const $ atomically $ readTMVar acThreadDone) t_
    liftIO $ closeDBStore store
-
+ 
  resumeAgentClient :: AgentClient -> IO ()

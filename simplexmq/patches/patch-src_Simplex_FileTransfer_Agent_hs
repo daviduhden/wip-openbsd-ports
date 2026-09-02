@@ -10,7 +10,7 @@ checks.
 Index: src/Simplex/FileTransfer/Agent.hs
 --- src/Simplex/FileTransfer/Agent.hs.orig
 +++ src/Simplex/FileTransfer/Agent.hs
-@@ -193,12 +193,12 @@
+@@ -193,12 +193,12 @@ runXFTPRcvWorker c srv Worker {doWork} =
            rcvWorkerInternalError c rcvFileId rcvFileEntityId redirectEntityId_ (Just fileTmpPath) (INTERNAL "chunk has no replicas")
          (fc@RcvFileChunk {userId, rcvFileId, rcvFileEntityId, digest, fileTmpPath, replicas = replica@RcvFileChunkReplica {rcvChunkReplicaId, server, delay} : _}, approvedRelays, redirectEntityId_) -> do
            let ri' = maybe ri (\d -> ri {initialInterval = d, increaseAfter = 0}) delay
@@ -25,7 +25,7 @@ Index: src/Simplex/FileTransfer/Agent.hs
            where
              retryLoop loop e replicaDelay = do
                flip catchAllErrors (\_ -> pure ()) $ do
-@@ -252,17 +252,28 @@
+@@ -252,17 +252,28 @@ runXFTPRcvWorker c srv Worker {doWork} =
  
  -- The first call of action has n == 0, maxN is max number of retries
  withRetryIntervalLimit :: forall m. MonadIO m => Int -> RetryInterval -> (Int64 -> m () -> m ()) -> m ()

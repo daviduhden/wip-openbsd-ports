@@ -5,12 +5,18 @@ Resolve embedded XFTP web assets relative to the project root in Cabal builds.
 Index: apps/xftp-server/XFTPWeb.hs
 --- apps/xftp-server/XFTPWeb.hs.orig
 +++ apps/xftp-server/XFTPWeb.hs
-@@ -12,3 +12,3 @@
+@@ -10,7 +10,7 @@ module XFTPWeb
+ import Control.Monad (forM_)
+ import qualified Data.ByteString.Char8 as B
  import Data.ByteString (ByteString)
 -import Data.FileEmbed (embedDir, embedFile)
 +import Data.FileEmbed (embedDir, embedFile, makeRelativeToProject)
  import Data.Maybe (isJust)
-@@ -28,9 +28,9 @@
+ import Data.String (fromString)
+ import Web.Embedded (embeddedContent)
+@@ -26,13 +26,13 @@ import System.Directory (createDirectory
+ import System.FilePath ((</>))
+ 
  xftpWebContent :: [(FilePath, ByteString)]
 -xftpWebContent = $(embedDir "apps/xftp-server/static/xftp-web-bundle/")
 +xftpWebContent = $(embedDir =<< makeRelativeToProject "apps/xftp-server/static/xftp-web-bundle/")
@@ -23,3 +29,5 @@ Index: apps/xftp-server/XFTPWeb.hs
 -xftpFilePageHtml = $(embedFile "apps/xftp-server/static/file.html")
 +xftpFilePageHtml = $(embedFile =<< makeRelativeToProject "apps/xftp-server/static/file.html")
  
+ xftpGenerateSite :: XFTPServerConfig s -> Maybe ServerPublicInfo -> Maybe TransportHost -> FilePath -> IO ()
+ xftpGenerateSite cfg info onionHost path = do

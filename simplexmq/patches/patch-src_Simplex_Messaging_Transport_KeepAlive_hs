@@ -5,7 +5,7 @@ OpenBSD does not expose the TCP keepalive tuning options used on Linux.
 Index: src/Simplex/Messaging/Transport/KeepAlive.hs
 --- src/Simplex/Messaging/Transport/KeepAlive.hs.orig
 +++ src/Simplex/Messaging/Transport/KeepAlive.hs
-@@ -30,6 +30,10 @@
+@@ -30,6 +30,10 @@ defaultKeepAliveOpts =
        keepCnt = 4
      }
  
@@ -16,7 +16,7 @@ Index: src/Simplex/Messaging/Transport/KeepAlive.hs
  _SOL_TCP :: CInt
  _SOL_TCP = 6
  
-@@ -63,11 +67,11 @@
+@@ -63,11 +67,11 @@ foreign import capi "netinet/tcp.h value
  
  #endif
  

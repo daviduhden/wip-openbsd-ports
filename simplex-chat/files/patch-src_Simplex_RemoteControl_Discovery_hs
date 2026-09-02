@@ -26,7 +26,7 @@ Index: src/Simplex/RemoteControl/Discovery.hs
  
  module Simplex.RemoteControl.Discovery
    ( pattern ANY_ADDR_V4,
-@@ -23,8 +23,9 @@
+@@ -23,8 +23,9 @@ import Control.Logger.Simple
  import Control.Monad
  import Data.ByteString (ByteString)
  import Data.Default (def)
@@ -38,7 +38,7 @@ Index: src/Simplex/RemoteControl/Discovery.hs
  import Data.String (IsString)
  import qualified Data.Text as T
  import Data.Word (Word16)
-@@ -37,7 +38,7 @@
+@@ -37,7 +38,7 @@ import qualified Simplex.Messaging.Trans
  import Simplex.Messaging.Transport.Client (TransportHost (..))
  import Simplex.Messaging.Transport.Server (mkTransportServerConfig, runTransportServerSocket, startTCPServer)
  import Simplex.Messaging.Util (ifM, tshow)
@@ -47,7 +47,7 @@ Index: src/Simplex/RemoteControl/Discovery.hs
  import Simplex.RemoteControl.Types
  import UnliftIO
  
-@@ -100,45 +101,63 @@
+@@ -100,45 +101,63 @@ startTLSServer port_ startedOnPort crede
            TLS.serverSupported = defaultSupportedParams
          }
  

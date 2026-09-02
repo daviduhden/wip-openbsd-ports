@@ -17,7 +17,7 @@ Index: tests/SchemaDump.hs
  import qualified Control.Exception as E
  import Control.Monad (unless, void)
  import Data.List (dropWhileEnd, sort)
-@@ -29,7 +29,7 @@
+@@ -29,7 +29,7 @@ import Simplex.Messaging.Agent.Store.Int
  import qualified Simplex.Messaging.Agent.Store.SQLite.Migrations as Migrations
  import Simplex.Messaging.Agent.Store.Shared (Migration (..), MigrationConfig (..), MigrationConfirmation (..), MigrationsToRun (..), toDownMigration)
  import Simplex.Messaging.Util (ifM, tshow, whenM)
@@ -26,16 +26,16 @@ Index: tests/SchemaDump.hs
  import System.Process (readCreateProcess, shell)
  import Test.Hspec
  
-@@ -50,6 +50,12 @@
- 
+@@ -51,6 +51,12 @@ appChatQueryPlans = "src/Simplex/Chat/St
  appAgentQueryPlans :: FilePath
  appAgentQueryPlans = "src/Simplex/Chat/Store/SQLite/Migrations/agent_query_plans.txt"
-+
+ 
 +withTmpFiles :: IO a -> IO a
 +withTmpFiles =
 +  bracket_
 +    (createDirectoryIfMissing False "tests/tmp")
 +    (removeDirectoryRecursive "tests/tmp")
- 
++
  testSchema :: FilePath
  testSchema = "tests/tmp/test_agent_schema.sql"
+ 

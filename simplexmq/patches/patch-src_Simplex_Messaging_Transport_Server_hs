@@ -16,13 +16,15 @@ sessions and stores.
 Index: src/Simplex/Messaging/Transport/Server.hs
 --- src/Simplex/Messaging/Transport/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/Server.hs
-@@ -34,4 +34,5 @@
+@@ -32,6 +32,7 @@ module Simplex.Messaging.Transport.Serve
+ where
+ 
  import Control.Applicative ((<|>))
 +import Control.Concurrent.STM (retry)
  import Control.Logger.Simple
  import Control.Monad
  import qualified Crypto.Store.X509 as SX
-@@ -177,11 +177,12 @@
+@@ -177,11 +178,12 @@ runTCPServerSocket (accepted, gracefully
        cId <- atomically $ stateTVar accepted $ \cId -> let cId' = cId + 1 in cId' `seq` (cId', cId')
        closed <- newTVarIO False
        let closeConn _ = do
@@ -36,18 +38,18 @@ Index: src/Simplex/Messaging/Transport/Server.hs
 +      E.mask_ $ do
 +        tId <- mkWeakThreadId =<< server conn `forkFinally` closeConn
 +        atomically $ unlessM (readTVar closed) $ modifyTVar' clients $ IM.insert cId tId
-
+ 
  -- | Recover from errors in `accept` whenever it is safe.
  -- Some errors are safe to ignore, while blindly restaring `accept` may trigger a busy loop.
-@@ -228,6 +229,7 @@
+@@ -228,6 +230,7 @@ closeServer :: TMVar Bool -> TVar (IntMa
  closeServer started clients sock = do
    close sock
    readTVarIO clients >>= mapM_ (deRefWeak >=> mapM_ killThread)
 +  atomically $ unlessM (IM.null <$> readTVar clients) retry
    void . atomically $ tryPutTMVar started False
-
+ 
  startTCPServer :: TMVar Bool -> Maybe HostName -> ServiceName -> IO Socket
-@@ -235,8 +237,8 @@
+@@ -235,8 +238,8 @@ startTCPServer started host port = withS
    where
      resolve =
        let hints = defaultHints {addrFlags = [AI_PASSIVE], addrSocketType = Stream}

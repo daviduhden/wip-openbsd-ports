@@ -15,10 +15,10 @@ the symmetric test traffic previously hid an ACK sent on the opposite peer.
 Index: tests/SMPProxyTests.hs
 --- tests/SMPProxyTests.hs.orig
 +++ tests/SMPProxyTests.hs
-@@ -170,63 +170,63 @@
+@@ -170,63 +170,63 @@ smpProxyTests = do
  deliverMessageViaProxy :: (C.AlgorithmI a, C.AuthAlgorithm a) => SMPServer -> SMPServer -> C.SAlgorithm a -> ByteString -> ByteString -> IO ()
  deliverMessageViaProxy proxyServ relayServ alg msg msg' = deliverMessagesViaProxy proxyServ relayServ alg [msg] [msg']
-
+ 
 +withProtocolClient :: Show err => IO (Either (ProtocolClientError err) (ProtocolClient v err msg)) -> (ProtocolClient v err msg -> IO a) -> IO a
 +withProtocolClient acquire = bracket (acquire >>= either (fail . show) pure) closeProtocolClient
 +
@@ -99,7 +99,7 @@ Index: tests/SMPProxyTests.hs
 +            dec msgId' encBody' `shouldBe` Right msg'
 +            runExceptT' $ ackSMPMessage rc rPriv rcvId msgId'
 +        )
-
+ 
  proxyConnectDeadRelay :: Int -> Int -> SMPServer -> IO ()
  proxyConnectDeadRelay n d proxyServ = do
    g <- C.newRandom
@@ -122,10 +122,10 @@ Index: tests/SMPProxyTests.hs
 +      case sess0 of
 +        Right !_noWay -> error "got unexpected client"
 +        Left !_err -> threadDelay d
-
+ 
  agentDeliverMessageViaProxy :: (C.AlgorithmI a, C.AuthAlgorithm a) => (NonEmpty SMPServer, SMPProxyMode, Bool) -> (NonEmpty SMPServer, SMPProxyMode, Bool) -> C.SAlgorithm a -> ByteString -> ByteString -> AgentMsgId -> IO ()
  agentDeliverMessageViaProxy aTestCfg@(aSrvs, _, aViaProxy) bTestCfg@(bSrvs, _, bViaProxy) alg msg1 msg2 baseId =
-@@ -311,7 +311,7 @@
+@@ -311,7 +311,7 @@ agentDeliverMessagesViaProxyConc agentSe
            forever $
              get bob >>= \case
                ("", _, A.SENT _ _) -> pure ()
@@ -134,7 +134,7 @@ Index: tests/SMPProxyTests.hs
                huh -> fail (show huh)
        bSender <- async $ forM_ msgs $ runExceptT' . A.sendMessage bob aliceId pqEnc noMsgFlags
        aRecipient <-
-@@ -437,7 +437,15 @@
+@@ -437,7 +437,15 @@ agentViaProxyRetryNoSession = do
            pure ()
    where
      withServer2 = withSmpServerConfigOn (transport @TLS) proxyCfgJ2 testPort2
@@ -148,6 +148,6 @@ Index: tests/SMPProxyTests.hs
 +                tcpConnectTimeout = NetworkTimeout 4000000 4000000
 +              }
 +        }
-
+ 
  testNoProxy :: AStoreType -> IO ()
  testNoProxy msType = do

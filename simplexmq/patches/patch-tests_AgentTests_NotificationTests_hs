@@ -6,7 +6,7 @@ assertion so a TLS cleanup regression cannot hang the port build.
 Index: tests/AgentTests/NotificationTests.hs
 --- tests/AgentTests/NotificationTests.hs.orig
 +++ tests/AgentTests/NotificationTests.hs
-@@ -27,6 +27,7 @@
+@@ -27,6 +27,7 @@ import AgentTests.FunctionalAPITests
      runRight,
      runRight_,
      sendMessage,
@@ -14,7 +14,7 @@ Index: tests/AgentTests/NotificationTests.hs
      switchComplete,
      testServerMatrix2,
      withAgent,
-@@ -137,7 +138,7 @@
+@@ -137,7 +138,7 @@ notificationTests ps@(t, _) = do
      it "should pass" $ testRunNTFServerTests t testNtfServer `shouldReturn` Nothing
      let srv1 = testNtfServer {keyHash = "1234"}
      it "should fail with incorrect fingerprint" $ do

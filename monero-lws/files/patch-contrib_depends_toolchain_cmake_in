@@ -5,7 +5,7 @@ Teach the depends toolchain file to use OpenBSD's ereadline and curses paths.
 Index: contrib/depends/toolchain.cmake.in
 --- contrib/depends/toolchain.cmake.in.orig
 +++ contrib/depends/toolchain.cmake.in
-@@ -20,9 +20,15 @@
+@@ -20,9 +20,15 @@ SET(CMAKE_FIND_ROOT_PATH @prefix@ /usr)
  SET(ENV{PKG_CONFIG_PATH} @prefix@/lib/pkgconfig)
  
  SET(Readline_ROOT_DIR @prefix@)

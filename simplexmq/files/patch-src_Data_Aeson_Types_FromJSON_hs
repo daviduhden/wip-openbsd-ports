@@ -6,7 +6,7 @@ negative exponents before converting bounded scientific values.
 Index: src/Data/Aeson/Types/FromJSON.hs
 --- src/Data/Aeson/Types/FromJSON.hs.orig
 +++ src/Data/Aeson/Types/FromJSON.hs
-@@ -794,11 +794,13 @@
+@@ -794,11 +794,13 @@ withBoundedScientific' f v = withBounded
  withBoundedScientific_ :: (Parser a -> Parser a) -> (Scientific -> Parser a) -> Value -> Parser a
  withBoundedScientific_ whenFail f (Number scientific) =
      if exp10 > 1024
@@ -22,7 +22,7 @@ Index: src/Data/Aeson/Types/FromJSON.hs
  withBoundedScientific_ whenFail _ v =
      whenFail (typeMismatch "Number" v)
  
-@@ -1727,14 +1729,7 @@
+@@ -1727,14 +1729,7 @@ instance FromJSONKey Float where
          _      -> Scientific.toRealFloat <$> parseScientificText t
  
  instance (FromJSON a, Integral a) => FromJSON (Ratio a) where

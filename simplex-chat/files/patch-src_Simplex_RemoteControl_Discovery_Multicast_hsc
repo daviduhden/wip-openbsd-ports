@@ -19,7 +19,7 @@ Index: src/Simplex/RemoteControl/Discovery/Multicast.hsc
  import Foreign.C.Types (CInt (..))
  import Network.Socket
  
-@@ -10,20 +12,27 @@
+@@ -10,20 +12,27 @@ import Network.Socket
  
  {- | Toggle multicast group membership.
  
@@ -55,7 +55,7 @@ Index: src/Simplex/RemoteControl/Discovery/Multicast.hsc
  #ifdef mingw32_HOST_OS
  
  foreign import stdcall unsafe "setsockopt"
-@@ -33,6 +42,9 @@
+@@ -33,6 +42,9 @@ c_IP_ADD_MEMBERSHIP, c_IP_DROP_MEMBERSHI
  c_IP_ADD_MEMBERSHIP  = 12
  c_IP_DROP_MEMBERSHIP = 13
  
@@ -65,7 +65,7 @@ Index: src/Simplex/RemoteControl/Discovery/Multicast.hsc
  #else
  
  foreign import ccall unsafe "setsockopt"
-@@ -42,6 +54,9 @@
+@@ -42,6 +54,9 @@ c_IP_ADD_MEMBERSHIP, c_IP_DROP_MEMBERSHI
  c_IP_ADD_MEMBERSHIP  = #const IP_ADD_MEMBERSHIP
  c_IP_DROP_MEMBERSHIP = #const IP_DROP_MEMBERSHIP
  

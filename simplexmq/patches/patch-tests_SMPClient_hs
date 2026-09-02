@@ -16,17 +16,19 @@ Import tryPutTMVar explicitly for the start-error path added below.
 Index: tests/SMPClient.hs
 --- tests/SMPClient.hs.orig
 +++ tests/SMPClient.hs
-@@ -46,5 +46,5 @@
+@@ -45,7 +45,7 @@ import System.Info (os)
+ import Test.Hspec hiding (fit, it)
  import UnliftIO.Concurrent
  import qualified UnliftIO.Exception as E
 -import UnliftIO.STM (TMVar, atomically, newEmptyTMVarIO, putTMVar, takeTMVar)
 +import UnliftIO.STM (TMVar, atomically, newEmptyTMVarIO, putTMVar, takeTMVar, tryPutTMVar)
  import UnliftIO.Timeout (timeout)
  import Util
-@@ -189,15 +189,14 @@
+ 
+@@ -189,15 +189,14 @@ runSMPClient _ test' = testSMPClient tes
  runSMPServiceClient :: Transport c => TProxy c 'TServer -> (TLS.Credential, C.KeyPairEd25519) -> (THandleSMP c 'TClient -> IO a) -> IO a
  runSMPServiceClient _ serviceCreds test' = testSMPServiceClient serviceCreds test'
-
+ 
 -testNtfServiceClient :: Transport c => TProxy c 'TServer -> C.KeyPairEd25519 -> (THandleSMP c 'TClient -> IO a) -> IO a
 -testNtfServiceClient _ keys client = do
 -  tlsNtfServerCreds <- loadServerCredential ntfTestServerCredentials
@@ -45,7 +47,7 @@ Index: tests/SMPClient.hs
              clientALPN = Just alpnSupportedSMPHandshakes
            }
    runTransportClient tcConfig Nothing "localhost" testPort (Just testKeyHash) $ \h ->
-@@ -380,20 +379,24 @@
+@@ -380,20 +379,24 @@ withSmpServerThreadOn (t, msType) = with
  serverBracket :: HasCallStack => (TMVar Bool -> IO ()) -> IO () -> (HasCallStack => ThreadId -> IO a) -> IO a
  serverBracket process afterProcess f = do
    started <- newEmptyTMVarIO
@@ -68,14 +70,14 @@ Index: tests/SMPClient.hs
 -      atomically $ putTMVar started False
 +      atomically . void $ tryPutTMVar started False
        E.throwIO e
-+    waitFor :: Int -> TMVar a -> String -> IO a
 -    waitFor started s =
 -      5_000_000 `timeout` atomically (takeTMVar started) >>= \case
++    waitFor :: Int -> TMVar a -> String -> IO a
 +    waitFor t var s =
 +      t `timeout` atomically (takeTMVar var) >>= \case
          Nothing -> error $ "server did not " <> s
 -        _ -> pure ()
 +        Just r -> pure r
-
+ 
  -- A TCP server that accepts connections but never performs a TLS handshake, so a client
  -- connecting to it stays blocked in the TLS handshake until its connection timeout.

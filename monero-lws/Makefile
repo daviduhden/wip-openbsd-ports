@@ -37,7 +37,8 @@ WANTLIB += c crypto hidapi-libusb m sodium ssl unbound usb-1.0 zmq
 
 COMPILER = base-clang
 MODULES = devel/cmake
-BUILD_DEPENDS = devel/ninja
+BUILD_DEPENDS = devel/ninja \
+		devel/re2c
 
 RUN_DEPENDS = net/monero=${VERSION}
 

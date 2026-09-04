@@ -1,5 +1,5 @@
 MODCABAL_MANIFEST	= \
-	Diff	1.0.2	0	\
+	Diff	2.0.0	0	\
 	HUnit	1.6.2.0	0	\
 	OneTuple	0.4.3	0	\
 	Only	0.1	2	\
@@ -86,7 +86,7 @@ MODCABAL_MANIFEST	= \
 	http-date	0.0.11	0	\
 	http-semantics	0.4.1	0	\
 	http-types	0.12.6	0	\
-	http2	5.4.3	0	\
+	http2	5.4.4	0	\
 	indexed-traversable	0.1.5	0	\
 	indexed-traversable-instances	0.1.2.1	0	\
 	ini	0.5.1	0	\
@@ -124,7 +124,7 @@ MODCABAL_MANIFEST	= \
 	ram	0.22.1	0	\
 	random	1.3.1	0	\
 	record-hasfield	1.0.1	0	\
-	recv	0.1.1	0	\
+	recv	0.1.2	0	\
 	resourcet	1.3.0	0	\
 	safe-exceptions	0.1.7.4	1	\
 	scientific	0.3.8.1	0	\
@@ -134,7 +134,7 @@ MODCABAL_MANIFEST	= \
 	silently	1.2.5.4	0	\
 	simple-logger	0.1.1	0	\
 	simple-sendfile	0.2.32	0	\
-	split	0.2.5	0	\
+	split	0.2.5.1	0	\
 	splitmix	0.1.3.2	0	\
 	stm-chans	3.0.0.11	0	\
 	streaming-commons	0.2.3.1	0	\

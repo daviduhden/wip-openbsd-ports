@@ -1,4 +1,4 @@
-SHA256 (hackage/Diff-1.0.2.tar.gz) = zX4m09Xr9/LBp1Ja6+JR+8v/7ipjYttjS0viO541TYU=
+SHA256 (hackage/Diff-2.0.0.tar.gz) = pBSy56bwW7qKm34hZ9TJq37BQs5ourAb20/Eo19rik8=
 SHA256 (hackage/HUnit-1.6.2.0.tar.gz) = sLdTiHH/wFhIb8AHQIhtLzFy+PpoaZNr/oOl4QvXRKs=
 SHA256 (hackage/OneTuple-0.4.3.tar.gz) = ZD0fSOY0gKxtA6jwq1l21mUnybQrH8qB0b83PRAJnGs=
 SHA256 (hackage/Only-0.1.tar.gz) = q3qhk+jCV9O9prCzwcvPdM2qhasIyyDC3WK6JIwasmU=
@@ -106,7 +106,7 @@ SHA256 (hackage/http-client-tls-0.4.0.tar.gz) = YRzxTPBGZXuxeIpNrAlxC0sQTAN9QrGJ
 SHA256 (hackage/http-date-0.0.11.tar.gz) = MvkjrBrZvf6tznxSoDybpiJbpg3BQTfLHN8y6oTM9NM=
 SHA256 (hackage/http-semantics-0.4.1.tar.gz) = oC3xHfjV6rrQKM5MLR76iJrmjlVtupSw0Tp1AXl0U9s=
 SHA256 (hackage/http-types-0.12.6.tar.gz) = togEKstOU/H17+0mBWzx/cOuXca4XPvjIe3/wwecEGw=
-SHA256 (hackage/http2-5.4.3.tar.gz) = RvvgA6jQDbn1nK3B8oZUgiAqRmWvd7lshC99Qa3qrII=
+SHA256 (hackage/http2-5.4.4.tar.gz) = cqfFKUU4AC4yS8NMU15NvGhNttZ/1CJlJY/6Flt5Hd4=
 SHA256 (hackage/indexed-traversable-0.1.5.tar.gz) = ZCNZfTUorGbFS+qrn1QIQpwKKbjLmMRaFkXyVa73/vA=
 SHA256 (hackage/indexed-traversable-instances-0.1.2.1.tar.gz) = 5p1B8jqVRjwuA67gM3Sk9InHL3vyNb4lFJnEzKlBH+w=
 SHA256 (hackage/ini-0.5.1.tar.gz) = MeSTmsUpUsyfbbBbxb4pm6FNJhJeGz00K/fHQGb1Y+8=
@@ -151,7 +151,7 @@ SHA256 (hackage/quickcheck-io-0.2.0.tar.gz) = +3eRGdef4I/01QL7aGmnDJqNX9iuCVn2Bc
 SHA256 (hackage/ram-0.22.1.tar.gz) = ckdJYjSd0QG5cMxGvMBseZ9zEdIo57WfGkT4FCcVn3A=
 SHA256 (hackage/random-1.3.1.tar.gz) = 2ECsg/JlsM+ipnj47HhifrUM+b4vBnxSyKQjnCm3GjU=
 SHA256 (hackage/record-hasfield-1.0.1.tar.gz) = Gj68AMNWGsduWETEaWrp+hsAjkofrDNi5dnylIVG7Z4=
-SHA256 (hackage/recv-0.1.1.tar.gz) = ja93xX9SlQPdMDjvw4E6gAEDLtgQvd3/CssPrKA5tyE=
+SHA256 (hackage/recv-0.1.2.tar.gz) = Sh2ZI2RmGZEdf14WLvAb6I3pgcEi4x5Ncz31bzGemqU=
 SHA256 (hackage/resourcet-1.3.0.tar.gz) = 7GAXhe5CogHzKtsgW4aFyYPxh1exvTPS6AbVceD5mWs=
 SHA256 (hackage/safe-exceptions-0.1.7.4.tar.gz) = PFHY1QybYP+L+U+UL9kuO+qeYsWvp3jfyfcHt52kHvY=
 SHA256 (hackage/safe-exceptions-0.1.7.4_1.cabal) = i7cmG9VL1YrPyxVL5qFh+20NMaGFKq3I6SfSrS12UdE=
@@ -174,7 +174,7 @@ SHA256 (hackage/simplex-chat-libbbs-59a0f4bf32e195cb6883de8374825c0f4764c717.tar
 SHA256 (hackage/simplex-chat-simplexmq-efaad8e73436d60f5052f07dda6b71151ad5039b.tar.gz) = k46h7Y5n5qciFEpvGgy7VDuc1e3ip6NtQmDdhR09r+c=
 SHA256 (hackage/simplex-chat-sqlcipher-simple-a46bd361a19376c5211f1058908fc0ae6bf42446.tar.gz) = auSadSOW/uytUWtOoTpzaKQ0sIojPO0ksmNQQGUEojE=
 SHA256 (hackage/simplex-chat-zip-2eff156c3aac389e35d38bf10a52733d7061640a.tar.gz) = eubOWJyQ2aYhQjVBkvuyjiYzrM2NaW2B+GN6iQfcV58=
-SHA256 (hackage/split-0.2.5.tar.gz) = UtpAToOXwasjg1TI1P2afpxcrIhJzCzi5F+syF50qRM=
+SHA256 (hackage/split-0.2.5.1.tar.gz) = GK22D38S0IYBw4LUfCusu9TeS5Iz8JaDiJ0VtktkINY=
 SHA256 (hackage/splitmix-0.1.3.2.tar.gz) = ph1OizD1oWUm19MRcbZ0rnkk0iB/N4Bg0TNjvYeU3ow=
 SHA256 (hackage/stm-chans-3.0.0.11.tar.gz) = spPvhH48eqCADSCxiRKgabppUefS41FxrOzW/5N5dfI=
 SHA256 (hackage/streaming-commons-0.2.3.1.tar.gz) = M9FsDGCAeVgA2fDkkCA+o+UL1QNOXQd6DdwE0z6k3G4=
@@ -240,7 +240,7 @@ SHA256 (hackage/word8-0.1.3.tar.gz) = JjCTTHVyi/vzkMHwIGsiVQezVPaNQEewbAGKNoI7XY
 SHA256 (hackage/yaml-0.11.11.2.tar.gz) = 7nSSPuWw/vdEE8WKqiDqWbr10p0lamL7R8wnlXDZ3C8=
 SHA256 (hackage/zlib-0.7.1.1.tar.gz) = v5WrAe2SS+gArd6hlfulypfsafN4No9v9Ga9wpZmwcE=
 SHA256 (hackage/zstd-0.1.3.0.tar.gz) = oMK1I15msmliV83uEaQZyhe/84n3iYm1OB6zzhCh8G0=
-SIZE (hackage/Diff-1.0.2.tar.gz) = 10936
+SIZE (hackage/Diff-2.0.0.tar.gz) = 24013
 SIZE (hackage/HUnit-1.6.2.0.tar.gz) = 21179
 SIZE (hackage/OneTuple-0.4.3.tar.gz) = 5299
 SIZE (hackage/Only-0.1.tar.gz) = 1960
@@ -348,7 +348,7 @@ SIZE (hackage/http-client-tls-0.4.0.tar.gz) = 8290
 SIZE (hackage/http-date-0.0.11.tar.gz) = 5351
 SIZE (hackage/http-semantics-0.4.1.tar.gz) = 15278
 SIZE (hackage/http-types-0.12.6.tar.gz) = 25246
-SIZE (hackage/http2-5.4.3.tar.gz) = 5504150
+SIZE (hackage/http2-5.4.4.tar.gz) = 5505149
 SIZE (hackage/indexed-traversable-0.1.5.tar.gz) = 9532
 SIZE (hackage/indexed-traversable-instances-0.1.2.1.tar.gz) = 3690
 SIZE (hackage/ini-0.5.1.tar.gz) = 6552
@@ -393,7 +393,7 @@ SIZE (hackage/quickcheck-io-0.2.0.tar.gz) = 1843
 SIZE (hackage/ram-0.22.1.tar.gz) = 42241
 SIZE (hackage/random-1.3.1.tar.gz) = 63846
 SIZE (hackage/record-hasfield-1.0.1.tar.gz) = 3680
-SIZE (hackage/recv-0.1.1.tar.gz) = 4772
+SIZE (hackage/recv-0.1.2.tar.gz) = 5633
 SIZE (hackage/resourcet-1.3.0.tar.gz) = 17620
 SIZE (hackage/safe-exceptions-0.1.7.4.tar.gz) = 15347
 SIZE (hackage/safe-exceptions-0.1.7.4_1.cabal) = 1412
@@ -416,7 +416,7 @@ SIZE (hackage/simplex-chat-libbbs-59a0f4bf32e195cb6883de8374825c0f4764c717.tar.g
 SIZE (hackage/simplex-chat-simplexmq-efaad8e73436d60f5052f07dda6b71151ad5039b.tar.gz) = 2696757
 SIZE (hackage/simplex-chat-sqlcipher-simple-a46bd361a19376c5211f1058908fc0ae6bf42446.tar.gz) = 36327
 SIZE (hackage/simplex-chat-zip-2eff156c3aac389e35d38bf10a52733d7061640a.tar.gz) = 37768
-SIZE (hackage/split-0.2.5.tar.gz) = 16008
+SIZE (hackage/split-0.2.5.1.tar.gz) = 16004
 SIZE (hackage/splitmix-0.1.3.2.tar.gz) = 11373
 SIZE (hackage/stm-chans-3.0.0.11.tar.gz) = 10187
 SIZE (hackage/streaming-commons-0.2.3.1.tar.gz) = 37955

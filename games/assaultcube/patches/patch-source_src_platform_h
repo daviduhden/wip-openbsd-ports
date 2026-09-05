@@ -1,0 +1,14 @@
+Index: source/src/platform.h
+--- source/src/platform.h.orig
++++ source/src/platform.h
+@@ -1,4 +1,4 @@
+-#ifdef __GNUC__
++#if defined(__GNUC__) && !defined(__OpenBSD__)
+     #ifdef _FORTIFY_SOURCE
+         #undef _FORTIFY_SOURCE
+     #endif
+@@ -73,4 +73,3 @@
+ #if defined(WIN32) || defined(__APPLE__) || !defined(STANDALONE) || defined(AC_FORCE_SDL_THREADS)
+     #define AC_USE_SDL_THREADS
+ #endif
+-

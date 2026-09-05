@@ -1,0 +1,22 @@
+$OpenBSD$
+
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+Run OnionShare as your ordinary user, not root. It starts the system Tor
+binary with private state and a Unix control socket; do not enable tor's
+rc.d service solely for OnionShare. Tor is not embedded in this package.
+
+Bridge transports are optional. Install the appropriate transport and
+configure bridges explicitly if required. Missing transports must cause
+bridge setup to fail, not bypass the requested bridge. Built-in bridge
+addresses and Tor transport interoperability need runtime verification.
+
+Socket.IO 5 and Engine.IO 4, Flask-SocketIO, simple-websocket and bidict are
+private modules in onionshare_cli._vendor. They do not replace the older
+system Socket.IO/Engine.IO packages. Their source and licenses are included.
+
+The initial port is untested on OpenBSD. In particular test all four modes,
+authenticated/public sharing, symbolic-link handling, Tor shutdown and
+cleanup, and GUI/PySide6 compatibility before relying on it for privacy.

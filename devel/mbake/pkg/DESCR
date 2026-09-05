@@ -1,0 +1,6 @@
+mbake formats and lints GNU Makefiles, checking indentation, assignments,
+phony targets, continuations, and shell recipes. Its syntax validation
+invokes GNU make. It does not implement BSD make syntax.
+
+Validation may evaluate make functions and recursive make recipes even in
+dry-run mode; only validate Makefiles you trust.

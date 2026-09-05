@@ -1,0 +1,12 @@
+[package]
+name = "talpid-openbsd"
+version = "0.0.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+description = "Native OpenBSD networking primitives (not yet a VPN backend)"
+
+[lib]
+path = "lib.rs"
+
+[build-dependencies]
+cc = "1"

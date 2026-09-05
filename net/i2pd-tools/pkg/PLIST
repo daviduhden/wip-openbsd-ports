@@ -1,0 +1,31 @@
+bin/i2pd-autoconf
+bin/i2pd-b33address
+bin/i2pd-famtool
+bin/i2pd-i2pbase64
+bin/i2pd-keygen
+bin/i2pd-keyinfo
+bin/i2pd-offlinekeys
+bin/i2pd-regaddr
+bin/i2pd-regaddr_3ld
+bin/i2pd-regaddralias
+bin/i2pd-routerinfo
+bin/i2pd-vain
+bin/i2pd-verifyhost
+bin/i2pd-x25519
+libexec/i2pd-tools/
+@bin libexec/i2pd-tools/autoconf
+@bin libexec/i2pd-tools/b33address
+@bin libexec/i2pd-tools/famtool
+@bin libexec/i2pd-tools/i2pbase64
+@bin libexec/i2pd-tools/keygen
+@bin libexec/i2pd-tools/keyinfo
+@bin libexec/i2pd-tools/offlinekeys
+@bin libexec/i2pd-tools/regaddr
+@bin libexec/i2pd-tools/regaddr_3ld
+@bin libexec/i2pd-tools/regaddralias
+@bin libexec/i2pd-tools/routerinfo
+@bin libexec/i2pd-tools/vain
+@bin libexec/i2pd-tools/verifyhost
+@bin libexec/i2pd-tools/x25519
+share/doc/i2pd-tools/
+share/doc/i2pd-tools/LICENSE

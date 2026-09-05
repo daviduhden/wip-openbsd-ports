@@ -1,0 +1,21 @@
+Index: cli/tests/test_cli_common.py
+--- cli/tests/test_cli_common.py.orig
++++ cli/tests/test_cli_common.py
+@@ -189,14 +189,9 @@
+         ) = common_obj.get_tor_paths()
+ 
+         assert os.path.basename(tor_path) == "tor"
+-        assert (
+-            tor_geo_ip_file_path == "/usr/share/tor/geoip"
+-            or tor_geo_ip_file_path == "/usr/local/share/tor/geoip"
+-        )
+-        assert (
+-            tor_geo_ipv6_file_path == "/usr/share/tor/geoip6"
+-            or tor_geo_ipv6_file_path == "/usr/local/share/tor/geoip6"
+-        )
++        prefix = os.path.dirname(os.path.dirname(tor_path))
++        assert tor_geo_ip_file_path == os.path.join(prefix, "share", "tor", "geoip")
++        assert tor_geo_ipv6_file_path == os.path.join(prefix, "share", "tor", "geoip6")
+ 
+     @pytest.mark.skipif(sys.platform != "win32", reason="requires Windows")
+     def test_get_tor_paths_windows(self, platform_windows, common_obj, sys_frozen):

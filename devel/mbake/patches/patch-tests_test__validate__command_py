@@ -1,0 +1,30 @@
+Index: tests/test_validate_command.py
+--- tests/test_validate_command.py.orig
++++ tests/test_validate_command.py
+@@ -7,7 +7,7 @@
+ import pytest
+ from typer.testing import CliRunner
+ 
+-from mbake.cli import app
++from mbake.cli import GNU_MAKE, app
+ 
+ 
+ class TestValidateCommand:
+@@ -39,7 +39,7 @@
+                 # Check that the command was called with the correct arguments
+                 call_args = mock_run.call_args
+                 assert call_args[0][0] == [
+-                    "make",
++                    GNU_MAKE,
+                     "-f",
+                     Path(makefile_path).name,
+                     "--dry-run",
+@@ -85,7 +85,7 @@
+                 call_args = mock_run.call_args
+                 assert call_args[1]["cwd"] == subdir
+                 assert call_args[0][0] == [
+-                    "make",
++                    GNU_MAKE,
+                     "-f",
+                     "Makefile",
+                     "--dry-run",

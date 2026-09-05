@@ -1,0 +1,14 @@
+Index: talpid-dns/src/lib.rs
+--- talpid-dns/src/lib.rs.orig
++++ talpid-dns/src/lib.rs
+@@ -1,6 +1,10 @@
+ //! Abstractions over operating system DNS settings.
+ use std::fmt;
+ use std::net::IpAddr;
++
++#[cfg(target_os = "openbsd")]
++#[path = "openbsd.rs"]
++mod imp;
+ 
+ #[cfg(target_os = "linux")]
+ use talpid_routing::RouteManagerHandle;

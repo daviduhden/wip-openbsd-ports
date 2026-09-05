@@ -1,0 +1,28 @@
+Security status
+===============
+This port is intentionally BROKEN. Do not remove that guard merely to test
+installation on production files.
+
+Upstream 1.0.9 (also the inspected upstream HEAD) checks file ownership and
+type using pathnames, then later opens those pathnames through doas cat/dd.
+It follows symlinks, does not retain a checked file descriptor, and does not
+validate every parent directory. Another process can change the file or a
+parent between the check and the privileged operation.
+
+The temporary directory is created by mktemp and is private, which protects
+it against other users. However, the editor and other processes of the
+invoking user can replace files there. Privileged dd subsequently opens its
+input by pathname. The names used for editable files, comparison copies and
+the doas error log can also collide across arguments. Originals are not
+checked for concurrent modifications and are truncated before copying has
+successfully completed. Signal/error cleanup removes the recovery copy.
+
+This is not a sudoedit-equivalent privilege boundary. Broad permission to
+run doas dd already grants broad write access; the shell checks cannot turn
+that permission into a safe restricted-file policy. No doas.conf rules are
+installed or recommended by this port.
+
+A fix needs a reviewed privileged helper that holds checked descriptors,
+rejects unsafe path traversal and links, validates the unprivileged input,
+detects concurrent changes, and preserves recovery data on failure. Adding
+extra shell tests alone would leave the check/open races in place.

@@ -1,0 +1,12 @@
+Index: mullvad-management-interface/src/lib.rs
+--- mullvad-management-interface/src/lib.rs.orig
++++ mullvad-management-interface/src/lib.rs
+@@ -212,7 +212,7 @@
+     let endpoint = IpcEndpoint::new(rpc_socket_path, tipsy::OnConflict::Error)
+         .map_err(Error::StartServerError)?;
+     #[cfg(unix)]
+-    if MULLVAD_MANAGEMENT_SOCKET_GROUP.is_some() {
++    if MULLVAD_MANAGEMENT_SOCKET_GROUP.is_some() || cfg!(target_os = "openbsd") {
+         // Explicitly start with strict permissions (`0o600`, root) before applying less restrictive
+         // permissions.
+         let attr = tipsy::SecurityAttributes::empty()

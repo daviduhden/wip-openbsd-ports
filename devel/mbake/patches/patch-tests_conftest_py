@@ -1,0 +1,20 @@
+Index: tests/conftest.py
+--- tests/conftest.py.orig
++++ tests/conftest.py
+@@ -5,6 +5,7 @@
+ from pathlib import Path
+ 
+ import pytest
++from mbake.cli import GNU_MAKE
+ 
+ 
+ @pytest.fixture
+@@ -41,7 +42,7 @@
+         try:
+             # Test makefile syntax by running make with --dry-run
+             result = subprocess.run(
+-                ["make", "-f", str(makefile_path), "--dry-run", target],
++                [GNU_MAKE, "-f", str(makefile_path), "--dry-run", target],
+                 capture_output=True,
+                 text=True,
+                 timeout=10,

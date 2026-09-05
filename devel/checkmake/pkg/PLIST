@@ -1,0 +1,4 @@
+@bin bin/checkmake
+@man man/man1/checkmake.1
+share/doc/checkmake/
+share/doc/checkmake/LICENSE

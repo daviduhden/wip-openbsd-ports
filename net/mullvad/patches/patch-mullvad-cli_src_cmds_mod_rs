@@ -1,0 +1,11 @@
+Index: mullvad-cli/src/cmds/mod.rs
+--- mullvad-cli/src/cmds/mod.rs.orig
++++ mullvad-cli/src/cmds/mod.rs
+@@ -17,6 +17,7 @@
+ pub mod relay;
+ pub mod relay_constraints;
+ pub mod reset;
++#[cfg(any(target_os = "linux", target_os = "macos", windows))]
+ pub mod split_tunnel;
+ pub mod status;
+ pub mod tunnel;

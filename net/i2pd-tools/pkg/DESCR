@@ -1,0 +1,6 @@
+i2pd-tools provides utilities for generating and inspecting I2P keys,
+addresses, offline signing keys, family certificates and router information.
+
+Commands are prefixed with i2pd- (for example, i2pd-keygen and i2pd-vain)
+to avoid collisions with generic commands such as autoconf and keygen.
+The tools do not require a running or installed i2pd daemon.

@@ -1,0 +1,13 @@
+Index: mullvad-daemon/Cargo.toml
+--- mullvad-daemon/Cargo.toml.orig
++++ mullvad-daemon/Cargo.toml
+@@ -130,6 +130,9 @@
+ talpid-dbus = { path = "../talpid-dbus" }
+ tikv-jemallocator = { version = "0.6", optional = true }
+ 
++[target.'cfg(target_os="openbsd")'.dependencies]
++ctrlc = { workspace = true, features = ["termination"] }
++
+ [target.'cfg(target_os="macos")'.dependencies]
+ ctrlc = { workspace = true, features = ["termination"] }
+ notify = "8.0.0"

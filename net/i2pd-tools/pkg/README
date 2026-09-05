@@ -1,0 +1,14 @@
+Usage and key files
+===================
+All commands have the prefix i2pd-. Upstream's documentation uses the
+unprefixed names: https://github.com/PurpleI2P/i2pd-tools
+
+The launchers set umask 077 so newly created private keys are user-only.
+Use a private directory owned by you, choose a new output filename, and
+do not run these tools as root. Upstream opens output paths with ordinary
+ofstream/fopen: existing files can be overwritten and symbolic links are
+followed. The umask does not change permissions on an existing file.
+
+The routerinfo firewall-output option emits Linux iptables commands; it
+does not configure OpenBSD pf. The autoconf tool generates i2pd tunnel
+configuration and is installed as i2pd-autoconf, not GNU autoconf.

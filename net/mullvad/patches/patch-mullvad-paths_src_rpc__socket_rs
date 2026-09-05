@@ -1,0 +1,12 @@
+Index: mullvad-paths/src/rpc_socket.rs
+--- mullvad-paths/src/rpc_socket.rs.orig
++++ mullvad-paths/src/rpc_socket.rs
+@@ -7,7 +7,7 @@
+     }
+ }
+ 
+-#[cfg(any(target_os = "linux", target_os = "macos"))]
++#[cfg(any(target_os = "linux", target_os = "macos", target_os = "openbsd"))]
+ pub fn get_default_rpc_socket_path() -> PathBuf {
+     PathBuf::from("/var/run/mullvad-vpn")
+ }

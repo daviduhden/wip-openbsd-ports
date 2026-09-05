@@ -1,0 +1,5 @@
+#!/bin/sh
+# New private-key files must not inherit a world-readable login umask.
+umask 077
+tool=${0##*/}
+exec ${TRUEPREFIX}/libexec/i2pd-tools/"${tool#i2pd-}" "$@"

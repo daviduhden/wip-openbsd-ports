@@ -1,0 +1,15 @@
+Index: mullvad-paths/src/cache.rs
+--- mullvad-paths/src/cache.rs.orig
++++ mullvad-paths/src/cache.rs
+@@ -19,6 +19,11 @@
+     }
+ }
+ 
++#[cfg(target_os = "openbsd")]
++pub fn get_default_cache_dir() -> Result<PathBuf> {
++    Ok(PathBuf::from("/var/db").join(crate::PRODUCT_NAME).join("cache"))
++}
++
+ #[cfg(target_os = "linux")]
+ pub fn get_default_cache_dir() -> Result<PathBuf> {
+     let dir = PathBuf::from("/var/cache").join(crate::PRODUCT_NAME);

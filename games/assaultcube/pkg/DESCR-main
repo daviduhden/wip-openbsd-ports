@@ -1,0 +1,3 @@
+AssaultCube is a multiplayer first-person shooter based on the Cube engine.
+This package contains the graphical client, using SDL2, OpenGL and OpenAL.
+User configuration and downloads are stored in ~/.assaultcube.

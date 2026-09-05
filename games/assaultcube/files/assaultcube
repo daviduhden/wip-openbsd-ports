@@ -1,0 +1,4 @@
+#!/bin/sh
+: "${HOME:?HOME must name your private home directory}"
+cd ${TRUEPREFIX}/share/assaultcube || exit 1
+exec ${TRUEPREFIX}/libexec/assaultcube-client --home="${HOME}/.assaultcube" "$@"

@@ -1,0 +1,4 @@
+bin/doasedit
+@man man/man1/doasedit.1
+share/doc/doasedit/
+share/doc/doasedit/LICENSE

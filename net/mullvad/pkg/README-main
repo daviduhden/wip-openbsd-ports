@@ -1,0 +1,20 @@
+$OpenBSD$
+
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+This is an initial RPC-client port, not an operational OpenBSD VPN client.
+Most commands require a compatible mullvad-daemon through its Unix socket,
+/var/run/mullvad-vpn. MULLVAD_RPC_SOCKET_PATH can override the socket path;
+the upstream CLI does not connect directly to a remote TCP daemon.
+
+The daemon subpackage is intentionally disabled and BROKEN. The native
+backend groundwork must not be interpreted as implemented leak protection.
+No daemon, rc service, PF anchor or resolver change is installed by this
+CLI package. Do not use it as evidence that your traffic is protected.
+
+The prospective daemon socket defaults to root-only mode 0600 on OpenBSD.
+Upstream's MULLVAD_MANAGEMENT_SOCKET_GROUP can grant a chosen group access;
+membership allows privileged VPN/account control, not merely status queries.
+There is no new RPC protocol or world-writable socket fallback on OpenBSD.

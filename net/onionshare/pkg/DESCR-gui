@@ -1,0 +1,3 @@
+Qt/PySide6 graphical interface for OnionShare, supporting file sharing,
+receiving uploads, hosting websites and private chats over Tor.
+The command-line application and Tor integration are in onionshare-cli.

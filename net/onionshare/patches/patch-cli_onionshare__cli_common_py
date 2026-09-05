@@ -1,0 +1,22 @@
+Index: cli/onionshare_cli/common.py
+--- cli/onionshare_cli/common.py.orig
++++ cli/onionshare_cli/common.py
+@@ -380,12 +380,12 @@
+                 tor_geo_ipv6_file_path = os.path.join(prefix, "share/tor/geoip6")
+ 
+         elif self.platform == "BSD":
+-            tor_path = "/usr/local/bin/tor"
+-            tor_geo_ip_file_path = "/usr/local/share/tor/geoip"
+-            tor_geo_ipv6_file_path = "/usr/local/share/tor/geoip6"
+-            obfs4proxy_file_path = "/usr/local/bin/obfs4proxy"
+-            snowflake_file_path = "/usr/local/bin/snowflake-client"
+-            meek_client_file_path = "/usr/local/bin/meek-client"
++            tor_path = "${LOCALBASE}/bin/tor"
++            tor_geo_ip_file_path = "${LOCALBASE}/share/tor/geoip"
++            tor_geo_ipv6_file_path = "${LOCALBASE}/share/tor/geoip6"
++            obfs4proxy_file_path = shutil.which("obfs4proxy")
++            snowflake_file_path = shutil.which("snowflake-client")
++            meek_client_file_path = shutil.which("meek-client")
+ 
+         return (
+             tor_path,

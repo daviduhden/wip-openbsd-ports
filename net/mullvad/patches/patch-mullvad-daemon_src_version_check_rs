@@ -1,0 +1,24 @@
+Index: mullvad-daemon/src/version/check.rs
+--- mullvad-daemon/src/version/check.rs.orig
++++ mullvad-daemon/src/version/check.rs
+@@ -31,6 +31,11 @@
+ static APP_VERSION: LazyLock<Version> =
+     LazyLock::new(|| Version::from_str(mullvad_version::VERSION).unwrap());
+ static CHECK_ENABLED: LazyLock<bool> = LazyLock::new(|| {
++    // Packages, not upstream installers, manage OpenBSD upgrades. There is
++    // no signed OpenBSD release manifest to query at the Mullvad API.
++    if cfg!(target_os = "openbsd") {
++        return false;
++    }
+     !APP_VERSION.is_dev()
+         || std::env::var("MULLVAD_ENABLE_DEV_UPDATES")
+             .map(|v| v != "0")
+@@ -57,6 +62,8 @@
+ const PLATFORM: &str = "macos";
+ #[cfg(target_os = "windows")]
+ const PLATFORM: &str = "windows";
++#[cfg(target_os = "openbsd")]
++const PLATFORM: &str = "openbsd";
+ 
+ #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+ pub(super) struct VersionCache {

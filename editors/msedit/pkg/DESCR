@@ -1,0 +1,6 @@
+Microsoft Edit is a terminal text editor with a menu interface, mouse
+support, syntax highlighting, Unicode support, and multiple documents.
+The executable is installed as msedit to avoid the generic edit name.
+
+The editor uses the system ICU libraries for text conversion, searching,
+and collation. It does not require a graphical desktop environment.

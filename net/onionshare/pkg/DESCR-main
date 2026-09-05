@@ -1,0 +1,7 @@
+OnionShare shares files, receives uploads, hosts static websites and runs
+private chats using Tor onion services. It runs a local web service and
+starts the Tor binary from the ports tree with private per-user state.
+No external web host or system Tor service is required.
+
+This package contains the command-line application. The optional
+onionshare package adds the Qt graphical interface.

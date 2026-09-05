@@ -1,0 +1,20 @@
+Index: tests/test_comprehensive.py
+--- tests/test_comprehensive.py.orig
++++ tests/test_comprehensive.py
+@@ -6,6 +6,7 @@
+ import time
+ from pathlib import Path
+ 
++from mbake.cli import GNU_MAKE
+ from mbake.config import Config, FormatterConfig
+ from mbake.core.formatter import MakefileFormatter
+ from mbake.core.rules import (
+@@ -786,7 +787,7 @@
+             try:
+                 # Use make help (a simple PHONY target) to test syntax
+                 result = subprocess.run(
+-                    ["make", "-f", f.name, "help"],
++                    [GNU_MAKE, "-f", f.name, "help"],
+                     capture_output=True,
+                     text=True,
+                     timeout=5,

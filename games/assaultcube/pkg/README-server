@@ -1,0 +1,23 @@
+$OpenBSD$
+
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+Do not run the game server as root. It writes logs, incoming maps, demos,
+server state and configuration relative to its working directory.
+Prepare a private directory as the user who will run the server:
+
+    mkdir -m 700 ~/.assaultcube-server
+    cp -R ${TRUEPREFIX}/share/assaultcube/config ~/.assaultcube-server/
+    cp -R ${TRUEPREFIX}/share/assaultcube/packages ~/.assaultcube-server/
+    mkdir -p ~/.assaultcube-server/logs ~/.assaultcube-server/demos
+
+Review config/servercmdline.txt and the upstream server documentation.
+Then run assaultcube-server with the required server options. The launcher
+uses ~/.assaultcube-server, or AC_SERVER_HOME if explicitly set, and never
+writes the package's shared data. Keep this private copy updated when the
+package's configuration/maps change. No public server is started at install.
+
+Upstream's public-server/master-registration behavior and legacy protocol
+need native interoperability and security testing before public deployment.

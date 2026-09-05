@@ -1,0 +1,3 @@
+checkmake checks Makefiles for common mistakes and maintainability problems,
+including missing phony declarations, excessive recipe length, and missing
+standard targets. Rules can be configured through an INI file.

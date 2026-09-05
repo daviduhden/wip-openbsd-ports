@@ -1,0 +1,24 @@
+#!/bin/ksh
+# DEVELOPMENT CANDIDATE ONLY: not installed by the port.
+# Remove the explicit refusal only after OPENBSD.md security gates are met.
+
+daemon="${TRUEPREFIX}/sbin/mullvad-daemon"
+daemon_flags="--disable-stdout-timestamps"
+daemon_user="root"
+
+. /etc/rc.d/rc.subr
+
+rc_bg=YES
+rc_reload=NO
+rc_stop_signal=TERM
+
+rc_pre() {
+	logger -t mullvad_daemon "OpenBSD VPN backends are incomplete; refusing startup"
+	return 1
+}
+
+# Future integration must prepare root-owned state with umask 077, verify
+# the existing PF anchor and fail-closed boot policy, set MULLVAD_RESOURCE_DIR
+# to ${TRUEPREFIX}/share/mullvad, and preserve blocking rules on crashes.
+# No system-wide PF flush, resolver overwrite or user creation belongs here.
+rc_cmd "$1"

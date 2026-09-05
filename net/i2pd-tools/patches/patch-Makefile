@@ -1,0 +1,53 @@
+Index: Makefile
+--- Makefile.orig
++++ Makefile
+@@ -21,6 +21,8 @@
+ 	CXXFLAGS += -g
+ else ifeq ($(UNAME),FreeBSD)
+ 	CXXFLAGS += -g
++else ifeq ($(UNAME),OpenBSD)
++	BOOST_SUFFIX = -mt
+ else
+ # Win32
+ 	CXXFLAGS += -Os -fPIC -msse
+@@ -38,12 +40,22 @@
+ 	LDLIBS += -lthr -lpthread
+ 	LDFLAGS += -L/usr/local/lib
+ 	INCFLAGS += -I/usr/local/include
++else ifeq ($(UNAME),OpenBSD)
++	LDLIBS += -lpthread
++	LDFLAGS += -L/usr/local/lib
++	INCFLAGS += -I/usr/local/include
+ else
+ # Win32
+ 	LDLIBS += -lwsock32 -lws2_32 -liphlpapi -lpthread
+ 	LDFLAGS += -s -static
+ endif
+ 
++
++ifeq ($(UNAME),OpenBSD)
++ATOMIC_LIB =
++else
++ATOMIC_LIB = -latomic
++endif
+ 
+ all: $(I2PD_LIB) vain keygen keyinfo famtool routerinfo regaddr regaddr_3ld i2pbase64 offlinekeys b33address regaddralias x25519 verifyhost autoconf
+ vain:	vain.o $(I2PD_LIB)
+@@ -53,7 +65,7 @@
+ 	$(CXX) -o autoconf $(DEFINES) $(LDFLAGS) autoconf.o $(LDLIBS)
+ 
+ routerinfo: routerinfo.o $(I2PD_LIB)
+-	$(CXX) -o routerinfo $(LDFLAGS) routerinfo.o $(LDLIBS) -latomic
++	$(CXX) -o routerinfo $(LDFLAGS) routerinfo.o $(LDLIBS) $(ATOMIC_LIB)
+ 
+ keygen: keygen.o $(I2PD_LIB)
+ 	$(CXX) -o keygen $(DEFINES) $(LDFLAGS) keygen.o $(LDLIBS)
+@@ -62,7 +74,7 @@
+ 	$(CXX) -o keyinfo $(DEFINES) $(LDFLAGS) keyinfo.o $(LDLIBS)
+ 
+ famtool: famtool.o $(I2PD_LIB)
+-	$(CXX) -o famtool $(DEFINES) $(LDFLAGS) famtool.o $(LDLIBS) -latomic
++	$(CXX) -o famtool $(DEFINES) $(LDFLAGS) famtool.o $(LDLIBS) $(ATOMIC_LIB)
+ 
+ regaddr: regaddr.o $(I2PD_LIB)
+ 	$(CXX) -o regaddr $(DEFINES) $(LDFLAGS) regaddr.o $(LDLIBS)

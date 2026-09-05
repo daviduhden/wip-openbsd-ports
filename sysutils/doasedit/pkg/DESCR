@@ -1,0 +1,6 @@
+doasedit copies a privileged file to a temporary location, runs the user's
+editor without privileges, and uses doas to copy changes back. It is an
+independent shell utility, not part of OpenBSD's base doas.
+
+This initial port is disabled pending resolution of privileged pathname
+races and unsafe temporary-file/writeback handling in upstream 1.0.9.

@@ -1,0 +1,4 @@
+@bin sbin/mullvad-daemon
+share/mullvad/
+share/mullvad/ca.crt
+share/mullvad/relays.json

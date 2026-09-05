@@ -1,0 +1,3 @@
+Dedicated AssaultCube multiplayer server. This package does not depend on
+the graphical client or its audio/display libraries. Run it unprivileged
+from a private writable data directory; see the package README.

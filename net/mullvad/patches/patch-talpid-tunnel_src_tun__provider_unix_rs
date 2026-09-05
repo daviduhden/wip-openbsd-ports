@@ -1,0 +1,22 @@
+Index: talpid-tunnel/src/tun_provider/unix.rs
+--- talpid-tunnel/src/tun_provider/unix.rs.orig
++++ talpid-tunnel/src/tun_provider/unix.rs
+@@ -172,6 +172,18 @@
+             IpAddr::V6(ipv6) => {
+                 let ipv6 = ipv6.to_string();
+                 let device = self.get_name()?;
++                #[cfg(target_os = "openbsd")]
++                {
++                    let status = Command::new("/sbin/ifconfig")
++                        .args([&device, "inet6", &ipv6, "prefixlen", "128", "alias"])
++                        .status()
++                        .map_err(Error::SetIpv6)?;
++                    if !status.success() {
++                        return Err(Error::SetIpv6(std::io::Error::other(
++                            format!("ifconfig failed: {status}"),
++                        )));
++                    }
++                }
+                 // ifconfig <device> inet6 <ipv6 address> alias
+                 #[cfg(target_os = "macos")]
+                 Command::new("ifconfig")

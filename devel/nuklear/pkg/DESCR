@@ -1,0 +1,6 @@
+Nuklear is a single-header, immediate-mode graphical user interface toolkit
+written in ANSI C. Applications supply input and render its drawing commands.
+It has no required window system, rendering backend, or external libraries.
+
+Define NK_IMPLEMENTATION in exactly one translation unit. Use the same
+optional feature defines in every translation unit that includes nuklear.h.

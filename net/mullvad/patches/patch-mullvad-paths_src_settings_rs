@@ -1,0 +1,18 @@
+Index: mullvad-paths/src/settings.rs
+--- mullvad-paths/src/settings.rs.orig
++++ mullvad-paths/src/settings.rs
+@@ -24,8 +24,13 @@
+         .join(crate::PRODUCT_NAME))
+ }
+ 
+-#[cfg(unix)]
++#[cfg(all(unix, not(target_os = "openbsd")))]
+ pub fn get_default_settings_dir() -> Result<PathBuf> {
+     let dir = PathBuf::from("/etc").join(crate::PRODUCT_NAME);
+     Ok(dir)
+ }
++
++#[cfg(target_os = "openbsd")]
++pub fn get_default_settings_dir() -> Result<PathBuf> {
++    Ok(PathBuf::from("/var/db").join(crate::PRODUCT_NAME))
++}

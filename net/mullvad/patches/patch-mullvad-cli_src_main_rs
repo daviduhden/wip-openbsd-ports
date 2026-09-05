@@ -1,0 +1,19 @@
+Index: mullvad-cli/src/main.rs
+--- mullvad-cli/src/main.rs.orig
++++ mullvad-cli/src/main.rs
+@@ -89,6 +89,7 @@
+     #[clap(subcommand)]
+     AntiCensorship(anti_censorship::AntiCensorship),
+ 
++    #[cfg(any(target_os = "linux", target_os = "macos", windows))]
+     #[clap(subcommand)]
+     SplitTunnel(split_tunnel::SplitTunnel),
+ 
+@@ -182,6 +183,7 @@
+         Cli::ResetSettings { assume_yes } => reset::handle_settings_reset(assume_yes).await,
+         Cli::Relay(cmd) => cmd.handle().await,
+         Cli::Tunnel(cmd) => cmd.handle().await,
++        #[cfg(any(target_os = "linux", target_os = "macos", windows))]
+         Cli::SplitTunnel(cmd) => cmd.handle().await,
+         Cli::Status { cmd, args } => status::handle(cmd, args).await,
+         Cli::CustomList(cmd) => cmd.handle().await,

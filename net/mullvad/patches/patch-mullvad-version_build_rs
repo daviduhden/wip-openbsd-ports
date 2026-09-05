@@ -1,0 +1,23 @@
+Index: mullvad-version/build.rs
+--- mullvad-version/build.rs.orig
++++ mullvad-version/build.rs
+@@ -25,7 +25,7 @@
+             .as_str()
+         {
+             "android" => Ok(Self::Android),
+-            "linux" | "windows" | "macos" => Ok(Self::Desktop),
++            "linux" | "windows" | "macos" | "openbsd" => Ok(Self::Desktop),
+             other => Err(other.to_owned()),
+         }
+     }
+@@ -85,6 +85,10 @@
+ /// `product_version` or a git repository cannot be found, the suffix is empty. Otherwise,
+ /// `-dev-$hash` is appended to the release version.
+ fn get_suffix(release_tag: &str) -> String {
++    println!("cargo:rerun-if-env-changed=MULLVAD_BUILD_FROM_ARCHIVE");
++    if env::var("MULLVAD_BUILD_FROM_ARCHIVE").as_deref() == Ok("1") {
++        return String::new();
++    }
+     let Some((git_dir, git_common_dir)) = git_dirs() else {
+         return String::new();
+     };

@@ -1,0 +1,20 @@
+Index: cmd/checkmake/main.go
+--- cmd/checkmake/main.go.orig
++++ cmd/checkmake/main.go
+@@ -7,6 +7,7 @@
+ 	"log"
+ 	"os"
+ 	"path/filepath"
++	"runtime"
+ 	"strings"
+ 
+ 	"github.com/checkmake/checkmake/config"
+@@ -24,7 +25,7 @@
+ 	version   = ""
+ 	buildTime = ""
+ 	builder   = ""
+-	goversion = ""
++	goversion = runtime.Version()
+ 
+ 	cfgPath string
+ 	debug   bool

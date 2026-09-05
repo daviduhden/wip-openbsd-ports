@@ -1,0 +1,4 @@
+#!/bin/sh
+: "${HOME:?HOME must name your private home directory}"
+cd "${AC_SERVER_HOME:-${HOME}/.assaultcube-server}" || exit 1
+exec ${TRUEPREFIX}/libexec/assaultcube-server "$@"

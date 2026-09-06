@@ -136,7 +136,6 @@ Changes:
 | net/i2pd | 2.61.0 | 2.61.0 | current |
 | net/i2pd-tools | 2.58.0 | 2.58.0 | current stable; newer tag is a windows-only snapshot |
 | net/monero | 0.18.5.1 | v0.18.5.1 | current |
-| net/mullvad | 2026.4 | 2026.4 | current |
 | net/onionshare | 2.6.5 | v2.6.5 | current |
 | net/simplex-chat | 7.0.2 | v7.0.2 | current |
 | net/simplexmq | 7.0.1 | v7.0.1 | current stable; v7.1.0-beta.x skipped by policy |

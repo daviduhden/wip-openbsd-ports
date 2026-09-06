@@ -2,7 +2,7 @@
 
 Source review: 2026-09-05; sdwdate extension: 2026-09-06.
 Development host: Fedora Atomic (Linux).
-No OpenBSD build, package, install, or VPN runtime test has been performed.
+No OpenBSD build, package, install, or runtime test has been performed.
 `READY_FOR_OPENBSD_TESTING` means a candidate port is ready to enter native
 testing, not that the program works on OpenBSD.
 
@@ -10,7 +10,7 @@ testing, not that the program works on OpenBSD.
 
 The local repository is a WIP overlay, not a full ports checkout: it has no
 `infrastructure/`. Existing unrelated changes, including moved ports and
-tracked deletions, were preserved. None of the nine targets was found in
+tracked deletions, were preserved. None of the eight targets was found in
 the overlay or in the inspected current official tree.
 
 Conventions were checked against OpenBSD ports revision
@@ -40,7 +40,6 @@ Embedded upstream source/resource license notices remain with those files.
 | net/i2pd-tools | 2.58.0 | READY_FOR_OPENBSD_TESTING |
 | games/assaultcube | v1.3.0.2 | READY_FOR_OPENBSD_TESTING; restricted redistribution |
 | net/onionshare | v2.6.5 | READY_FOR_OPENBSD_TESTING; privacy/runtime unverified |
-| net/mullvad | 2026.4 | CLI: READY_FOR_OPENBSD_TESTING; daemon: REQUIRES_OPENBSD_RUNTIME_WORK |
 
 All versions use released tags/assets, not moving branches or release
 candidates. Exact extra revisions and language dependencies are pinned in
@@ -276,37 +275,6 @@ Run as an ordinary user. OnionShare launches its own instance of the system
 Tor executable with private state; do not enable tor's rc service solely
 for this application. Do not rely on the untested port for privacy yet.
 
-## Mullvad CLI and daemon
-
-[Upstream 2026.4](https://github.com/mullvad/mullvadvpn-app/tree/2026.4),
-GPL-3.0-or-later, Rust >=1.95. See [the dependency graph](net/mullvad/DEPENDENCIES.md)
-and [the detailed native-backend report](net/mullvad/OPENBSD.md).
-
-The CLI's seven internal crates exclude the daemon and GUI. The daemon
-adds substantial native networking requirements; a successful RPC-client
-build is not a VPN implementation. One multi-package port shares source,
-lockfile and vendoring infrastructure. Default pseudo-flavor no_daemon
-builds only the CLI; requesting the daemon retains an explicit BROKEN guard.
-No GUI, Electron, mobile application, installer or update-service binary
-is built. No root daemon, PF rule or resolver mutation is installed by the
-default package.
-
-Dependency classification: base Rust/C runtime and native kernel interfaces;
-existing Rust infrastructure and build-only protobuf compiler; 616 pinned
-registry crates via MODCARGO; exact private udp-over-tcp git revision
-`5c6d8f44a5aa12ed9bb4ae51dd17e5e22e5ec303` as a second source archive.
-No standalone crate ports or bundled system OpenSSL/DBus. Alternative-target
-and test dependencies remain in the projected lock, not in WANTLIB.
-Linux netlink/nftables/DBus/cgroup crates are target-excluded. New private
-talpid-openbsd is backend groundwork, not another dependency port.
-
-Linux: CLI release build passed; selected platform-neutral suites passed
-48 tests with four upstream ignores, including seven new primitive tests.
-OpenBSD cross-check was attempted but the installed Rust toolchain lacks
-the target core/std sysroot (E0463). It did not validate OpenBSD compilation.
-Native daemon build and RPC/login/tunnel/routing/PF/DNS/reconnection remain
-unverified or blocked, as detailed in the subsystem report.
-
 ## Static validation and remaining native work
 
 All 793 distfile SHA256 values and sizes were verified against downloaded
@@ -319,22 +287,22 @@ Cargo/Go use the current ports offline facilities; Python wheel builds use
 preinstalled backends and no isolation; no submodule update, FetchContent,
 pip/npm download or git clone occurs in a proposed build phase.
 
-An additional Linux preparation check reconstructed both Rust vendor trees
+An additional Linux preparation check reconstructed the Rust vendor tree
 offline from the checksumed archives, then resolved the OpenBSD-targeted
 metadata with empty Cargo homes and no registry/network access. This passed
-for both msedit and the projected Mullvad workspace. It validates source
-closure, not native compilation; cargo vendor is not run by either port.
+for msedit and validated source closure, not native compilation; cargo
+vendor is not run by the port.
 
 Candidate WANTLIBs are source/link-derived, not results of native
 port-lib-depends-check. Python PLISTs come from wheel inventories; game data
 from the archive; other PLISTs from explicit install targets. All require
 native update-plist, including bytecode, manuals and debug entries.
 
-Use a complete, matching OpenBSD -current ports tree, placing these nine
+Use a complete, matching OpenBSD -current ports tree, placing these
 directories in the corresponding categories. The WIP overlay alone is not
 a buildable replacement for /usr/ports. For each viable port, from its
 directory, run the following **on OpenBSD**, checking each result before
-continuing (do not bypass BROKEN for doasedit or the Mullvad daemon):
+continuing (do not bypass BROKEN for doasedit):
 
 ```sh
 make clean=all
@@ -355,13 +323,10 @@ make clean
 /usr/ports/infrastructure/bin/portcheck -N
 ```
 
-For Mullvad's current CLI candidate, keep the default no_daemon flavor.
 For multi-packages, also check each subpackage's runtime dependencies and
 installation/deinstallation separately. AssaultCube's redistribution
 restriction is intentional and must not be overridden for distribution.
 Apply the per-target runtime tests above in addition to this build sequence.
-Mullvad's future privileged integration requires its separate safety-gated
-test plan, not merely a successful package build.
 
 ## sdwdate: native OpenBSD adaptation (2026-09-06)
 

@@ -1,3 +1,0 @@
-Privileged Mullvad VPN backend. This candidate subpackage is blocked because
-OpenBSD tunnel, routing, PF kill-switch and resolver lifecycle integration
-are not complete. It must not be deployed as a working VPN client.

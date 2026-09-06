@@ -1,6 +1,0 @@
-Command-line RPC client for mullvad-daemon. This does not contain a tunnel
-engine or set up a VPN independently. OpenBSD daemon support is incomplete;
-installing this package does not provide Mullvad VPN connectivity.
-
-The desktop GUI, Electron frontend, installers and mobile applications are
-not built. See the development report for the daemon backend groundwork.

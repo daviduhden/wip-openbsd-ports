@@ -1,0 +1,36 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Unmask owned worker bodies while keeping publication and completion callbacks masked.
+
+Index: src/Simplex/Messaging/Util.hs
+--- src/Simplex/Messaging/Util.hs.orig
++++ src/Simplex/Messaging/Util.hs
+@@ -10,6 +10,7 @@ module Simplex.Messaging.Util
+     (<$$),
+     (<$$>),
+     raceAny_,
++    forkFinallyUnmasked,
+     bshow,
+     tshow,
+     maybeWord,
+@@ -66,6 +67,7 @@ module Simplex.Messaging.Util
+     traverseWithKey_,
+   ) where
+ 
++import qualified Control.Concurrent as C
+ import Control.Exception (AllocationLimitExceeded (..), AsyncException (..))
+ import qualified Control.Exception as E
+ import Control.Monad
+@@ -100,6 +102,12 @@ import GHC.Conc (labelThread, myThreadId
+ import UnliftIO hiding (atomicModifyIORef')
+ import qualified UnliftIO.Exception as UE
+ 
++-- Publish thread ownership while masked, but do not make a long-lived child
++-- inherit that mask. Keep its completion callback masked, like forkFinally.
++forkFinallyUnmasked :: MonadUnliftIO m => m a -> (Either E.SomeException a -> m ()) -> m C.ThreadId
++forkFinallyUnmasked action done = withRunInIO $ \run ->
++  E.mask_ $ C.forkIOWithUnmask $ \unmask -> E.try (unmask $ run action) >>= run . done
++
+ raceAny_ :: MonadUnliftIO m => [m a] -> m ()
+ raceAny_ = r []
+   where

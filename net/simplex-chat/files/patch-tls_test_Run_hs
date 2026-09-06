@@ -1,0 +1,66 @@
+SPDX-License-Identifier: BSD-3-Clause
+
+Backport the TLS 1.3 receive-cancellation fix, including its regression test.
+Keep the pending record reader and TLS shutdown under the same read lock.
+Add the qualified exception import required by TLS 2.4.3.
+https://github.com/haskell-tls/hs-tls/commit/218abdd67a4cde30854b5ca9b146b269da53bc07
+
+Index: test/Run.hs
+--- test/Run.hs.orig
++++ test/Run.hs
+@@ -16,6 +16,8 @@
+     runTLSFailure,
+     expectMaybe,
+     newPairContext,
++    newPairContextWith,
++    withPairContextWith,
+     withDataPipe,
+     byeBye,
+ ) where
+@@ -326,16 +328,32 @@
+ 
+ withPairContext
+     :: (ClientParams, ServerParams) -> ((Context, Context) -> IO ()) -> IO ()
+-withPairContext params body =
++withPairContext = withPairContextWith (id, id)
++
++withPairContextWith
++    :: (Backend -> Backend, Backend -> Backend)
++    -> (ClientParams, ServerParams)
++    -> ((Context, Context) -> IO ())
++    -> IO ()
++withPairContextWith wrapBackends params body =
+     E.bracket
+-        (newPairContext params)
++        (newPairContextWith wrapBackends params)
+         (\((t1, t2), _) -> killThread t1 >> killThread t2)
+         (\(_, ctxs) -> body ctxs)
+ 
+ newPairContext
+     :: (ClientParams, ServerParams)
+     -> IO ((ThreadId, ThreadId), (Context, Context))
+-newPairContext (cParams, sParams) = do
++newPairContext = newPairContextWith (id, id)
++
++-- | 'newPairContext' with a hook on each side's 'Backend' -- client first, as
++-- with the parameters -- so that a test can control how bytes arrive (delay
++-- them, split them).  Pass 'id' for a side to leave it alone.
++newPairContextWith
++    :: (Backend -> Backend, Backend -> Backend)
++    -> (ClientParams, ServerParams)
++    -> IO ((ThreadId, ThreadId), (Context, Context))
++newPairContextWith (wrapCBackend, wrapSBackend) (cParams, sParams) = do
+     pipe <- newPipe
+     tids <- runPipe pipe
+     let noFlush = return ()
+@@ -343,8 +361,8 @@
+ 
+     let cBackend = Backend noFlush noClose (writePipeC pipe) (readPipeC pipe)
+     let sBackend = Backend noFlush noClose (writePipeS pipe) (readPipeS pipe)
+-    cCtx' <- contextNew cBackend cParams
+-    sCtx' <- contextNew sBackend sParams
++    cCtx' <- contextNew (wrapCBackend cBackend) cParams
++    sCtx' <- contextNew (wrapSBackend sBackend) sParams
+ 
+     contextHookSetLogging cCtx' (logging "client: ")
+     contextHookSetLogging sCtx' (logging "server: ")

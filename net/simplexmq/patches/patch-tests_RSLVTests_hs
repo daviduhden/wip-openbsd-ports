@@ -1,0 +1,60 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Close all protocol clients on success and failure, and identify the failing proxy setup stage.
+
+Index: tests/RSLVTests.hs
+--- tests/RSLVTests.hs.orig
++++ tests/RSLVTests.hs
+@@ -11,7 +11,8 @@
+ 
+ module RSLVTests (rslvTests) where
+ 
+-import Control.Monad.Trans.Except (ExceptT, runExceptT)
++import Control.Monad.Trans.Except (runExceptT)
++import Control.Exception (bracket)
+ import qualified Data.Aeson as J
+ import qualified Data.ByteString.Char8 as B
+ import qualified Data.ByteString.Lazy as LB
+@@ -112,12 +113,13 @@ testRslvVersion =
+     ts <- getCurrentTime
+     let srv = SMPServer testHost testPort testKeyHash
+         oldCfg = defaultSMPClientConfig {serverVRange = mkVersionRange minServerSMPRelayVersion rcvServiceSMPVersion}
+-    pcE <- getProtocolClient g NRMInteractive (1, srv, Nothing) oldCfg [] Nothing ts (\_ -> pure ())
+-    pc <- either (fail . show) pure pcE
+-    r <- runExceptT (directResolveName pc NRMInteractive (domain "alice.simplex"))
+-    case r of
+-      Left (PCETransportError TEVersion) -> pure ()
+-      _ -> expectationFailure $ "expected Left (PCETransportError TEVersion), got: " <> show r
++    bracket
++      (getProtocolClient g NRMInteractive (1, srv, Nothing) oldCfg [] Nothing ts (\_ -> pure ()) >>= either (fail . show) pure)
++      closeProtocolClient $ \pc -> do
++        r <- runExceptT (directResolveName pc NRMInteractive (domain "alice.simplex"))
++        case r of
++          Left (PCETransportError TEVersion) -> pure ()
++          _ -> expectationFailure $ "expected Left (PCETransportError TEVersion), got: " <> show r
+ 
+ forwardedResolveAlice :: IO (Either SMPClientError (Either ProxyClientError SMP.NameRecord))
+ forwardedResolveAlice = do
+@@ -126,10 +128,11 @@ forwardedResolveAlice = do
+   let proxyServ = SMPServer testHost testPort testKeyHash
+       relayServ = SMPServer testHost2 testPort2 testKeyHash
+       cfg' = defaultSMPClientConfig {serverVRange = mkVersionRange minServerSMPRelayVersion currentClientSMPRelayVersion}
+-  pcE <- getProtocolClient g NRMInteractive (1, proxyServ, Nothing) cfg' [] Nothing ts (\_ -> pure ())
+-  pc <- either (fail . show) pure pcE
+-  sess <- runExceptT' (connectSMPProxiedRelay pc NRMInteractive relayServ Nothing)
+-  runExceptT (proxyResolveName pc NRMInteractive sess (domain "alice.simplex"))
++  bracket
++    (getProtocolClient g NRMInteractive (1, proxyServ, Nothing) cfg' [] Nothing ts (\_ -> pure ()) >>= either (fail . ("proxy connection: " <>) . show) pure)
++    closeProtocolClient $ \pc -> do
++      sess <- runExceptT (connectSMPProxiedRelay pc NRMInteractive relayServ Nothing) >>= either (fail . ("proxy relay session: " <>) . show) pure
++      runExceptT (proxyResolveName pc NRMInteractive sess (domain "alice.simplex"))
+ 
+ testRslvForwarded :: IO ()
+ testRslvForwarded =
+@@ -154,6 +157,3 @@ testRslvSuccess =
+       case resp of
+         Right (RNAME nr) -> nr `shouldBe` testNameRecord
+         _ -> expectationFailure $ "expected Right (RNAME ..), got: " <> show resp
+-
+-runExceptT' :: Show e => ExceptT e IO a -> IO a
+-runExceptT' a = runExceptT a >>= either (fail . show) pure

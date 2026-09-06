@@ -1,0 +1,71 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Adapt to http2 5.x without returning streamed bodies from H.run's callback:
+H.run drains queued DATA when that callback returns, while SimpleX passes
+the body reader to another thread. Use the explicit stream-ownership API;
+normal body reads still update flow-control windows. The optional Aux
+stream/ping helpers are not used by SimpleX.
+
+Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
+--- src/Simplex/Messaging/Transport/HTTP2/Client.hs.orig
++++ src/Simplex/Messaging/Transport/HTTP2/Client.hs
+@@ -27,13 +27,15 @@
+ import Control.Exception (Handler (..), IOException, SomeAsyncException, SomeException)
+ import qualified Control.Exception as E
+ import Control.Monad
++import qualified Data.ByteString.Char8 as B
+ import Data.Functor (($>))
+ import Data.Time (UTCTime, getCurrentTime)
+ import qualified Data.X509 as X
+ import qualified Data.X509.CertificateStore as XS
+ import Network.HPACK (BufferSize)
+-import Network.HTTP2.Client (ClientConfig (..), Request, Response)
++import Network.HTTP2.Client (Request, Response)
+ import qualified Network.HTTP2.Client as H
++import qualified Network.HTTP2.Client.Internal as HI
+ import Network.Socket (HostName, ServiceName)
+ import Network.Socks5 (SocksCredentials)
+ import qualified Network.TLS as T
+@@ -153,7 +155,7 @@
+         Nothing -> cancel action $> Left (HCNetworkError NETimeoutError)
+ 
+     client :: HClient -> TMVar (Either HTTP2ClientError HTTP2Client) -> TLS p -> H.Client HTTP2Response
+-    client c cVar tls sendReq = do
++    client c cVar tls sendReq aux = do
+       sessionTs <- getCurrentTime
+       let c' =
+             HTTP2Client
+@@ -171,10 +173,10 @@
+       atomically $ do
+         writeTVar (connected c) True
+         putTMVar cVar (Right c')
+-      process c' sendReq `E.finally` disconnected
++      process c' sendReq aux `E.finally` disconnected
+ 
+     process :: HTTP2Client -> H.Client HTTP2Response
+-    process HTTP2Client {client_ = HClient {reqQ}} sendReq = forever $ do
++    process HTTP2Client {client_ = HClient {reqQ}} sendReq _aux = forever $ do
+       (req, respVar) <- atomically $ readTBQueue reqQ
+       sendReq req $ \r -> do
+         respBody <- getHTTP2Body r (bodyHeadSize config)
+@@ -220,4 +222,19 @@
+ runHTTP2ClientWith bufferSize host setup client = setup $ \tls -> withHTTP2 bufferSize (run tls) (pure ()) tls
+   where
+     run :: TLS p -> H.Config -> IO a
+-    run tls cfg = H.run (ClientConfig "https" (strEncode host) 20) cfg $ client tls
++    -- SimpleX returns a body reader to a different thread. The high-level
++    -- http2 runner drains queued DATA as soon as its callback returns, before
++    -- that thread has consumed the file. Use the explicit stream-ownership
++    -- API; getResponseBodyChunk still performs normal flow-control updates.
++    run tls cfg = HI.runIO clientConfig cfg $ \cio -> pure $
++      client tls
++        (\req consume -> do
++          (_, stream) <- HI.cioWriteRequest cio req
++          HI.cioReadResponse cio stream >>= consume)
++        H.defaultAux -- SimpleX does not use the optional stream/ping helpers.
++    clientConfig =
++      H.defaultClientConfig
++        { H.scheme = "https",
++          H.authority = B.unpack $ strEncode host,
++          H.cacheLimit = 20
++        }

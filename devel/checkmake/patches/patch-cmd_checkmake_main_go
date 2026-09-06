@@ -1,3 +1,5 @@
+SPDX-License-Identifier: MIT
+
 Index: cmd/checkmake/main.go
 --- cmd/checkmake/main.go.orig
 +++ cmd/checkmake/main.go

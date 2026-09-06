@@ -1,3 +1,5 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+
 Index: mullvad-management-interface/src/lib.rs
 --- mullvad-management-interface/src/lib.rs.orig
 +++ mullvad-management-interface/src/lib.rs

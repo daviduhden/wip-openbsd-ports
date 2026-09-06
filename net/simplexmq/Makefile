@@ -1,0 +1,257 @@
+COMMENT = SimpleX messaging protocol server and client library
+
+DEBUG ?= 0
+
+GH_ACCOUNT = simplex-chat
+GH_PROJECT = simplexmq
+GH_TAGNAME = v7.0.1
+
+V = 7.0.1
+DISTNAME = ${GH_PROJECT}-${V}
+DISTFILES = ${GH_DISTFILE}
+SITES = ${SITES_GITHUB}
+WRKDIST = ${WRKDIR}/${GH_PROJECT}-${GH_TAGNAME:S/^v//}
+WRKSRC = ${WRKDIST}
+ONLY_FOR_ARCHS = amd64 arm64
+
+DIST_TUPLE += github simplex-chat aeson \
+		aab7b5a14d6c5ea64c64dcaee418de1bb00dcc2b ../aeson
+DIST_TUPLE += github simplex-chat hs-socks \
+		a30cc7a79a08d8108316094f8f2f82a0c5e1ac51 ../hs-socks
+DIST_TUPLE += github simplex-chat direct-sqlcipher \
+		f814ee68b16a9447fbb467ccc8f29bdd3546bfd9 ../direct-sqlcipher
+DIST_TUPLE += github simplex-chat sqlcipher-simple \
+		a46bd361a19376c5211f1058908fc0ae6bf42446 ../sqlcipher-simple
+DIST_TUPLE += github yesodweb wai \
+		ec5e017d896a78e787a5acea62b37a4e677dec2e ../yesod-wai
+DIST_TUPLE += github simplex-chat wai \
+		2f6e5aa5f05ba9140ac99e195ee647b4f7d926b0 ../simplex-wai
+DIST_TUPLE += github supranational blst \
+		db3defd0d501cc2bb1cdd59cb955d1a421821441 cbits/blst
+DIST_TUPLE += github simplex-chat libbbs \
+		59a0f4bf32e195cb6883de8374825c0f4764c717 cbits/libbbs
+
+CATEGORIES = net
+HOMEPAGE = https://simplex.chat/
+
+MAINTAINER = David Uhden Collado <daviduhden@gmail.com>
+
+# GNU Affero General Public License v3.0 only (AGPL-3.0-only)
+PERMIT_PACKAGE = Yes
+
+WANTLIB = c crypto ffi gmp iconv m pthread sqlcipher util z zstd
+
+MODULES = devel/cabal
+MODCABAL_STEM = simplexmq
+MODCABAL_VERSION = 7.0.1.0
+MODCABAL_EXECUTABLES = smp-server xftp-server
+
+.if ${DEBUG} == 1
+MODCABAL_BUILD_ARGS = -v2
+.endif
+
+NETWORK_V = 3.2.9.0
+TLS_V = 2.4.3
+TLS_PATCHES = \
+	patch-tls_Network_TLS_Context_hs \
+	patch-tls_Network_TLS_Context_Internal_hs \
+	patch-tls_Network_TLS_Core_hs \
+	patch-tls_test_HandshakeSpec_hs \
+	patch-tls_test_Run_hs
+UNIX_TIME_V = 0.5.0
+CRYPTOSTORE_V = 0.5.0.0
+ENTROPY_V = 0.4.1.11
+CABAL_INC_HOME ?= ${WRKDIR}/.cabal-inc-home
+CABAL_INC_SKIP = aeson,socks,direct-sqlcipher,sqlcipher-simple,warp-tls,warp
+CABAL_INC_EXTRA = wai-app-static:3.2.1:0,wai-extra:3.1.18:0,yaml:0.11.11.2:0
+SIMPLEXMQ_CABAL_PACKAGES = \
+	'packages: ${WRKDIR}/aeson/aeson.cabal' \
+	'packages: ${WRKDIR}/hs-socks/socks.cabal' \
+	'packages: ${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal' \
+	'packages: ${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal' \
+	'packages: ${WRKDIR}/yesod-wai/warp-tls/warp-tls.cabal' \
+	'packages: ${WRKDIR}/simplex-wai/warp/warp.cabal'
+SIMPLEXMQ_CABAL_PACKAGE_PATHS = \
+	${WRKDIR}/aeson/aeson.cabal \
+	${WRKDIR}/hs-socks/socks.cabal \
+	${WRKDIR}/direct-sqlcipher/direct-sqlcipher.cabal \
+	${WRKDIR}/sqlcipher-simple/sqlcipher-simple.cabal \
+	${WRKDIR}/yesod-wai/warp-tls/warp-tls.cabal \
+	${WRKDIR}/simplex-wai/warp/warp.cabal
+SIMPLEXMQ_CABAL_COMMON_OPTIONS = \
+	'constraints: network ==${NETWORK_V}' \
+	'package direct-sqlcipher' \
+	'    flags: +systemlib' \
+	'package zstd' \
+	'    flags: -standalone' \
+	'package *' \
+	'    ghc-options: -w -optP-Wno-expansion-to-defined'
+SIMPLEXMQ_CABAL_TEST_OPTIONS = \
+	'package *' \
+	'    tests: False' \
+	'package simplexmq' \
+	'    tests: True'
+AESON_PATCHES = \
+	patch-aeson_cabal \
+	patch-src_Data_Aeson_Types_FromJSON_hs \
+	patch-src_Data_Aeson_KeyMap_hs
+CRYPTOSTORE_PATCHES = \
+	patch-cryptostore_cabal \
+	patch-src_Crypto_Store_Cipher_RC2_Primitive_hs \
+	patch-src_Crypto_Store_PKCS5_PBES1_hs \
+	patch-src_Crypto_Store_Util_hs
+WARP_PATCHES = \
+	patch-warp_cabal \
+	patch-Network_Wai_Handler_Warp_FileInfoCache_hs \
+	patch-Network_Wai_Handler_Warp_HTTP2_hs
+SIMPLEXMQ_TEST_OPTIONS ?=
+LIB_DEPENDS = archivers/zstd \
+			converters/libiconv \
+			databases/sqlcipher \
+			devel/gmp \
+			devel/libffi
+
+BUILD_DEPENDS = converters/dos2unix
+TEST_DEPENDS = databases/sqlite3
+
+SIMPLEXMQ_CABAL_CHECK_PATHS = \
+	for _pkg in ${SIMPLEXMQ_CABAL_PACKAGE_PATHS}; do \
+		if [ ! -f "$$_pkg" ]; then \
+			echo "missing cabal package: $$_pkg" >&2; \
+			exit 1; \
+		fi; \
+	done
+
+post-patch:
+	# Normalize extracted source trees to LF before dependency patches.
+	find ${WRKDIR} -type f \( -name '*.hs' -o -name '*.cabal' \
+		-o -name '*.sql' -o -name '*.h' -o -name '*.c' \) \
+		-exec ${LOCALBASE}/bin/dos2unix -q {} +
+	patch -d ${WRKDIR}/direct-sqlcipher -p0 \
+		< ${FILESDIR}/patch-direct-sqlcipher_cabal
+	${SIMPLEXMQ_CABAL_CHECK_PATHS}
+	printf '%s\n' \
+		${SIMPLEXMQ_CABAL_PACKAGES} \
+		${SIMPLEXMQ_CABAL_COMMON_OPTIONS} \
+		>> ${WRKSRC}/cabal.project.local
+.for _p in ${AESON_PATCHES}
+	patch -d ${WRKDIR}/aeson -p0 < ${FILESDIR}/${_p}
+.endfor
+.for _p in ${CRYPTOSTORE_PATCHES}
+	if [ -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} ]; then \
+		patch -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} -p0 \
+			< ${FILESDIR}/${_p}; \
+	fi
+.endfor
+.for _p in ${WARP_PATCHES}
+	patch -d ${WRKDIR}/simplex-wai/warp -p0 < ${FILESDIR}/${_p}
+.endfor
+.for _p in ${TLS_PATCHES}
+	patch -d ${WRKDIR}/tls-${TLS_V} -p0 < ${FILESDIR}/${_p}
+.endfor
+	patch -d ${WRKDIR}/network-${NETWORK_V} -p0 \
+		< ${FILESDIR}/patch-network_cabal
+	${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include
+	${INSTALL_DATA} ${FILESDIR}/HsNetworkConfig.h \
+		${WRKDIR}/network-${NETWORK_V}/include/HsNetworkConfig.h
+	if [ -f ${WRKDIR}/unix-time-${UNIX_TIME_V}/unix-time.cabal ]; then \
+		patch -d ${WRKDIR}/unix-time-${UNIX_TIME_V} -p0 \
+			< ${FILESDIR}/patch-unix-time_cabal; \
+		${INSTALL_DATA} ${FILESDIR}/UnixTimeConfig.h \
+			${WRKDIR}/unix-time-${UNIX_TIME_V}/cbits/config.h; \
+	fi
+	if [ -f ${WRKDIR}/entropy-${ENTROPY_V}/entropy.cabal ]; then \
+		patch -d ${WRKDIR}/entropy-${ENTROPY_V} -p0 \
+			< ${FILESDIR}/patch-entropy_cabal; \
+	fi
+
+cabal-inc: patch
+	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}
+	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}/.cabal
+	env HOME=${CABAL_INC_HOME} CABAL_DIR=${CABAL_INC_HOME}/.cabal \
+		LC_ALL=en_US.UTF-8 \
+		${LOCALBASE}/bin/cabal update
+	if [ ! -f ${CABAL_INC_HOME}/.cabal/config ] && \
+		[ -f ${CABAL_INC_HOME}/.config/cabal/config ]; then \
+		cp ${CABAL_INC_HOME}/.config/cabal/config \
+			${CABAL_INC_HOME}/.cabal/config; \
+	fi
+	${SIMPLEXMQ_CABAL_CHECK_PATHS}
+	printf '%s\n' \
+		${SIMPLEXMQ_CABAL_PACKAGES} \
+		${SIMPLEXMQ_CABAL_COMMON_OPTIONS} \
+		> ${WRKSRC}/cabal.project.local
+	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
+		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
+		${LOCALBASE}/bin/cabal v2-build --dry-run \
+		-w ${LOCALBASE}/bin/ghc \
+		--disable-benchmarks --disable-tests \
+		exe:smp-server exe:xftp-server
+	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
+		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
+		${LOCALBASE}/bin/cabal-bundler --openbsd \
+		--plan dist-newstyle/cache/plan.json \
+		--executable smp-server \
+		${MODCABAL_STEM}-${MODCABAL_VERSION} \
+		> ${WRKDIR}/simplexmq.smp.inc
+	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
+		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
+		${LOCALBASE}/bin/cabal-bundler --openbsd \
+		--plan dist-newstyle/cache/plan.json \
+		--executable xftp-server \
+		${MODCABAL_STEM}-${MODCABAL_VERSION} \
+		> ${WRKDIR}/simplexmq.xftp.inc
+	printf '%s\n' \
+		${SIMPLEXMQ_CABAL_TEST_OPTIONS} \
+		>> ${WRKSRC}/cabal.project.local
+	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
+		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
+		${LOCALBASE}/bin/cabal v2-test --dry-run \
+		-w ${LOCALBASE}/bin/ghc \
+		--disable-benchmarks \
+		test:simplexmq-test
+	cp ${WRKBUILD}/dist-newstyle/cache/plan.json \
+		${WRKDIR}/simplexmq.test.plan.json
+	env SKIP=${CABAL_INC_SKIP} EXTRA=${CABAL_INC_EXTRA} \
+		perl ${FILESDIR}/cabal-deps-merge.pl \
+		${WRKDIR}/simplexmq.smp.inc ${WRKDIR}/simplexmq.xftp.inc \
+			${WRKDIR}/simplexmq.test.plan.json \
+			> ${.CURDIR}/cabal.inc
+
+post-install:
+	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/${PKGSTEM}
+	${INSTALL_DATA} ${PKGDIR}/LICENSE \
+		${PREFIX}/share/doc/${PKGSTEM}/LICENSE
+	${INSTALL_MAN} ${FILESDIR}/smp-server.1 \
+		${PREFIX}/man/man1/smp-server.1
+	${INSTALL_MAN} ${FILESDIR}/xftp-server.1 \
+		${PREFIX}/man/man1/xftp-server.1
+
+do-test:
+	# Keep default-temp XFTP probes and capture files inside make clean's scope.
+	mkdir -p -m 700 ${WRKDIR}/test-tmp
+	${SIMPLEXMQ_CABAL_CHECK_PATHS}
+	printf '%s\n' \
+		${SIMPLEXMQ_CABAL_PACKAGES} \
+		${SIMPLEXMQ_CABAL_COMMON_OPTIONS} \
+		${SIMPLEXMQ_CABAL_TEST_OPTIONS} \
+		>> ${WRKSRC}/cabal.project.local
+	cd ${WRKBUILD} && exec ${SETENV} ${MAKE_ENV} \
+		TMPDIR=${WRKDIR}/test-tmp \
+		HOME=${CABAL_INC_HOME} \
+		CABAL_DIR=${CABAL_INC_HOME}/.cabal \
+		XDG_CACHE_HOME=${CABAL_INC_HOME}/.cache \
+		XDG_CONFIG_HOME=${CABAL_INC_HOME}/.config \
+		${_MODCABAL_CABAL} v2-test --offline --disable-benchmarks \
+		-w ${LOCALBASE}/bin/ghc \
+		-j${MAKE_JOBS} \
+		--flags="${MODCABAL_FLAGS}" ${MODCABAL_BUILD_ARGS} \
+		--test-options="${SIMPLEXMQ_TEST_OPTIONS}" \
+		test:simplexmq-test
+
+# Keep the local harness entry point used by `make do-tests`.
+do-tests: test
+
+.include "cabal.inc"
+
+.include <bsd.port.mk>

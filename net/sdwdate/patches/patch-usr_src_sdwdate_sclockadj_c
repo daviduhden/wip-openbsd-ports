@@ -1,0 +1,220 @@
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+OpenBSD runtime adaptation; preserve the upstream source pools and selection.
+See pkg/README and OPENBSD-PORTS-INITIAL-STATUS.md for the privilege boundary.
+
+Index: usr/src/sdwdate/sclockadj.c
+--- usr/src/sdwdate/sclockadj.c.orig
++++ usr/src/sdwdate/sclockadj.c
+@@ -2,95 +2,134 @@
+ Copyright (C) 2016 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+ See the file COPYING for copying conditions.
+ */
+-#define _GNU_SOURCE
+-
++/* Checked arithmetic shared by the OpenBSD broker and standalone helper. */
++#ifndef _POSIX_C_SOURCE
++#define _POSIX_C_SOURCE 200809L
++#endif
++#include <errno.h>
++#include <inttypes.h>
++#include <limits.h>
++#include <stdint.h>
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <string.h>
+ #include <time.h>
+ #include <unistd.h>
+ 
+-/* receive time adjustment, negative or positive, in nanoseconds */
+-/* long long 64bit is at least -9,223,372,036,854,775,807 to +9,223,372,036,854,775,807 */
+-/* exits program upon failure */
+-void change_time_by_nanoseconds(long long add_ns)
++#define NS INT64_C(1000000000)
++#define STEP INT64_C(5000000)
++#define MAX_OFFSET (INT64_C(86400) * NS)
++
++static int
++parse_offset(const char *text, int64_t *value)
+ {
+-    struct timespec tps = { 0 }; /* tv_sec; tv_nsec */
+-    long long ns_since_epoch = 0;
+-    long long new_ns_since_epoch = 0;
+-    long new_s = 0;
+-    long new_ns = 0;
+-    if (clock_gettime(CLOCK_REALTIME, &tps) == -1) /* get current time in seconds since epoch + nanoseconds offset */
+-    {
+-        perror("Failed to get current time!");
+-        exit(EXIT_FAILURE);
+-    }
+-    /* combine seconds and nanoseconds offset in order to add nanoseconds*/
+-    ns_since_epoch =
+-        (long long)(tps.tv_sec) * 1000000000 + /* convert seconds to nanoseconds */
+-        (long long)(tps.tv_nsec);              /* add offset */
+-    new_ns_since_epoch = ns_since_epoch + add_ns;
+-    /* separate new nanoseconds since epoch into seconds and nanoseconds offset */
+-    new_s = new_ns_since_epoch / 1000000000;  /* truncates into seconds */
+-    new_ns = new_ns_since_epoch % 1000000000; /* nanoseconds remainder */
+-    /* set old struct with new values */
+-    tps.tv_sec = new_s;
+-    tps.tv_nsec = new_ns;
+-    /* set time with new values */
+-    if (clock_settime(CLOCK_REALTIME, &tps) == -1)
+-    {
+-        perror("Failed to change clock!");
+-        exit(EXIT_FAILURE);
+-    }
++    char *end;
++    intmax_t parsed;
++    const char *p = text;
++    if (*p == '-' || *p == '+')
++        p++;
++    if (*p < '0' || *p > '9')
++        return -1;
++    for (; *p; p++)
++        if (*p < '0' || *p > '9')
++            return -1;
++    errno = 0;
++    parsed = strtoimax(text, &end, 10);
++    if (errno || *end || parsed > MAX_OFFSET || parsed < -MAX_OFFSET)
++        return -1;
++    *value = (int64_t)parsed;
++    return 0;
+ }
+ 
+-/* intended to be used only by sdwdate with sane inputs */
+-int main(int argc, char *argv[])
++static int
++add_nanoseconds(struct timespec *ts, int64_t offset)
+ {
+-    long long ns_time_change = 0;
+-    static int const full_jump = 5000000;
+-    long long number_of_full_jumps = 0;
+-    long long last_jump_nanoseconds = 0;
+-    unsigned i = 0;
++    int64_t sec = (int64_t)ts->tv_sec;
++    int64_t delta = offset / NS;
++    int64_t ns;
++    if (ts->tv_nsec < 0 || ts->tv_nsec >= NS)
++        return -1;
++    ns = ts->tv_nsec + offset % NS;
++    if (ns < 0) {
++        ns += NS;
++        delta--;
++    } else if (ns >= NS) {
++        ns -= NS;
++        delta++;
++    }
++    if ((delta > 0 && sec > INT64_MAX - delta) ||
++        (delta < 0 && sec < INT64_MIN - delta))
++        return -1;
++    sec += delta;
++    if ((int64_t)(time_t)sec != sec)
++        return -1;
++    ts->tv_sec = (time_t)sec;
++    ts->tv_nsec = (long)ns;
++    return 0;
++}
+ 
+-    if (argc < 2) {
+-       perror("Too few args!");
+-       exit(EXIT_FAILURE);
+-    }
+-    if (argc > 2) {
+-       perror("Too many args!");
+-       exit(EXIT_FAILURE);
+-    }
+-    ns_time_change = atoll(argv[1]); /* convert argv string into long long */
+-    if (ns_time_change == 0)
+-    {
+-        perror("Failed to get nanosecond argument!");
+-        exit(EXIT_FAILURE); /* exit if atoll fails */
++#ifndef SCLOCKADJ_TEST
++static int
++change_time_by_nanoseconds(int64_t offset)
++{
++    struct timespec ts;
++    if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
++        return -1;
++    if (add_nanoseconds(&ts, offset) == -1 ||
++        ts.tv_sec < 1787616000 || ts.tv_sec > 1999936800) {
++        errno = ERANGE;
++        return -1;
+     }
++    return clock_settime(CLOCK_REALTIME, &ts);
++}
++#endif
+ 
+-    /* since nanosecond jump is fixed, we can count the number of complete jumps. */
+-    /* llabs for negative numbers */
+-    number_of_full_jumps = llabs(ns_time_change) / full_jump;  /* times we'll move clock by 5,000,000 ns at a time */
+-    last_jump_nanoseconds = llabs(ns_time_change) % full_jump; /* then add remaining < 5,000,000 ns */
+-
+-    if (ns_time_change > 0) /* positive nanosecond change */
+-    {
+-        for (i = 0; i < number_of_full_jumps; ++i)
+-        {
+-            sleep(1);  /* a 1 second wait imitates ntpdate */
+-            change_time_by_nanoseconds(full_jump); /* 5,000,000 ns imitates ntpdate */
+-        }
+-        sleep(1);
+-        change_time_by_nanoseconds(last_jump_nanoseconds);
+-    }
+-    else  /* negative nanosecond change */
+-    {
+-        for (i = 0; i < number_of_full_jumps; ++i)
+-        {
+-            sleep(1);
+-            change_time_by_nanoseconds(-full_jump);
++#ifdef SCLOCKADJ_TEST
++#include <assert.h>
++int main(void)
++{
++    int64_t n;
++    const char *bad[] = {"", "-", " 1", "1x", "1 2", "1\n",
++        "9223372036854775808", "-9223372036854775808",
++        "86400000000001", NULL};
++    for (int i = 0; bad[i]; i++)
++        assert(parse_offset(bad[i], &n) == -1);
++    assert(parse_offset("0", &n) == 0 && n == 0);
++    assert(parse_offset("-86400000000000", &n) == 0 && n == -MAX_OFFSET);
++    struct timespec ts = {0, 0};
++    assert(add_nanoseconds(&ts, -1) == 0 && ts.tv_sec == -1 && ts.tv_nsec == 999999999);
++    assert(add_nanoseconds(&ts, 1) == 0 && ts.tv_sec == 0 && ts.tv_nsec == 0);
++    ts.tv_sec = INT64_MAX;
++    assert(add_nanoseconds(&ts, NS) == -1);
++    ts.tv_sec = INT64_MIN;
++    assert(add_nanoseconds(&ts, -1) == -1);
++    ts.tv_sec = 0;
++    ts.tv_nsec = -1;
++    assert(add_nanoseconds(&ts, 0) == -1);
++    puts("clock arithmetic and input tests passed; no clock-setting code linked");
++    return 0;
++}
++#elif !defined(SCLOCKADJ_LIBRARY)
++int main(int argc, char **argv)
++{
++    int64_t remaining;
++    if (argc != 2 || parse_offset(argv[1], &remaining) == -1 ||
++        remaining > 30 * NS || remaining < -30 * NS) {
++        fprintf(stderr, "usage: sclockadj nanoseconds (at most +/-30 seconds)\n");
++        return 1;
++    }
++    while (remaining) {
++        struct timespec delay = {1, 0};
++        int64_t step = remaining > STEP ? STEP : remaining < -STEP ? -STEP : remaining;
++        while (nanosleep(&delay, &delay) == -1)
++            if (errno != EINTR)
++                return 1;
++        if (change_time_by_nanoseconds(step) == -1) {
++            perror("clock adjustment");
++            return 1;
+         }
+-        sleep(1);
+-        change_time_by_nanoseconds(-last_jump_nanoseconds); /* negative of absolute value imitates Euclidean modulo */
++        remaining -= step;
+     }
+-    return EXIT_SUCCESS;
++    return 0;
+ }
++#endif

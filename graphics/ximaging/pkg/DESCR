@@ -1,0 +1,14 @@
+XImaging is a lightweight, multithreaded, open source image viewer and
+browser for FreeBSD, Linux and other Unix like platforms running X11.
+
+The application can be run in viewer or browser mode. The viewer displays
+full size images and provides zooming, panning, rotation and other useful
+functions. The browser searches a directory for known image file types
+and displays them as thumbnails.
+
+Most common raster image types are supported directly. An ImageMagick
+filter provides support for additional formats such as GIF, PSD, SVG and
+XCF.
+
+The program is written in C, uses the Motif widget toolkit, and is
+distributed under the MIT license.

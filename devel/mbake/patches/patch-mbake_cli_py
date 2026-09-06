@@ -1,3 +1,5 @@
+SPDX-License-Identifier: MIT
+
 Index: mbake/cli.py
 --- mbake/cli.py.orig
 +++ mbake/cli.py

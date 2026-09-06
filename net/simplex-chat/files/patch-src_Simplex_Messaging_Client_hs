@@ -1,0 +1,105 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Make protocol-client shutdown synchronous.  The old close operation only sent
+ThreadKilled and returned while the TLS bracket, socket close and disconnect
+callback were still running.  Track completion of the transport action and
+wait for it both on close and on failed, timed-out or asynchronously cancelled
+connection attempts.
+
+Unmask the transport thread while retaining synchronous cancellation and completion.
+
+Index: src/Simplex/Messaging/Client.hs
+--- src/Simplex/Messaging/Client.hs.orig
++++ src/Simplex/Messaging/Client.hs
+@@ -129,7 +129,7 @@
+ where
+ 
+ import Control.Applicative ((<|>))
+-import Control.Concurrent (ThreadId, forkFinally, forkIO, killThread, mkWeakThreadId)
++import Control.Concurrent (ThreadId, forkIO, killThread, mkWeakThreadId)
+ import Control.Concurrent.Async
+ import Control.Concurrent.STM
+ import Control.Exception (Exception, Handler (..), IOException, SomeAsyncException, SomeException)
+@@ -202,7 +202,8 @@
+     sentCommands :: TMap CorrId (Request err msg),
+     sndQ :: TBQueue (Maybe (Request err msg), ByteString),
+     rcvQ :: TBQueue (NonEmpty (Transmission (Either err msg))),
+-    msgQ :: Maybe (TBQueue (ServerTransmissionBatch v err msg))
++    msgQ :: Maybe (TBQueue (ServerTransmissionBatch v err msg)),
++    clientClosed :: TMVar ()
+   }
+ 
+ smpClientStub :: TVar ChaChaDRG -> ByteString -> VersionSMP -> Maybe (THandleAuth 'TClient) -> IO SMPClient
+@@ -216,6 +217,7 @@
+   timeoutErrorCount <- newTVarIO 0
+   sndQ <- newTBQueueIO 100
+   rcvQ <- newTBQueueIO 100
++  clientClosed <- newTMVarIO ()
+   let NetworkConfig {tcpConnectTimeout, tcpTimeout} = defaultNetworkConfig
+   return
+     ProtocolClient
+@@ -247,7 +249,8 @@
+               sentCommands,
+               sndQ,
+               rcvQ,
+-              msgQ = Nothing
++              msgQ = Nothing,
++              clientClosed
+             }
+       }
+ 
+@@ -586,6 +589,7 @@
+       sentCommands <- TM.emptyIO
+       sndQ <- newTBQueueIO qSize
+       rcvQ <- newTBQueueIO qSize
++      clientClosed <- newEmptyTMVarIO
+       return
+         PClient
+           { connected,
+@@ -600,24 +604,28 @@
+             sentCommands,
+             sndQ,
+             rcvQ,
+-            msgQ
++            msgQ,
++            clientClosed
+           }
+ 
+     runClient :: (ServiceName, ATransport 'TClient) -> TransportHost -> PClient v err msg -> IO (Either (ProtocolClientError err) (ProtocolClient v err msg))
+-    runClient (port', ATransport t) useHost c = do
++    runClient (port', ATransport t) useHost c = E.mask $ \restore -> do
+       cVar <- newEmptyTMVarIO
+       let tcConfig = (transportClientConfig networkConfig nm useHost useSNI useALPN) {clientCredentials = serviceCreds <$> serviceCredentials}
+           socksCreds = clientSocksCredentials networkConfig proxySessTs transportSession
+       tId <-
+         runTransportClient tcConfig socksCreds useHost port' (Just $ keyHash srv) (client t c cVar)
+-          `forkFinally` \r ->
++          `forkFinallyUnmasked` \r -> do
+             let err = either toNetworkError (const NEFailedError) r
+-             in void $ atomically $ tryPutTMVar cVar $ Left $ PCENetworkError err
+-      c_ <- netTimeoutInt tcpConnectTimeout nm `timeout` atomically (takeTMVar cVar)
++            atomically $ do
++              void $ tryPutTMVar cVar $ Left $ PCENetworkError err
++              putTMVar (clientClosed c) ()
++      let stop = killThread tId >> atomically (readTMVar $ clientClosed c)
++      c_ <- restore (netTimeoutInt tcpConnectTimeout nm `timeout` atomically (takeTMVar cVar)) `E.onException` stop
+       case c_ of
+         Just (Right c') -> mkWeakThreadId tId >>= \tId' -> pure $ Right c' {action = Just tId'}
+-        Just (Left e) -> pure $ Left e
+-        Nothing -> killThread tId $> Left (PCENetworkError NETimeoutError)
++        Just (Left e) -> atomically (readTMVar $ clientClosed c) $> Left e
++        Nothing -> stop $> Left (PCENetworkError NETimeoutError)
+ 
+     useTransport :: (ServiceName, ATransport 'TClient)
+     useTransport = case port srv of
+@@ -747,7 +755,9 @@
+ 
+ -- | Disconnects client from the server and terminates client threads.
+ closeProtocolClient :: ProtocolClient v err msg -> IO ()
+-closeProtocolClient = mapM_ (deRefWeak >=> mapM_ killThread) . action
++closeProtocolClient ProtocolClient {action, client_ = PClient {clientClosed}} = do
++  mapM_ (deRefWeak >=> mapM_ killThread) action
++  atomically $ readTMVar clientClosed
+ {-# INLINE closeProtocolClient #-}
+ 
+ -- | SMP client error type.

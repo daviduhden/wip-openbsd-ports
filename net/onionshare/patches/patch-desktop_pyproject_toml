@@ -1,3 +1,5 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+
 Index: desktop/pyproject.toml
 --- desktop/pyproject.toml.orig
 +++ desktop/pyproject.toml

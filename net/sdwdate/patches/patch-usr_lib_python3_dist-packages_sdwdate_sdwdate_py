@@ -1,0 +1,124 @@
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+OpenBSD runtime adaptation; preserve the upstream source pools and selection.
+See pkg/README and OPENBSD-PORTS-INITIAL-STATUS.md for the privilege boundary.
+
+Index: usr/lib/python3/dist-packages/sdwdate/sdwdate.py
+--- usr/lib/python3/dist-packages/sdwdate/sdwdate.py.orig
++++ usr/lib/python3/dist-packages/sdwdate/sdwdate.py
+@@ -6,11 +6,13 @@
+ import sys
+ sys.dont_write_bytecode = True
+ 
+-import sdnotify
++# Importing the portable selection logic must not start systemd integration.
++SDNOTIFY_OBJECT = None
+ 
+-SDNOTIFY_OBJECT = sdnotify.SystemdNotifier()
+-SDNOTIFY_OBJECT.notify("READY=1")
+-SDNOTIFY_OBJECT.notify("STATUS=Starting...")
++
++def notify(message):
++    if SDNOTIFY_OBJECT is not None:
++        SDNOTIFY_OBJECT.notify(message)
+ 
+ from pathlib import Path
+ import json
+@@ -26,7 +28,6 @@
+ import logging
+ import shlex
+ import threading
+-from guimessages.translations import _translations
+ from sdwdate.proxy_settings import proxy_settings
+ from sdwdate.config import read_pools
+ from sdwdate.config import allowed_failures_config
+@@ -35,7 +36,7 @@
+ from sdwdate.config import time_replay_protection_file_read
+ from sdwdate.config import randomize_time_config
+ from sdwdate.remote_times import get_time_from_servers
+-from sanitize_string.sanitize_string_lib import sanitize_string
++from sdwdate.openbsd import sanitize_string
+ 
+ 
+ os.environ["LC_TIME"] = "C"
+@@ -104,9 +105,9 @@
+ 
+ 
+ def exit_handler(exit_code, reason):
+-    SDNOTIFY_OBJECT.notify("STATUS=Shutting down...")
+-    SDNOTIFY_OBJECT.notify("WATCHDOG=1")
+-    SDNOTIFY_OBJECT.notify("STOPPING=1")
++    notify("STATUS=Shutting down...")
++    notify("WATCHDOG=1")
++    notify("STOPPING=1")
+ 
+     message = (
+         "Exiting with exit_code '"
+@@ -200,7 +201,7 @@
+         loop_max = 10000
+         preparation_sleep_seconds = PREPARATION_SLEEP_MIN_SECONDS
+         while True:
+-            SDNOTIFY_OBJECT.notify("WATCHDOG=1")
++            notify("WATCHDOG=1")
+             if loop_counter >= loop_max:
+                 loop_counter = 0
+             loop_counter += 1
+@@ -213,7 +214,7 @@
+                      " / " +
+                      str(loop_max)
+                   )
+-            SDNOTIFY_OBJECT.notify(msg)
++            notify(msg)
+ 
+             # Wait a second longer after each failure, between the floor and
+             # the ceiling. The rationale behind this is to be quick at boot
+@@ -854,7 +855,7 @@
+         stripped_message = sanitize_string(message)
+         LOGGER.info(stripped_message)
+ 
+-        SDNOTIFY_OBJECT.notify("WATCHDOG=1")
++        notify("WATCHDOG=1")
+ 
+         #nanoseconds = randint(0, self.range_nanoseconds)
+         nanoseconds = secrets.choice(self.range_nanoseconds)
+@@ -983,6 +984,7 @@
+     )
+ 
+     translations_path = "/usr/share/translations/sdwdate.yaml"
++    from guimessages.translations import _translations
+     translation = _translations(translations_path, "sdwdate")
+     global translate_object
+     translate_object = translation.gettext
+@@ -1018,6 +1020,12 @@
+ 
+ 
+ def main():
++    # Distribution entry point, not installed by the OpenBSD port.
++    import sdnotify
++    global SDNOTIFY_OBJECT
++    SDNOTIFY_OBJECT = sdnotify.SystemdNotifier()
++    notify("READY=1")
++    notify("STATUS=Starting...")
+     #global sleep_process
+     #sleep_process = []
+     global sclockadj_process
+@@ -1078,8 +1086,8 @@
+         sdwdate_obj.preparation()
+ 
+         msg_for_sdnotify = "STATUS=" + msg
+-        SDNOTIFY_OBJECT.notify(msg_for_sdnotify)
+-        SDNOTIFY_OBJECT.notify("WATCHDOG=1")
++        notify(msg_for_sdnotify)
++        notify("WATCHDOG=1")
+ 
+         Path(sleep_long_file_path).unlink(missing_ok=True)
+         Path(fail_file_path).unlink(missing_ok=True)
+@@ -1092,7 +1100,7 @@
+ 
+         sdwdate_status_fl = sdwdate_obj.sdwdate_fetch_loop()
+ 
+-        SDNOTIFY_OBJECT.notify("WATCHDOG=1")
++        notify("WATCHDOG=1")
+ 
+         if sdwdate_status_fl == "success":
+             sdwdate_obj.build_median()

@@ -1,0 +1,105 @@
+SPDX-License-Identifier: MIT
+
+Use BSD Authentication for screen unlocking on OpenBSD.  This avoids
+reading password hashes with getpwnam_shadow(3) and crypt(3), so xmsm
+does not need setuid-root privileges.  The package installs xmsm setgid
+auth so auth_userokay(3) can use the auth-xmsm authentication style.
+
+Keep upstream authentication and privilege handling unchanged for other
+operating systems.
+
+Index: src/smmain.c
+--- src/smmain.c.orig
++++ src/smmain.c
+@@ -60,6 +60,9 @@
+ #if defined(__linux__) || defined(__svr4__)
+ #include <crypt.h>
+ #include <shadow.h>
++#elif defined(__OpenBSD__)
++#include <bsd_auth.h>
++#include <login_cap.h>
+ #endif
+ #include "smglobal.h"
+ #include "smconf.h"
+@@ -417,7 +420,9 @@ static void lock_screen(void)
+ {
+ 	Boolean can_auth = False;
+ 	char *login;
++#ifndef __OpenBSD__
+ 	struct passwd *passwd;
++#endif
+ 	
+ 	if(scr_locked) return;
+ 	
+@@ -429,6 +434,11 @@ static void lock_screen(void)
+ 		app_res.enable_locking = False;
+ 		return;
+ 	}
++
++#ifdef __OpenBSD__
++	/* BSD-auth handles authentication, no password hash check needed */
++	can_auth = True;
++#else
+ 	
+ 	if(set_privileges(True)) {
+ 
+@@ -451,6 +461,7 @@ static void lock_screen(void)
+ 
+ 		set_privileges(False);
+ 	}
++#endif /* __OpenBSD__ */
+ 
+ 	if(!can_auth){
+ 		if(!app_res.silent) XBell(XtDisplay(wshell), 100);
+@@ -873,13 +884,30 @@ static int local_x_err_handler(Display *dpy, XErrorEve
+ static void passwd_enter_cb(Widget w,
+ 	XtPointer client_data, XtPointer call_data)
+ {
++#ifdef __OpenBSD__
++	int auth_result;
++#else
+ 	struct passwd *passwd;
++#endif
+ 	char *login;
+ 	char *pwb = (char*)client_data;
++#ifndef __OpenBSD__
+ 	char *cpw = NULL;
+ 	char *upw = NULL;
++#endif
+ 	
+ 	login = get_login();
++
++#ifdef __OpenBSD__
++	auth_result = auth_userokay(login, NULL, "auth-xmsm", pwb);
++	if (auth_result) {
++		unlock_screen();
++		set_unlock_message(NULL);
++	} else {
++		if(!app_res.silent) XBell(XtDisplay(w), 100);
++		set_unlock_message(MSG_NOACCESS);
++	}
++#else
+ 	
+ 	set_privileges(True);
+ 	
+@@ -915,6 +943,7 @@ static void passwd_enter_cb(Widget w,
+ 		if(!app_res.silent) XBell(XtDisplay(w),100);
+ 		set_unlock_message(MSG_NOACCESS);
+ 	}
++#endif /* __OpenBSD__ */
+ 
+ 	memset(pwb,0,strlen(pwb));
+ 	XmTextFieldSetString(wpasswd,"");
+@@ -1009,8 +1038,12 @@ static Boolean set_privileges(Boolean elevate)
+ 		orig_gid = getegid();
+ 
+ 		if(orig_uid != 0){
++			/* BSD-auth handles authentication, no SUID needed.  */
++#ifndef __OpenBSD__
+ 			log_msg("%s must be setuid root to enable "
+ 				"screen locking capabilities.\n",bin_name);
++#endif /* __OpenBSD__ */
++
+ 			initialized = True;
+ 			can_elevate = False;
+ 			return False;

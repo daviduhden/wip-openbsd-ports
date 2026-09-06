@@ -1,3 +1,5 @@
+SPDX-License-Identifier: MIT
+
 Index: tests/test_comprehensive.py
 --- tests/test_comprehensive.py.orig
 +++ tests/test_comprehensive.py

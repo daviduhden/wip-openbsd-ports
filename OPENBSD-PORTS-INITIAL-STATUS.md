@@ -1,6 +1,7 @@
 # Initial OpenBSD ports status
 
-Source review: 2026-09-05. Development host: Fedora Atomic (Linux).
+Source review: 2026-09-05; sdwdate extension: 2026-09-06.
+Development host: Fedora Atomic (Linux).
 No OpenBSD build, package, install, or VPN runtime test has been performed.
 `READY_FOR_OPENBSD_TESTING` means a candidate port is ready to enter native
 testing, not that the program works on OpenBSD.
@@ -30,6 +31,7 @@ Embedded upstream source/resource license notices remain with those files.
 
 | PKGPATH | Stable source | Status |
 | --- | --- | --- |
+| net/sdwdate | 29.0-1, b420a67339bf5ba2ac39ec387b3b46d3c769d67d | REQUIRES_OPENBSD_RUNTIME_WORK; static native implementation |
 | devel/nuklear | v4.13.3 | READY_FOR_OPENBSD_TESTING |
 | devel/checkmake | v0.3.2 | READY_FOR_OPENBSD_TESTING |
 | devel/mbake | v1.4.6 | READY_FOR_OPENBSD_TESTING |
@@ -360,3 +362,251 @@ restriction is intentional and must not be overridden for distribution.
 Apply the per-target runtime tests above in addition to this build sequence.
 Mullvad's future privileged integration requires its separate safety-gated
 test plan, not merely a successful package build.
+
+## sdwdate: native OpenBSD adaptation (2026-09-06)
+
+Status: **REQUIRES_OPENBSD_RUNTIME_WORK**. Source-level implementation and
+offline tests exist; no OpenBSD build, Tor runtime, privilege transition or
+clock-setting test has run. Do not interpret this as production readiness.
+
+Source: [Kicksecure/sdwdate tag 29.0-1](https://github.com/Kicksecure/sdwdate/tree/29.0-1),
+peeled commit `b420a67339bf5ba2ac39ec387b3b46d3c769d67d`, dated 2026-08-25.
+This is a numbered release, not a moving master snapshot. Package version
+`sdwdate-29.0.1` represents upstream's `29.0-1`. The tag archive is 202453
+bytes; SHA256 is
+`9ea57d544e0caa868db34792ad0b0ae0e954b90ca9ada60dfb54112e819a3b6e`.
+`COPYING` declares AGPL-3.0-or-later and is the installed main-software license.
+No third-party notice collection or upstream repository README is installed.
+
+Neither the overlay nor the inspected official tree contains sdwdate.
+`net/sdwdate` follows the network time-service/Tor category. The upstream
+layout is distribution-oriented: no pyproject/setup metadata, no shared C
+library, no submodules or build-time dependency fetch. `lang/python` supplies
+the interpreter dependency and substitutions; private modules are installed
+under `libexec/sdwdate`, without a custom Python environment or pip build.
+Both C executables are compiled at port build time. No compiler or source
+tree is installed for package-install-time compilation.
+
+### Dependency closure and removed distribution glue
+
+| Dependency/import | Importing component and purpose | Classification/decision |
+| --- | --- | --- |
+| Python 3 | All Python commands and modules | Existing `lang/python/3`, selected by module |
+| `requests` | `openbsd.fetch_date`, called by url_to_unixtime | Existing `www/py-requests`, mandatory |
+| `socks` | requests/urllib3 SOCKS adapter, not a direct sdwdate import | Existing `net/py-socks`, mandatory |
+| `stem.control`, `.connection`, `.socket` | Tor readiness, SAFECOOKIE, consensus dates | Existing `net/py-stem`, mandatory |
+| `dateutil.parser` | Tor consensus timestamp conversion | Existing `devel/py-dateutil`, mandatory |
+| Tor | SOCKS onion transport and consensus/control service | Existing `net/tor`, mandatory |
+| stdlib datetime/email/ssl/socket/threading/concurrent.futures/subprocess/pathlib/logging/json/html/re/secrets/random | Parsing, concurrency, source selection, state, logging | Python/base facilities, no new ports |
+| `sdnotify` | Upstream systemd status/watchdog | Not selected by native entry point; initialization moved out of module import |
+| `guimessages.translations` | GUI-oriented English/YAML translation loader | Not selected; small plain-English status map for terminal service |
+| `sanitize_string` | Remove GUI markup/control characters for logging | Replaced by small stdlib HTML/control-character sanitizer |
+| helper-scripts `onion-time-pre-script` | Wait for usable Tor/bootstrap environment | Native authenticated `status/circuit-established` check |
+| helper-scripts `minimum-unixtime-show` | Replay lower bound | Release-date floor plus atomic persistent checkpoint |
+| helper-scripts `settings_echo` | Whonix gateway discovery | Not applicable; explicit local Tor IP/port config |
+| privleap/leaprun | Start/stop service, dispatch Python, touch step flag, hwclock | rc.d and private C broker; no privleap/doas dependency |
+| gcc/libc-dev | Debian install-time compilation | OpenBSD base compiler, build-only |
+| bc, util-linux-extra/hwclock | Distribution wrappers/RTC glue | Not used by native entry point; no added runtime port |
+| adduser, systemd, tmpfiles/sysusers, rsyslog, AppArmor, Qubes hooks | Distribution integration | Excluded; PLIST accounts/directories, rc.d, syslog |
+| timesanitycheck package, bootclockrandomization | Recommended ecosystem packages | Optional, not required and not ported |
+| unittest, C assertions | Offline regression tests | Base/interpreter test-only; no extra test framework |
+
+No dependency ports and no third-party vendored libraries were added. Ordinary
+transitive requests/dateutil dependencies remain managed by their existing
+ports. Linux-native venv tooling was temporary analysis equipment, never part
+of the proposed OpenBSD package/build.
+
+Recursive source/import and distribution-command inspection covered all 75
+upstream files, including wrappers, privleap actions, the full Python daemon,
+pool config, C helper, Debian metadata, generated manual and license.
+Linux/systemd strings left in the imported upstream module belong to its
+unused distribution entry point/methods; the installed daemon enters
+`sdwdate.openbsd`, reuses only its pool/fetch/median/random-sleep logic and
+does not call those methods. The original Debian command wrappers, service
+units, src-install hooks, GUI, clock-jump/log-viewer wrappers and systemcheck
+integration are not installed. The generic upstream code remains recognizable
+instead of duplicating the entire selection engine.
+
+### Tor and clock privilege boundary
+
+```text
+onion HTTP Date -> local Tor SOCKS -> _sdwdate Python
+                       |                  |
+              SAFECOOKIE consensus       +-- upstream three pools/median
+                                          |
+                           inherited SOCK_SEQPACKET (fd 3)
+                                          |
+                                  root C clock broker
+                                          |
+                                   CLOCK_REALTIME
+```
+
+Tor's existing package installs `${LOCALBASE}/bin/tor`, runs as `_tor:566`,
+uses `/var/tor` mode 0700 and service `tor`. Control access is not enabled by
+default. The package README gives explicit administrator configuration for
+loopback ControlPort 9051 and a separate
+`/var/run/tor-sdwdate/control.authcookie` in a `_tor:_tor` 0750 directory,
+with CookieAuthentication and group readability. `/var/tor` stays private.
+The native child gets exactly `_sdwdate` and `_tor` supplementary groups;
+there is no world-readable cookie or NULL/password-prompt authentication.
+SAFECOOKIE is mandatory; its verified protocol implementation remains Stem.
+This grants full Tor-control authority, not read-only access. A separate Tor
+instance is advisable where that authority is inappropriate for a shared Tor.
+The package does not modify torrc or create its cookie directory silently.
+
+SOCKS endpoints must be loopback IP literals. All time URLs must be HTTP(S)
+v3 onion names, including valid subdomains. requests uses explicit socks5h
+for both schemes, `trust_env=False`, streaming header-only responses,
+connect/read deadlines, no redirects and unchanged HTTPS certificate checks.
+Missing/duplicate/oversized/control-containing Date headers, non-2xx replies,
+non-UTC dates and out-of-range timestamps fail explicitly. Responses and
+sessions are closed. The standard email date parser replaces permissive
+dateutil HTTP parsing; consensus parsing still uses dateutil and explicit UTC,
+not nonportable `strftime('%s')`. No clearnet or unauthenticated fallback.
+Per-fetch elapsed measurement uses monotonic time; remote-time comparison
+retains real time. HTTP subprocess arguments are lists, not shell strings.
+
+The public daemon `${PREFIX}/sbin/sdwdate` is the C parent, invoked by root,
+never setuid. It creates a private socketpair, forks, drops all child UID/GID
+identities, resets supplementary groups, sanitizes exec environment, excludes
+the writable working directory from Python's import path (`-P`), closes
+unneeded descriptors and execs the absolute Python interpreter/module path.
+The broker descriptor is non-inheritable before HTTP subprocess creation.
+No external user can connect: there is no pathname/socket listener.
+The root process keeps no network connection, Python interpreter or generic
+exec operation after startup. It chroots to `/var/empty` and locks unveil.
+Its root-owned flock file prevents concurrent daemon instances.
+
+Only ASCII `J <nanoseconds>` or `A <nanoseconds>` records are accepted, with
+complete numeric conversion, size/NUL/overflow/range checks. J is allowed
+only for the first accepted request and never with `--slew-only`; magnitude
+is limited to 24 hours. A is limited to 30 seconds and applied in at most
+5ms increments separated by at least one monotonic second. No catch-up burst,
+accumulation of queued requests, shell command, arbitrary clock ID, filesystem
+path or generic root operation is exposed. A request is acknowledged only on
+completion; system-call failure is an explicit error and stops the broker.
+Rate limiting also rejects requests less than 60 seconds apart. Dry-run has
+the same input policy but executes no clock mutation.
+
+The finite slew limit is a documented native policy, not an upstream promise:
+larger gradual corrections fail rather than silently becoming clock steps.
+At 5ms/second, the maximum allowed slew needs about 100 minutes. This first
+adaptation waits for completion before the next randomized query interval;
+upstream runs the helper in the background while sleeping. Security/selection
+semantics are preserved, but query cadence is consequently longer during a
+large gradual correction. Initial HTTPS/Tor bootstrap with a very wrong clock
+remains an explicit limitation; manually repair it rather than weaken TLS.
+
+SIGTERM cancels pending increments, terminates the unprivileged process group
+and waits a bounded interval before SIGKILL. EOF cancels increments; a Python
+monitor detects parent death even during sleep. Already applied time changes
+cannot be undone. Native orphan/subprocess, exit-status and rc.d race testing
+is required. The checkpoint is atomically replaced/fsynced after successful
+completion only, has a release-date floor (2026-08-25) and retains upstream's
+2033 upper bound. It is writable by the time-selection process, not a defense
+against compromise of that process. The broker independently enforces bounds.
+
+### C helper and hardening findings
+
+Upstream used unchecked atoll, llabs on a potentially minimum signed value,
+an unsigned iteration counter, whole-epoch nanosecond multiplication and
+un-normalized negative remainders. The per-file sclockadj patch supplies
+checked strtoimax parsing, bounded offsets, overflow-checked seconds arithmetic,
+normalized nanoseconds, a signed remaining-offset loop and interrupt-aware
+nanosleep. Zero is a valid no-op. Its arithmetic is compiled into the broker
+and into the private standalone `${PREFIX}/libexec/sdwdate/sclockadj` utility;
+neither executable has setuid permissions. The standalone helper likewise
+rejects adjustments beyond 30 seconds. No compiler is needed after install.
+
+`clock_settime` is not available under a pledge promise; even adjtime mutation
+is prohibited after pledge (see [pledge(2)](https://man.openbsd.org/pledge.2)).
+Do not invent a `settime` promise. Thus the parent uses chroot/unveil and a
+small validated interface, but is not pledged. Python pledge/unveil is
+deferred until actual interpreter/extension/config/CA/control/subprocess paths
+have been traced natively. No broad speculative promise string is supplied.
+Privilege dropping and fd/environment restrictions are statically implemented,
+not claimed tested on OpenBSD. Securelevel restrictions and RTC persistence
+after clock_settime must be tested there.
+
+### Packaging, tests and remaining work
+
+The account `_sdwdate:909` is registered in the overlay's user.list; it must
+still be reconciled with the target tree's current allocation. fetch-ports
+merges only overlay-owned account entries and rejects allocation conflicts.
+PLIST declares mode-0700 `/var/db/sdwdate` and `/var/run/sdwdate`, configuration
+samples under `share/examples/sdwdate`, and service `sdwdate`. The rc script
+recreates runtime state, refuses symlinked directories and active ntpd, and
+does not silently edit rc.conf.local or stop/disable ntpd. It cannot stop a
+second clock daemon being started later. Direct invocation requires the
+administrator to check that conflict explicitly.
+
+The package installs only sdwdate, private sclockadj, url_to_unixtime, private
+modules, a native mdoc manual, configuration samples and main license. The
+generated upstream manual describes sudo, /run/pid and automatic startup;
+using a short accurate OpenBSD manual avoids shipping those false directions
+or adding Ruby/ronn solely for regeneration. Logs use syslog and stderr;
+detailed upstream fetch diagnostics remain stdout for foreground debugging.
+No file-log rotation, journals, systemd files or daemon PID file are added.
+
+Linux checks completed: archive/checksum verification, eleven offline Python
+unittests (HTTP mock policy/malformed headers, URL validation, layered config,
+checkpoint, UTC consensus parsing, original median, original three pools,
+successful/all-failed pool aggregation and mocked randomized sleep),
+C builds with `-Wall -Wextra -Werror`, clock arithmetic/input assertions with
+clock-setting code excluded, and socketpair broker framing/policy tests with
+every broker hard-coded dry-run. These tests perform no host clock mutation,
+root transition or real onion query. Upstream's extensive external dist-ai
+suite was not claimed run. Added tests are part of `do-test`, not runtime
+dependencies. There are seven single-file source patches, each with SPDX and
+Index; new native files are ordinary port `files/` assets.
+
+The Linux broker compilation additionally uses `-D_GNU_SOURCE` to expose
+glibc's setresuid/setresgid declarations. This analysis-only flag is not added
+to the OpenBSD port; OpenBSD declares these APIs without a GNU feature macro.
+
+Before enabling on a real machine: run the complete ports sequence in the
+preceding section for `/usr/ports/net/sdwdate`, including update-plist and
+port-lib-depends-check. Candidate WANTLIB is only libc, derived from the two
+C executables; Python/Tor libraries are runtime dependencies, not speculative
+link entries. Validate account collisions, all installed paths and substitutions,
+manual syntax, rc.d matching, file ownership and no bytecode/build artifacts.
+
+Then follow `net/sdwdate/pkg/README`: verify Tor/cookie bootstrap first;
+use `sdwdate --dry-run --once`, then rc.d with `--dry-run`. Check `rcctl check
+ntpd`, `rcctl check tor`, `rcctl check sdwdate`, `ps aux`, `fstat -p PID`,
+`netstat -an -f unix`, ownership and syslog. `sockstat` is not OpenBSD base.
+Exercise unavailable/bootstrap/reconnecting Tor, bad control auth, hung control
+socket, malformed sources, partial/all-source failure, config/checkpoint errors,
+startup/stop/restart and ntpd conflict. Only in a disposable OpenBSD VM with
+ntpd deliberately stopped: positive/negative correction, initial step versus
+--slew-only, gradual correction, excessive offset, securelevel rejection,
+parent SIGKILL, child death, reboot and RTC/checkpoint persistence. No native
+clock, Tor-control, sandbox or reboot behavior is marked IMPLEMENTED merely
+because the Linux offline tests passed.
+
+Additional checks: mandoc reports no syntax warnings for the native manual
+(the referenced OpenBSD manuals are absent on Fedora). The dry-run broker
+tests also reject oversized packets and repeated corrections, with child
+watchdogs bounding failures. An optional UBSan build could not link because
+the available toolchain lacks its libubsan runtime; no sanitizer success is
+claimed and no host packages were installed to change that. An independent
+128-bit arithmetic oracle matched 100000 deterministic boundary/random cases
+of the pure clock arithmetic, including signed limits and negative nanoseconds.
+
+## SimpleX and copy-helper follow-up
+
+See `net/simplexmq/TEST-FAILURES.md` for the original nine-failure map,
+reproduced TLS framing/consumer lifetime defects, HTTP/2 compatibility fix,
+Linux repetitions, actual full-suite result, unresolved native hypotheses
+and exact OpenBSD commands. Shared fixes are mirrored in simplex-chat.
+
+All 191 port/dependency patches have SPDX-License-Identifier, Index and one
+target file. The overlay currently contains 24 category/port paths.
+fetch-ports was exercised in temporary checkouts for complete/selected copies,
+CVS preservation, sibling preservation, readable build-user permissions,
+backups, traversal/symlink rejection and user-registry conflicts/preservation.
+No host provisioning workflow was run. The corresponding fetch-src changes
+in ../wip-openbsd-src map pax to src/bin/pax and fvwm to xenocara/app/fvwm;
+both copy paths and failure checks were exercised. Both scripts pass ksh
+syntax and shellcheck. BUILDING.md and that repository's FETCHING.md document
+the non-provisioning --copy-only operation and its limitations.

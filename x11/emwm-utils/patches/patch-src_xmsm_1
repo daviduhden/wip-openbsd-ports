@@ -1,0 +1,22 @@
+SPDX-License-Identifier: MIT
+
+Replace upstream's setuid-root requirement with the privilege model used
+by this port: BSD Authentication through group auth, and system commands
+run as the invoking user.
+
+Index: src/xmsm.1
+--- src/xmsm.1.orig
++++ src/xmsm.1
+@@ -133,9 +133,9 @@ and black bits in a darker shade of that color.
+ xmsm responds to SIGUSR1 by engaging screen lock.
+ xmsm responds to SIGUSR2 by displaying logout/shutdown options.
+ .SH CAVEATS
+-The xmsm binary must be setuid root for screen locking and shutdown/reboot
+-functionality, it discards root privileges at startup and restores them only
+-during password check and when executing system commands.
++On OpenBSD, xmsm uses BSD Authentication when unlocking the screen and is
++installed setgid auth; it does not need to be setuid root. Shutdown, reboot,
++and suspend commands are executed with the invoking user's privileges.
+ .PP
+ XmSm does not implement the ICCCM session save/restore protocol.
+ .PP

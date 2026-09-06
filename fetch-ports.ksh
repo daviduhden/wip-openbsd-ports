@@ -17,7 +17,7 @@
 
 log() {
 	print "$(date '+%Y-%m-%d %H:%M:%S')" \
-		"[INFO] $*"
+		"[INFO] $*" >&2
 }
 warn() {
 	print "$(date '+%Y-%m-%d %H:%M:%S')" \
@@ -103,7 +103,7 @@ ask_copy_from_wip() {
 #   4. Current working directory or its parent
 #   5. Limited filesystem search
 resolve_local_port_dir() {
-	local dir
+	typeset dir
 
 	# 1. Explicit environment variable
 	if [ -n "${WIP_OPENBSD_PORTS_DIR:-}" ] &&
@@ -188,10 +188,12 @@ move_to_wip_openbsd_ports() {
 	}
 }
 
-# Function to list directories in wip-openbsd-ports and select one
+# Select actual category/port paths, never whole categories.
 list_directories() {
-	log "Select a directory to copy from wip-openbsd-ports:"
-	select DIRECTORY in */; do
+	typeset ports
+	ports=$(list_all_directories) || return 1
+	log "Select a port to copy from wip-openbsd-ports:"
+	select DIRECTORY in $ports; do
 		if [ -n "$DIRECTORY" ]; then
 			log "You selected $DIRECTORY"
 			DIRECTORY=${DIRECTORY%/} # Remove the trailing slash
@@ -202,19 +204,24 @@ list_directories() {
 	done
 }
 
-# Function to list all top-level port directories in wip-openbsd-ports.
+# Only directories containing a port Makefile are installable.
 list_all_directories() {
-	set -- */
-	if [ "$1" = "*/" ] || [ ! -d "$1" ]; then
+	typeset makefile found=0
+	for makefile in */*/Makefile; do
+		[ -f "$makefile" ] || continue
+		validate_port_path "${makefile%/Makefile}" || return 1
+		print -r -- "${makefile%/Makefile}"
+		found=1
+	done
+	if [ "$found" -eq 0 ]; then
 		error "No port directories found in wip-openbsd-ports."
-		exit 1
+		return 1
 	fi
-	print "$*"
 }
 
 # Function to prompt for a space-separated list of port directories.
 prompt_selected_directories() {
-	log "Enter one or more port directories separated by spaces:"
+	log "Enter category/port paths separated by spaces (e.g. net/simplexmq):"
 	print -n "> "
 	read -r SELECTED_DIRECTORIES
 	[ -n "${SELECTED_DIRECTORIES:-}" ] || {
@@ -242,77 +249,157 @@ choose_target_tree() {
 	done
 }
 
-# List category subdirectories and prompt for selection
-list_tree_subdirectories() {
-	log "Select a subdirectory in $TARGET_TREE" \
-		"where the directory will be copied:"
-	select SUBDIRECTORY in "$TARGET_TREE"/*/; do
-		if [ -n "$SUBDIRECTORY" ]; then
-			log "You selected $SUBDIRECTORY"
-			SUBDIRECTORY=${SUBDIRECTORY%/} # Remove the trailing slash
-			break
-		else
-			warn "Invalid selection. Please try again."
-		fi
-	done
-}
-
-# Copy the selected directory to the chosen target subdirectory
-copy_directory() {
-	TARGET_DIR="$SUBDIRECTORY/$DIRECTORY"
-	if [ -d "$TARGET_DIR" ]; then
-		warn "Directory $TARGET_DIR already exists." \
-			"Removing files except 'CVS' directories."
-		find "$TARGET_DIR" -mindepth 1 ! -name "CVS" -exec rm -rf {} +
+# Reject category-only paths, traversal and symlinked port roots.
+validate_port_path() {
+	typeset port=$1 category name
+	case "$port" in
+	*/*/* | /* | *[!a-zA-Z0-9_+./-]* | */ | ./* | ../*)
+		error "Invalid category/port: $port"; return 1 ;;
+	*/*) ;;
+	*) error "Expected category/port, not: $port"; return 1 ;;
+	esac
+	category=${port%/*}
+	name=${port#*/}
+	case "$category:$name" in
+	.*:* | *:.*) error "Invalid category/port: $port"; return 1 ;;
+	esac
+	if [ -L "$category" ] || [ -L "$port" ] ||
+		[ -L "$port/Makefile" ] || [ ! -f "$port/Makefile" ]; then
+		error "Not a local port directory: $port"
+		return 1
 	fi
-	cp -R "$DIRECTORY" "$SUBDIRECTORY/"
-	log "Directory $DIRECTORY copied to $SUBDIRECTORY/"
 }
 
-# Function to copy every top-level port directory into the target tree.
+# Replace only one port. Keep the old directory recoverable and preserve
+# nested CVS metadata; never remove a category or unrelated ports.
+copy_directory() {
+	typeset category name target stage backup="" cvs
+	validate_port_path "$DIRECTORY" || return 1
+	category=${DIRECTORY%/*}
+	name=${DIRECTORY#*/}
+	target="$TARGET_TREE/$DIRECTORY"
+	if [ ! -d "$TARGET_TREE/infrastructure" ] ||
+		[ ! -f "$TARGET_TREE/Makefile" ] ||
+		[ ! -d "$TARGET_TREE/$category" ] ||
+		[ -L "$TARGET_TREE/$category" ] || [ -L "$target" ] ||
+		{ [ -e "$target" ] && [ ! -d "$target" ]; }; then
+		error "Invalid ports tree or destination: $target"
+		return 1
+	fi
+	stage=$(mktemp -d "$TARGET_TREE/.wip-port.XXXXXXXX") || return 1
+	cp -Rp "$DIRECTORY" "$stage/port" || return 1
+	# A private Git checkout may be 0700/0600; _pbuild must read the port.
+	find "$stage/port" -type d -exec chmod a+rx,go-w {} + || return 1
+	find "$stage/port" -type f -exec chmod a+r,go-w {} + || return 1
+	find "$stage/port" -type f -perm -0100 -exec chmod a+x {} + || return 1
+	if [ -d "$target" ]; then
+		(cd "$target" && find . -type d -name CVS -prune) |
+			while IFS= read -r cvs; do
+				mkdir -p "$stage/port/${cvs%/*}" || exit 1
+				cp -Rp "$target/$cvs" "$stage/port/$cvs" || exit 1
+			done || return 1
+		if [ -L "$TARGET_TREE/.wip-backups" ]; then
+			error "Refusing symlinked backup directory"
+			return 1
+		fi
+		mkdir -p "$TARGET_TREE/.wip-backups" || return 1
+		backup=$(mktemp -d "$TARGET_TREE/.wip-backups/$category-$name.XXXXXXXX") ||
+			return 1
+		mv "$target" "$backup/port" || return 1
+		log "Previous $DIRECTORY saved in $backup/port"
+	fi
+	if ! mv "$stage/port" "$target"; then
+		[ -z "${backup:-}" ] || mv "$backup/port" "$target"
+		error "Copy failed; staging directory: $stage"
+		return 1
+	fi
+	rmdir "$stage" || return 1
+	log "$DIRECTORY copied to $target"
+}
+
 copy_all_directories() {
-	ports=$(list_all_directories)
+	typeset ports
+	ports=$(list_all_directories) || return 1
 	for DIRECTORY in $ports; do
-		TARGET_DIR="$TARGET_TREE/$DIRECTORY"
-		if [ -d "$TARGET_DIR" ]; then
-			warn "Directory $TARGET_DIR already exists." \
-				"Removing files except 'CVS'."
-			find "$TARGET_DIR" -mindepth 1 ! -name "CVS" \
-				-exec rm -rf {} +
-		fi
-		cp -R "$DIRECTORY" "$TARGET_TREE/"
-		log "Directory $DIRECTORY copied to $TARGET_TREE/"
+		copy_directory || return 1
 	done
 }
 
-# Copy only the directories explicitly selected by the user.
 copy_selected_directories() {
+	# Validate the whole selection before modifying the destination.
 	for DIRECTORY in $SELECTED_DIRECTORIES; do
-		if [ ! -d "$DIRECTORY" ]; then
-			warn "Skipping unknown directory: $DIRECTORY"
-			continue
-		fi
-		TARGET_DIR="$TARGET_TREE/$DIRECTORY"
-		if [ -d "$TARGET_DIR" ]; then
-			warn "Directory $TARGET_DIR already exists." \
-				"Removing files except 'CVS'."
-			find "$TARGET_DIR" -mindepth 1 ! -name "CVS" \
-				-exec rm -rf {} +
-		fi
-		cp -R "$DIRECTORY" "$TARGET_TREE/"
-		log "Directory $DIRECTORY copied to $TARGET_TREE/"
+		validate_port_path "$DIRECTORY" || return 1
+	done
+	for DIRECTORY in $SELECTED_DIRECTORIES; do
+		copy_directory || return 1
 	done
 }
 
-# Install the user/group registry carried with the custom ports.  Its base is
-# kept in sync with upstream and the final entries reserve IDs for these ports.
+# Merge only accounts belonging to ports in this repository. Never replace
+# the cloned tree's registry with our potentially older upstream snapshot.
 copy_user_list() {
+	typeset registry="$TARGET_TREE/infrastructure/db/user.list" stage ports
 	if [ ! -f user.list ]; then
 		warn "user.list not found; package user validation may fail."
-		return
+		return 1
 	fi
-	cp user.list "$TARGET_TREE/infrastructure/db/user.list"
-	log "user.list copied to $TARGET_TREE/infrastructure/db/user.list"
+	if [ -L "$TARGET_TREE/infrastructure" ] ||
+		[ -L "$TARGET_TREE/infrastructure/db" ] ||
+		[ -L "$registry" ] || [ ! -f "$registry" ]; then
+		error "Missing or symlinked user registry: $registry"
+		return 1
+	fi
+	ports=$(list_all_directories) || return 1
+	stage=$(mktemp "$TARGET_TREE/infrastructure/db/.user.list.XXXXXXXX") ||
+		return 1
+	cp -p "$registry" "$stage" || return 1
+	if ! awk -v ports="$ports" '
+		BEGIN {
+			n = split(ports, paths, "\n")
+			for (i = 1; i <= n; i++) present[paths[i]] = 1
+		}
+		function localport(path, pos, prefix, count, names, j) {
+			if (path in present) return 1
+			pos = index(path, "{")
+			if (!pos || substr(path, length(path)) != "}") return 0
+			prefix = substr(path, 1, pos - 1)
+			count = split(substr(path, pos + 1, length(path) - pos - 1), names, ",")
+			for (j = 1; j <= count; j++)
+				if ((prefix names[j]) in present) return 1
+			return 0
+		}
+		NR == FNR {
+			if ($1 ~ /^[0-9]+$/ && localport($NF)) {
+				ids[++total] = $1
+				rows[$1] = $0
+				users[$1] = $2
+				groups[$1] = $3
+			}
+			next
+		}
+		$1 ~ /^[0-9]+$/ {
+			for (id in rows) {
+				if (($1 == id && ($2 != users[id] || $3 != groups[id])) ||
+					($1 != id && ($2 == users[id] || $3 == groups[id]))) {
+					print "Account ID/name conflict for local port: " rows[id] > "/dev/stderr"
+					bad = 1
+				}
+			}
+			seen[$1] = 1
+		}
+		{ print }
+		END {
+			if (bad) exit 1
+			for (i = 1; i <= total; i++)
+				if (!(ids[i] in seen)) print rows[ids[i]]
+		}
+	' user.list "$registry" > "$stage"; then
+		rm -f "$stage"
+		error "User registry unchanged; resolve conflicting port IDs first."
+		return 1
+	fi
+	mv "$stage" "$registry" || return 1
+	log "Local port accounts merged into $registry"
 }
 
 # Function to create the user 'user' with a random password
@@ -358,8 +445,51 @@ configure_ports_system() {
 		"The ports tree has been installed and configured."
 }
 
+# Resolve a user-selected checkout without CDPATH output or a symlinked root.
+canonical_target_tree() {
+	typeset path=$1
+	while [ "${path%/}" != "$path" ] && [ "$path" != "/" ]; do
+		path=${path%/}
+	done
+	if [ -L "$path" ]; then
+		error "Refusing symlinked checkout root: $path"
+		return 1
+	fi
+	(unset CDPATH; cd -- "$path" && pwd -P)
+}
+
 # Main function
 main() {
+	# Copy into an existing CVS/Git tree without host provisioning or checkout.
+	case "${1:-}" in
+	--list)
+		move_to_wip_openbsd_ports
+		list_all_directories
+		return $? ;;
+	--copy-only)
+		[ "$#" -ge 2 ] || {
+			error "Usage: $0 --copy-only TREE [category/port ...]"
+			return 1
+		}
+		TARGET_TREE=$(canonical_target_tree "$2") || return 1
+		shift 2
+		move_to_wip_openbsd_ports
+		if [ "$#" -eq 0 ]; then
+			copy_all_directories || return 1
+		else
+			# Port paths cannot contain whitespace.
+			for DIRECTORY in "$@"; do
+				validate_port_path "$DIRECTORY" || return 1
+			done
+			SELECTED_DIRECTORIES="$*"
+			copy_selected_directories || return 1
+		fi
+		copy_user_list
+		return $? ;;
+	"") ;;
+	*) error "Usage: $0 [--list | --copy-only TREE [category/port ...]]"
+		return 1 ;;
+	esac
 	check_root
 	set_cvsroot
 	checkout_ports_tree
@@ -367,17 +497,17 @@ main() {
 	if [ "${DO_COPY:-0}" -eq 1 ]; then
 		move_to_wip_openbsd_ports
 		choose_target_tree
+		TARGET_TREE=$(canonical_target_tree "$TARGET_TREE") || return 1
 		if [ "${COPY_ALL:-0}" -eq 1 ]; then
-			copy_all_directories
+			copy_all_directories || return 1
 		elif [ "${COPY_LIST:-0}" -eq 1 ]; then
 			prompt_selected_directories
-			copy_selected_directories
+			copy_selected_directories || return 1
 		else
 			list_directories
-			list_tree_subdirectories
-			copy_directory
+			copy_directory || return 1
 		fi
-		copy_user_list
+		copy_user_list || return 1
 	else
 		log "Skipping copy from wip-openbsd-ports."
 	fi
@@ -387,4 +517,4 @@ main() {
 }
 
 # Execute the main function
-main
+main "$@"

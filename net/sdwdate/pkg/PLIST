@@ -1,0 +1,30 @@
+@newgroup _sdwdate:909
+@newuser _sdwdate:909:909::sdwdate:/var/db/sdwdate:/sbin/nologin
+@rcscript ${RCDIR}/sdwdate
+bin/url_to_unixtime
+libexec/sdwdate/
+@bin libexec/sdwdate/sclockadj
+libexec/sdwdate/sdwdate/
+libexec/sdwdate/sdwdate/__init__.py
+libexec/sdwdate/sdwdate/config.py
+libexec/sdwdate/sdwdate/openbsd.py
+libexec/sdwdate/sdwdate/proxy_settings.py
+libexec/sdwdate/sdwdate/remote_times.py
+libexec/sdwdate/sdwdate/sdwdate.py
+libexec/sdwdate/sdwdate/timesanitycheck.py
+@man man/man8/sdwdate.8
+@bin sbin/sdwdate
+share/doc/sdwdate/
+share/doc/sdwdate/COPYING
+share/examples/sdwdate/
+@sample ${SYSCONFDIR}/sdwdate.d/
+share/examples/sdwdate/30_default.conf
+@sample ${SYSCONFDIR}/sdwdate.d/30_default.conf
+@owner _sdwdate
+@group _sdwdate
+@mode 0700
+@sample /var/db/sdwdate/
+@sample /var/run/sdwdate/
+@mode
+@group
+@owner

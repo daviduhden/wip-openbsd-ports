@@ -1,0 +1,38 @@
+SPDX-License-Identifier: MIT
+
+Honor paths and flags supplied by the ports framework.  Correct the
+OpenMP option name and keep OpenMP disabled unless explicitly enabled.
+
+Index: mf/Makefile.OpenBSD
+--- mf/Makefile.OpenBSD.orig
++++ mf/Makefile.OpenBSD
+@@ -5,18 +5,20 @@
+ # -----------------------------------------------------------------------------
+ # XImaging OpenBSD Makefile
+ 
+-ENABLE_OPM = 0
+-ENABLE_CDE = 0
++ENABLE_OMP ?= 0
++ENABLE_CDE ?= 0
+ 
+-PREFIX = /usr/local
+-MANDIR = /usr/local/man
+-APPLRESDIR = /usr/X11R6/lib/X11/app-defaults
++PREFIX ?= /usr/local
++MANDIR ?= ${PREFIX}/man
++APPLRESDIR ?= ${PREFIX}/lib/X11/app-defaults
+ 
+-INCDIRS = -I/usr/X11R6/include -I/usr/local/include
+-LIBDIRS = -L/usr/X11R6/lib -L/usr/local/lib
++X11BASE ?= /usr/X11R6
++LOCALBASE ?= /usr/local
++INCDIRS += -I${X11BASE}/include -I${LOCALBASE}/include
++LIBDIRS += -L${X11BASE}/lib -L${LOCALBASE}/lib
+ 
+-CFLAGS = -O2 -Wall $(INCDIRS)
+-LDFLAGS = -pthread
++CFLAGS += -Wall
++LDFLAGS += -pthread
+ 
+ .if $(ENABLE_OMP) == 1
+ CFLAGS += -fopenmp -DENABLE_OMP

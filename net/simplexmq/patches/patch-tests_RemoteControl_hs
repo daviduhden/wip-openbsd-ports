@@ -1,0 +1,21 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Use loopback multicast for a local pairing test; a builder's LAN firewall
+must not determine whether its two local peers can discover one another.
+The multicast transport and authenticated pairing remain exercised.
+
+Index: tests/RemoteControl.hs
+--- tests/RemoteControl.hs.orig
++++ tests/RemoteControl.hs
+@@ -246,7 +246,10 @@
+ 
+ runCtrl :: TVar ChaChaDRG -> Bool -> RCHostPairing -> MVar RCSignedInvitation -> IO (Async RCHostPairing)
+ runCtrl drg multicast hp invVar = async . runRight $ do
+-  (_found, inv, hc, r) <- RC.connectRCHost drg hp (J.String "app") multicast Nothing Nothing
++  -- Both peers are local. Exercise real multicast on loopback without
++  -- depending on the builder's LAN firewall or multicast routing policy.
++  let preferred = if multicast then Just (RCCtrlAddress "127.0.0.1" "") else Nothing
++  (_found, inv, hc, r) <- RC.connectRCHost drg hp (J.String "app") multicast preferred Nothing
+   putMVar invVar inv
+   Right (_sessId, _tls, r') <- atomically $ takeTMVar r
+   Right (_rcHostSession, _rcHelloBody, hp') <- atomically $ takeTMVar r'

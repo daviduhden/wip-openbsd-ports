@@ -1,0 +1,56 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+Additional file type definitions and icons (xfile-addon)
+=========================================================
+Additional file type definitions are installed under
+${TRUEPREFIX}/share/xfile/types/ and the corresponding icons under
+${TRUEPREFIX}/share/xfile/icons/.  XFile loads every *.db file from
+its types directory and looks icons up in its icons directory at
+startup, so these resources are used automatically.
+
+XFile searches $HOME/.xfile/types and $HOME/.xfile/icons first, so
+user-supplied definitions and icons always take precedence over the
+installed ones.  If a file type is defined both in the default
+database and in an additional one, the default definition wins; to
+give the additional definitions priority instead, copy the desired
+.db files to ~/.xfile/types/.
+
+Alternative versions of the generic "file" icons are shipped as
+examples only, under ${TRUEPREFIX}/share/examples/xfile/addon/icons/,
+so that they do not replace the default icon set.  Copy them to
+~/.xfile/icons/ to use them.
+
+Slanted icons
+=============
+An optional set of directory icons in the style of IRIX/Indigo Magic
+is installed under ${TRUEPREFIX}/share/examples/xfile/slanted-icons/.
+To use them, copy the desired icons to ~/.xfile/icons/, e.g.
+
+    $ cp ${TRUEPREFIX}/share/examples/xfile/slanted-icons/*.xpm \
+        ~/.xfile/icons/
+
+Only the l, m, s and t sizes are currently used by XFile; the xl
+variants are provided by upstream for future use.
+
+XFind
+=====
+The xfind graphical file search utility is included.  Search results
+can be opened with XFile, their location can be shown in XFile, and
+selected results can be passed to XFile (see xfind(1)).
+
+XDG/D-Bus integration (xfile-xdgsvc)
+====================================
+xfile-xdgsvc, a D-Bus shim implementing the freedesktop
+org.freedesktop.FileManager1 interface, is installed together with
+its session service file under ${TRUEPREFIX}/share/dbus-1/services/.
+This lets D-Bus activated applications such as Firefox and GIMP use
+XFile as their file manager.
+
+Note that D-Bus activation requires a running dbus-daemon for your
+session.  To make XFile your preferred file manager in XDG-aware
+applications, select org.freedesktop.FileManager1 yourself, e.g. with
+xdg-mime default (from devel/xdg-utils) or through the settings of
+your desktop environment; installing this package does not change any
+per-user preferences.

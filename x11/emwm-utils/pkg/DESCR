@@ -1,0 +1,14 @@
+Utilities for the Enhanced Motif Window Manager (EMWM):
+
+- xmtoolbox: An application launcher/menu configured with a simple text
+  file (~/.toolboxrc). Can optionally include a workspace switcher widget.
+
+- xmsm: Simple session manager that provides session configuration,
+  screen locking, logout and shutdown/suspend options.
+
+- xmsession: Session script for launching EMWM with xmsm from XDM or xinit.
+
+- tellmwm: Command-line control of EMWM workspace configuration at runtime.
+
+The package also provides application icons, a 24/32-pixel Xcursor theme,
+Motif dialog icons, and sample X resources and GTK 2/3 configuration.

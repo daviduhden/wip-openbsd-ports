@@ -1,0 +1,94 @@
+SPDX-License-Identifier: BSD-3-Clause
+
+Backport the TLS 1.3 receive-cancellation fix, including its regression test.
+Keep the pending record reader and TLS shutdown under the same read lock.
+Add the qualified exception import required by TLS 2.4.3.
+https://github.com/haskell-tls/hs-tls/commit/218abdd67a4cde30854b5ca9b146b269da53bc07
+
+Index: Network/TLS/Context/Internal.hs
+--- Network/TLS/Context/Internal.hs.orig
++++ Network/TLS/Context/Internal.hs
+@@ -17,6 +17,7 @@
+     Hooks (..),
+     Limit (..),
+     Established (..),
++    PendingRecv (..),
+     PendingRecvAction (..),
+     RecordLayer (..),
+     Locks (..),
+@@ -36,6 +37,7 @@
+     updateMeasure,
+     withMeasure,
+     withReadLock,
++    tryWithReadLock,
+     withWriteLock,
+     withStateLock,
+     withRWLock,
+@@ -87,6 +89,7 @@
+ 
+ import Control.Concurrent.MVar
+ import Control.Exception (throwIO)
++import qualified Control.Exception as E
+ import Control.Monad.State.Strict
+ import Data.ByteArray (convert)
+ import qualified Data.ByteArray as BA
+@@ -203,7 +206,7 @@
+     , tls13stRecvSF :: Bool -- client
+     , tls13stSentCF :: Bool -- client
+     , tls13stRecvCF :: Bool -- server
+-    , tls13stPendingRecvData :: Maybe ByteString -- client
++    , tls13stPendingRecv :: PendingRecv -- client
+     , tls13stPendingSentData :: [ByteString] -> [ByteString] -- client
+     , tls13stRTT :: Millisecond
+     , tls13st0RTT :: Bool -- client
+@@ -224,7 +227,7 @@
+         , tls13stRecvSF = False
+         , tls13stSentCF = False
+         , tls13stRecvCF = False
+-        , tls13stPendingRecvData = Nothing
++        , tls13stPendingRecv = NoPendingRecv
+         , tls13stPendingSentData = id
+         , tls13stRTT = 0
+         , tls13st0RTT = False
+@@ -271,6 +274,15 @@
+     | Established
+     deriving (Eq, Show)
+ 
++-- | Outcome of a read that was started on behalf of a caller who is no longer
++-- waiting for it, held until the next receive hands it over.  Reads cannot be
++-- abandoned once started -- see 'Network.TLS.Core.handshake' -- so a reader that
++-- outlives its caller leaves its result here instead.
++data PendingRecv
++    = NoPendingRecv
++    | PendingRecvData ByteString
++    | PendingRecvError E.SomeException
++
+ data PendingRecvAction
+     = -- | simple pending action. The first 'Bool' is necessity of alignment.
+       PendingRecvAction Bool (Handshake13 -> IO ())
+@@ -450,6 +462,26 @@
+ withReadLock :: Context -> IO a -> IO a
+ withReadLock ctx f = withMVar (lockRead $ ctxLocks ctx) (const f)
+ 
++-- | Like 'withReadLock', but returns 'Nothing' immediately instead of waiting
++-- when another thread already holds the read lock.
++--
++-- The read lock is what keeps a single thread reading the connection at a time.
++-- Records arrive length-prefixed, so two threads reading in parallel would each
++-- take a piece of whatever record the other was in the middle of, and neither
++-- would end up with a usable message.
++--
++-- Use this instead of 'withReadLock' when the read is optional and skipping it
++-- is better than waiting for the current reader, which may hold the lock for
++-- arbitrarily long.  'bye' is the only such caller; see the note there.
++tryWithReadLock :: Context -> IO a -> IO (Maybe a)
++tryWithReadLock ctx f = E.bracket acquire release $ \mlock -> case mlock of
++    Nothing -> return Nothing
++    Just _ -> Just <$> f
++  where
++    lock = lockRead $ ctxLocks ctx
++    acquire = tryTakeMVar lock
++    release = mapM_ (putMVar lock)
++
+ withWriteLock :: Context -> IO a -> IO a
+ withWriteLock ctx f = withMVar (lockWrite $ ctxLocks ctx) (const f)

@@ -1,3 +1,5 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+
 Index: talpid-tunnel/src/tun_provider/unix.rs
 --- talpid-tunnel/src/tun_provider/unix.rs.orig
 +++ talpid-tunnel/src/tun_provider/unix.rs

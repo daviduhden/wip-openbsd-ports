@@ -1,0 +1,17 @@
+SPDX-License-Identifier: BSD-3-Clause
+
+Use the OpenBSD SQLCipher shared library when systemlib is enabled.
+
+Index: direct-sqlcipher.cabal
+--- direct-sqlcipher.cabal.orig
++++ direct-sqlcipher.cabal
+@@ -78,7 +78,8 @@ library
+   ghc-options:      -Wall -fwarn-tabs
+ 
+   if flag(systemlib)
+-    extra-libraries: sqlite3
++    extra-libraries: sqlcipher
++    include-dirs: /usr/local/include/sqlcipher
+     cpp-options:     -Ddirect_sqlite_systemlib
+   else
+     c-sources:        cbits/sqlite3.c

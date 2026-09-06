@@ -1,3 +1,5 @@
+SPDX-License-Identifier: MIT
+
 Index: tests/test_validate_command.py
 --- tests/test_validate_command.py.orig
 +++ tests/test_validate_command.py

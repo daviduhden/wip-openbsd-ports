@@ -1,0 +1,14 @@
+#!/bin/ksh
+
+daemon="${TRUEPREFIX}/bin/i2pd --daemon"
+daemon_user="_i2pd"
+daemon_flags="--service \
+	--datadir=${LOCALSTATEDIR}/i2pd \
+	--conf=${SYSCONFDIR}/i2pd/i2pd.conf \
+	--tunconf=${SYSCONFDIR}/i2pd/tunnels.conf \
+	--tunnelsdir=${SYSCONFDIR}/i2pd/tunnels.d \
+	--certsdir=${LOCALSTATEDIR}/i2pd/certificates"
+
+. /etc/rc.d/rc.subr
+
+rc_cmd $1

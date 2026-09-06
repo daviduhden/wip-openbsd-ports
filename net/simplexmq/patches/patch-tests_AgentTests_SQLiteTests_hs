@@ -1,0 +1,28 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Close both database handles before removing the two-store fixture's database.
+
+Index: tests/AgentTests/SQLiteTests.hs
+--- tests/AgentTests/SQLiteTests.hs.orig
++++ tests/AgentTests/SQLiteTests.hs
+@@ -20,6 +20,7 @@ import Control.Concurrent.Async (concurr
+ import Control.Concurrent.MVar
+ import Control.Concurrent.STM
+ import Control.Exception (SomeException)
++import qualified Control.Exception as E
+ import Control.Monad (replicateM_)
+ import Control.Monad.Trans.Except
+ import Crypto.Random (ChaChaDRG)
+@@ -67,11 +68,10 @@ withStore :: SpecWith DBStore -> Spec
+ withStore = before createStore' . after removeStore
+ 
+ withStore2 :: SpecWith (DBStore, DBStore) -> Spec
+-withStore2 = before connect2 . after (removeStore . fst)
++withStore2 = before connect2 . after (\(s1, s2) -> closeDBStore s2 `E.finally` removeStore s1)
+   where
+     connect2 :: IO (DBStore, DBStore)
+-    connect2 = do
+-      s1@DBStore {dbFilePath} <- createStore'
++    connect2 = E.bracketOnError createStore' removeStore $ \s1@DBStore {dbFilePath} -> do
+       s2 <- connectSQLiteStore $ DBOpts dbFilePath [] "" False False DB.TQOff
+       pure (s1, s2)

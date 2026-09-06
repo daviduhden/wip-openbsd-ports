@@ -1,0 +1,68 @@
+.\" SPDX-License-Identifier: AGPL-3.0-or-later
+.Dd September 6, 2026
+.Dt SDWDATE 8
+.Os
+.Sh NAME
+.Nm sdwdate
+.Nd synchronize the clock through independent Tor onion services
+.Sh SYNOPSIS
+.Nm
+.Op Fl -dry-run
+.Op Fl -slew-only
+.Op Fl -once
+.Sh DESCRIPTION
+.Nm
+uses upstream sdwdate's three time-source pools, consensus checks and median
+offset selection.
+The network process runs as _sdwdate; a small root parent
+accepts only clock corrections over an inherited private socket.
+All time-source HTTP requests use local Tor SOCKS with remote name resolution.
+Tor SAFECOOKIE control authentication must be configured;
+see the package README.
+.Pp
+The first correction may step by at most 24 hours.
+Later corrections advance
+or retard the clock by at most 5 milliseconds per second, matching sclockadj.
+Gradual corrections exceeding 30 seconds are rejected explicitly.
+Intervals between completed queries are randomized between 60 and 180 minutes.
+.Pp
+.Fl -dry-run
+validates requests without modifying the clock or the replay checkpoint.
+.Fl -slew-only
+forbids even the initial step.
+.Fl -once
+performs one cycle and exits, returning failure if it cannot obtain valid time.
+.Pp
+Do not run this daemon concurrently with
+.Xr ntpd 8
+or another clock writer.
+The rc script refuses startup while ntpd is running.
+The package never disables ntpd automatically.
+.Sh FILES
+.Bl -tag -width Ds
+.It Pa ${SYSCONFDIR}/sdwdate.d/30_default.conf
+Packaged sample containing unchanged upstream pools.
+.It Pa ${SYSCONFDIR}/sdwdate.d/50_user.conf
+Administrator overrides (not executed as shell code).
+.It Pa /var/db/sdwdate
+Replay checkpoint, owned by _sdwdate.
+.It Pa /var/run/sdwdate/status
+Atomic JSON status file, owned by _sdwdate.
+.It Pa /var/run/sdwdate.lock
+Root-owned single-instance lock.
+Do not remove while the daemon runs.
+.El
+.Sh SIGNALS
+SIGTERM and SIGINT stop the network process and cancel outstanding incremental
+corrections.
+A completed clock change cannot be rolled back automatically.
+.Sh SEE ALSO
+.Xr tor 1 ,
+.Xr ntpd 8 ,
+.Xr rcctl 8
+.Sh CAVEATS
+This is an initial
+.Ox
+adaptation requiring native privilege, Tor and clock-lifecycle testing.
+A broken clock may prevent Tor bootstrapping or HTTPS
+verification; no unauthenticated or clearnet fallback is provided.

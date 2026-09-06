@@ -1,0 +1,23 @@
+#!/bin/ksh
+
+daemon="${TRUEPREFIX}/sbin/sdwdate"
+
+. /etc/rc.d/rc.subr
+
+rc_bg=YES
+rc_reload=NO
+rc_timeout=15
+
+rc_pre() {
+	if [[ -L /var/run/sdwdate || -L /var/db/sdwdate ]]; then
+		echo "sdwdate: refusing symlinked state directory" >&2
+		return 1
+	fi
+	if /usr/bin/pgrep -x ntpd >/dev/null; then
+		echo "sdwdate: stop ntpd before starting sdwdate" >&2
+		return 1
+	fi
+	install -d -o _sdwdate -g _sdwdate -m 0700 /var/run/sdwdate
+}
+
+rc_cmd $1

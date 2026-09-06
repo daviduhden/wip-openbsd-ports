@@ -12,9 +12,9 @@ HOMEPAGE =		https://assault.cubers.net/
 MULTI_PACKAGES =		-main -server -data
 PKG_ARCH-data =		*
 
-# Modified zlib-style engine license; mixed restrictive/non-commercial assets.
-# Upstream's aggregate distribution permission requires unmodified packages.
-PERMIT_PACKAGE =	no modification, non-commercial assets
+# The engine has a modified zlib-style license, and
+# the assets have a non-derivatives/non-commercial license.
+PERMIT_PACKAGE =	Yes
 PERMIT_DISTFILES =	Yes
 
 COMPILER =		base-clang ports-gcc

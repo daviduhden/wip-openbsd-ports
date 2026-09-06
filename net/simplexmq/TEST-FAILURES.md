@@ -9,6 +9,25 @@ Finished in 2809.7839 seconds
 Randomized with seed 346723068
 ```
 
+Completed Linux N1 run after the corrections:
+
+```text
+812 examples, 0 failures, 38 pending
+Finished in 1394.7233 seconds
+GHC 9.14.1, +RTS -N1, seed 346723068
+```
+
+The two additional examples exercise worker ownership/cancellation. All nine
+original native failures passed in this run. This is not an OpenBSD result;
+the native result above remains unchanged.
+
+The following N2 full run completed in 1218.3336s with
+812 examples, 2 failures, 38 pending. The nine original cases passed again.
+The additional failures were AUTH timing (SX25519 queue / Ed448 signature,
+43.15% aggregate wall-time difference) and the two-user session-mode fixture
+(expected its third DOWN at FunctionalAPITests.hs:3896). These are being
+reproduced separately; the N1 pass does not erase the N2 failures.
+
 Source log: ../simplexmq-build-test.log, SHA256
 d0665234dff974f0e2579c29be905e5c076337ea45da2cb15ab33caaa55999be.
 It is preserved unchanged. It contains one run, not repeated executions of
@@ -377,6 +396,13 @@ cause: other memberships succeed and the corrected local test still passes.
 - Shared production changes also apply to simplex-chat's embedded
   simplexmq efaad8e73436d60f5052f07dda6b71151ad5039b. No unrelated chat
   watchdog, dependency or GUI changes.
+  On the resumed SimpleX-only pass, all eight shared production patches
+  have identical added/removed lines; version-specific hunk context is kept.
+  The five TLS patches are byte-identical. All 25 embedded SimpleX patches
+  and the TLS backport apply with fuzz=0. Every patched Haskell source in
+  simplexmq was compared with the source used by the completed N1 run.
+  Test-only subscription/lifecycle fixtures are not copied into chat's
+  independently defined test suite. A full simplex-chat build is not claimed.
 - network 3.2.9.0's changelog only adds recvBufNoWait. Recent earlier
   versions fixed asynchronous getAddrInfo cleanup and gracefulClose.
   close invalidates its stored descriptor; ordinary double close is not
@@ -424,8 +450,14 @@ I/O load was observed, but is not substituted for a correctness diagnosis.
   Original failure selectors passed again under N2 after the suspension fix.
 - After the HTTP/2 and local-fixture changes, send-resume, local multicast
   and CLI deletion each passed three N2 repetitions (9 examples total).
-  Final full-suite results follow after the completed run; no new OpenBSD
-  run has been performed.
+- Batch-subscription correction: 20/20 isolated runs passed, ten each under
+  N1/N2. Batching and suspension groups also passed under both configurations.
+- Final N1 full run: 812 examples, 0 failures, 38 pending in 1394.7233s.
+  TMPDIR was confined to the temporary working tree. No new OpenBSD run
+  has been performed.
+- Following N2 full run: 812 examples, 2 failures, 38 pending in 1218.3336s.
+  All original nine cases passed; AUTH timing and user/session switching
+  exposed additional issues. No failing test was retried to obtain this result.
 - All SimpleXMQ patches, shared embedded SimpleX patches and TLS patches
   apply to fresh exact sources with fuzz=0. Every repository patch is
   one-target-file and has SPDX-License-Identifier and Index metadata.
@@ -472,12 +504,19 @@ fstat -p PID, ps and netstat -an before/after groups to check native leaks
 and listener shutdown. Run portcheck from current infrastructure.
 Build/test simplex-chat natively after the shared TLS/transport changes.
 
-Temporary Linux sources, binaries, probes, logs and newly created Cabal
-cache/store are development artifacts and are removed at the end of this
-thread. The original native log and this intentional diagnostic report
-are retained.
+Temporary Linux sources, binaries, probes, logs and the newly created Cabal
+cache are development artifacts and are removed at the end of this thread.
+The pre-existing Cabal store is handled selectively: remove packages built
+by this investigation, preserve older packages and the user's configuration,
+and rebuild the remaining package registry cache. The original native log
+and this intentional diagnostic report are retained.
 
 ## Files changed during this investigation and requested follow-ups
+
+Historical list across the investigation, before subsequent user commits;
+this is not the list of currently uncommitted files. The resumed task is
+limited to simplexmq and relevant shared patches in simplex-chat. Other
+ports and subsequent user changes are left untouched.
 
 The category moves and other dirty files present at the beginning were
 preserved. This list compares against that initial dirty-tree snapshot,

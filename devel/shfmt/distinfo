@@ -41,7 +41,7 @@ SHA256 (go_modules/golang.org/x/tools/@v/v0.38.0.mod) = qViO2A/jO7EIuMicDihsTlyC
 SHA256 (go_modules/golang.org/x/tools/@v/v0.38.0.zip) = f1hwDaXDnY0ZWHIn0kIQEdTMoEB2wcE+u74Ui4UWd8Y=
 SHA256 (go_modules/mvdan.cc/editorconfig/@v/v0.3.0.mod) = 6hl29DmEYwNahO3PuerQWQ4aqP3tMefo/3oNyjEOIuY=
 SHA256 (go_modules/mvdan.cc/editorconfig/@v/v0.3.0.zip) = qlDEPnibAl8EvqlQ8QQxSUbS+qUDVEK/X3QV65eGD+E=
-SHA256 (shfmt-v3.14.0.zip) = 6N8dOO6gxTwdIuqEO3a7kZYqVjuqp6r6xfrhOdUVl7w=
+SHA256 (shfmt-v3.14.1.zip) = dEtRiyjbSyVviJVLf1Rh/i0oIvb1gYsTeIe/lxMXXiU=
 SIZE (go_modules/github.com/creack/pty/@v/v1.1.24.mod) = 38
 SIZE (go_modules/github.com/creack/pty/@v/v1.1.24.zip) = 40880
 SIZE (go_modules/github.com/creack/pty/@v/v1.1.9.mod) = 39
@@ -85,4 +85,4 @@ SIZE (go_modules/golang.org/x/tools/@v/v0.38.0.mod) = 301
 SIZE (go_modules/golang.org/x/tools/@v/v0.38.0.zip) = 2822153
 SIZE (go_modules/mvdan.cc/editorconfig/@v/v0.3.0.mod) = 38
 SIZE (go_modules/mvdan.cc/editorconfig/@v/v0.3.0.zip) = 13853
-SIZE (shfmt-v3.14.0.zip) = 345112
+SIZE (shfmt-v3.14.1.zip) = 347003

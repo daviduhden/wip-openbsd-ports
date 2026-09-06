@@ -1,0 +1,53 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Avoid relying on Default for certificate validation errors with newer deps.
+
+Keep TLS shutdown interruptible.  tls-2.4's bye waits for a bounded TLS 1.3
+final flight using System.Timeout; wrapping it in uninterruptibleMask_ prevents
+that timeout from being delivered and can leave test and runtime shutdown
+blocked forever when the peer has already gone away.  mask_ still protects the
+socket cleanup while allowing interruptible TLS I/O (and bye's timeout) to
+finish the bracket.
+
+Use base bracket for network cleanup: UnliftIO.bracket disables TLS.bye's internal timeout.
+
+Index: src/Simplex/Messaging/Transport/Client.hs
+--- src/Simplex/Messaging/Transport/Client.hs.orig
++++ src/Simplex/Messaging/Transport/Client.hs
+@@ -64,6 +64,7 @@
+ import System.IO.Error
+ import Text.Read (readMaybe)
+ import UnliftIO.Exception (IOException)
++import qualified Control.Exception as CE
+ import qualified UnliftIO.Exception as E
+ import UnliftIO.STM
+ 
+@@ -174,7 +175,9 @@
+         _ -> connectTCPClient hostName
+   h <- newIORef Nothing
+   let set hc = (>>= \c -> writeIORef h (Just $ hc c) $> c)
+-  E.bracket (set CHSocket $ connectTCP port) (\_ -> closeConn h) $ \sock -> do
++  -- TLS.bye has its own receive deadline. UnliftIO.bracket would run this
++  -- finalizer under uninterruptibleMask_, disabling that deadline.
++  CE.bracket (set CHSocket $ connectTCP port) (\_ -> closeConn h) $ \sock -> do
+     mapM_ (setSocketKeepAlive sock) tcpKeepAlive `catchAll` \e -> logError ("Error setting TCP keep-alive " <> tshow e)
+     let tCfg = clientTransportConfig cfg
+     -- No TLS timeout to avoid failing connections via SOCKS
+@@ -183,7 +186,7 @@
+     sent <- readIORef clientCredsSent
+     client =<< set CHTransport (getTransportConnection tCfg sent chain tls)
+   where
+-    closeConn = readIORef >=> mapM_ (\c -> E.uninterruptibleMask_ $ closeConn_ c `catchAll_` pure ())
++    closeConn = readIORef >=> mapM_ (\c -> E.mask_ $ closeConn_ c `catchAll_` pure ())
+     closeConn_ = \case
+       CHSocket sock -> close sock
+       CHContext tls -> closeTLS tls
+@@ -301,7 +304,7 @@
+   where
+     p = B.pack port
+     onServerCert _ _ _ cc = do
+-      errs <- maybe def (\ca -> validateCertificateChain ca host p cc) cafp_
++      errs <- maybe (pure []) (\ca -> validateCertificateChain ca host p cc) cafp_
+       atomically $ putTMVar serverCerts $ if null errs then Just cc else Nothing
+       pure errs
+     onCertRequest = case clientCreds_ of

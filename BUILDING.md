@@ -1,22 +1,18 @@
 # Building and Testing These Ports on OpenBSD
 
-This repository carries custom OpenBSD ports for:
-
-- `net/monero`
-- `net/monero-lws`
-- `net/simplexmq`
-- `net/simplex-chat`
-- `net/xd-torrent`
-
-The working copies in this repository are meant to be copied into
-`/usr/ports/net/` or kept in sync with the same layout there.
-
-The ports that create daemon accounts also require the accompanying
-`user.list` registry. When copying ports manually, install it with:
+Ports use the same `category/port` layout as the OpenBSD ports tree.
+The categories currently present are `devel`, `editors`, `games`,
+`graphics`, `multimedia`, `net`, `sysutils` and `x11`.
+List the installable paths without checking out or changing anything:
 
 ```sh
-doas cp ./user.list /usr/ports/infrastructure/db/user.list
+./fetch-ports.ksh --list
 ```
+
+Ports creating daemon accounts also need their entries from `user.list`.
+The copy helper merges these entries into the cloned tree, preserving
+upstream entries and refusing conflicting IDs or account names. Do not
+overwrite a newer tree's complete registry with this repository's snapshot.
 
 ## Prerequisites
 
@@ -27,20 +23,30 @@ Configure the ports tree in the usual OpenBSD way:
 - set `PACKAGE_REPOSITORY`
 - use `doas` or `sudo` as your privilege helper
 
-The repository includes `fetch-ports.ksh` to bootstrap a ports tree
-and copy the custom ports into place under `/usr/ports/net/`.
-It also installs the synchronized `user.list` automatically.
-
-For the SimpleX ports, `sync-simplex-ports.pl` helps keep the shared
-Hackage pins in sync and normalizes `patches/` filenames so they
-follow the OpenBSD path-based convention.
-
-Examples:
+Use `--copy-only` to install ports into an existing CVS or Git checkout.
+It does not check out a tree, create system accounts or change host
+configuration. Omit the port arguments to copy all ports:
 
 ```sh
-perl ./sync-simplex-ports.pl list-deps
-perl ./sync-simplex-ports.pl --apply all
+doas ./fetch-ports.ksh --copy-only /usr/ports net/simplexmq net/simplex-chat
+doas ./fetch-ports.ksh --copy-only /usr/ports
 ```
+
+Each port is copied to its existing category, never over the complete
+category directory. Replaced ports are saved under
+`TREE/.wip-backups/category-port.XXXXXXXX/port`; nested CVS metadata is
+preserved. Stale patches are not carried into the new copy. Paths that
+name categories, traverse parents or use symlinked port roots are rejected.
+The local account entries from `user.list` are merged as well. Files become
+readable by the ports build user even when the Git checkout is private.
+
+Without arguments the script retains its interactive OpenBSD bootstrap
+workflow, which replaces the ports checkout and configures the host.
+Use `--copy-only` when you already have a checkout.
+
+Every patch has one target file, an `Index:` header and an
+`SPDX-License-Identifier:` for that component. Dependency sources requiring
+LF conversion are normalized with `dos2unix` before dependency patches.
 
 ## General Workflow
 

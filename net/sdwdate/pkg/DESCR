@@ -1,0 +1,8 @@
+sdwdate obtains HTTP Date headers through Tor onion services, selecting
+independent sources from three upstream pools. It checks the Tor consensus,
+uses the median clock offset and retries at randomized intervals.
+
+This OpenBSD adaptation runs the network code as _sdwdate, with a small C
+parent handling bounded clock corrections over an inherited private socket.
+Tor control authentication requires administrator configuration. Do not run
+sdwdate and ntpd concurrently. See the package README before enabling it.

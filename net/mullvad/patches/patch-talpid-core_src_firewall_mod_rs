@@ -1,3 +1,5 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+
 Index: talpid-core/src/firewall/mod.rs
 --- talpid-core/src/firewall/mod.rs.orig
 +++ talpid-core/src/firewall/mod.rs

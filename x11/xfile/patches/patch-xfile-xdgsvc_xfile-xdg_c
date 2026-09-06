@@ -1,0 +1,42 @@
+SPDX-License-Identifier: MIT
+
+Avoid using uninitialized variables: 'rv' may be read without ever
+being assigned (it is only set in the vfork(2)ed child when execvp(3)
+fails) and 'exec_str' is never assigned at all, so the error message
+passed an indeterminate pointer to %s.  Initialize 'rv' and report the
+name of the binary that failed to execute.  Make process_message()
+return a value on all paths; it is declared to return int.
+
+Index: xfile-xdgsvc/xfile-xdg.c
+--- xfile-xdgsvc/xfile-xdg.c.orig
++++ xfile-xdgsvc/xfile-xdg.c
+@@ -118,8 +118,6 @@
+ 	int nargs = 0;
+ 	char **args;
+ 	char **arg_ptr;
+-	char *exec_str;
+-	size_t len;
+ 	char *browser_bin = find_browser();
+ 
+ 	dbus_message_iter_init(msg, &it);
+@@ -189,6 +187,6 @@
+ 	for(arg_ptr = args; *arg_ptr; arg_ptr++) {
+-		int rv;
++		int rv = 0;
+ 		pid_t pid;
+ 		struct stat st;
+ 		char *exec_bin = XFILE_BIN;
+ 		char *carg = *arg_ptr;
+@@ -227,10 +225,11 @@
+ 			_exit(0);
+ 		}
+ 		if(rv) stderr_msg("Error executing '%s' (%s).\n",
+-			exec_str, strerror(rv));
++			exec_bin, strerror(rv));
+ 
+ 		free(*arg_ptr);
+ 	}
+ 	
+ 	free(args);
++	return 0;
+ }

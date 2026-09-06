@@ -1,0 +1,29 @@
+SPDX-License-Identifier: MIT
+
+Honor CC/CFLAGS/INCDIRS/LIBDIRS supplied by the ports framework and
+drop the pkg-config generated makefile fragment; the dbus include and
+library paths are passed on the command line instead.
+
+Index: xfile-xdgsvc/Makefile
+--- xfile-xdgsvc/Makefile.orig
++++ xfile-xdgsvc/Makefile
+@@ -3,9 +3,9 @@
+ CFLAGS += -O2 $(INCDIRS)
+ 
+ xfile-xdgsvc: xfile-xdg.o
+-	$(CC) -o $@ xfile-xdg.o -ldbus-1
++	$(CC) $(LIBDIRS) -o $@ xfile-xdg.o -ldbus-1
+ 
+ clean:
+ 	-rm *.o
+ 	-rm xfile-xdgsvc
+ 	-rm pkgconf.mf
+@@ -12,8 +12,3 @@
+ 
+ install:
+ 	@echo "See README for installation instructions"
+-
+-pkgconf.mf:
+-	echo "INCDIRS=$$(pkg-config --cflags dbus-1)" >> pkgconf.mf
+-
+-include pkgconf.mf

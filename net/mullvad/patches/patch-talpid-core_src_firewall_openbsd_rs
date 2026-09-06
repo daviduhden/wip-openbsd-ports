@@ -1,3 +1,5 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+
 Index: talpid-core/src/firewall/openbsd.rs
 --- /dev/null
 +++ talpid-core/src/firewall/openbsd.rs

@@ -1,0 +1,97 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Disambiguate getAddrInfo's result type for newer network/GHC combinations.
+
+Prefer the IPv4 wildcard on OpenBSD.  OpenBSD does not accept IPv4-mapped
+connections on an IPv6 socket, while this server opens only one of the
+addresses returned by getAddrInfo.  Choosing IPv6 first therefore makes the
+server unreachable through IPv4 addresses such as 127.0.0.1.
+
+Make shutdown synchronous.  Keep each accepted connection registered until
+its socket finalizer completes, close the registration race around fork, and
+do not report the listening socket as stopped while connection finalizers are
+still running.  Otherwise a restarted server can overlap the previous TLS
+sessions and stores.
+
+Join closing connections even when their finalizer starts before registration.
+Unmask handler bodies and keep TLS/socket cleanup interruptible.
+
+Index: src/Simplex/Messaging/Transport/Server.hs
+--- src/Simplex/Messaging/Transport/Server.hs.orig
++++ src/Simplex/Messaging/Transport/Server.hs
+@@ -32,6 +32,8 @@ module Simplex.Messaging.Transport.Serve
+ where
+ 
+ import Control.Applicative ((<|>))
++import Control.Concurrent.STM (retry)
++import qualified Control.Exception as CE
+ import Control.Logger.Simple
+ import Control.Monad
+ import qualified Crypto.Store.X509 as SX
+@@ -50,7 +52,7 @@ import Network.Socket
+ import qualified Network.TLS as T
+ import Simplex.Messaging.Transport
+ import Simplex.Messaging.Transport.Shared
+-import Simplex.Messaging.Util (catchAll_, labelMyThread, tshow, unlessM)
++import Simplex.Messaging.Util (catchAll_, forkFinallyUnmasked, labelMyThread, tshow, unlessM)
+ import System.Exit (exitFailure)
+ import System.IO.Error (tryIOError)
+ import System.Mem.Weak (Weak, deRefWeak)
+@@ -158,7 +160,8 @@ runTransportServerSocketState_ ss starte
+   labelMyThread $ "transport server for " <> threadLabel
+   runTCPServerSocket ss started getSocket $ \conn -> do
+     labelMyThread $ threadLabel <> "/setup"
+-    E.bracket
++    -- Allow TLS.bye's receive timeout to interrupt the cleanup action.
++    CE.bracket
+       (timeout tlsSetupTimeout (setupTLS conn) >>= maybe (fail "tls setup timeout") pure)
+       (closeConnection . snd)
+       (server conn)
+@@ -172,16 +175,21 @@ runLocalTCPServer started port server =
+ -- | Wrap socket provider in a TCP server bracket.
+ runTCPServerSocket :: SocketState -> TMVar Bool -> IO Socket -> (Socket -> IO ()) -> IO ()
+ runTCPServerSocket (accepted, gracefullyClosed, clients) started getSocket server =
+-  E.bracket getSocket (closeServer started clients) $ \sock ->
++  CE.bracket getSocket (closeServer started clients) $ \sock ->
+     forever . E.bracketOnError (safeAccept sock) (close . fst) $ \(conn, _peer) -> do
+       cId <- atomically $ stateTVar accepted $ \cId -> let cId' = cId + 1 in cId' `seq` (cId', cId')
+       closed <- newTVarIO False
+-      let closeConn _ = do
+-            atomically $ writeTVar closed True >> modifyTVar' clients (IM.delete cId)
+-            gracefulClose conn 5000 `catchAll_` pure () -- catchAll_ is needed here in case the connection was closed earlier
+-            atomically $ modifyTVar' gracefullyClosed (+ 1)
+-      tId <- mkWeakThreadId =<< server conn `forkFinally` closeConn
+-      atomically $ unlessM (readTVar closed) $ modifyTVar' clients $ IM.insert cId tId
++      let closeConn _ =
++            (gracefulClose conn 5000 `catchAll_` pure ()) `CE.finally`
++            -- Publish completion together with removal. A finalizer that has
++            -- merely started must still be registered and joined on shutdown.
++            atomically (do
++              writeTVar closed True
++              modifyTVar' clients (IM.delete cId)
++              modifyTVar' gracefullyClosed (+ 1))
++      E.mask_ $ do
++        tId <- mkWeakThreadId =<< server conn `forkFinallyUnmasked` closeConn
++        atomically $ unlessM (readTVar closed) $ modifyTVar' clients $ IM.insert cId tId
+ 
+ -- | Recover from errors in `accept` whenever it is safe.
+ -- Some errors are safe to ignore, while blindly restaring `accept` may trigger a busy loop.
+@@ -228,6 +236,7 @@ closeServer :: TMVar Bool -> TVar (IntMa
+ closeServer started clients sock = do
+   close sock
+   readTVarIO clients >>= mapM_ (deRefWeak >=> mapM_ killThread)
++  atomically $ unlessM (IM.null <$> readTVar clients) retry
+   void . atomically $ tryPutTMVar started False
+ 
+ startTCPServer :: TMVar Bool -> Maybe HostName -> ServiceName -> IO Socket
+@@ -235,8 +244,8 @@ startTCPServer started host port = withS
+   where
+     resolve =
+       let hints = defaultHints {addrFlags = [AI_PASSIVE], addrSocketType = Stream}
+-       in select <$> getAddrInfo (Just hints) host (Just port)
+-    select as = fromJust $ family AF_INET6 <|> family AF_INET
++       in select <$> (getAddrInfo (Just hints) host (Just port) :: IO [AddrInfo])
++    select as = fromJust $ family AF_INET <|> family AF_INET6
+       where
+         family f = find ((== f) . addrFamily) as
+     open addr = do

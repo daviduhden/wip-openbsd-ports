@@ -1,3 +1,5 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+
 Index: cli/onionshare_cli/onion.py
 --- cli/onionshare_cli/onion.py.orig
 +++ cli/onionshare_cli/onion.py

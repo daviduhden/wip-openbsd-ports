@@ -1,0 +1,89 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Unmask owned agent threads and join the sole finalizer before closing SQLite.
+Shutdown statistics must retain the DB transaction lock, but must not await
+foreground reactivation of a suspended agent or enqueue events to its owner.
+
+Index: src/Simplex/Messaging/Agent.hs
+--- src/Simplex/Messaging/Agent.hs.orig
++++ src/Simplex/Messaging/Agent.hs
+@@ -250,7 +250,7 @@
+ import Simplex.RemoteControl.Types
+ import System.Mem.Weak (deRefWeak)
+ import UnliftIO.Async (mapConcurrently)
+-import UnliftIO.Concurrent (forkFinally, forkIO, killThread, mkWeakThreadId, threadDelay)
++import UnliftIO.Concurrent (forkIO, killThread, mkWeakThreadId, threadDelay)
+ import qualified UnliftIO.Exception as E
+ import UnliftIO.STM
+ 
+@@ -273,10 +273,11 @@
+       liftIO $ checkServers "SMP" smp >> checkServers "XFTP" xftp
+       currentTs <- liftIO getCurrentTime
+       notices <- liftIO $ withTransaction store (`getClientNotices` presetServers) `catchAll_` pure []
+-      c@AgentClient {acThread} <- liftIO . newAgentClient clientId initServers currentTs notices =<< ask
+-      t <- runAgentThreads c `forkFinally` const (liftIO $ disconnectAgentClient c)
+-      atomically . writeTVar acThread . Just =<< mkWeakThreadId t
+-      pure c
++      c@AgentClient {acThread, acThreadDone} <- liftIO . newAgentClient clientId initServers currentTs notices =<< ask
++      E.mask_ $ do
++        t <- runAgentThreads c `forkFinallyUnmasked` const (liftIO $ disconnectAgentClient c `E.finally` atomically (putTMVar acThreadDone ()))
++        atomically . writeTVar acThread . Just =<< mkWeakThreadId t
++        pure c
+     checkServers protocol srvs =
+       forM_ (M.assocs srvs) $ \(userId, srvs') -> checkUserServers ("getSMPAgentClient " <> protocol <> " " <> tshow userId) srvs'
+     runAgentThreads c
+@@ -289,7 +290,7 @@
+               run c "cleanupManager" $ cleanupManager c,
+               run c "logServersStats" $ logServersStats c
+             ]
+-            `E.finally` saveServersStats c
++            `E.finally` saveServersStats_ True c
+     run AgentClient {subQ, acThread} name a =
+       a `E.catchAny` \e -> whenM (isJust <$> readTVarIO acThread) $ do
+         logError $ "Agent thread " <> name <> " crashed: " <> tshow e
+@@ -306,14 +307,26 @@
+     liftIO $ threadDelay' int
+ 
+ saveServersStats :: AgentClient -> AM' ()
+-saveServersStats c@AgentClient {subQ, smpServersStats, xftpServersStats, ntfServersStats} = do
++saveServersStats = saveServersStats_ False
++
++saveServersStats_ :: Bool -> AgentClient -> AM' ()
++saveServersStats_ closing c@AgentClient {subQ, smpServersStats, xftpServersStats, ntfServersStats} = do
+   sss <- mapM (liftIO . getAgentSMPServerStats) =<< readTVarIO smpServersStats
+   xss <- mapM (liftIO . getAgentXFTPServerStats) =<< readTVarIO xftpServersStats
+   nss <- mapM (liftIO . getAgentNtfServerStats) =<< readTVarIO ntfServersStats
+   let stats = AgentPersistedServerStats {smpServersStats = sss, xftpServersStats = xss, ntfServersStats = OptionalMap nss}
+-  tryAllErrors' (withStore' c (`updateServersStats` stats)) >>= \case
+-    Left e -> atomically $ writeTBQueue subQ ("", "", AEvt SAEConn $ ERR $ INTERNAL $ show e)
+-    Right () -> pure ()
++  if closing
++    then do
++      -- The agent can be suspended when its owner joins shutdown. No future
++      -- foreground event can release AODatabase at this point. The store is
++      -- still owned by the agent, and withTransaction retains its DB lock.
++      st <- asks store
++      E.tryAny (liftIO $ withTransaction st (`updateServersStats` stats)) >>= \case
++        Left e -> logError $ "Saving server statistics on shutdown: " <> tshow e
++        Right () -> pure ()
++    else tryAllErrors' (withStore' c (`updateServersStats` stats)) >>= \case
++      Left e -> atomically $ writeTBQueue subQ ("", "", AEvt SAEConn $ ERR $ INTERNAL $ show e)
++      Right () -> pure ()
+ 
+ restoreServersStats :: AgentClient -> AM' ()
+ restoreServersStats c@AgentClient {smpServersStats, xftpServersStats, ntfServersStats, srvStatsStartedAt} = do
+@@ -335,10 +348,10 @@
+ 
+ -- only used in the tests
+ disposeAgentClient :: AgentClient -> IO ()
+-disposeAgentClient c@AgentClient {acThread, agentEnv = Env {store}} = do
+-  t_ <- atomically (swapTVar acThread Nothing) $>>= (liftIO . deRefWeak)
+-  disconnectAgentClient c
+-  mapM_ killThread t_
++disposeAgentClient AgentClient {acThread, acThreadDone, agentEnv = Env {store}} = do
++  t_ <- atomically $ swapTVar acThread Nothing
++  mapM_ (deRefWeak >=> mapM_ killThread) t_
++  mapM_ (const $ atomically $ readTMVar acThreadDone) t_
+   liftIO $ closeDBStore store
+ 
+ resumeAgentClient :: AgentClient -> IO ()

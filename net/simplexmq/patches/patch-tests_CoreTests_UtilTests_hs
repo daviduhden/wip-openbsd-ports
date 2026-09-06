@@ -1,0 +1,51 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Regression tests for unmasked worker bodies and completion after cancellation.
+
+Index: tests/CoreTests/UtilTests.hs
+--- tests/CoreTests/UtilTests.hs.orig
++++ tests/CoreTests/UtilTests.hs
+@@ -3,17 +3,43 @@
+ module CoreTests.UtilTests where
+ 
+ import AgentTests.FunctionalAPITests ()
++import Control.Concurrent (killThread)
++import Control.Concurrent.MVar
++import qualified Control.Exception as E
+ import Control.Exception (AllocationLimitExceeded (..), AsyncException (..), Exception, SomeException, throwIO)
+ import Control.Monad.Except
+ import Control.Monad.IO.Class
+ import Data.IORef
+ import Simplex.Messaging.Util
++import System.Timeout (timeout)
+ import Test.Hspec hiding (fit, it)
+ import qualified UnliftIO.Exception as UE
+ import Util
+ 
+ utilTests :: Spec
+ utilTests = do
++  describe "owned worker lifecycle" $ do
++    it "unmasks worker bodies but masks their completion callbacks" $ do
++      done <- newEmptyMVar
++      _ <- E.mask_ $ forkFinallyUnmasked E.getMaskingState $ \result -> do
++        state <- E.getMaskingState
++        putMVar done (result, state)
++      result <- timeout 1000000 $ takeMVar done
++      case result of
++        Just (Right E.Unmasked, E.MaskedInterruptible) -> pure ()
++        _ -> expectationFailure $ "unexpected worker masks: " <> show result
++    it "joins a cancelled worker after its finalizer" $ do
++      started <- newEmptyMVar
++      blocked <- newEmptyMVar
++      done <- newEmptyMVar
++      E.bracket
++        (forkFinallyUnmasked (putMVar started () >> takeMVar blocked) (putMVar done))
++        killThread $ \tid -> do
++          timeout 1000000 (takeMVar started) `shouldReturn` Just ()
++          result <- timeout 1000000 $ killThread tid >> takeMVar done
++          case result of
++            Just (Left e) | Just ThreadKilled <- E.fromException e -> pure ()
++            _ -> expectationFailure $ "worker did not finish: " <> show (result :: Maybe (Either SomeException ()))
+   describe "problems of lifted try, catch and finally (don't use them)" $ do
+     describe "lifted try" $ do
+       it "does not catch errors" $ do

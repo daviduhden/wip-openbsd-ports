@@ -1,0 +1,17 @@
+SPDX-License-Identifier: MIT
+
+Use shutdown(8) rather than reboot(8), matching OpenBSD's _shutdown
+group authorization path when xmsm runs without elevated privileges.
+
+Index: src/smconf.h
+--- src/smconf.h.orig
++++ src/smconf.h
+@@ -33,7 +33,7 @@
+ #endif /* SHUTDOWN_CMD */
+ 
+ #ifndef REBOOT_CMD
+-#define REBOOT_CMD      "/sbin/reboot"
++#define REBOOT_CMD      "/sbin/shutdown -r now"
+ #endif
+ 
+ #ifndef SUSPEND_CMD

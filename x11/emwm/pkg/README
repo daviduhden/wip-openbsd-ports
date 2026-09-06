@@ -1,0 +1,12 @@
++-------------------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-------------------------------------------------------------------------------
+
+EMWM 2.x restored workspace management.  Configuration files copied from
+EMWM 1.x do not contain the corresponding workspace menu and key bindings.
+
+Users with an existing ~/.emwmrc should compare it with:
+
+	${PREFIX}/lib/X11/system.emwmrc
+
+See emwmrc(4) for the available workspace functions and binding syntax.

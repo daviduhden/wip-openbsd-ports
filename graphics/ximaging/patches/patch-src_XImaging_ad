@@ -1,0 +1,19 @@
+SPDX-License-Identifier: MIT
+
+Enable the ImageMagick filter documented upstream.  This provides
+loaders for common formats which XImaging does not handle internally.
+
+Index: src/XImaging.ad
+--- src/XImaging.ad.orig
++++ src/XImaging.ad
+@@ -26,6 +26,10 @@ XImaging*tileSizeList: 80,120,160
+ XImaging*tileAspectRatio: 4:3
+ 
+ 
++!! Additional formats handled by the ImageMagick runtime dependency.
++XImaging.filter.imagemagick: convert %n pam:-
++XImaging.filter.imagemagick.suffixes: gif psd svg xcf
++
+ !! Uncomment to customize viewer and browser view background colors
+ ! XImagingViewer*view.background: darkgray
+ ! XImagingViewer*view.backgroundPixmap: wide_weave

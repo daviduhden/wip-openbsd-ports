@@ -1,0 +1,26 @@
+SPDX-License-Identifier: BSD-3-Clause
+
+Backport the TLS 1.3 receive-cancellation fix, including its regression test.
+Keep the pending record reader and TLS shutdown under the same read lock.
+Add the qualified exception import required by TLS 2.4.3.
+https://github.com/haskell-tls/hs-tls/commit/218abdd67a4cde30854b5ca9b146b269da53bc07
+
+Index: Network/TLS/Context.hs
+--- Network/TLS/Context.hs.orig
++++ Network/TLS/Context.hs
+@@ -8,6 +8,7 @@
+     Context (..),
+     Hooks (..),
+     Established (..),
++    PendingRecv (..),
+     RecordLayer (..),
+     ctxEOF,
+     ctxEstablished,
+@@ -23,6 +24,7 @@
+     updateMeasure,
+     withMeasure,
+     withReadLock,
++    tryWithReadLock,
+     withWriteLock,
+     withStateLock,
+     withRWLock,

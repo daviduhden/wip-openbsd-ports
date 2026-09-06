@@ -1,0 +1,36 @@
+SPDX-License-Identifier: MIT
+
+Honor paths and compiler flags supplied by the ports framework.  Keep
+upstream's warnings and avoid adding the include directories twice.
+
+Index: mf/Makefile.OpenBSD
+--- mf/Makefile.OpenBSD.orig
++++ mf/Makefile.OpenBSD
+@@ -1,17 +1,19 @@
+ # XFile OpenBSD Makefile
+ 
+-PREFIX = /usr/local
+-MANDIR = /usr/local/man
+-SHAREDIR = $(PREFIX)/share/xfile
+-APPLRESDIR = /usr/X11R6/lib/X11/app-defaults
++PREFIX ?= /usr/local
++MANDIR ?= ${PREFIX}/man
++SHAREDIR ?= ${PREFIX}/share/xfile
++APPLRESDIR ?= ${PREFIX}/lib/X11/app-defaults
+ 
+-INCDIRS = -I/usr/X11R6/include -I/usr/local/include
+-LIBDIRS = -L/usr/X11R6/lib -L/usr/local/lib
++X11BASE ?= /usr/X11R6
++LOCALBASE ?= /usr/local
++INCDIRS += -I${X11BASE}/include -I${LOCALBASE}/include
++LIBDIRS += -L${X11BASE}/lib -L${LOCALBASE}/lib
+ 
+-CFLAGS = -O2 -Wall
++CFLAGS += -Wall
+ 
+ .c.o:
+-	$(CC) $(CFLAGS) $(INCDIRS) -c -o $(@D)/$(@F) $<
++	$(CC) $(CFLAGS) -c -o $(@D)/$(@F) $<
+ 
+ include common.mf
+ 

@@ -1,0 +1,119 @@
+${PKGSTEM}
+
+Initial native OpenBSD adaptation
+=================================
+This port still requires OpenBSD privilege, Tor and clock-lifecycle testing.
+Do not enable it on a production machine before completing those tests.
+The Python network process is unprivileged; only a small C parent can change
+the clock. No executable is setuid, and no doas.conf rule is required.
+
+Tor configuration (administrator action)
+========================================
+The existing tor package uses _tor and /var/tor, with data mode 0700.
+Leave that directory private. Add the following to ${SYSCONFDIR}/tor/torrc:
+
+    SocksPort 127.0.0.1:9050
+    ControlPort 127.0.0.1:9051
+    CookieAuthentication 1
+    CookieAuthFile /var/run/tor-sdwdate/control.authcookie
+    CookieAuthFileGroupReadable 1
+
+First create the cookie's separate directory:
+
+    install -d -o _tor -g _tor -m 0750 /var/run/tor-sdwdate
+    rcctl restart tor
+
+Ensure that this directory is recreated before Tor at boot if local runtime
+directory cleanup removes it. Inspect ownership and mode of the resulting
+cookie; it must be _tor:_tor and group-readable, never world-readable.
+Check ${SYSCONFDIR}/tor/torrc for conflicting existing settings before editing.
+No configuration of Tor or system accounts is silently modified by this port.
+
+The C launcher gives its child exactly the _sdwdate and _tor groups. Thus the
+child can read this cookie, but /var/tor stays inaccessible. SAFECOOKIE is
+mandatory. This grants full Tor-controller authority, not a read-only subset;
+consider a dedicated Tor instance if other applications depend on this Tor.
+Never expose the control port publicly or disable its authentication.
+
+All configured time URLs must be v3 onion HTTP(S) URLs. Proxy addresses must
+be literal loopback IPs. requests ignores proxy environment variables, uses
+socks5h for both schemes, verifies HTTPS normally, and refuses redirects.
+There is no clearnet fallback. A severely wrong clock can prevent Tor or HTTPS
+from bootstrapping; repair it deliberately rather than weakening validation.
+
+Configuration and operation
+===========================
+The unchanged upstream pools are installed as a sample in
+${SYSCONFDIR}/sdwdate.d/30_default.conf. Put overrides in 50_user.conf;
+files are read in name order and are not executed. Supported native additions:
+
+    CONTROL_PORT=9051
+
+PROXY_IP, PROXY_PORT, MAX_FAILURE_RATIO, RANDOMIZE_TIME and the pool syntax
+retain upstream meanings, subject to the local-only proxy restriction.
+Keep configuration root-owned and not writable by _sdwdate.
+
+First inspect base ntpd; never let two services independently change the clock:
+
+    rcctl check ntpd
+    rcctl check tor
+
+For intentional clock-changing tests on an isolated OpenBSD machine:
+
+    rcctl disable ntpd
+    rcctl stop ntpd
+    rcctl enable sdwdate
+    rcctl start sdwdate
+
+These are administrator actions, not package installation actions. The rc
+script refuses startup while any ntpd process is present. It cannot prevent
+someone starting ntpd later or another privileged program changing the clock.
+Direct invocation bypasses that rc check: verify ntpd manually first.
+
+A safe initial foreground run, as root, is:
+
+    ${TRUEPREFIX}/sbin/sdwdate --dry-run --once
+
+This runs network selection under _sdwdate but never changes the clock or
+replay checkpoint. For persistent dry-run service testing:
+
+    rcctl set sdwdate flags --dry-run
+    rcctl start sdwdate
+
+Remove that flag explicitly only when ready for controlled clock tests.
+Status is JSON in /var/run/sdwdate/status (mode 0600). Operational messages
+use syslog daemon facility and stderr. Upstream detailed fetch diagnostics
+also use stdout; run foreground when collecting those details.
+
+The first successful correction can step at most 24 hours; --slew-only
+forbids it. Subsequent corrections are limited to +/-30 seconds, delivered
+as at most 5ms per second. Larger corrections are rejected, not converted
+into a step. Completion may take up to 100 minutes plus scheduler delays.
+Queries then sleep for upstream's randomized 60-180 minute interval.
+On SIGTERM/EOF/crash of the broker no further incremental correction occurs.
+Already completed adjustments are not reversed. No Linux hwclock command
+is installed or invoked; kernel/RTC persistence must be checked natively.
+
+The replay checkpoint is written atomically only after successful completion.
+Its initial floor is the selected release date; upstream's 2033 upper bound
+is retained. Preserve /var/db/sdwdate across reboots. Corrupt checkpoints
+fail closed; do not casually delete them to suppress validation errors.
+
+Native test checklist
+=====================
+Check rcctl, ps aux, fstat -p <pid>, ls -ln of the runtime directory/cookie,
+and syslog. Use netstat -an -f unix and fstat; sockstat is not OpenBSD base.
+Verify no root Python process, no public privileged socket, no inherited
+broker descriptor in HTTP children, and no setuid bits.
+
+Test stop/restart/SIGTERM, Tor unavailable and bootstrapping, control timeout,
+bad SAFECOOKIE permissions, reconnect, invalid and duplicate Date headers,
+partial pool failure, empty pools, and all-source failure. No failure may
+produce a successful clock status. Test simultaneous starts and ntpd conflict.
+
+Only in a disposable OpenBSD VM, with ntpd stopped, test positive/negative
+initial corrections, +/-gradual corrections, --slew-only rejection, excessive
+offset rejection, helper failure, parent SIGKILL, child failure, reboot,
+checkpoint recovery and hardware-clock persistence. Confirm no orphaned clock
+writer, no abrupt step in gradual mode, and correct normalized nanoseconds.
+Do not perform these clock-changing tests on the Fedora analysis host.

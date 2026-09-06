@@ -1,0 +1,199 @@
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+OpenBSD runtime adaptation; preserve the upstream source pools and selection.
+See pkg/README and OPENBSD-PORTS-INITIAL-STATUS.md for the privilege boundary.
+
+Index: usr/bin/url_to_unixtime
+--- usr/bin/url_to_unixtime.orig
++++ usr/bin/url_to_unixtime
+@@ -1,174 +1,23 @@
+-#!/usr/bin/python3 -su
+-
+-## Copyright (C) 2015 troubadour <trobador@riseup.net>
+-## Copyright (C) 2015 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+-## See the file COPYING for copying conditions.
+-
+-## Syntax:
+-## url_to_unixtime socket_ip socket_port url verbosity
+-
+-## Examples:
+-## url_to_unixtime 127.0.0.1 9050 http://check.torproject.org 80 true
+-## url_to_unixtime 127.0.0.1 9050 https://check.torproject.org 80 true
+-## url_to_unixtime 127.0.0.1 9050 http://2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion 80 false
+-## url_to_unixtime 127.0.0.1 9050 https://p53lf57qovyuvwsc6xnrppyply3vtqm7l6pcobkmyqsiofyeznfu5uqd.onion 80 false
+-
+-## prints debug and errors to stderr
+-## prints unixtime to stdout
+-
+-# !/bin/bash
+-# Test.
+-# timeout --kill-after 1 1 cat /dev/random
+-# timeout --kill-after 1 1 cat /dev/random >&2
+-# echo abcdefghij
++#!${MODPY_BIN} -sB
+ 
++# Copyright (C) 2015 troubadour <trobador@riseup.net>
++# Copyright (C) 2015 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
++# See the file COPYING for copying conditions.
++# Syntax retained: socket_ip socket_port onion_url verbosity.
+ import sys
+-sys.dont_write_bytecode = True
+-
+-import os, time, requests
+-from dateutil.parser import parse
+-
+-os.environ['LC_TIME'] = 'C'
+-os.environ['TZ'] = 'UTC'
+-time.tzset()
+-
+-
+-def data_to_http_time(data):
+-    http_time = data.headers["Date"]
+-
+-    ## Test ###################
+-    #http_time = http_time[:28]
+-    ###########################
+-
+-    http_time_string_length = len(http_time)
+-
+-    ## min string length = max string length.
+-    if http_time_string_length < 29:
+-        print('HTTP header date string too short.', file=sys.stderr)
+-        print('HTTP header date length: {}'.format(http_time_string_length), file=sys.stderr)
+-        print('HTTP header data:\n{}'.format(data), file=sys.stderr)
+-        print('HTTP header date value: "{}"'.format(http_time), file=sys.stderr)
+-        sys.exit(2)
+-
+-    if http_time_string_length > 100:
+-        print('HTTP header date string too long.', file=sys.stderr)
+-        print('HTTP header date length: {}'.format(http_time_string_length), file=sys.stderr)
+-        print('HTTP header data:\n{}'.format(data), file=sys.stderr)
+-        print('HTTP header date value: "{}"'.format(http_time), file=sys.stderr)
+-        sys.exit(2)
+-
+-    return http_time
+-
+-def unixtime_sanity_check(data, http_time, parsed_unixtime):
+-    try:
+-        unixtime_digit = int(parsed_unixtime)
+-
+-    except ValueError:
+-        print('parsed_unixtime conversion failed!', file=sys.stderr)
+-        print('data: {}'.format(data), file=sys.stderr)
+-        print('http_time: {}'.format(http_time), file=sys.stderr)
+-        print('parsed_unixtime: {}'.format(parsed_unixtime), file=sys.stderr)
+-        print('parsed_unixtime not numeric!', file=sys.stderr)
+-        sys.exit(3)
+-
+-    if unixtime_digit <= 0:
+-        print('parsed_unixtime is negative!', file=sys.stderr)
+-        print('data: {}'.format(data), file=sys.stderr)
+-        print('http_time: {}'.format(http_time), file=sys.stderr)
+-        print('parsed_unixtime: {}'.format(parsed_unixtime), file=sys.stderr)
+-        print('parsed_unixtime not numeric!', file=sys.stderr)
+-        sys.exit(3)
+-
+-    unixtime_string_length_is = len(parsed_unixtime)
+-    unixtime_string_length_max = 10
+-
+-    if unixtime_string_length_is > unixtime_string_length_max:
+-        print('parsed_unixtime conversion failed!', file=sys.stderr)
+-        print('data: {}'.format(data), file=sys.stderr)
+-        print('http_time: {}'.format(http_time), file=sys.stderr)
+-        print('parsed_unixtime: {}'.format(parsed_unixtime), file=sys.stderr)
+-        print('unixtime_string_length_is: {}'.format(unixtime_string_length_is), file=sys.stderr)
+-        print('unixtime_string_length_max: {}'.format(unixtime_string_length_max, file=sys.stderr))
+-        print('parsed_unixtime has excessive string length!', file=sys.stderr)
+-        sys.exit(4)
++sys.path.insert(0, "${TRUEPREFIX}/libexec/sdwdate")
++from sdwdate.openbsd import fetch_date
+ 
+-    return parsed_unixtime
+-
+-def request_data_from_remote_server(socket_ip, socket_port, url):
+-    ## https://gist.github.com/jefftriplett/9748036
+-    ## https://github.com/psf/requests/blob/e3f89bf23c53b98593e4248054661472aacac820/requests/packages/urllib3/contrib/socks.py#L158
+-
+-    proxy = 'socks5h://' + str(socket_ip) + ':' + str(socket_port)
+-
+-    proxies = {
+-       'http': proxy,
+-       'https': proxy
+-    }
+-
+-    try:
+-        data = requests.get(url, proxies=proxies)
+-
+-    ## TODO: test
+-    except Exception as e:
+-        print('connect error: {}'.format(e) , file=sys.stderr)
+-        sys.exit(5)
+-
+-    return data
+-
+-def http_time_to_parsed_unixtime(data, http_time):
+-    ## Test ##################################
+-    #http_time = "something"
+-    ##########################################
+-
+-    try:
+-        ## Thanks to:
+-        ## eumiro
+-        ## http://stackoverflow.com/a/3894047/2605155
+-        parsed_unixtime = parse(http_time).strftime('%s')
+-
+-    except ValueError as e:
+-        print('Parsing http_time from server failed!', file=sys.stderr)
+-        print('HTTP header data:\n{}'.format(data), file=sys.stderr)
+-        print('http_time: {}'.format(http_time), file=sys.stderr)
+-        print('dateutil ValueError: {}'.format(e), file=sys.stderr)
+-        sys.exit(6)
+-
+-    ## Test ##################################
+-    #parsed_unixtime = '%sA' % parsed_unixtime
+-    ##########################################
+-    ## Test ##################################
+-    #parsed_unixtime = '%s1' % parsed_unixtime
+-    ##########################################
+-    return parsed_unixtime
+-
+-def parse_command_line_parameters():
+-    try:
+-        socket_ip = sys.argv[1]
+-        socket_port = int(sys.argv[2])
+-        url = sys.argv[3]
+-        verbosity = sys.argv[4]
+-
+-    except IndexError as e:
+-        print("Parsing command line parameter failed. | e: {}".format(e), file=sys.stderr)
+-        print("sys.argv:", str(sys.argv), file=sys.stderr)
+-        sys.exit(7)
+-
+-    return socket_ip, socket_port, url, verbosity
+-
+-def output_unixtime(data, http_time, parsed_unixtime, unixtime, verbosity):
+-    if verbosity == "true":
+-        print('data: {}'.format(data), file=sys.stderr)
+-        print('http_time: {}'.format(http_time), file=sys.stderr)
+-        print('parsed_unixtime: {}'.format(parsed_unixtime), file=sys.stderr)
+-    print('{}'.format(unixtime))
+ 
+ def main():
+-    socket_ip, socket_port, url, verbosity = parse_command_line_parameters()
+-    data = request_data_from_remote_server(socket_ip, socket_port, url)
+-    http_time = data_to_http_time(data)
+-    parsed_unixtime = http_time_to_parsed_unixtime(data, http_time)
+-    unixtime = unixtime_sanity_check(data, http_time, parsed_unixtime)
+-    output_unixtime(data, http_time, parsed_unixtime, unixtime, verbosity)
++    if len(sys.argv) != 5:
++        raise ValueError("usage: url_to_unixtime socket_ip socket_port onion_url verbosity")
++    print(fetch_date(sys.argv[1], sys.argv[2], sys.argv[3]))
++
+ 
+ if __name__ == "__main__":
+-    main()
++    try:
++        main()
++    except Exception as error:
++        print(str(error)[:400], file=sys.stderr)
++        sys.exit(1)

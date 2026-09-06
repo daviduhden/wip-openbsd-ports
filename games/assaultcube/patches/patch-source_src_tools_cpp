@@ -1,3 +1,8 @@
+SPDX-License-Identifier: LicenseRef-Cube-Engine
+
+LicenseRef-Cube-Engine: source/README_CUBEENGINE.txt, zlib license with
+the additional prohibition on relicensing without written permission.
+
 Index: source/src/tools.cpp
 --- source/src/tools.cpp.orig
 +++ source/src/tools.cpp

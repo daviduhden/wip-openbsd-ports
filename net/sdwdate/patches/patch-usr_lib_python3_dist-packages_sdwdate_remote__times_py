@@ -1,0 +1,41 @@
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+OpenBSD runtime adaptation; preserve the upstream source pools and selection.
+See pkg/README and OPENBSD-PORTS-INITIAL-STATUS.md for the privilege boundary.
+
+Index: usr/lib/python3/dist-packages/sdwdate/remote_times.py
+--- usr/lib/python3/dist-packages/sdwdate/remote_times.py.orig
++++ usr/lib/python3/dist-packages/sdwdate/remote_times.py
+@@ -30,9 +30,8 @@
+     timeout_seconds = 120
+ 
+     # Avoid Popen shell=True.
+-    url_to_unixtime_command = shlex.split(url_to_unixtime_command)
+ 
+-    start_unixtime = time.time()
++    start_unixtime = time.monotonic()
+ 
+     process = subprocess.Popen(
+         url_to_unixtime_command,
+@@ -66,7 +65,7 @@
+     process.wait()
+ 
+     end_unixtime = time.time()
+-    took_time = end_unixtime - start_unixtime
++    took_time = time.monotonic() - start_unixtime
+ 
+     # Round took_time to two digits for better readability.
+     # No other reason for rounding.
+@@ -379,8 +378,10 @@
+ 
+     print("remote_times.py: url_to_unixtime_command (s):")
+     for i in range_of_remote_servers:
+-        url_to_unixtime_commands_list[i] = "url_to_unixtime" + " " + proxy_ip_address + " " + \
+-            proxy_port_number + " " + list_of_remote_servers[i] + " " + url_to_unixtime_debug
++        url_to_unixtime_commands_list[i] = [
++            "${LOCALBASE}/bin/url_to_unixtime", proxy_ip_address,
++            str(proxy_port_number), list_of_remote_servers[i], url_to_unixtime_debug
++        ]
+         print(url_to_unixtime_commands_list[i])
+ 
+     print("")

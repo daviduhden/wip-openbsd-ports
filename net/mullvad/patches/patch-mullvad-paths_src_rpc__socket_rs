@@ -1,3 +1,5 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+
 Index: mullvad-paths/src/rpc_socket.rs
 --- mullvad-paths/src/rpc_socket.rs.orig
 +++ mullvad-paths/src/rpc_socket.rs

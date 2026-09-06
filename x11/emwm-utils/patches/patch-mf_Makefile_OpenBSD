@@ -1,0 +1,32 @@
+SPDX-License-Identifier: MIT
+
+Honor variables supplied by the ports framework and append to its
+CFLAGS.  Clear SYSLIBS because OpenBSD provides crypt(3) in libc, while
+xmsm uses BSD Authentication instead of crypt(3) to unlock the screen.
+
+Index: mf/Makefile.OpenBSD
+--- mf/Makefile.OpenBSD.orig
++++ mf/Makefile.OpenBSD
+@@ -1,14 +1,15 @@
+ # OpenBSD Makefile
+ 
+-PREFIX = /usr/local
+-MANDIR = /usr/local/man
+-RCDIR = /usr/X11R6/lib/X11
+-APPLRESDIR = /usr/X11R6/lib/X11/app-defaults
++PREFIX ?= ${PREFIX}
++MANDIR ?= ${PREFIX}/man
++RCDIR ?= ${PREFIX}/lib/X11
++APPLRESDIR ?= ${PREFIX}/lib/X11/app-defaults
+ 
+-INCDIRS = -I./Xm -I/usr/X11R6/include -I/usr/local/include
+-LIBDIRS = -L/usr/X11R6/lib -L/usr/local/lib
++INCDIRS += -I./Xm -I${X11BASE}/include -I${LOCALBASE}/include
++LIBDIRS += -L${X11BASE}/lib -L${LOCALBASE}/lib
++SYSLIBS =
+ 
+-CFLAGS = -O2 -Wall $(INCDIRS)
++CFLAGS += -Wall $(INCDIRS)
+ 
+ include common.mf
+ 

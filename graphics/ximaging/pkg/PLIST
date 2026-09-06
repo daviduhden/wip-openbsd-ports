@@ -1,0 +1,3 @@
+@bin bin/ximaging
+lib/X11/app-defaults/XImaging
+@man man/man1/ximaging.1

@@ -1,3 +1,5 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+
 Index: Cargo.toml
 --- Cargo.toml.orig
 +++ Cargo.toml

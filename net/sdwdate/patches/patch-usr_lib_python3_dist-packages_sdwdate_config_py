@@ -1,0 +1,78 @@
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+OpenBSD runtime adaptation; preserve the upstream source pools and selection.
+See pkg/README and OPENBSD-PORTS-INITIAL-STATUS.md for the privilege boundary.
+
+Index: usr/lib/python3/dist-packages/sdwdate/config.py
+--- usr/lib/python3/dist-packages/sdwdate/config.py.orig
++++ usr/lib/python3/dist-packages/sdwdate/config.py
+@@ -33,25 +33,16 @@
+ 
+ 
+ def time_replay_protection_file_read():
+-    import subprocess
+-    process = subprocess.Popen(
+-        "/usr/bin/minimum-unixtime-show",
+-        stdout=subprocess.PIPE,
+-        stderr=subprocess.PIPE,
+-    )
+-    stdout, stderr = process.communicate()
+-    unixtime = int(stdout)
+-    time_human_readable = stderr.decode("utf-8").strip()
+-    # Relay check to avoid false-positives due to sdwdate inaccuracy.
+-    unixtime = unixtime - 100
+-    return unixtime, time_human_readable
++    from .openbsd import minimum_time
++    unixtime = minimum_time() - 100
++    return unixtime, time_human_readable(unixtime)
+ 
+ 
+ def randomize_time_config():
+     status = False
+-    if not os.path.exists("/etc/sdwdate.d/"):
++    if not os.path.exists("${SYSCONFDIR}/sdwdate.d/"):
+         return status
+-    files = sorted(glob.glob("/etc/sdwdate.d/*.conf"))
++    files = sorted(glob.glob("${SYSCONFDIR}/sdwdate.d/*.conf"))
+     for file_item in files:
+         with open(file_item) as conf:
+             lines = conf.readlines()
+@@ -65,8 +56,8 @@
+ 
+ def allowed_failures_config():
+     failure_ratio = None
+-    if os.path.exists("/etc/sdwdate.d/"):
+-        files = sorted(glob.glob("/etc/sdwdate.d/*.conf"))
++    if os.path.exists("${SYSCONFDIR}/sdwdate.d/"):
++        files = sorted(glob.glob("${SYSCONFDIR}/sdwdate.d/*.conf"))
+         for file_item in files:
+             with open(file_item) as conf:
+                 lines = conf.readlines()
+@@ -187,8 +178,8 @@
+     pool_two_url = []
+     pool_three_url = []
+ 
+-    if os.path.exists('/etc/sdwdate.d/'):
+-        files = sorted(glob.glob('/etc/sdwdate.d/*.conf'))
++    if os.path.exists('${SYSCONFDIR}/sdwdate.d/'):
++        files = sorted(glob.glob('${SYSCONFDIR}/sdwdate.d/*.conf'))
+ 
+         if files:
+             conf_found = False
+@@ -220,13 +211,13 @@
+ 
+             if not conf_found:
+                 print(
+-                    'No valid file found in user configuration folder "/etc/sdwdate.d".')
++                    'No valid file found in user configuration folder "${SYSCONFDIR}/sdwdate.d".')
+ 
+         else:
+-            print('No file found in user configuration folder "/etc/sdwdate.d".')
++            print('No file found in user configuration folder "${SYSCONFDIR}/sdwdate.d".')
+ 
+     else:
+-        print('User configuration folder "/etc/sdwdate.d" does not exist.')
++        print('User configuration folder "${SYSCONFDIR}/sdwdate.d" does not exist.')
+ 
+     pool_one_url, pool_one_comment = sort_pool(pool_one, mode)
+     pool_two_url, pool_two_comment = sort_pool(pool_two, mode)

@@ -2,7 +2,7 @@ COMMENT = Monero Light Wallet Server
 
 GH_ACCOUNT = vtnerd
 GH_PROJECT = monero-lws
-GH_COMMIT = ace5f7dcf705d535c196ff83517911c80ca3f655
+GH_COMMIT = 89e5fdcbb9c8ae2e640b9a874f10a37779984abe
 
 VERSION = 0.18.5.1
 MONERO_SERIES = ${VERSION:C/\.[0-9]+\.[0-9]+$//}

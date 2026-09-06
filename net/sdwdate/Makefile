@@ -2,8 +2,8 @@ COMMENT =		synchronize the clock through independent Tor sources
 
 GH_ACCOUNT =		Kicksecure
 GH_PROJECT =		sdwdate
-GH_TAGNAME =		29.0-1
-PKGNAME =		sdwdate-29.0.1
+GH_TAGNAME =		29.1-1
+PKGNAME =		sdwdate-29.1.1
 CATEGORIES =		net
 HOMEPAGE =		https://www.kicksecure.com/wiki/sdwdate
 

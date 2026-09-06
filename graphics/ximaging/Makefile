@@ -1,7 +1,7 @@
 COMMENT=	lightweight image viewer and browser for Unix/X11 Motif
 
-DISTNAME=	ximaging-src-1.9.2
-PKGNAME=	ximaging-1.9.2
+DISTNAME=	ximaging-src-1.9.3
+PKGNAME=	ximaging-1.9.3
 
 CATEGORIES=	graphics x11
 HOMEPAGE=	https://fastestcode.org/ximaging.html
@@ -21,7 +21,7 @@ LIB_DEPENDS=	graphics/jpeg \
 
 RUN_DEPENDS=	graphics/ImageMagick
 
-WRKDIST=	${WRKDIR}/ximaging-src-1.9.2
+WRKDIST=	${WRKDIR}/ximaging-src-1.9.3
 
 MAKE_ENV=	CC='${CC}' \
 		CFLAGS='${CFLAGS}' \

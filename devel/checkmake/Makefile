@@ -17,7 +17,8 @@ MODULES =		lang/go
 SITES.man =		https://github.com/checkmake/checkmake/releases/download/${MODGO_VERSION}/
 DISTFILES.man =		checkmake-${MODGO_VERSION:S/v//}.1{checkmake.1}
 
-MODGO_LDFLAGS +=		-X main.version=${MODGO_VERSION} \
+WRKDIST = 		${WRKDIR}/${MODGO_MODNAME}@${MODGO_VERSION}
+MODGO_LDFLAGS +=	-X main.version=${MODGO_VERSION} \
 			-X main.builder=OpenBSD \
 			-X main.buildTime=release
 TEST_TARGET =		./...

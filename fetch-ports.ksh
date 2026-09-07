@@ -254,14 +254,22 @@ validate_port_path() {
 	typeset port=$1 category name
 	case "$port" in
 	*/*/* | /* | *[!a-zA-Z0-9_+./-]* | */ | ./* | ../*)
-		error "Invalid category/port: $port"; return 1 ;;
+		error "Invalid category/port: $port"
+		return 1
+		;;
 	*/*) ;;
-	*) error "Expected category/port, not: $port"; return 1 ;;
+	*)
+		error "Expected category/port, not: $port"
+		return 1
+		;;
 	esac
 	category=${port%/*}
 	name=${port#*/}
 	case "$category:$name" in
-	.*:* | *:.*) error "Invalid category/port: $port"; return 1 ;;
+	.*:* | *:.*)
+		error "Invalid category/port: $port"
+		return 1
+		;;
 	esac
 	if [ -L "$category" ] || [ -L "$port" ] ||
 		[ -L "$port/Makefile" ] || [ ! -f "$port/Makefile" ]; then
@@ -393,7 +401,7 @@ copy_user_list() {
 			for (i = 1; i <= total; i++)
 				if (!(ids[i] in seen)) print rows[ids[i]]
 		}
-	' user.list "$registry" > "$stage"; then
+	' user.list "$registry" >"$stage"; then
 		rm -f "$stage"
 		error "User registry unchanged; resolve conflicting port IDs first."
 		return 1
@@ -455,7 +463,10 @@ canonical_target_tree() {
 		error "Refusing symlinked checkout root: $path"
 		return 1
 	fi
-	(unset CDPATH; cd -- "$path" && pwd -P)
+	(
+		unset CDPATH
+		cd -- "$path" && pwd -P
+	)
 }
 
 # Main function
@@ -465,7 +476,8 @@ main() {
 	--list)
 		move_to_wip_openbsd_ports
 		list_all_directories
-		return $? ;;
+		return $?
+		;;
 	--copy-only)
 		[ "$#" -ge 2 ] || {
 			error "Usage: $0 --copy-only TREE [category/port ...]"
@@ -485,10 +497,13 @@ main() {
 			copy_selected_directories || return 1
 		fi
 		copy_user_list
-		return $? ;;
+		return $?
+		;;
 	"") ;;
-	*) error "Usage: $0 [--list | --copy-only TREE [category/port ...]]"
-		return 1 ;;
+	*)
+		error "Usage: $0 [--list | --copy-only TREE [category/port ...]]"
+		return 1
+		;;
 	esac
 	check_root
 	set_cvsroot

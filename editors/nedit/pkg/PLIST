@@ -1,0 +1,5 @@
+@bin bin/ncl
+@bin bin/nedit
+lib/X11/app-defaults/NEdit
+@man man/man1/ncl.1
+@man man/man1/nedit.1

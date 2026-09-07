@@ -1,0 +1,8 @@
+NEdit is a multi-purpose text editor for the X Window System, which
+combines a standard, easy to use, graphical user interface with the
+thorough functionality and stability required by users who edit text
+eight hours a day.
+
+This is the "classic" fork with experimental patches adding MWM
+workspace manager compatibility and optional support for Xft fonts.
+Compatible with the updated Motif 2.3.9 library.

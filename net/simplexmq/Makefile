@@ -246,7 +246,7 @@ do-test:
 		-w ${LOCALBASE}/bin/ghc \
 		-j${MAKE_JOBS} \
 		--flags="${MODCABAL_FLAGS}" ${MODCABAL_BUILD_ARGS} \
-		--test-options="${SIMPLEXMQ_TEST_OPTIONS}" \
+		--test-options=${SIMPLEXMQ_TEST_OPTIONS:Q} \
 		test:simplexmq-test
 
 # Keep the local harness entry point used by `make do-tests`.

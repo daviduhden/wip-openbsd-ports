@@ -4,10 +4,152 @@ Use loopback multicast for a local pairing test; a builder's LAN firewall
 must not determine whether its two local peers can discover one another.
 The multicast transport and authenticated pairing remain exercised.
 
+Own both new-pairing clients, observe either application peer's failure
+without first waiting for the listener, and bound exchange and cancellation.
+The old five-second timeout did not cover the preceding listener wait;
+a failed peer could leave that wait blocked until the 300-second watchdog.
+Use loopback for this local pairing too, retaining TLS and encrypted packets.
+
 Index: tests/RemoteControl.hs
 --- tests/RemoteControl.hs.orig
 +++ tests/RemoteControl.hs
-@@ -246,7 +246,10 @@
+@@ -8,7 +8,8 @@
+ module RemoteControl where
+
+ import AgentTests.FunctionalAPITests (runRight)
+-import Control.Logger.Simple
++import qualified Control.Concurrent.Async as A
++import qualified Control.Exception as E
+ import Crypto.Random (ChaChaDRG)
+ import qualified Data.Aeson as J
+ import qualified Data.ByteString.Char8 as B
+@@ -21,6 +22,7 @@
+ import Simplex.Messaging.Transport (TSbChainKeys (..))
+ import Simplex.Messaging.Transport.Client (TransportHost)
+ import qualified Simplex.RemoteControl.Client as HC (RCHostClient (action))
++import qualified Simplex.RemoteControl.Client as CC (RCCtrlClient (action))
+ import qualified Simplex.RemoteControl.Client as RC
+ import Simplex.RemoteControl.Discovery (mkLastLocalHost, preferAddress)
+ import Simplex.RemoteControl.Invitation
+@@ -133,65 +135,61 @@
+ testNewPairing = do
+   drg <- C.newRandom
+   hp <- RC.newRCHostPairing drg
+-  invVar <- newEmptyMVar
+-  ctrlSessId <- async . runRight $ do
+-    logNote "c 1"
+-    (_found, inv, hc, r) <- RC.connectRCHost drg hp (J.String "app") False Nothing Nothing
+-    logNote "c 2"
+-    putMVar invVar (inv, hc)
+-    logNote "c 3"
+-    Right (sessId, _tls, r') <- atomically $ takeTMVar r
+-    logNote "c 4"
+-    Right (rcHostSession, _rcHelloBody, _hp') <- atomically $ takeTMVar r'
+-    let RCHostSession {tls, sessionKeys = HostSessKeys {chainKeys}} = rcHostSession
+-        TSbChainKeys {rcvKey, sndKey} = chainKeys
+-    sndKeyNonce <- atomically $ stateTVar sndKey C.sbcHkdf
+-    encCmd <- RC.rcEncryptBody sndKeyNonce "command message"
+-    RC.sendRCPacket tls $ LB.toStrict encCmd
+-    encResp <- RC.receiveRCPacket tls
+-    rcvKeyNonce <- atomically $ stateTVar rcvKey C.sbcHkdf
+-    resp <- RC.rcDecryptBody rcvKeyNonce $ LB.fromStrict encResp
+-    liftIO $ resp `shouldBe` "response message"
+-    logNote "c 5"
+-    threadDelay 250000
+-    logNote "ctrl: ciao"
+-    liftIO $ RC.cancelHostClient hc
+-    pure sessId
+-
+-  (signedInv, hc) <- takeMVar invVar
+-  -- logNote $ decodeUtf8 $ strEncode inv
+-  inv <- maybe (fail "bad invite") pure $ verifySignedInvitation signedInv
+-
+-  hostSessId <- async . runRight $ do
+-    logNote "h 1"
+-    (rcCtrlClient, r) <- RC.connectRCCtrl drg inv Nothing (J.String "app")
+-    logNote "h 2"
+-    Right (sessId', _tls, r') <- atomically $ takeTMVar r
+-    logNote "h 3"
+-    liftIO $ RC.confirmCtrlSession rcCtrlClient True
+-    logNote "h 4"
+-    Right (rcCtrlSession, _rcCtrlPairing) <- atomically $ takeTMVar r'
+-    let RCCtrlSession {tls, sessionKeys = CtrlSessKeys {chainKeys}} = rcCtrlSession
+-        TSbChainKeys {rcvKey, sndKey} = chainKeys
+-    encCmd <- RC.receiveRCPacket tls
+-    rcvKeyNonce <- atomically $ stateTVar rcvKey C.sbcHkdf
+-    cmd <- RC.rcDecryptBody rcvKeyNonce $ LB.fromStrict encCmd
+-    liftIO $ cmd `shouldBe` "command message"
+-    sndKeyNonce <- atomically $ stateTVar sndKey C.sbcHkdf
+-    encResp <- RC.rcEncryptBody sndKeyNonce "response message"
+-    RC.sendRCPacket tls $ LB.toStrict encResp
+-    logNote "h 5"
+-    threadDelay 250000
+-    logNote "ctrl: adios"
+-    pure sessId'
+-
++  -- Both peers are local; do not depend on a LAN address or its firewall.
++  let preferred = Just (RCCtrlAddress "127.0.0.1" "")
++  hc <- E.bracket
++    (runRight $ RC.connectRCHost drg hp (J.String "app") False preferred Nothing)
++    (\(_, _, client, _) -> stop $ HC.action client)
++    $ \(_found, signedInv, client, hostResult) -> do
++      inv <- maybe (fail "bad invite") pure $ verifySignedInvitation signedInv
++      E.bracket
++        (runRight $ RC.connectRCCtrl drg inv Nothing (J.String "app"))
++        (stop . CC.action . fst)
++        $ \(rcCtrlClient, ctrlResult) -> do
++          let controller = runRight $ do
++                Right (sessId, _tls, r') <- atomically $ takeTMVar hostResult
++                Right (rcHostSession, _rcHelloBody, _hp') <- atomically $ takeTMVar r'
++                let RCHostSession {tls, sessionKeys = HostSessKeys {chainKeys}} = rcHostSession
++                    TSbChainKeys {rcvKey, sndKey} = chainKeys
++                sndKeyNonce <- atomically $ stateTVar sndKey C.sbcHkdf
++                encCmd <- RC.rcEncryptBody sndKeyNonce "command message"
++                RC.sendRCPacket tls $ LB.toStrict encCmd
++                encResp <- RC.receiveRCPacket tls
++                rcvKeyNonce <- atomically $ stateTVar rcvKey C.sbcHkdf
++                resp <- RC.rcDecryptBody rcvKeyNonce $ LB.fromStrict encResp
++                liftIO $ resp `shouldBe` "response message"
++                pure sessId
++              host = runRight $ do
++                Right (sessId, _tls, r') <- atomically $ takeTMVar ctrlResult
++                liftIO $ RC.confirmCtrlSession rcCtrlClient True
++                Right (rcCtrlSession, _rcCtrlPairing) <- atomically $ takeTMVar r'
++                let RCCtrlSession {tls, sessionKeys = CtrlSessKeys {chainKeys}} = rcCtrlSession
++                    TSbChainKeys {rcvKey, sndKey} = chainKeys
++                encCmd <- RC.receiveRCPacket tls
++                rcvKeyNonce <- atomically $ stateTVar rcvKey C.sbcHkdf
++                cmd <- RC.rcDecryptBody rcvKeyNonce $ LB.fromStrict encCmd
++                liftIO $ cmd `shouldBe` "command message"
++                sndKeyNonce <- atomically $ stateTVar sndKey C.sbcHkdf
++                encResp <- RC.rcEncryptBody sndKeyNonce "response message"
++                RC.sendRCPacket tls $ LB.toStrict encResp
++                pure sessId
++          -- Observe either peer's exception immediately. Previously the test
++          -- first waited for the listener to stop, which only the successful
++          -- controller action could request, outside the five-second bound.
++          (sessId, sessId') <- bounded "pairing and packet exchange" $ A.concurrently controller host
++          sessId `shouldBe` sessId'
++      pure client
+   waitCatch (HC.action hc) >>= \case
+     Left err -> fromException err `shouldBe` Just AsyncCancelled
+     Right () -> fail "Unexpected controller finish"
+-
+-  timeout 5000000 (waitBoth ctrlSessId hostSessId) >>= \case
+-    Just (sessId, sessId') -> sessId `shouldBe` sessId'
+-    _ -> fail "timeout"
++  where
++    bounded :: String -> IO a -> IO a
++    bounded label action =
++      timeout 5000000 action >>= maybe (fail $ "XRCP timeout: " <> label) pure
++    -- These non-multicast clients have no announcer. Own their exported
++    -- actions directly, using interruptible cancellation and a bounded join.
++    stop :: A.Async a -> IO ()
++    stop = bounded "client shutdown" . A.cancel
+
+ testExistingPairing :: IO ()
+ testExistingPairing = do
+@@ -246,7 +244,10 @@
  
  runCtrl :: TVar ChaChaDRG -> Bool -> RCHostPairing -> MVar RCSignedInvitation -> IO (Async RCHostPairing)
  runCtrl drg multicast hp invVar = async . runRight $ do

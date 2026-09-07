@@ -32,6 +32,11 @@ Wait for the expected subscription IDs rather than two server events: after
 queue deletion one of the servers can have no subscriptions and emits no event.
 Keep the wait bounded and reject empty, duplicate or unexpected subscription IDs.
 
+Drain session-mode notifications continuously and check the exact DOWN/UP
+connection sets. Independent reconnects and deferred full-queue writes do not
+guarantee arrival order; reject duplicate, empty or unexpected IDs and keep
+the existing ten-second bound, session counts and message exchanges.
+
 Index: tests/AgentTests/FunctionalAPITests.hs
 --- tests/AgentTests/FunctionalAPITests.hs.orig
 +++ tests/AgentTests/FunctionalAPITests.hs
@@ -388,7 +393,93 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        liftIO $ noMessages a "nothing else should be delivered to alice"
        liftIO $ noMessages b "nothing else should be delivered to bob"
    where
-@@ -4227,11 +4290,11 @@
+@@ -3788,21 +3851,14 @@
+     a `hasClients` 1
+     b `hasClients` 1
+     setNetworkConfig a nc {sessionMode = TSMEntity}
+-    liftIO $ threadDelay 250000
+-    ("", "", DOWN _ _) <- nGet a
+-    ("", "", UP _ _) <- nGet a
+-    ("", "", UP _ _) <- nGet a
++    liftIO $ sessionEvents a [bId1, bId1']
+     a `hasClients` 2
+
+     exchangeGreetingsMsgId 4 a bId1 b aId1
+     exchangeGreetingsMsgId 4 a bId1' b aId1'
+     liftIO $ threadDelay 250000
+     setNetworkConfig a nc {sessionMode = TSMUser}
+-    liftIO $ threadDelay 250000
+-    ("", "", DOWN _ _) <- nGet a
+-    ("", "", DOWN _ _) <- nGet a
+-    ("", "", UP _ _) <- nGet a
+-    ("", "", UP _ _) <- nGet a
++    liftIO $ sessionEvents a [bId1, bId1']
+     a `hasClients` 1
+
+     aUserId2 <- createUser a False [noAuthSrvCfg testSMPServer] [noAuthSrvCfg testXFTPServer]
+@@ -3813,13 +3869,7 @@
+     a `hasClients` 2
+     b `hasClients` 1
+     setNetworkConfig a nc {sessionMode = TSMEntity}
+-    liftIO $ threadDelay 250000
+-    ("", "", DOWN _ _) <- nGet a
+-    ("", "", DOWN _ _) <- nGet a
+-    ("", "", UP _ _) <- nGet a
+-    ("", "", UP _ _) <- nGet a
+-    ("", "", UP _ _) <- nGet a
+-    ("", "", UP _ _) <- nGet a
++    liftIO $ sessionEvents a [bId1, bId1', bId2, bId2']
+     a `hasClients` 4
+     exchangeGreetingsMsgId 6 a bId1 b aId1
+     exchangeGreetingsMsgId 6 a bId1' b aId1'
+@@ -3827,22 +3877,36 @@
+     exchangeGreetingsMsgId 4 a bId2' b aId2'
+     liftIO $ threadDelay 250000
+     setNetworkConfig a nc {sessionMode = TSMUser}
+-    liftIO $ threadDelay 250000
+-    ("", "", DOWN _ _) <- nGet a
+-    ("", "", DOWN _ _) <- nGet a
+-    ("", "", DOWN _ _) <- nGet a
+-    -- to avoice race condition
+-    nGet a =##> \case ("", "", DOWN _ _) -> True; ("", "", UP _ _) -> True; _ -> False
+-    nGet a =##> \case ("", "", UP _ _) -> True; ("", "", DOWN _ _) -> True; _ -> False
+-    ("", "", UP _ _) <- nGet a
+-    ("", "", UP _ _) <- nGet a
+-    ("", "", UP _ _) <- nGet a
++    liftIO $ sessionEvents a [bId1, bId1', bId2, bId2']
+     a `hasClients` 2
+     exchangeGreetingsMsgId 8 a bId1 b aId1
+     exchangeGreetingsMsgId 8 a bId1' b aId1'
+     exchangeGreetingsMsgId 6 a bId2 b aId2
+     exchangeGreetingsMsgId 6 a bId2' b aId2'
+   where
++    -- Client shutdowns run independently. notifySub also defers writes when
++    -- subQ is full, so event order is not guaranteed, even for one connection.
++    -- Consume continuously and require exactly one DOWN and UP per connection.
++    sessionEvents :: AgentClient -> [ConnId] -> IO ()
++    sessionEvents c ids = collect expected expected `shouldRespond` ()
++      where
++        expected = S.fromList ids
++        collect down up
++          | S.null down && S.null up = pure ()
++          | otherwise = nGet c >>= \case
++              ("", "", DOWN _ cs) -> do
++                remaining <- received down cs
++                collect remaining up
++              ("", "", UP _ cs) -> do
++                remaining <- received up cs
++                collect down remaining
++              event -> expectationFailure $ "unexpected session event: " <> show event
++        received remaining cs = do
++          let seen = S.fromList cs
++          seen `shouldSatisfy` (not . S.null)
++          seen `shouldSatisfy` (`S.isSubsetOf` remaining)
++          S.size seen `shouldBe` length cs
++          pure $ remaining S.\\ seen
+     hasClients :: HasCallStack => AgentClient -> Int -> ExceptT AgentErrorType IO ()
+     hasClients c n = liftIO $ M.size <$> readTVarIO (smpClients c) `shouldReturn` n
+
+@@ -4227,11 +4291,11 @@
        liftIO $ length conns `shouldBe` n
  
  getSMPAgentClient' :: Int -> AgentConfig -> InitialAgentServers -> String -> IO AgentClient
@@ -405,7 +496,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
  
  #if defined(dbPostgres)
  createStore :: String -> IO (Either MigrationError DBStore)
-@@ -4269,7 +4332,9 @@
+@@ -4269,7 +4333,9 @@
      exchangeGreetings alice bobId bob aliceId
      -- this saves queue with second server identity
      bob' <- liftIO $ do
@@ -416,7 +507,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        disposeAgentClient bob
        threadDelay 250000
        getSMPAgentClient' 3 agentCfg initAgentServers testDB2
-@@ -4292,64 +4357,58 @@
+@@ -4292,64 +4358,58 @@
          testE2ERatchetParams12
  
  testWaitForUserNetwork :: IO ()
@@ -525,7 +616,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
    where
      aCfg = agentCfg {userOfflineDelay = 0}
  
-@@ -4429,7 +4488,7 @@
+@@ -4429,7 +4489,7 @@
        liftIO $ isJust r `shouldBe` True
        pure r
      checkQ c cId qiSnd' qiSubThread_ qiSize' msgType_ = do
@@ -534,7 +625,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        liftIO $ do
          qiSnd `shouldBe` qiSnd'
          qiNtf `shouldBe` False
-@@ -4438,6 +4497,19 @@
+@@ -4438,6 +4498,19 @@
          msgId_ <- forM qiMsg $ \MsgInfo {msgId, msgType} -> msgId <$ (Just msgType `shouldBe` msgType_)
          qDelivered <$> qiSub `shouldBe` Just msgId_
          pure msgId_
@@ -554,7 +645,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
  
  testClientNotice :: HasCallStack => (ASrvTransport, AStoreType) -> IO ()
  testClientNotice ps = do
-@@ -4450,8 +4522,8 @@
+@@ -4450,8 +4523,8 @@
  
      (cId', _) <- withSmpServerStoreLogOn ps testPort $ \_ -> do
        subscribedWithErrors c 1
@@ -565,7 +656,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        runRight $ A.createConnection c NRMInteractive 1 True True SCMContact Nothing Nothing IKPQOn SMSubscribe
      ("", "", DOWN _ [_]) <- nGet c
  
-@@ -4459,10 +4531,10 @@
+@@ -4459,10 +4532,10 @@
  
      (cId'', _) <- withSmpServerStoreLogOn ps testPort $ \_ -> do
        subscribedWithErrors c 1
@@ -580,7 +671,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        runRight $ A.createConnection c NRMInteractive 1 True True SCMContact Nothing Nothing IKPQOn SMSubscribe
  
      addNotice c cId'' $ Just 1
-@@ -4471,10 +4543,10 @@
+@@ -4471,10 +4544,10 @@
      (cId3, _) <- withSmpServerStoreLogOn ps testPort $ \_ -> do
        runRight_ $ subscribeAllConnections c False Nothing
        subscribedWithErrors c 3
@@ -595,7 +686,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        runRight $ A.createConnection c NRMInteractive 1 True True SCMContact Nothing Nothing IKPQOn SMSubscribe
      ("", "", DOWN _ [_]) <- nGet c
  
-@@ -4504,10 +4576,16 @@
+@@ -4504,10 +4577,16 @@
        forM_ errs $ \case
          (_, SMP _  (BLOCKED _)) -> pure ()
          r -> expectationFailure $ "unexpected event: " <> show r
@@ -613,7 +704,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
  
  noNetworkDelay :: AgentClient -> IO ()
  noNetworkDelay a = do
-@@ -4517,7 +4595,7 @@
+@@ -4517,7 +4596,7 @@
  networkDelay :: AgentClient -> Int64 -> IO ()
  networkDelay a d' = do
    d <- waitNetwork a

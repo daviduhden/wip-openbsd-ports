@@ -1,22 +1,60 @@
 SPDX-License-Identifier: AGPL-3.0-only
 
-Compare the aggregate of three adjacent AUTH timing samples so scheduler noise
-cannot make the constant-time regression check fail spuriously.  The recorded
-pairwise differences reached 34.4%, but the aggregate differed by only 3.4%;
-retain the original 30% regression limit.
+Compare three rounds of AUTH CPU-time measurements. Interleave short blocks
+and alternate their order, preserving 3*n requests per case and the original
+30% regression limit. Fixed-order full blocks failed by 40.8% on Linux;
+the same operation varied 2.7-fold between blocks, without matching GC cost.
+Do not discard slow samples or retry until the timing assertion passes.
 
 Generate one unrestricted TLS credential for each notification service test
 and reuse it across connections and server restarts.  tls 2.4 rejects the
 server-only fixture for client authentication, while generating a new
 credential for every connection changes the SMP service identity.
 
+On timing failure, report the SUB/SEND phase, CPU time, monotonic wall time
+and optional +RTS -T GC statistics. timeit-2.0 measures process CPU time;
+keep that assertion metric and its existing threshold unchanged.
+
+Read service-subscription metrics strictly. The lazy reader leaves the
+handle locked while the periodic writer reopens it; its resource-busy
+exception terminates the server and makes the client fail with TLS EOF.
+
 Index: tests/ServerTests.hs
 --- tests/ServerTests.hs.orig
 +++ tests/ServerTests.hs
-@@ -1290,14 +1290,11 @@ testTiming =
+@@ -39,6 +39,8 @@
+ import Text.Read (readMaybe)
+ import Data.Type.Equality
+ import qualified Data.X509.Validation as XV
++import GHC.Clock (getMonotonicTimeNSec)
++import qualified GHC.Stats as RTS
+ import GHC.Stack (withFrozenCallStack)
+ import SMPClient
+ import qualified Simplex.Messaging.Crypto as C
+@@ -905,7 +907,8 @@
+                 _ -> pure Nothing
+             ]
+         threadDelay 1500000
+-        readFile testPrometheusMetricsFile >>= \m -> readServiceSubsMetric m `shouldBe` Just 2
++        -- Fully read and close before the next periodic writer opens the file.
++        B.readFile testPrometheusMetricsFile >>= \m -> readServiceSubsMetric (B.unpack m) `shouldBe` Just 2
+
+       -- Phase 2: associate 1 more queue via SUB, reconnect with SUBS 3, check metric = 3
+       (rPub3, rKey3) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
+@@ -935,7 +938,7 @@
+                 _ -> pure Nothing
+             ]
+         threadDelay 1500000
+-        readFile testPrometheusMetricsFile >>= \m -> readServiceSubsMetric m `shouldBe` Just 3
++        B.readFile testPrometheusMetricsFile >>= \m -> readServiceSubsMetric (B.unpack m) `shouldBe` Just 3
+
+ readServiceSubsMetric :: String -> Maybe Int
+ readServiceSubsMetric content =
+@@ -1289,15 +1292,30 @@
+         (C.AuthAlg C.SX25519, C.AuthAlg C.SEd448, 150),
          (C.AuthAlg C.SX25519, C.AuthAlg C.SX25519, 200) -- correct key type
        ]
-     timeRepeat n = fmap fst . timeItT . forM_ (replicate n ()) . const
+-    timeRepeat n = fmap fst . timeItT . forM_ (replicate n ()) . const
 -    similarTime t1 t2 msType
 -      | t1 <= t2 = abs (1 - t1 / t2) < diff
 -      | otherwise = similarTime t2 t1 msType
@@ -25,6 +63,25 @@ Index: tests/ServerTests.hs
 -        diff = case msType of
 -          ASType SQSPostgres _ -> 0.45
 -          _ -> 0.3
++    -- timeItT measures process CPU time. Keep that original assertion metric;
++    -- wall time and optional +RTS -T GC statistics only diagnose failures.
++    timeRepeat :: Int -> IO a -> IO (Double, (Double, Maybe (Int, Int, Double)))
++    timeRepeat n action = do
++      statsEnabled <- RTS.getRTSStatsEnabled
++      before <- if statsEnabled then Just <$> RTS.getRTSStats else pure Nothing
++      wallStart <- getMonotonicTimeNSec
++      cpu <- fst <$> timeItT (replicateM_ n action)
++      wallEnd <- getMonotonicTimeNSec
++      after <- if statsEnabled then Just <$> RTS.getRTSStats else pure Nothing
++      let gcStats = do
++            s0 <- before
++            s1 <- after
++            pure
++              ( fromIntegral $ RTS.gcs s1 - RTS.gcs s0,
++                fromIntegral $ RTS.major_gcs s1 - RTS.major_gcs s0,
++                fromIntegral (RTS.gc_cpu_ns s1 - RTS.gc_cpu_ns s0) / 1e9
++              )
++      pure (cpu, (fromIntegral (wallEnd - wallStart) / 1e9, gcStats))
 +    relativeDiff t1 t2 = abs (1 - min t1 t2 / max t1 t2)
 +    -- normally the difference between "no queue" and "wrong key" is less than 5%, but it's higher on PostgreSQL and on CI
 +    allowedDiff = \case
@@ -33,7 +90,28 @@ Index: tests/ServerTests.hs
      testSameTiming :: forall c. Transport c => THandleSMP c 'TClient -> THandleSMP c 'TClient -> (C.AuthAlg, C.AuthAlg, Int) -> AStoreType -> Expectation
      testSameTiming rh sh (C.AuthAlg goodKeyAlg, C.AuthAlg badKeyAlg, n) msType = do
        g <- C.newRandom
-@@ -1326,21 +1323,24 @@ testTiming =
+@@ -1308,7 +1326,7 @@
+       Resp "cdab" _ OK <- signSendRecv rh rKey ("cdab", rId, SUB)
+
+       (_, badKey) <- atomically $ C.generateAuthKeyPair badKeyAlg g
+-      runTimingTest rh badKey rId SUB
++      runTimingTest "SUB" rh badKey rId SUB
+
+       (sPub, sKey) <- atomically $ C.generateAuthKeyPair goodKeyAlg g
+       Resp "dabc" _ OK <- signSendRecv rh rKey ("dabc", rId, KEY sPub)
+@@ -1317,30 +1335,45 @@
+       Resp "" _ (Msg mId msg) <- tGet1 rh
+       (dec mId msg, Right "hello") #== "delivered from queue"
+
+-      runTimingTest sh badKey sId $ _SEND "hello"
++      runTimingTest "SEND" sh badKey sId $ _SEND "hello"
+       where
+-        runTimingTest :: PartyI p => THandleSMP c 'TClient -> C.APrivateAuthKey -> EntityId -> Command p -> IO ()
+-        runTimingTest h badKey qId cmd = do
++        runTimingTest :: PartyI p => String -> THandleSMP c 'TClient -> C.APrivateAuthKey -> EntityId -> Command p -> IO ()
++        runTimingTest label h badKey qId cmd = do
+           threadDelay 100000
+           _ <- timeRepeat n $ do
              -- "warm up" the server
              Resp "dabc" _ (ERR AUTH) <- signSendRecv h badKey ("dabc", EntityId "1234", cmd)
              return ()
@@ -46,31 +124,45 @@ Index: tests/ServerTests.hs
 -            Resp "dabc" _ (ERR AUTH) <- signSendRecv h badKey ("dabc", EntityId "1234", cmd)
 -            return ()
 -          let ok = similarTime timeNoQueue timeWrongKey msType
-+          timings <- replicateM 3 $ do
+-          unless ok . putStrLn . unwords $
+-            [ show goodKeyAlg,
++          -- Keep 3*n requests per case, but interleave short blocks and
++          -- alternate their order. Long fixed-order blocks confound the
++          -- case difference with changes in whole-process CPU cost.
++          timings <- fmap concat . forM ([0 .. 2] :: [Int]) $ \sample -> do
 +            threadDelay 100000
-+            timeWrongKey <- timeRepeat n $ do
-+              Resp "cdab" _ (ERR AUTH) <- signSendRecv h badKey ("cdab", qId, cmd)
-+              return ()
-+            threadDelay 100000
-+            timeNoQueue <- timeRepeat n $ do
-+              Resp "dabc" _ (ERR AUTH) <- signSendRecv h badKey ("dabc", EntityId "1234", cmd)
-+              return ()
-+            pure (timeWrongKey, timeNoQueue)
++            forM (zip [0 :: Int ..] [min 25 (n - offset) | offset <- [0, 25 .. n - 1]]) $ \(block, count) -> do
++              let wrongKey = timeRepeat count $ do
++                    Resp "cdab" _ (ERR AUTH) <- signSendRecv h badKey ("cdab", qId, cmd)
++                    pure ()
++                  noQueue = timeRepeat count $ do
++                    Resp "dabc" _ (ERR AUTH) <- signSendRecv h badKey ("dabc", EntityId "1234", cmd)
++                    pure ()
++              if even (sample + block)
++                then (,) <$> wrongKey <*> noQueue
++                else do
++                  missing <- noQueue
++                  wrong <- wrongKey
++                  pure (wrong, missing)
 +          let (wrongKeyTimes, noQueueTimes) = unzip timings
-+              timingDiff = relativeDiff (sum wrongKeyTimes) (sum noQueueTimes)
++              timingDiff = relativeDiff (sum $ map fst wrongKeyTimes) (sum $ map fst noQueueTimes)
 +              ok = timingDiff < allowedDiff msType
-           unless ok . putStrLn . unwords $
-             [ show goodKeyAlg,
++          -- Opt-in RTS statistics also show passing samples for comparison.
++          verbose <- RTS.getRTSStatsEnabled
++          when (verbose || not ok) . putStrLn . unwords $
++            [ label,
++              show goodKeyAlg,
                show badKeyAlg,
 -              show timeWrongKey,
 -              show timeNoQueue,
 -              show $ timeWrongKey / timeNoQueue - 1
++              "samples (wrong,missing), each (cpu seconds,(wall seconds,Just (GCs,major GCs,GC cpu seconds))) or Nothing without +RTS -T:",
 +              show timings,
 +              show timingDiff
              ]
            ok `shouldBe` True
- 
-@@ -1402,6 +1402,7 @@ testMessageServiceNotifications :: SpecW
+
+@@ -1402,6 +1435,7 @@ testMessageServiceNotifications :: SpecW
  testMessageServiceNotifications =
    it "should create simplex connection, subscribe notifier as service and deliver notifications" $ \(ATransport t, msType) -> do
      g <- C.newRandom
@@ -78,7 +170,7 @@ Index: tests/ServerTests.hs
      smpTest2 t msType $ \rh sh -> do
        (sPub, sKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
        (sId, rId, rKey, dhShared) <- createAndSecureQueue rh sPub
-@@ -1410,7 +1411,7 @@ testMessageServiceNotifications =
+@@ -1410,7 +1444,7 @@ testMessageServiceNotifications =
        (rcvNtfPubDhKey, _) <- atomically $ C.generateKeyPair g
        Resp "1" _ (NID nId _) <- signSendRecv rh rKey ("1", rId, NKEY nPub rcvNtfPubDhKey)
        serviceKeys@(_, servicePK) <- atomically $ C.generateKeyPair g
@@ -87,7 +179,7 @@ Index: tests/ServerTests.hs
          -- can't subscribe without service signature in service connection
          Resp "2a" _ (ERR SERVICE) <- signSendRecv nh1 nKey ("2a", nId, NSUB)
          Resp "2b" _ (SOK (Just serviceId)) <- serviceSignSendRecv nh1 nKey servicePK ("2b", nId, NSUB)
-@@ -1418,7 +1419,7 @@ testMessageServiceNotifications =
+@@ -1418,7 +1452,7 @@ testMessageServiceNotifications =
          Resp "2c" _ (SOK (Just serviceId'')) <- serviceSignSendRecv nh1 nKey servicePK ("2c", nId, NSUB)
          serviceId'' `shouldBe` serviceId
          deliverMessage rh rId rKey sh sId sKey nh1 "hello" dec
@@ -96,7 +188,7 @@ Index: tests/ServerTests.hs
            Resp "4" _ (SOK (Just serviceId')) <- serviceSignSendRecv nh2 nKey servicePK ("4", nId, NSUB)
            serviceId' `shouldBe` serviceId
            -- service subscription is terminated
-@@ -1479,6 +1480,7 @@ testServiceNotificationsTwoRestarts :: S
+@@ -1479,6 +1513,7 @@ testServiceNotificationsTwoRestarts :: S
  testServiceNotificationsTwoRestarts =
    it "subscribe notifier as service and deliver notifications after two restarts" $ \ps@(ATransport t, _) -> do
      g <- C.newRandom
@@ -104,7 +196,7 @@ Index: tests/ServerTests.hs
      (sPub, sKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
      (nPub, nKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
      serviceKeys@(_, servicePK) <- atomically $ C.generateKeyPair g
-@@ -1487,14 +1489,14 @@ testServiceNotificationsTwoRestarts =
+@@ -1487,14 +1522,14 @@ testServiceNotificationsTwoRestarts =
        (sId, rId, rKey, dhShared) <- createAndSecureQueue rh sPub
        let dec = decryptMsgV3 dhShared
        Resp "0" _ (NID nId _) <- signSendRecv rh rKey ("0", rId, NKEY nPub rcvNtfPubDhKey)
@@ -121,7 +213,7 @@ Index: tests/ServerTests.hs
          Resp "2.1" serviceId' (SOKS n _) <- signSendRecv nh (C.APrivateAuthKey C.SEd25519 servicePK) ("2.1", serviceId, NSUBS 1 idsHash)
          n `shouldBe` 1
          Resp "2.2" _ (SOK Nothing) <- signSendRecv rh rKey ("2.2", rId, SUB)
-@@ -1502,7 +1504,7 @@ testServiceNotificationsTwoRestarts =
+@@ -1502,7 +1537,7 @@ testServiceNotificationsTwoRestarts =
          deliverMessage rh rId rKey sh sId sKey nh "hello 2" dec
      threadDelay 250000
      withSmpServerStoreLogOn ps testPort $ runTest2 t $ \sh rh ->

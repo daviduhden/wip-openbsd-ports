@@ -1,0 +1,6 @@
+The industry standard user interface toolkit for the X Window System.
+
+This is Jon Trulson's actively maintained fork based on Open Motif 2.3.8
+from ICS MotifZone. It includes build fixes for modern systems, removal 
+of register keyword usage, improved iconv detection for BSD systems, 
+and other portability improvements.

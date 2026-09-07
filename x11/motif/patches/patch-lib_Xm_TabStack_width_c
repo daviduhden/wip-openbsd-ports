@@ -1,0 +1,8 @@
+Fix type mismatch exposed by Clang.
+
+Index: lib/Xm/TabStack.c
+--- lib/Xm/TabStack.c.orig
++++ lib/Xm/TabStack.c
+@@ -1641,1 +1641,1 @@
+-		_XmTabBoxStackedGeometry(XmTabStack_tab_box(tab), width,
++		_XmTabBoxStackedGeometry((XmTabBoxWidget)XmTabStack_tab_box(tab), width,

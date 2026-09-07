@@ -1,0 +1,12 @@
+Index: lib/Xm/EditresCom.c
+--- lib/Xm/EditresCom.c.orig
++++ lib/Xm/EditresCom.c
+@@ -794,7 +794,7 @@
+ 
+     int count;
+     Widget parent;
+-    unsigned long * child;
++    CARD64 * child;
+ 
+     for (top = w; XtParent(top) != NULL; top = XtParent(top)) {}
+ 

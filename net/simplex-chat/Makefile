@@ -132,6 +132,7 @@ SIMPLEXMQ_PATCHES = \
 	patch-src_Simplex_Messaging_Notifications_Server_Main_hs \
 	patch-src_Simplex_Messaging_Notifications_Server_hs \
 	patch-src_Simplex_Messaging_Server_CLI_hs \
+	patch-src_Simplex_Messaging_Server_hs \
 	patch-src_Simplex_Messaging_Server_MsgStore_Journal_hs \
 	patch-src_Simplex_Messaging_Transport_hs \
 	patch-src_Simplex_Messaging_Transport_Client_hs \

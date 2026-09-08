@@ -1,0 +1,28 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Do not let a metrics-file failure terminate the SMP server. The periodic
+savePrometheusMetrics thread races every other server thread in raceAny_;
+when opening or writing the metrics path failed (for example while a lazy
+reader in the same process still holds the file lock), the exception ended
+this thread, raceAny_ cancelled the remaining server threads and all clients
+were disconnected. Log the failure and keep serving; the next interval
+retries the save. Async exceptions are unaffected, so shutdown still
+cancels this thread normally.
+
+Index: src/Simplex/Messaging/Server.hs
+--- src/Simplex/Messaging/Server.hs.orig
++++ src/Simplex/Messaging/Server.hs
+@@ -688,7 +688,12 @@
+         ts <- getCurrentTime
+         sm <- getServerMetrics st ss rtsOpts
+         rtm <- getRealTimeMetrics env
+-        T.writeFile metricsFile $ prometheusMetrics sm rtm ts
++        -- A transient metrics-file failure must not stop the SMP server: this
++        -- thread races every other server thread in raceAny_, so an uncaught
++        -- exception would cancel all server threads and disconnect clients.
++        E.try @E.IOException (T.writeFile metricsFile $ prometheusMetrics sm rtm ts) >>= \case
++          Left e -> logError $ "Error saving Prometheus metrics: " <> tshow e
++          Right _ -> pure ()
+ 
+     getServerMetrics :: s -> ServerStats -> Text -> IO ServerMetrics
+     getServerMetrics st ss rtsOptions = do

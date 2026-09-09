@@ -29,3 +29,4 @@ libexec/i2pd-tools/
 @bin libexec/i2pd-tools/x25519
 share/doc/i2pd-tools/
 share/doc/i2pd-tools/LICENSE
+share/doc/pkg-readmes/${PKGSTEM}

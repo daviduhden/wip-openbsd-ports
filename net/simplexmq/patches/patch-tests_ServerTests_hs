@@ -18,9 +18,13 @@ and reuse it across connections and server restarts.  tls 2.4 rejects the
 server-only fixture for client authentication, while generating a new
 credential for every connection changes the SMP service identity.
 
-On timing failure, report the SUB/SEND phase, CPU time, monotonic wall time
-and optional +RTS -T GC statistics. timeit-2.0 measures process CPU time;
-keep that assertion metric and its existing threshold unchanged.
+Read CLOCK_PROCESS_CPUTIME_ID through System.Clock instead of timeit's
+System.CPUTime. GHC 9.10 selects getrusage on OpenBSD (_POSIX_TIMERS == -1);
+that backend reports sampled ticks, quantizing these short blocks to 10 ms.
+OpenBSD's process CPU clock uses accumulated runtime instead. Keep the CPU
+metric, all samples, aggregation, response assertions and threshold. Reject
+nonpositive samples explicitly rather than passing NaN to the comparison.
+Wall time and optional +RTS -T GC statistics remain diagnostics only.
 
 Read service-subscription metrics strictly. The lazy reader leaves the
 handle locked while the periodic writer reopens it; its resource-busy
@@ -29,7 +33,7 @@ exception terminates the server and makes the client fail with TLS EOF.
 Index: tests/ServerTests.hs
 --- tests/ServerTests.hs.orig
 +++ tests/ServerTests.hs
-@@ -33,12 +33,14 @@
+@@ -33,12 +33,14 @@ import Data.Foldable (foldrM)
  import Data.Hashable (hash)
  import qualified Data.IntSet as IS
  import Data.List.NonEmpty (NonEmpty)
@@ -45,7 +49,16 @@ Index: tests/ServerTests.hs
  import GHC.Stack (withFrozenCallStack)
  import SMPClient
  import qualified Simplex.Messaging.Crypto as C
-@@ -905,7 +907,8 @@
+@@ -59,7 +61,7 @@ import Simplex.Messaging.Util (whenM)
+ import Simplex.Messaging.Version (mkVersionRange)
+ import System.Directory (doesDirectoryExist, doesFileExist, removeDirectoryRecursive, removeFile)
+ import System.IO (IOMode (..), withFile)
+-import System.TimeIt (timeItT)
++import qualified System.Clock as Clock
+ import System.Timeout
+ import Test.HUnit
+ import Test.Hspec hiding (fit, it)
+@@ -905,7 +907,8 @@ testServiceSubsTotalCount =
                  _ -> pure Nothing
              ]
          threadDelay 1500000
@@ -55,7 +68,7 @@ Index: tests/ServerTests.hs
  
        -- Phase 2: associate 1 more queue via SUB, reconnect with SUBS 3, check metric = 3
        (rPub3, rKey3) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
-@@ -935,7 +938,7 @@
+@@ -935,7 +938,7 @@ testServiceSubsTotalCount =
                  _ -> pure Nothing
              ]
          threadDelay 1500000
@@ -64,7 +77,7 @@ Index: tests/ServerTests.hs
  
  readServiceSubsMetric :: String -> Maybe Int
  readServiceSubsMetric content =
-@@ -1289,15 +1292,36 @@
+@@ -1289,15 +1292,41 @@ testTiming =
          (C.AuthAlg C.SX25519, C.AuthAlg C.SEd448, 150),
          (C.AuthAlg C.SX25519, C.AuthAlg C.SX25519, 200) -- correct key type
        ]
@@ -77,17 +90,22 @@ Index: tests/ServerTests.hs
 -        diff = case msType of
 -          ASType SQSPostgres _ -> 0.45
 -          _ -> 0.3
-+    -- timeItT measures process CPU time. Keep that original assertion metric;
++    -- GHC's System.CPUTime selects getrusage on OpenBSD because
++    -- _POSIX_TIMERS is -1. Its tick accounting is too coarse for these
++    -- blocks. Read the process CPU clock directly, retaining the metric;
 +    -- wall time and optional +RTS -T GC statistics only diagnose failures.
 +    timeRepeat :: Int -> IO a -> IO (Double, (Double, Maybe (Int, Int, Double)))
 +    timeRepeat n action = do
 +      statsEnabled <- RTS.getRTSStatsEnabled
 +      before <- if statsEnabled then Just <$> RTS.getRTSStats else pure Nothing
 +      wallStart <- getMonotonicTimeNSec
-+      cpu <- fst <$> timeItT (replicateM_ n action)
++      cpuStart <- Clock.getTime Clock.ProcessCPUTime
++      replicateM_ n action
++      cpuEnd <- Clock.getTime Clock.ProcessCPUTime
 +      wallEnd <- getMonotonicTimeNSec
 +      after <- if statsEnabled then Just <$> RTS.getRTSStats else pure Nothing
-+      let gcStats = do
++      let cpu = fromIntegral (Clock.toNanoSecs cpuEnd - Clock.toNanoSecs cpuStart) / 1e9
++          gcStats = do
 +            s0 <- before
 +            s1 <- after
 +            pure
@@ -110,7 +128,7 @@ Index: tests/ServerTests.hs
      testSameTiming :: forall c. Transport c => THandleSMP c 'TClient -> THandleSMP c 'TClient -> (C.AuthAlg, C.AuthAlg, Int) -> AStoreType -> Expectation
      testSameTiming rh sh (C.AuthAlg goodKeyAlg, C.AuthAlg badKeyAlg, n) msType = do
        g <- C.newRandom
-@@ -1308,7 +1332,7 @@
+@@ -1308,7 +1337,7 @@ testTiming =
        Resp "cdab" _ OK <- signSendRecv rh rKey ("cdab", rId, SUB)
  
        (_, badKey) <- atomically $ C.generateAuthKeyPair badKeyAlg g
@@ -119,7 +137,7 @@ Index: tests/ServerTests.hs
  
        (sPub, sKey) <- atomically $ C.generateAuthKeyPair goodKeyAlg g
        Resp "dabc" _ OK <- signSendRecv rh rKey ("dabc", rId, KEY sPub)
-@@ -1317,30 +1341,58 @@
+@@ -1317,30 +1346,61 @@ testTiming =
        Resp "" _ (Msg mId msg) <- tGet1 rh
        (dec mId msg, Right "hello") #== "delivered from queue"
  
@@ -167,6 +185,9 @@ Index: tests/ServerTests.hs
 +                  wrong <- wrongKey
 +                  pure (wrong, missing)
 +          let (wrongKeyTimes, noQueueTimes) = unzip timings
++          -- A non-advancing clock must fail explicitly, not feed NaN to sort.
++          map fst (wrongKeyTimes <> noQueueTimes) `shouldSatisfy` all (> 0)
++          let
 +              -- Each pair of blocks measures the two cases back-to-back, so
 +              -- whole-process CPU noise largely cancels within a pair. Sums
 +              -- are dominated by the few blocks that absorb such noise; the
@@ -195,7 +216,7 @@ Index: tests/ServerTests.hs
              ]
            ok `shouldBe` True
  
-@@ -1402,6 +1454,7 @@
+@@ -1402,6 +1462,7 @@ testMessageServiceNotifications :: SpecW
  testMessageServiceNotifications =
    it "should create simplex connection, subscribe notifier as service and deliver notifications" $ \(ATransport t, msType) -> do
      g <- C.newRandom
@@ -203,7 +224,7 @@ Index: tests/ServerTests.hs
      smpTest2 t msType $ \rh sh -> do
        (sPub, sKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
        (sId, rId, rKey, dhShared) <- createAndSecureQueue rh sPub
-@@ -1410,7 +1463,7 @@
+@@ -1410,7 +1471,7 @@ testMessageServiceNotifications =
        (rcvNtfPubDhKey, _) <- atomically $ C.generateKeyPair g
        Resp "1" _ (NID nId _) <- signSendRecv rh rKey ("1", rId, NKEY nPub rcvNtfPubDhKey)
        serviceKeys@(_, servicePK) <- atomically $ C.generateKeyPair g
@@ -212,7 +233,7 @@ Index: tests/ServerTests.hs
          -- can't subscribe without service signature in service connection
          Resp "2a" _ (ERR SERVICE) <- signSendRecv nh1 nKey ("2a", nId, NSUB)
          Resp "2b" _ (SOK (Just serviceId)) <- serviceSignSendRecv nh1 nKey servicePK ("2b", nId, NSUB)
-@@ -1418,7 +1471,7 @@
+@@ -1418,7 +1479,7 @@ testMessageServiceNotifications =
          Resp "2c" _ (SOK (Just serviceId'')) <- serviceSignSendRecv nh1 nKey servicePK ("2c", nId, NSUB)
          serviceId'' `shouldBe` serviceId
          deliverMessage rh rId rKey sh sId sKey nh1 "hello" dec
@@ -221,7 +242,7 @@ Index: tests/ServerTests.hs
            Resp "4" _ (SOK (Just serviceId')) <- serviceSignSendRecv nh2 nKey servicePK ("4", nId, NSUB)
            serviceId' `shouldBe` serviceId
            -- service subscription is terminated
-@@ -1479,6 +1532,7 @@
+@@ -1479,6 +1540,7 @@ testServiceNotificationsTwoRestarts :: S
  testServiceNotificationsTwoRestarts =
    it "subscribe notifier as service and deliver notifications after two restarts" $ \ps@(ATransport t, _) -> do
      g <- C.newRandom
@@ -229,7 +250,7 @@ Index: tests/ServerTests.hs
      (sPub, sKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
      (nPub, nKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
      serviceKeys@(_, servicePK) <- atomically $ C.generateKeyPair g
-@@ -1487,14 +1541,14 @@
+@@ -1487,14 +1549,14 @@ testServiceNotificationsTwoRestarts =
        (sId, rId, rKey, dhShared) <- createAndSecureQueue rh sPub
        let dec = decryptMsgV3 dhShared
        Resp "0" _ (NID nId _) <- signSendRecv rh rKey ("0", rId, NKEY nPub rcvNtfPubDhKey)
@@ -246,7 +267,7 @@ Index: tests/ServerTests.hs
          Resp "2.1" serviceId' (SOKS n _) <- signSendRecv nh (C.APrivateAuthKey C.SEd25519 servicePK) ("2.1", serviceId, NSUBS 1 idsHash)
          n `shouldBe` 1
          Resp "2.2" _ (SOK Nothing) <- signSendRecv rh rKey ("2.2", rId, SUB)
-@@ -1502,7 +1556,7 @@
+@@ -1502,7 +1564,7 @@ testServiceNotificationsTwoRestarts =
          deliverMessage rh rId rKey sh sId sKey nh "hello 2" dec
      threadDelay 250000
      withSmpServerStoreLogOn ps testPort $ runTest2 t $ \sh rh ->

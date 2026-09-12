@@ -51,6 +51,11 @@ MODCABAL_BUILD_ARGS = -v2
 .endif
 
 NETWORK_V = 3.2.9.0
+HTTP2_V = 5.4.4
+HTTP2_PATCHES = \
+	patch-http2_Network_HTTP2_Client_Run_hs \
+	patch-http2_Network_HTTP2_H2_Stream_hs \
+	patch-http2_Network_HTTP2_Server_Worker_hs
 TLS_V = 2.4.3
 TLS_PATCHES = \
 	patch-tls_Network_TLS_Context_hs \
@@ -148,6 +153,9 @@ post-patch:
 .endfor
 .for _p in ${TLS_PATCHES}
 	patch -d ${WRKDIR}/tls-${TLS_V} -p0 < ${FILESDIR}/${_p}
+.endfor
+.for _p in ${HTTP2_PATCHES}
+	patch -d ${WRKDIR}/http2-${HTTP2_V} -p0 < ${FILESDIR}/${_p}
 .endfor
 	patch -d ${WRKDIR}/network-${NETWORK_V} -p0 \
 		< ${FILESDIR}/patch-network_cabal

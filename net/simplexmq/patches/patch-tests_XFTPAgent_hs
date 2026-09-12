@@ -17,7 +17,7 @@ Index: tests/XFTPAgent.hs
  
  import Control.Logger.Simple
  import Control.Monad
-@@ -85,7 +85,7 @@
+@@ -85,7 +85,7 @@ xftpAgentTests =
          it "should pass without basic auth" $ \_ -> testXFTPServerTest Nothing (noAuthSrv testXFTPServer2) `shouldReturn` Nothing
          let srv1 = testXFTPServer2 {keyHash = "1234"}
          it "should fail with incorrect fingerprint" $ \_ -> do
@@ -26,7 +26,7 @@ Index: tests/XFTPAgent.hs
          describe "server with password" $ do
            let auth = Just "abcd"
                srv = ProtoServerWithAuth testXFTPServer2
-@@ -267,12 +267,12 @@
+@@ -267,12 +267,12 @@ testXFTPAgentSendReceiveMatrix :: Spec
  testXFTPAgentSendReceiveMatrix = do
    describe "old server" $ do
      it "new clients" $ run oldServer newClient newClient
@@ -41,7 +41,7 @@ Index: tests/XFTPAgent.hs
      it "old sender, new recipient" $ run newServer oldClient newClient
      it "old clients" $ run newServer oldClient oldClient
    where
-@@ -461,10 +461,17 @@
+@@ -461,10 +461,17 @@ testXFTPAgentSendRestore = withGlobalLog
        liftIO $ testNoRedundancy rfd1
        liftIO $ testNoRedundancy rfd2
        liftIO $ sfId' `shouldBe` sfId
@@ -59,3 +59,4 @@ Index: tests/XFTPAgent.hs
 -    threadDelay 500000
      doesDirectoryExist prefixPath `shouldReturn` False
      doesFileExist encPath `shouldReturn` False
+ 

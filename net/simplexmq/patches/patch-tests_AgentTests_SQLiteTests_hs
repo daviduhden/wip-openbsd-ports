@@ -26,3 +26,4 @@ Index: tests/AgentTests/SQLiteTests.hs
 +    connect2 = E.bracketOnError createStore' removeStore $ \s1@DBStore {dbFilePath} -> do
        s2 <- connectSQLiteStore $ DBOpts dbFilePath [] "" False False DB.TQOff
        pure (s1, s2)
+ 

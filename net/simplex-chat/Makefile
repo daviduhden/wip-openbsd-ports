@@ -58,6 +58,11 @@ CABAL_INC_HOME ?= ${WRKDIR}/.cabal-inc-home
 CABAL_INC_SKIP = simplexmq,aeson,socks,direct-sqlcipher,sqlcipher-simple,terminal,android-support,zip
 CABAL_INC_EXTRA = yaml:0.11.11.2:0
 NETWORK_V = 3.2.9.0
+HTTP2_V = 5.4.4
+HTTP2_PATCHES = \
+	patch-http2_Network_HTTP2_Client_Run_hs \
+	patch-http2_Network_HTTP2_H2_Stream_hs \
+	patch-http2_Network_HTTP2_Server_Worker_hs
 TLS_V = 2.4.3
 TLS_PATCHES = \
 	patch-tls_Network_TLS_Context_hs \
@@ -122,6 +127,7 @@ SIMPLEXMQ_PATCHES = \
 	patch-simplexmq_cabal \
 	patch-src_Simplex_FileTransfer_Agent_hs \
 	patch-src_Simplex_FileTransfer_Server_Main_hs \
+	patch-src_Simplex_FileTransfer_Transport_hs \
 	patch-src_Simplex_Messaging_Agent_hs \
 	patch-src_Simplex_Messaging_Agent_Client_hs \
 	patch-src_Simplex_Messaging_Agent_Env_SQLite_hs \
@@ -196,6 +202,9 @@ post-patch:
 		< ${FILESDIR}/patch-network_cabal
 .for _p in ${TLS_PATCHES}
 	patch -d ${WRKDIR}/tls-${TLS_V} -p0 < ${FILESDIR}/${_p}
+.endfor
+.for _p in ${HTTP2_PATCHES}
+	patch -d ${WRKDIR}/http2-${HTTP2_V} -p0 < ${FILESDIR}/${_p}
 .endfor
 	${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include
 	${INSTALL_DATA} ${FILESDIR}/HsNetworkConfig.h \

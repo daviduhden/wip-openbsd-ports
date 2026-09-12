@@ -1,0 +1,23 @@
+SPDX-License-Identifier: BSD-3-Clause
+
+Initialize the stateful streaming body reader for server responses too.
+A partially serialized chunk must remain visible to the managed sender,
+including encrypted XFTP downloads, until its builder is exhausted.
+
+Index: Network/HTTP2/Server/Worker.hs
+--- Network/HTTP2/Server/Worker.hs.orig
++++ Network/HTTP2/Server/Worker.hs
+@@ -178,11 +178,11 @@ sendHeaderBody Config{..} ctx lc strm Ou
+             return (Just next, Nothing)
+         OutBodyStreaming strmbdy -> do
+             q <- sendStreaming ctx strm $ \OutBodyIface{..} -> strmbdy outBodyPush outBodyFlush
+-            let next = nextForStreaming q
++            next <- nextForStreaming q
+             return (Just next, Just q)
+         OutBodyStreamingIface strmbdy -> do
+             q <- sendStreaming ctx strm strmbdy
+-            let next = nextForStreaming q
++            next <- nextForStreaming q
+             return (Just next, Just q)
+     let lc' = lc{lcTBQ = mtbq}
+     syncWithSender ctx strm (OHeader outObjHeaders mnext outObjTrailers) lc'

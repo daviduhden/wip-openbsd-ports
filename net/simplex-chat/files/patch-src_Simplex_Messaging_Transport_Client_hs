@@ -14,7 +14,7 @@ Use base bracket for network cleanup: UnliftIO.bracket disables TLS.bye's intern
 Index: src/Simplex/Messaging/Transport/Client.hs
 --- src/Simplex/Messaging/Transport/Client.hs.orig
 +++ src/Simplex/Messaging/Transport/Client.hs
-@@ -64,6 +64,7 @@
+@@ -64,6 +64,7 @@ import Simplex.Messaging.Util (bshow, ca
  import System.IO.Error
  import Text.Read (readMaybe)
  import UnliftIO.Exception (IOException)
@@ -22,7 +22,7 @@ Index: src/Simplex/Messaging/Transport/Client.hs
  import qualified UnliftIO.Exception as E
  import UnliftIO.STM
  
-@@ -174,7 +175,9 @@
+@@ -174,7 +175,9 @@ runTLSTransportClient tlsParams caStore_
          _ -> connectTCPClient hostName
    h <- newIORef Nothing
    let set hc = (>>= \c -> writeIORef h (Just $ hc c) $> c)
@@ -33,7 +33,7 @@ Index: src/Simplex/Messaging/Transport/Client.hs
      mapM_ (setSocketKeepAlive sock) tcpKeepAlive `catchAll` \e -> logError ("Error setting TCP keep-alive " <> tshow e)
      let tCfg = clientTransportConfig cfg
      -- No TLS timeout to avoid failing connections via SOCKS
-@@ -183,7 +186,7 @@
+@@ -183,7 +186,7 @@ runTLSTransportClient tlsParams caStore_
      sent <- readIORef clientCredsSent
      client =<< set CHTransport (getTransportConnection tCfg sent chain tls)
    where
@@ -42,7 +42,7 @@ Index: src/Simplex/Messaging/Transport/Client.hs
      closeConn_ = \case
        CHSocket sock -> close sock
        CHContext tls -> closeTLS tls
-@@ -301,7 +304,7 @@
+@@ -301,7 +304,7 @@ mkTLSClientParams supported caStore_ hos
    where
      p = B.pack port
      onServerCert _ _ _ cc = do

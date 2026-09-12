@@ -1,0 +1,45 @@
+SPDX-License-Identifier: BSD-3-Clause
+
+Keep a streaming chunk queued while its builder continuation still has
+bytes to send. syncWithSender uses queue emptiness as its readiness signal;
+removing the chunk before serializing it can stop the sender between DATA
+frames when the producer is waiting for the peer to consume that chunk.
+Advance the queue only when the body reader asks for the next chunk. This
+preserves bounded backpressure and lets the sender flush before waiting.
+
+Index: Network/HTTP2/H2/Stream.hs
+--- Network/HTTP2/H2/Stream.hs.orig
++++ Network/HTTP2/H2/Stream.hs
+@@ -7,7 +7,7 @@ import Control.Concurrent.STM
+ import qualified Control.Exception as E
+ import Control.Monad
+ import Data.IORef
+-import Data.Maybe (fromMaybe)
++import Data.Maybe (fromMaybe, isJust)
+ import Network.Control
+ import Network.HTTP.Semantics.IO
+ 
+@@ -98,8 +98,18 @@ closeAllStreams ovar evar mErr = do
+ 
+ nextForStreaming
+     :: TBQueue StreamingChunk
+-    -> DynaNext
+-nextForStreaming tbq =
+-    let takeQ = atomically $ tryReadTBQueue tbq
+-        next = fillStreamBodyGetNext takeQ
+-     in next
++    -> IO DynaNext
++nextForStreaming tbq = do
++    pending <- newTVarIO False
++    -- Keep the current chunk in the queue until its builder is exhausted.
++    -- syncWithSender checks queue readiness between DATA frames; removing
++    -- the chunk earlier can put it to sleep with unsent bytes still held by
++    -- the builder continuation, even though the producer is waiting for
++    -- those bytes to reach the peer. Only the sender consumes this queue.
++    let takeQ = atomically $ do
++            hasPending <- readTVar pending
++            when hasPending $ void $ readTBQueue tbq
++            chunk <- tryPeekTBQueue tbq
++            writeTVar pending (isJust chunk)
++            return chunk
++    return $ fillStreamBodyGetNext takeQ

@@ -10,7 +10,7 @@ Unmask the reconnect body while publishing its ownership atomically with shutdow
 Index: src/Simplex/Messaging/Client/Agent.hs
 --- src/Simplex/Messaging/Client/Agent.hs.orig
 +++ src/Simplex/Messaging/Client/Agent.hs
-@@ -34,8 +34,7 @@
+@@ -34,8 +34,7 @@ module Simplex.Messaging.Client.Agent
    )
  where
  
@@ -20,7 +20,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
  import Control.Concurrent.STM (retry)
  import qualified Control.Exception as E
  import Control.Logger.Simple
-@@ -84,7 +83,7 @@
+@@ -84,7 +83,7 @@ import qualified Simplex.Messaging.TMap
  import Simplex.Messaging.Transport
  import Simplex.Messaging.Util (catchAll_, ifM, safeDecodeUtf8, toChunks, tshow, whenM, ($>>=), (<$$>))
  import System.Timeout (timeout)
@@ -29,7 +29,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
  import UnliftIO.STM
  
  type SMPClientVar = SessionVar (Either (SMPClientError, Maybe UTCTime) (OwnServer, SMPClient))
-@@ -203,7 +202,7 @@
+@@ -203,7 +202,7 @@ getSMPServerClient' ca srv = snd <$> get
  {-# INLINE getSMPServerClient' #-}
  
  getSMPServerClient'' :: SMPClientAgent p -> SMPServer -> ExceptT SMPClientError IO (OwnServer, SMPClient)
@@ -38,7 +38,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
    ts <- liftIO getCurrentTime
    withGetSessVar workerSeq srv smpClients ts (ExceptT . newSMPClient) waitForSMPClient
    where
-@@ -227,14 +226,20 @@
+@@ -227,14 +226,20 @@ getSMPServerClient'' ca@SMPClientAgent {
        r <- connectClient ca srv v `E.catches` clientHandlers
        case r of
          Right smp -> do
@@ -65,7 +65,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
          Left e -> do
            let ei = persistErrorInterval agentCfg
            if ei == 0
-@@ -313,7 +318,7 @@
+@@ -313,7 +318,7 @@ connectClient ca@SMPClientAgent {agentCf
  reconnectClient :: SMPClientAgent p -> SMPServer -> IO ()
  reconnectClient ca@SMPClientAgent {active, agentCfg, smpSubWorkers, workerSeq} srv = do
    ts <- getCurrentTime
@@ -74,7 +74,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
    where
      getWorkerVar ts =
        ifM
-@@ -322,7 +327,7 @@
+@@ -322,7 +327,7 @@ reconnectClient ca@SMPClientAgent {activ
          (Just <$> getSessVar workerSeq srv smpSubWorkers ts)
      newSubWorker :: SessionVar (Async ()) -> IO ()
      newSubWorker v = do
@@ -83,7 +83,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
        atomically $ putTMVar (sessionVar v) a
      runSubWorker v =
        withRetryInterval (reconnectInterval agentCfg) $ \_ loop -> do
-@@ -388,18 +393,19 @@
+@@ -388,18 +393,19 @@ lookupSMPServerClient SMPClientAgent {sm
  closeSMPClientAgent :: SMPClientAgent p -> IO ()
  closeSMPClientAgent c = do
    atomically $ writeTVar (active c) False

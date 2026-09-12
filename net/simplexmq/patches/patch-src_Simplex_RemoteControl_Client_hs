@@ -15,15 +15,15 @@ independent lifecycle fixes; native and regression testing remain required.
 Index: src/Simplex/RemoteControl/Client.hs
 --- src/Simplex/RemoteControl/Client.hs.orig
 +++ src/Simplex/RemoteControl/Client.hs
-@@ -29,6 +29,7 @@
+@@ -29,6 +29,7 @@ module Simplex.RemoteControl.Client
    ) where
-
+ 
  import Control.Applicative ((<|>))
 +import qualified Control.Concurrent.Async as A
  import Control.Logger.Simple
  import Control.Monad
  import Control.Monad.Except
-@@ -116,7 +117,7 @@
+@@ -116,7 +117,7 @@ connectRCHost drg pairing@RCHostPairing
    when multicast $ case knownHost of
      Nothing -> throwE RCENewController
      Just KnownHostPairing {hostDhPubKey} -> do
@@ -32,19 +32,19 @@ Index: src/Simplex/RemoteControl/Client.hs
        atomically $ putTMVar announcer ann
    pure (found, signedInv, RCHostClient {action, client_ = c}, r)
    where
-@@ -203,7 +204,7 @@
-
+@@ -203,7 +204,7 @@ certFingerprint caCert = C.KeyHash fp
+ 
  cancelHostClient :: RCHostClient -> IO ()
  cancelHostClient RCHostClient {action, client_ = RCHClient_ {announcer, endSession}} = do
 -  atomically $ putTMVar endSession ()
 +  void . atomically $ tryPutTMVar endSession ()
    atomically (tryTakeTMVar announcer) >>= mapM_ uninterruptibleCancel
    uninterruptibleCancel action
-
-@@ -362,8 +363,8 @@
-
+ 
+@@ -362,8 +363,8 @@ prepareCtrlSession
+ 
  -- * Multicast discovery
-
+ 
 -announceRC :: TVar ChaChaDRG -> Int -> C.PrivateKeyEd25519 -> C.PublicKeyX25519 -> RCHostKeys -> RCInvitation -> ExceptT RCErrorType IO ()
 -announceRC drg maxCount idPrivKey knownDhPub RCHostKeys {sessKeys, dhKeys} inv = ExceptT $ withSender $ \sender -> runExceptT $ do
 +announceRC :: TVar ChaChaDRG -> Int -> C.PrivateKeyEd25519 -> C.PublicKeyX25519 -> RCHostKeys -> TransportHost -> RCInvitation -> ExceptT RCErrorType IO ()
@@ -52,8 +52,8 @@ Index: src/Simplex/RemoteControl/Client.hs
    replicateM_ maxCount $ do
      logDebug "Announcing..."
      nonce <- atomically $ C.randomCbNonce drg
-@@ -413,15 +414,17 @@
-
+@@ -413,15 +414,17 @@ findRCCtrlPairing pairings RCEncInvitati
+ 
  -- application should call this function when TMVar resolves
  confirmCtrlSession :: RCCtrlClient -> Bool -> IO ()
 -confirmCtrlSession RCCtrlClient {client_ = RCCClient_ {confirmSession}} res = do
@@ -67,11 +67,11 @@ Index: src/Simplex/RemoteControl/Client.hs
 +  -- release the caller to read the session result; do not consume that result
 +  -- or suppress an exception from the connection worker.
 +  atomically $ putTMVar confirmSession res `orElse` A.waitSTM action
-
+ 
  cancelCtrlClient :: RCCtrlClient -> IO ()
  cancelCtrlClient RCCtrlClient {action, client_ = RCCClient_ {endSession}} = do
 -  atomically $ putTMVar endSession ()
 +  void . atomically $ tryPutTMVar endSession ()
    uninterruptibleCancel action
-
+ 
  -- * Session encryption

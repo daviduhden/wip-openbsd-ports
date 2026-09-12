@@ -1,0 +1,21 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Catch file IO errors without intercepting the receive deadline or thread
+cancellation. The server wraps receiveFile in timeout; catching SomeException
+inside it turned its timeout into FILE_IO and swallowed ThreadKilled too.
+HTTP2Error still maps to TIMEOUT, and IOException still maps to FILE_IO.
+
+Index: src/Simplex/FileTransfer/Transport.hs
+--- src/Simplex/FileTransfer/Transport.hs.orig
++++ src/Simplex/FileTransfer/Transport.hs
+@@ -177,7 +177,9 @@ receiveFile getBody chunk = ExceptT $ ru
+     receive h sz = hReceiveFile getBody h sz >>= \sz' -> pure $ if sz' == 0 then Right () else Left SIZE
+     handlers =
+       [ E.Handler $ \(e :: HTTP2Error) -> logWarn (err e) $> Left TIMEOUT,
+-        E.Handler $ \(e :: E.SomeException) -> logError (err e) $> Left FILE_IO
++        -- Let timeout and cancellation reach their owners. Catching
++        -- SomeException here turns the server's receive timeout into FILE_IO.
++        E.Handler $ \(e :: E.IOException) -> logError (err e) $> Left FILE_IO
+       ]
+     err e = "receiveFile error: " <> tshow e
+ 

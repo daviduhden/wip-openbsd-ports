@@ -2,6 +2,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 Use the crypton-era ASN.1 packages, time-hourglass, ram byte arrays,
 and the tls 2.4 API targeted by the OpenBSD compatibility patches.
+Declare the existing clock dependency for the AUTH timing test's direct
+process CPU clock; no additional distfile or runtime dependency is needed.
 
 Index: simplexmq.cabal
 --- simplexmq.cabal.orig
@@ -41,7 +43,15 @@ Index: simplexmq.cabal
      , transformers ==0.6.*
      , unliftio ==0.2.*
      , unliftio-core ==0.2.*
-@@ -617,7 +617,7 @@ test-suite simplexmq-test
+@@ -598,6 +598,7 @@ test-suite simplexmq-test
+     , base64-bytestring
+     , bytestring
+     , case-insensitive ==1.2.*
++    , clock ==0.8.*
+     , containers
+     , crypton
+     , crypton-x509
+@@ -617,7 +618,7 @@ test-suite simplexmq-test
      , ini
      , iso8601-time
      , main-tester ==0.2.*
@@ -50,7 +60,7 @@ Index: simplexmq.cabal
      , mtl
      , network
      , QuickCheck ==2.14.*
-@@ -629,7 +629,7 @@ test-suite simplexmq-test
+@@ -629,7 +630,7 @@ test-suite simplexmq-test
      , text
      , time
      , timeit ==2.0.*

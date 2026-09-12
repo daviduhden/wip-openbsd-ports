@@ -287,18 +287,20 @@ do-test:
 	# Shared XFTP probes must not leave received files in the global /tmp.
 	mkdir -p -m 700 ${WRKDIR}/test-tmp
 	${CHAT_CABAL_CHECK_PATHS}
+	# Preserve the local dependency paths and options added by devel/cabal.
 	printf '%s\n' \
 		${CHAT_CABAL_PACKAGES} \
 		${CHAT_CABAL_COMMON_OPTIONS} \
 		${CHAT_CABAL_TEST_OPTIONS} \
-		> ${WRKSRC}/cabal.project.local
+		>> ${WRKSRC}/cabal.project.local
+	# Invoke Cabal directly: _MODCABAL_CABAL would reset this environment.
 	cd ${WRKBUILD} && exec ${SETENV} ${MAKE_ENV} \
 		TMPDIR=${WRKDIR}/test-tmp \
-		HOME=${CABAL_INC_HOME} \
-		CABAL_DIR=${CABAL_INC_HOME}/.cabal \
-		XDG_CACHE_HOME=${CABAL_INC_HOME}/.cache \
-		XDG_CONFIG_HOME=${CABAL_INC_HOME}/.config \
-		${_MODCABAL_CABAL} v2-test --offline --disable-benchmarks \
+		HOME=${WRKDIR} \
+		CABAL_DIR=${WRKDIR}/.cabal \
+		XDG_CACHE_HOME=${WRKDIR}/.cache \
+		XDG_CONFIG_HOME=${WRKDIR}/.config \
+		${LOCALBASE}/bin/cabal v2-test --offline --disable-benchmarks \
 		-w ${LOCALBASE}/bin/ghc \
 		-j${MAKE_JOBS} \
 		--flags="${MODCABAL_FLAGS}" ${MODCABAL_BUILD_ARGS} \

@@ -1,13 +1,18 @@
 SPDX-License-Identifier: AGPL-3.0-only
 
 Keep schema tests independent from the server-backed ChatClient helper.
+Export only schemaDumpTest so Test.hs can still use ChatClient.withTmpFiles
+without an ambiguous occurrence from this module's private helper.
 
 Index: tests/SchemaDump.hs
 --- tests/SchemaDump.hs.orig
 +++ tests/SchemaDump.hs
-@@ -5,10 +5,10 @@
+@@ -3,12 +3,12 @@
+ {-# LANGUAGE OverloadedStrings #-}
+ {-# LANGUAGE ScopedTypeVariables #-}
  
- module SchemaDump where
+-module SchemaDump where
++module SchemaDump (schemaDumpTest) where
  
 -import ChatClient (withTmpFiles)
  import ChatTests.DBUtils

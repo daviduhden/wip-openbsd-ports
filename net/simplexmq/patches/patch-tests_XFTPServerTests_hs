@@ -1,0 +1,120 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Regressions for upload backpressure and receive exception handling. Pause a
+streaming producer until the server writes its first block, then finish a
+1 MiB upload and verify the downloaded bytes. The transfer exceeds the
+HTTP/2 stream window and retains all XFTP authentication and digest checks.
+Check that receive deadlines and cancellation propagate, while IO errors
+still become FILE_IO. No existing example or timeout is weakened.
+
+Index: tests/XFTPServerTests.hs
+--- tests/XFTPServerTests.hs.orig
++++ tests/XFTPServerTests.hs
+@@ -11,6 +11,7 @@ module XFTPServerTests (xftpServerTests)
+ import AgentTests.FunctionalAPITests (runRight_)
+ import Control.Concurrent (threadDelay)
+ import Control.Exception (SomeException)
++import qualified Control.Exception as E
+ import Control.Monad
+ import Control.Monad.Except
+ import Control.Monad.IO.Unlift
+@@ -30,9 +31,10 @@ import qualified Network.HTTP2.Client as
+ import ServerTests (logSize)
+ import Simplex.FileTransfer.Client
+ import Simplex.FileTransfer.Description (kb)
+-import Simplex.FileTransfer.Protocol (FileInfo (..), XFTPFileId, xftpBlockSize)
++import Simplex.FileTransfer.Protocol (FileCmd (..), FileCommand (FPUT), FileInfo (..), FileResponse (FROk), SFileParty (SFSender), XFTPFileId, xftpBlockSize, xftpDecodeTClient, xftpEncodeAuthTransmission)
+ import Simplex.FileTransfer.Server.Env (AFStoreType, XFTPServerConfig (..))
+ import Simplex.FileTransfer.Transport (XFTPClientHandshake (..), XFTPClientHello (..), XFTPErrorType (..), XFTPRcvChunkSpec (..), XFTPServerHandshake (..), pattern VersionXFTP)
++import qualified Simplex.FileTransfer.Transport as FT
+ import Simplex.Messaging.Client (ProtocolClientError (..))
+ import qualified Simplex.Messaging.Crypto as C
+ import qualified Simplex.Messaging.Crypto.Lazy as LC
+@@ -45,8 +47,9 @@ import Simplex.Messaging.Transport.HTTP2
+ import qualified Simplex.Messaging.Transport.HTTP2.Client as HC
+ import Simplex.Messaging.Transport.Server (loadFileFingerprint)
+ import Simplex.Messaging.Transport.Shared (ChainCertificates (..), chainIdCaCerts)
+-import System.Directory (createDirectoryIfMissing, removeDirectoryRecursive, removeFile)
++import System.Directory (createDirectoryIfMissing, doesFileExist, getFileSize, removeDirectoryRecursive, removeFile)
+ import System.FilePath ((</>))
++import System.Timeout (timeout)
+ import Test.Hspec hiding (fit, it)
+ import UnliftIO.STM
+ import Util
+@@ -58,6 +61,7 @@ xftpServerTests =
+     describe "XFTP file chunk delivery" $ do
+       it "should create, upload and receive file chunk (1 client)" testFileChunkDelivery
+       it "should create, upload and receive file chunk (2 clients)" testFileChunkDelivery2
++      it "should flush an upload while its streaming producer waits for the receiver" testPausedFileChunkUpload
+       it "should create, add recipients, upload and receive file chunk" testFileChunkDeliveryAddRecipients
+       it "should delete file chunk (1 client)" testFileChunkDelete
+       it "should delete file chunk (2 clients)" testFileChunkDelete2
+@@ -76,6 +80,20 @@ xftpServerTests =
+         it "allowed with correct basic auth" $ testFileBasicAuth True (Just "pwd") (Just "pwd") True
+         it "allowed with auth on server without auth" $ testFileBasicAuth True Nothing (Just "any") True
+       it "should not change content for uploaded and committed files" testFileSkipCommitted
++    describe "XFTP receive exceptions" $ do
++      it "lets the receive deadline expire without converting it to FILE_IO" $ \_ -> do
++        blocked <- newEmptyTMVarIO
++        let spec = XFTPRcvChunkSpec "tests/tmp/receive-timeout" chSize "unused"
++        timeout 100000 (runExceptT $ FT.receiveFile (\_ -> atomically $ readTMVar blocked) spec)
++          `shouldReturn` Nothing
++      it "propagates receiver cancellation" $ \_ -> do
++        let spec = XFTPRcvChunkSpec "tests/tmp/receive-cancel" chSize "unused"
++        runExceptT (FT.receiveFile (\_ -> E.throwIO E.ThreadKilled) spec)
++          `shouldThrow` (== E.ThreadKilled)
++      it "still reports file IO exceptions" $ \_ -> do
++        let spec = XFTPRcvChunkSpec "tests/tmp/receive-io-error" chSize "unused"
++        runExceptT (FT.receiveFile (\_ -> ioError $ userError "read failed") spec)
++          `shouldReturn` Left FILE_IO
+     describe "XFTP SNI and CORS" $ beforeWith (const (pure ())) $ do
+       it "should select web certificate when SNI is used" testSNICertSelection
+       it "should select XFTP certificate when SNI is not used" testNoSNICertSelection
+@@ -109,6 +127,42 @@ testFileChunkDelivery = xftpTest $ \c ->
+ testFileChunkDelivery2 :: AFStoreType -> Expectation
+ testFileChunkDelivery2 = xftpTest2 $ \s r -> runRight_ $ runTestFileChunkDelivery s r
+ 
++testPausedFileChunkUpload :: AFStoreType -> Expectation
++testPausedFileChunkUpload = xftpTest $ \c -> runRight_ $ do
++  g <- liftIO C.newRandom
++  (sndKey, spKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
++  (rcvKey, rpKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
++  -- Exceed the HTTP/2 stream window as well as pausing the producer below.
++  bytes <- atomically $ C.randomBytes (kb 1024) g
++  let size = fromIntegral $ B.length bytes
++      digest = LC.sha256Hash $ LB.fromStrict bytes
++      file = FileInfo {sndKey, size, digest}
++  (sId, [rId]) <- createXFTPChunk c spKey file [rcvKey] Nothing
++  liftIO $ do
++    command <- either (error . show) pure $ xftpEncodeAuthTransmission (thParams c) spKey ("", sId, FileCmd SFSender FPUT)
++    let path = xftpServerFiles </> B.unpack (B64.encode $ unEntityId sId)
++        firstBlockSize = 16384
++        waitForFirstBlock = do
++          exists <- doesFileExist path
++          written <- if exists then getFileSize path else pure 0
++          unless (written >= fromIntegral firstBlockSize) $ threadDelay 1000 >> waitForFirstBlock
++        req = H2.requestStreaming "POST" "/" [] $ \send flush -> do
++          send $ byteString command
++          send $ byteString $ B.take firstBlockSize bytes
++          -- Do not explicitly flush: once the producer is blocked, the
++          -- sender must flush its partial buffer. Otherwise the server waits
++          -- for the tail of its first file block and neither side can advance.
++          timeout 5000000 waitForFirstBlock `shouldReturn` Just ()
++          send $ byteString $ B.drop firstBlockSize bytes
++          flush
++    resp <- either (error . show) pure =<< HC.sendRequest (http2Client c) req (Just 10000000)
++    case xftpDecodeTClient (thParams c) (bodyHead $ HC.respBody resp) of
++      Right (_, _, Right FROk) -> pure ()
++      result -> expectationFailure $ "upload response: " <> show result
++    readChunk sId `shouldReturn` bytes
++  downloadXFTPChunk g c rpKey rId $ XFTPRcvChunkSpec "tests/tmp/received-paused-upload" size digest
++  liftIO $ B.readFile "tests/tmp/received-paused-upload" `shouldReturn` bytes
++
+ runTestFileChunkDelivery :: XFTPClient -> XFTPClient -> ExceptT XFTPClientError IO ()
+ runTestFileChunkDelivery s r = do
+   g <- liftIO C.newRandom
+@@ -598,4 +652,3 @@ testStaleWebSession =
+       decoded <- either (error . show) pure $ C.unPad respBody
+       decoded `shouldBe` smpEncode SESSION
+ 
+-

@@ -6,10 +6,15 @@ the body reader to another thread. Use the explicit stream-ownership API;
 normal body reads still update flow-control windows. The optional Aux
 stream/ping helpers are not used by SimpleX.
 
+Own setup workers across cancellation and failed acquisition, and unmask
+their bodies even when the caller brackets client creation. Error publication
+must not block behind an already published client. Join workers on failure
+and close with interruptible cancel so TLS shutdown deadlines can fire.
+
 Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
 --- src/Simplex/Messaging/Transport/HTTP2/Client.hs.orig
 +++ src/Simplex/Messaging/Transport/HTTP2/Client.hs
-@@ -27,13 +27,15 @@
+@@ -27,13 +27,15 @@ import Control.Concurrent.Async
  import Control.Exception (Handler (..), IOException, SomeAsyncException, SomeException)
  import qualified Control.Exception as E
  import Control.Monad
@@ -26,7 +31,27 @@ Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
  import Network.Socket (HostName, ServiceName)
  import Network.Socks5 (SocksCredentials)
  import qualified Network.TLS as T
-@@ -153,7 +155,7 @@
+@@ -140,20 +142,22 @@ getVerifiedHTTP2ClientWith config host p
+       pure HClient {connected, disconnected, host, port, config, reqQ}
+ 
+     runClient :: HClient -> IO (Either HTTP2ClientError HTTP2Client)
+-    runClient c = do
++    runClient c = E.mask $ \restore -> do
+       cVar <- newEmptyTMVarIO
+       action <-
+-        async $ setup (client c cVar) `E.catch` \e -> do
+-          atomically $ putTMVar cVar $ Left $ HCNetworkError $ toNetworkError e
++        asyncWithUnmask $ \unmask -> unmask (setup $ client c cVar) `E.catch` \e -> do
++          -- Setup can fail after publishing the client but before its caller
++          -- reads cVar. Reporting that failure must not block shutdown.
++          atomically $ void $ tryPutTMVar cVar $ Left $ HCNetworkError $ toNetworkError e
+           E.throwIO e
+-      c_ <- connTimeout config `timeout` atomically (takeTMVar cVar)
++      c_ <- restore (connTimeout config `timeout` atomically (readTMVar cVar)) `E.onException` cancel action
+       case c_ of
+         Just (Right c') -> pure $ Right c' {action = Just action}
+-        Just (Left e) -> pure $ Left e
++        Just (Left e) -> cancel action $> Left e
          Nothing -> cancel action $> Left (HCNetworkError NETimeoutError)
  
      client :: HClient -> TMVar (Either HTTP2ClientError HTTP2Client) -> TLS p -> H.Client HTTP2Response
@@ -35,7 +60,7 @@ Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
        sessionTs <- getCurrentTime
        let c' =
              HTTP2Client
-@@ -171,10 +173,10 @@
+@@ -171,10 +175,10 @@ getVerifiedHTTP2ClientWith config host p
        atomically $ do
          writeTVar (connected c) True
          putTMVar cVar (Right c')
@@ -48,7 +73,16 @@ Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
        (req, respVar) <- atomically $ readTBQueue reqQ
        sendReq req $ \r -> do
          respBody <- getHTTP2Body r (bodyHeadSize config)
-@@ -220,4 +222,19 @@
+@@ -184,7 +188,7 @@ getVerifiedHTTP2ClientWith config host p
+ 
+ -- | Disconnects client from the server and terminates client threads.
+ closeHTTP2Client :: HTTP2Client -> IO ()
+-closeHTTP2Client = mapM_ uninterruptibleCancel . action
++closeHTTP2Client = mapM_ cancel . action
+ 
+ sendRequest :: HTTP2Client -> Request -> Maybe Int -> IO (Either HTTP2ClientError HTTP2Response)
+ sendRequest HTTP2Client {client_ = HClient {config, reqQ}} req reqTimeout_ = do
+@@ -220,4 +224,19 @@ runHTTP2ClientWith :: forall a p. Buffer
  runHTTP2ClientWith bufferSize host setup client = setup $ \tls -> withHTTP2 bufferSize (run tls) (pure ()) tls
    where
      run :: TLS p -> H.Config -> IO a

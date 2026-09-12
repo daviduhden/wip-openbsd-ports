@@ -7,7 +7,7 @@ foreground reactivation of a suspended agent or enqueue events to its owner.
 Index: src/Simplex/Messaging/Agent.hs
 --- src/Simplex/Messaging/Agent.hs.orig
 +++ src/Simplex/Messaging/Agent.hs
-@@ -250,7 +250,7 @@
+@@ -250,7 +250,7 @@ import Simplex.RemoteControl.Invitation
  import Simplex.RemoteControl.Types
  import System.Mem.Weak (deRefWeak)
  import UnliftIO.Async (mapConcurrently)
@@ -16,7 +16,7 @@ Index: src/Simplex/Messaging/Agent.hs
  import qualified UnliftIO.Exception as E
  import UnliftIO.STM
  
-@@ -273,10 +273,11 @@
+@@ -273,10 +273,11 @@ getSMPAgentClient_ clientId cfg initServ
        liftIO $ checkServers "SMP" smp >> checkServers "XFTP" xftp
        currentTs <- liftIO getCurrentTime
        notices <- liftIO $ withTransaction store (`getClientNotices` presetServers) `catchAll_` pure []
@@ -32,7 +32,7 @@ Index: src/Simplex/Messaging/Agent.hs
      checkServers protocol srvs =
        forM_ (M.assocs srvs) $ \(userId, srvs') -> checkUserServers ("getSMPAgentClient " <> protocol <> " " <> tshow userId) srvs'
      runAgentThreads c
-@@ -289,7 +290,7 @@
+@@ -289,7 +290,7 @@ getSMPAgentClient_ clientId cfg initServ
                run c "cleanupManager" $ cleanupManager c,
                run c "logServersStats" $ logServersStats c
              ]
@@ -41,7 +41,7 @@ Index: src/Simplex/Messaging/Agent.hs
      run AgentClient {subQ, acThread} name a =
        a `E.catchAny` \e -> whenM (isJust <$> readTVarIO acThread) $ do
          logError $ "Agent thread " <> name <> " crashed: " <> tshow e
-@@ -306,14 +307,26 @@
+@@ -306,14 +307,26 @@ logServersStats c = do
      liftIO $ threadDelay' int
  
  saveServersStats :: AgentClient -> AM' ()
@@ -72,7 +72,7 @@ Index: src/Simplex/Messaging/Agent.hs
  
  restoreServersStats :: AgentClient -> AM' ()
  restoreServersStats c@AgentClient {smpServersStats, xftpServersStats, ntfServersStats, srvStatsStartedAt} = do
-@@ -335,10 +348,10 @@
+@@ -335,10 +348,10 @@ disconnectAgentClient c@AgentClient {age
  
  -- only used in the tests
  disposeAgentClient :: AgentClient -> IO ()

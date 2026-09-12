@@ -1,0 +1,43 @@
+SPDX-License-Identifier: BSD-3-Clause
+
+Use the managed sender in runIO, as run already does. The IO sender requeues
+output without waiting for stream credit or body input. An empty producer
+queue or exhausted stream window can keep outputQ nonempty, spin, and leave
+partial DATA buffered while the peer waits for it before granting credit.
+Retain runIO response ownership: SimpleX consumes response bodies after
+cioReadResponse returns, so switching back to run would discard file bytes.
+
+nextForStreaming now retains the current chunk until its builder finishes;
+initialize that state once for each request body.
+
+Index: Network/HTTP2/Client/Run.hs
+--- Network/HTTP2/Client/Run.hs.orig
++++ Network/HTTP2/Client/Run.hs
+@@ -109,7 +109,12 @@ runIO cconf@ClientConfig{..} conf@Config
+             (strm, moutobj) <- makeStream ctx scheme authority req
+             case moutobj of
+                 Nothing -> return ()
+-                Just outobj -> sendRequest conf ctx strm outobj True
++                -- Use the managed sender to wait for stream window credit
++                -- and streaming body input before re-enqueuing output.
++                -- makeOutputIO keeps outputQ nonempty when either is absent,
++                -- spinning with unflushed bytes that the peer may need before
++                -- it can send WINDOW_UPDATE. Response ownership is unchanged.
++                Just outobj -> sendRequest conf ctx strm outobj False
+             return (streamNumber strm, strm)
+         get = getResponse
+         create = openOddStreamWait ctx
+@@ -215,11 +220,11 @@ sendRequest Config{..} ctx@Context{..} s
+         OutBodyStreaming strmbdy -> do
+             q <- sendStreaming ctx strm $ \iface ->
+                 outBodyUnmask iface $ strmbdy (outBodyPush iface) (outBodyFlush iface)
+-            let next = nextForStreaming q
++            next <- nextForStreaming q
+             return (Just next, Just q)
+         OutBodyStreamingIface strmbdy -> do
+             q <- sendStreaming ctx strm strmbdy
+-            let next = nextForStreaming q
++            next <- nextForStreaming q
+             return (Just next, Just q)
+     let ot = OHeader outObjHeaders mnext outObjTrailers
+     if io

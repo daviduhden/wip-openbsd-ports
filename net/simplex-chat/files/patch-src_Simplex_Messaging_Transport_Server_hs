@@ -19,7 +19,7 @@ Unmask handler bodies and keep TLS/socket cleanup interruptible.
 Index: src/Simplex/Messaging/Transport/Server.hs
 --- src/Simplex/Messaging/Transport/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/Server.hs
-@@ -32,6 +32,8 @@
+@@ -32,6 +32,8 @@ module Simplex.Messaging.Transport.Serve
  where
  
  import Control.Applicative ((<|>))
@@ -28,7 +28,7 @@ Index: src/Simplex/Messaging/Transport/Server.hs
  import Control.Logger.Simple
  import Control.Monad
  import qualified Crypto.Store.X509 as SX
-@@ -50,7 +52,7 @@
+@@ -50,7 +52,7 @@ import Network.Socket
  import qualified Network.TLS as T
  import Simplex.Messaging.Transport
  import Simplex.Messaging.Transport.Shared
@@ -37,7 +37,7 @@ Index: src/Simplex/Messaging/Transport/Server.hs
  import System.Exit (exitFailure)
  import System.IO.Error (tryIOError)
  import System.Mem.Weak (Weak, deRefWeak)
-@@ -158,7 +160,8 @@
+@@ -158,7 +160,8 @@ runTransportServerSocketState_ ss starte
    labelMyThread $ "transport server for " <> threadLabel
    runTCPServerSocket ss started getSocket $ \conn -> do
      labelMyThread $ threadLabel <> "/setup"
@@ -47,7 +47,7 @@ Index: src/Simplex/Messaging/Transport/Server.hs
        (timeout tlsSetupTimeout (setupTLS conn) >>= maybe (fail "tls setup timeout") pure)
        (closeConnection . snd)
        (server conn)
-@@ -172,16 +175,21 @@
+@@ -172,16 +175,21 @@ runLocalTCPServer started port server =
  -- | Wrap socket provider in a TCP server bracket.
  runTCPServerSocket :: SocketState -> TMVar Bool -> IO Socket -> (Socket -> IO ()) -> IO ()
  runTCPServerSocket (accepted, gracefullyClosed, clients) started getSocket server =
@@ -76,7 +76,7 @@ Index: src/Simplex/Messaging/Transport/Server.hs
  
  -- | Recover from errors in `accept` whenever it is safe.
  -- Some errors are safe to ignore, while blindly restaring `accept` may trigger a busy loop.
-@@ -228,6 +236,7 @@
+@@ -228,6 +236,7 @@ closeServer :: TMVar Bool -> TVar (IntMa
  closeServer started clients sock = do
    close sock
    readTVarIO clients >>= mapM_ (deRefWeak >=> mapM_ killThread)
@@ -84,7 +84,7 @@ Index: src/Simplex/Messaging/Transport/Server.hs
    void . atomically $ tryPutTMVar started False
  
  startTCPServer :: TMVar Bool -> Maybe HostName -> ServiceName -> IO Socket
-@@ -235,8 +244,8 @@
+@@ -235,8 +244,8 @@ startTCPServer started host port = withS
    where
      resolve =
        let hints = defaultHints {addrFlags = [AI_PASSIVE], addrSocketType = Stream}

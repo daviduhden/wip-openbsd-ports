@@ -1,0 +1,35 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Own XFTP test clients until their callback finishes, including assertion
+failure. Close their HTTP/2 threads before shutting down the fixture server.
+
+Index: tests/XFTPClient.hs
+--- tests/XFTPClient.hs.orig
++++ tests/XFTPClient.hs
+@@ -9,6 +9,7 @@
+ module XFTPClient where
+ 
+ import Control.Concurrent (ThreadId, threadDelay)
++import qualified Control.Exception as E
+ import Data.String (fromString)
+ import Data.Time.Clock (getCurrentTime)
+ import Network.Socket (ServiceName)
+@@ -213,11 +214,13 @@ testXFTPClient :: HasCallStack => (HasCa
+ testXFTPClient = testXFTPClientWith testXFTPClientConfig
+ 
+ testXFTPClientWith :: HasCallStack => XFTPClientConfig -> (HasCallStack => XFTPClient -> IO a) -> IO a
+-testXFTPClientWith cfg client = do
+-  ts <- getCurrentTime
+-  getXFTPClient (1, testXFTPServer, Nothing) cfg [] ts (\_ -> pure ()) >>= \case
+-    Right c -> client c
+-    Left e -> error $ show e
++testXFTPClientWith cfg client = E.bracket acquire closeXFTPClient client
++  where
++    acquire = do
++      ts <- getCurrentTime
++      getXFTPClient (1, testXFTPServer, Nothing) cfg [] ts (\_ -> pure ()) >>= \case
++        Right c -> pure c
++        Left e -> error $ show e
+ 
+ testXFTPServerConfigSNI :: XFTPServerConfig STMFileStore
+ testXFTPServerConfigSNI =

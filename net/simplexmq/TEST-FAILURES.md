@@ -1,7 +1,142 @@
 # SimpleXMQ v7.0.1 test investigation
 
-Native status: REQUIRES_OPENBSD_TESTING. The only completed OpenBSD run
-available for this investigation remains:
+## September 12: new OpenBSD log, static corrections and patch refresh
+
+Status: REQUIRES_OPENBSD_TESTING. No build, test suite, isolated example or
+runtime probe was executed during this pass. The user will test on OpenBSD.
+The older runs and conclusions below are historical, not validation of this
+revision.
+
+The new user-supplied `simplexmq-build-test.log` records:
+
+```text
+812 examples, 14 failures, 38 pending
+Finished in 1933.1656 seconds
+Randomized with seed 1948370131
+GHC 9.10.3, x86_64-openbsd
+```
+
+Log SHA256: `a375f25bd9a6ccba1252aeeccf4d5dc19d6c3233960043f41e82548982f9dc02`.
+The log is preserved unchanged. Twelve failures are AUTH timing comparisons
+(six key combinations for each message store); the remaining two are the
+two-server XFTP CLI send/receive and deletion examples. The latter have
+repeated server-side `receiveFile error: <<timeout>>` messages before their
+ExitFailure. The original nine failures did not recur in this run.
+
+### AUTH: fix the CPU clock, retain the comparison
+
+Every logged CPU sample is a multiple of 10 ms. Adjacent 25-request blocks
+often measure only 20-50 ms, so one tick can exceed the 30% limit; the twelve
+reported median differences are 30.95-50%, even though their aggregate
+differences range from 1.22% to 25.53%. This is a concrete resolution problem
+in addition to the historical process-wide noise discussed below.
+
+`timeit-2.0` calls `System.CPUTime.getCPUTime`. GHC 9.10.3 selects its
+`getrusage` backend when `_POSIX_TIMERS` is negative. OpenBSD defines that
+macro as -1 despite supporting `CLOCK_PROCESS_CPUTIME_ID`; its `getrusage`
+CPU fields are calculated from sampled ticks. Its process CPU clock instead
+reads accumulated runtime and includes the currently running interval.
+Sources: [GHC backend selection](https://github.com/ghc/ghc/blob/ghc-9.10.3-release/libraries/base/src/System/CPUTime.hsc),
+[OpenBSD feature macros](https://github.com/openbsd/src/blob/master/include/unistd.h),
+[resource accounting](https://github.com/openbsd/src/blob/master/sys/kern/kern_resource.c),
+[process clock implementation](https://github.com/openbsd/src/blob/master/sys/kern/kern_time.c),
+and [clock_gettime(2)](https://man.openbsd.org/clock_gettime.2).
+
+`patch-tests_ServerTests_hs` now reads the process CPU clock directly through
+`System.Clock`. It retains the CPU-time metric, all 3*n requests per case,
+block ordering, median calculation, SUB/SEND response assertions and 30%/45%
+limits. Nonpositive samples explicitly fail instead of feeding NaN into the
+median. The existing `clock-0.8.4` distfile becomes a direct test dependency
+in `patch-simplexmq_cabal`; dependency manifests and distinfo are unchanged.
+
+No AUTH verifier was weakened or padded. Static inspection still finds the
+real/dummy signature and X25519 checks on both rejection paths. No production
+SimpleX code uses this CPU-time backend, so this correction is test-only and
+is not copied into the client's embedded library.
+
+### XFTP: repair the HTTP/2 sender and receive exception handling
+
+The pinned http2-5.4.4 `runIO` used `makeOutputIO`, which requeues output even
+with an empty streaming producer queue or exhausted stream window. The
+sender flushes a partial buffer when its output queue becomes empty. Keeping
+that queue continuously nonempty can spin with unsent bytes while the peer
+waits for those bytes before returning window credit. This is consistent
+with the two-server upload timeouts, but the native causal attribution must
+still be verified. See the pinned
+[Client/Run.hs](https://hackage-content.haskell.org/package/http2-5.4.4/src/Network/HTTP2/Client/Run.hs),
+[H2/Sync.hs](https://hackage-content.haskell.org/package/http2-5.4.4/src/Network/HTTP2/H2/Sync.hs)
+and [H2/Sender.hs](https://hackage-content.haskell.org/package/http2-5.4.4/src/Network/HTTP2/H2/Sender.hs).
+
+The three new `files/patch-http2_*` patches use the managed sender in runIO
+and repair its readiness check: a streaming chunk stays in the bounded
+queue until its builder continuation is exhausted. Otherwise an empty queue
+can suspend the sender with part of that chunk still unsent. Both request
+and response readers initialize this state, covering uploads and encrypted
+downloads. Window sizes, file-size/digest checks and receive deadlines are
+unchanged. runIO still leaves response consumption to SimpleX; reverting to
+the high-level runner would reintroduce the earlier discarded-download bug.
+
+`patch-src_Simplex_FileTransfer_Transport_hs` narrows the generic receive
+handler to IOException. Previously it caught the surrounding timeout's
+exception and returned FILE_IO, and also swallowed thread cancellation.
+The server can now return TIMEOUT through its existing deadline/cleanup
+path. HTTP2Error still maps to TIMEOUT and actual IO errors to FILE_IO.
+
+The shared HTTP/2 client patch also owns its setup worker during acquisition:
+unmask the worker body, cancel/join on failed or cancelled setup, and publish
+errors with tryPutTMVar so an already published client cannot block teardown.
+Closing joins with interruptible cancel so inner TLS cleanup deadlines can
+fire. The XFTP fixture now brackets its clients rather than leaving their
+HTTP/2 threads alive after the callback or an assertion failure.
+
+Four unexecuted regressions in `patch-tests_XFTPServerTests_hs` cover a
+producer waiting for the server to write its first block (followed by a full
+1 MiB upload/download and byte comparison), receive timeout, cancellation,
+and preservation of FILE_IO for IO exceptions. All existing examples remain.
+There are no new skips, pending markers, blanket retries or relaxed limits.
+
+Both ports apply identical HTTP/2 dependency patches. The embedded library
+in simplex-chat also receives the receive-handler and HTTP/2 client lifecycle
+fixes. The HTTP/2 server streaming correction is relevant to response senders
+too; the test-only fixture and AUTH edits stay in simplexmq's own suite.
+
+### Clean application and update-patches
+
+Downloaded the exact tagged/pinned sources and checked their SHA256 against
+both ports' distinfo, including the revised Cabal files for cryptostore and
+entropy. Normalized dependency source line endings as post-patch does.
+
+Used the actual OpenBSD infrastructure
+[update-patches script](https://github.com/openbsd/ports/blob/master/infrastructure/bin/update-patches)
+(revision 1.24) in scratch directories with pristine `.orig.port` backups.
+It invokes `diff -u -p -a`, preserves patch comments and writes the usual
+Index and `.orig` path labels. Regenerated all main-source patches and the
+new HTTP/2 dependency patches against each package's own original version.
+This used the host's diff; it did not run OpenBSD make or compile anything.
+Other refreshed hunks only change context, positions or grouping, not their
+added/removed source lines.
+
+Then applied the complete patch sets again to fresh source copies with
+`patch --batch --forward --fuzz=0 -p0`, rejecting any offset, fuzz or reject:
+
+| Source tree | Patch applications | Fuzz / offsets / rejects |
+|---|---:|---|
+| simplexmq v7.0.1 | 51 | 0 / 0 / 0 |
+| simplex-chat v7.0.2 | 8 | 0 / 0 / 0 |
+| simplex-chat's simplexmq efaad8e73436d60f5052f07dda6b71151ad5039b | 27 | 0 / 0 / 0 |
+| simplexmq dependencies, including HTTP/2, TLS and Warp | 22 | 0 / 0 / 0 |
+| simplex-chat dependencies, including HTTP/2 and TLS | 19 | 0 / 0 / 0 |
+| Total | 127 | 0 / 0 / 0 |
+
+The patched main sources and HTTP/2 files also match the reviewed working
+copies byte for byte. These are patch-integrity checks, not passing tests.
+Native follow-up: run the complete AUTH group, both two-server CLI examples,
+the new XFTP regressions, and the full suite; exercise client upload/download
+and cancellation in simplex-chat. No earlier passing run verifies these edits.
+
+## Historical investigation before the September 12 pass
+
+The completed OpenBSD run originally available for this investigation was:
 
 ```text
 810 examples, 9 failures, 38 pending

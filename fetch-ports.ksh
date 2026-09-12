@@ -471,6 +471,7 @@ canonical_target_tree() {
 
 # Main function
 main() {
+	NO_PROVISION=0
 	# Copy into an existing CVS/Git tree without host provisioning or checkout.
 	case "${1:-}" in
 	--list)
@@ -499,9 +500,17 @@ main() {
 		copy_user_list
 		return $?
 		;;
+	--no-provision)
+		NO_PROVISION=1
+		shift
+		[ "$#" -eq 0 ] || {
+			error "Usage: $0 [--list | --copy-only TREE [category/port ...] | --no-provision]"
+			return 1
+		}
+		;;
 	"") ;;
 	*)
-		error "Usage: $0 [--list | --copy-only TREE [category/port ...]]"
+		error "Usage: $0 [--list | --copy-only TREE [category/port ...] | --no-provision]"
 		return 1
 		;;
 	esac
@@ -526,8 +535,12 @@ main() {
 	else
 		log "Skipping copy from wip-openbsd-ports."
 	fi
-	create_user_with_random_password
-	configure_doas
+	if [ "$NO_PROVISION" -eq 1 ]; then
+		log "Skipping user creation and doas configuration."
+	else
+		create_user_with_random_password
+		configure_doas
+	fi
 	configure_ports_system
 }
 

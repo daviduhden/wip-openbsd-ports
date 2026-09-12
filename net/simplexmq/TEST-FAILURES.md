@@ -68,6 +68,14 @@ only `schemaDumpTest`, matching the API actually used by Test.hs and
 keeping the independent schema helper private. This is a source finding,
 not a compiler diagnostic from the supplied log. No test is removed.
 
+Follow-up: applied the same explicit export list to MQ's
+`AgentTests.SchemaDump`. MQ's Test.hs already imports only `schemaDumpTest`
+and manages `tests/tmp` through its suite hooks, so it needs neither the
+ambiguity fix nor Chat's local `withTmpFiles` helper. This export change
+keeps MQ's existing store-closing patch and all examples intact. It was
+reviewed statically and checked for clean patch application only; the
+native passing log above predates it.
+
 ### SQLCipher packaging mismatch
 
 Both supplied logs fail `wantlib-args` because the ports tree advertises

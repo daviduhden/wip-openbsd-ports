@@ -1,0 +1,35 @@
+SPDX-License-Identifier: Apache-2.0
+
+Index: Core/Unix/CoreUnix.cpp
+--- Core/Unix/CoreUnix.cpp.orig
++++ Core/Unix/CoreUnix.cpp
+@@ -21,6 +21,7 @@
+ #include "Platform/FileStream.h"
+ #include "Driver/Fuse/FuseService.h"
+ #include "Volume/VolumePasswordCache.h"
++#include "UnixUser.h"
+ 
+ namespace VeraCrypt
+ {
+@@ -339,6 +340,10 @@
+ 			catch (...) { }
+ 		}
+ 
++		gid_t doasGid;
++		if (GetDoasUserIds (nullptr, &doasGid))
++			return doasGid;
++
+ 		return getgid();
+ 	}
+ 
+@@ -355,6 +360,10 @@
+ 			catch (...) { }
+ 		}
+ 
++		uid_t doasUid;
++		if (GetDoasUserIds (&doasUid, nullptr))
++			return doasUid;
++
+ 		return getuid();
+ 	}
+ 

@@ -1,0 +1,219 @@
+SPDX-License-Identifier: Apache-2.0
+
+Index: Core/Unix/CoreService.cpp
+--- Core/Unix/CoreService.cpp.orig
++++ Core/Unix/CoreService.cpp
+@@ -14,6 +14,14 @@
+ #include <fcntl.h>
+ #include <sys/wait.h>
+ #include <stdio.h>
++#ifdef TC_OPENBSD
++#include <errno.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++#include <termios.h>
++#include <unistd.h>
++#endif
+ #include "Platform/FileStream.h"
+ #include "Platform/MemoryStream.h"
+ #include "Platform/Serializable.h"
+@@ -27,6 +35,24 @@
+ 
+ namespace VeraCrypt
+ {
++#ifdef TC_OPENBSD
++	// doas(1) reads the password from its controlling terminal. A private
++	// pseudoterminal is used for that, so the elevated process does not need
++	// a terminal of its own and the password entered in the user interface
++	// can be forwarded without exposing it on the command line or in the
++	// environment.
++	static int DoasAuthTerminalFd = -1;
++
++	static void CloseDoasAuthTerminal ()
++	{
++		if (DoasAuthTerminalFd != -1)
++		{
++			close (DoasAuthTerminalFd);
++			DoasAuthTerminalFd = -1;
++		}
++	}
++#endif
++
+ 	template <class T>
+ 	unique_ptr <T> CoreService::GetResponse ()
+ 	{
+@@ -88,6 +114,10 @@
+ 
+ 	void CoreService::ProcessRequests (int inputFD, int outputFD)
+ 	{
++#ifdef TC_OPENBSD
++		finally_do ({ CloseDoasAuthTerminal (); });
++#endif
++
+ 		try
+ 		{
+ 			Core = move_ptr(CoreDirect);
+@@ -390,6 +420,36 @@
+ 
+ 	void CoreService::StartElevated (const CoreServiceRequest &request)
+ 	{
++#ifdef TC_OPENBSD
++		CloseDoasAuthTerminal();
++
++		int authTerminalFd = -1;
++		string authTerminalPath;
++		bool authTerminalKept = false;
++
++		finally_do_arg2 (int *, &authTerminalFd, bool *, &authTerminalKept,
++		{
++			if (!*finally_arg2 && *finally_arg != -1)
++			{
++				close (*finally_arg);
++				*finally_arg = -1;
++			}
++		});
++
++		if (!request.FastElevation)
++		{
++			authTerminalFd = posix_openpt (O_RDWR | O_NOCTTY);
++			throw_sys_sub_if (authTerminalFd == -1, "posix_openpt");
++			throw_sys_if (fcntl (authTerminalFd, F_SETFD, FD_CLOEXEC) == -1);
++			throw_sys_if (grantpt (authTerminalFd) == -1);
++			throw_sys_if (unlockpt (authTerminalFd) == -1);
++
++			char *slavePath = ptsname (authTerminalFd);
++			throw_sys_sub_if (slavePath == nullptr, "ptsname");
++			authTerminalPath = slavePath;
++		}
++#endif
++
+ 		unique_ptr <Pipe> inPipe (new Pipe());
+ 		unique_ptr <Pipe> outPipe (new Pipe());
+ 		Pipe errPipe;
+@@ -411,7 +471,57 @@
+ 					if (appPath.empty())
+ 						appPath = "veracrypt";
+ 
+-					const char *args[] = { "sudo", "-S", "-p", "", appPath.c_str(), TC_CORE_SERVICE_CMDLINE_OPTION, nullptr };
++					const char *args[8];
++
++#ifdef TC_OPENBSD
++					if (!authTerminalPath.empty())
++					{
++						throw_sys_if (setsid () == -1);
++
++						int authFd = open (authTerminalPath.c_str(), O_RDWR);
++						throw_sys_sub_if (authFd == -1, authTerminalPath);
++
++						// Keep the admin password out of the terminal echo.
++						struct termios tios;
++						if (tcgetattr (authFd, &tios) == 0)
++						{
++							tios.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ISIG | IEXTEN);
++							tios.c_iflag &= ~(BRKINT | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
++							tios.c_cc[VMIN] = 1;
++							tios.c_cc[VTIME] = 0;
++							tcsetattr (authFd, TCSANOW, &tios);
++						}
++
++						if (ioctl (authFd, TIOCSCTTY, 0) == -1 && errno != EINVAL)
++						{
++							close (authFd);
++							throw SystemException (SRC_POS, "TIOCSCTTY");
++						}
++
++						close (authFd);
++
++						args[0] = "/usr/bin/doas";
++						args[1] = appPath.c_str();
++						args[2] = TC_CORE_SERVICE_CMDLINE_OPTION;
++						args[3] = nullptr;
++					}
++					else
++					{
++						args[0] = "/usr/bin/doas";
++						args[1] = "-n";
++						args[2] = appPath.c_str();
++						args[3] = TC_CORE_SERVICE_CMDLINE_OPTION;
++						args[4] = nullptr;
++					}
++#else
++					args[0] = "sudo";
++					args[1] = "-S";
++					args[2] = "-p";
++					args[3] = "";
++					args[4] = appPath.c_str();
++					args[5] = TC_CORE_SERVICE_CMDLINE_OPTION;
++					args[6] = nullptr;
++#endif
+ 					execvp (args[0], ((char* const*) args));
+ 					throw SystemException (SRC_POS, args[0]);
+ 				}
+@@ -461,7 +571,17 @@
+ #if defined(TC_LINUX )
+ 		Thread::Sleep (1000); // wait 1 second for the forked sudo to start
+ #endif
++#ifdef TC_OPENBSD
++		if (authTerminalFd != -1)
++		{
++			// Give doas(1) time to open its authentication terminal, then
++			// forward the admin password obtained by the user interface.
++			Thread::Sleep (1000);
++			if (write (authTerminalFd, &adminPassword.front(), adminPassword.size())) { } // Errors ignored
++		}
++#else
+ 		if (write (inPipe->GetWriteFD(), &adminPassword.front(), adminPassword.size())) { } // Errors ignored
++#endif
+ 
+ 		burn (&adminPassword.front(), adminPassword.size());
+ 
+@@ -527,7 +647,11 @@
+ 					Thread thread;
+ 					thread.Start (new WaitFunctor (forkedPid));
+ 
++#ifdef TC_OPENBSD
++					throw ElevationFailed (SRC_POS, "doas", 1, "");
++#else
+ 					throw ElevationFailed (SRC_POS, "sudo", 1, "");
++#endif
+ 				}
+ 
+ 				waitRes = waitpid (forkedPid, &status, 0);
+@@ -560,11 +684,18 @@
+ 			if (!errOutput.empty())
+ 				strErrOutput.insert (strErrOutput.begin(), errOutput.begin(), errOutput.end());
+ 
++#ifdef TC_OPENBSD
++			if (strErrOutput.find (" tty") != string::npos)
++				strErrOutput += "\nTo allow VeraCrypt to elevate privileges, add an appropriate rule for it to '/etc/doas.conf'.";
++
++			throw ElevationFailed (SRC_POS, "doas", exitCode, strErrOutput);
++#else
+ 			// sudo may require a tty even if -S is used
+ 			if (strErrOutput.find (" tty") != string::npos)
+ 				strErrOutput += "\nTo enable use of 'sudo' by applications without a terminal window, please disable 'requiretty' option in '/etc/sudoers'. Newer versions of sudo automatically determine whether a terminal is required ('requiretty' option is obsolete).";
+ 
+ 			throw ElevationFailed (SRC_POS, "sudo", exitCode, strErrOutput);
++#endif
+ 		}
+ 
+ 		throw_sys_if (fcntl (outPipe->GetReadFD(), F_SETFL, 0) == -1);
+@@ -578,6 +709,17 @@
+ 
+ 		AdminInputPipe = move_ptr(inPipe);
+ 		AdminOutputPipe = move_ptr(outPipe);
++
++#ifdef TC_OPENBSD
++		if (authTerminalFd != -1)
++		{
++			// Keep the authentication terminal open for the lifetime of the
++			// elevated service. Closing the master would hang up the service.
++			authTerminalKept = true;
++			DoasAuthTerminalFd = authTerminalFd;
++			authTerminalFd = -1;
++		}
++#endif
+ 	}
+ 
+ 	void CoreService::Stop ()

@@ -1,0 +1,19 @@
+SPDX-License-Identifier: Apache-2.0
+
+Index: Main/Forms/VolumeCreationWizard.cpp
+--- Main/Forms/VolumeCreationWizard.cpp.orig
++++ Main/Forms/VolumeCreationWizard.cpp
+@@ -498,6 +498,13 @@
+ 					if (virtualDeviceStr.find ("/dev/rdisk") != 0)
+ 						virtualDevice = "/dev/r" + virtualDeviceStr.substr (5);
+ #endif
++#ifdef TC_OPENBSD
++					// newfs(8) requires the raw character device; the block
++					// device exposed by the loop device driver cannot be used.
++					string virtualDeviceStr = virtualDevice;
++					if (virtualDeviceStr.find ("/dev/vnd") == 0)
++						virtualDevice = "/dev/r" + virtualDeviceStr.substr (5);
++#endif
+ 					try
+ 					{
+ 						File file;

@@ -1,0 +1,22 @@
+SPDX-License-Identifier: Apache-2.0
+
+Index: Main/Forms/VolumeFormatOptionsWizardPage.cpp
+--- Main/Forms/VolumeFormatOptionsWizardPage.cpp.orig
++++ Main/Forms/VolumeFormatOptionsWizardPage.cpp
+@@ -52,6 +52,8 @@
+ 			FilesystemTypeChoice->Append (L"APFS",			(void *) VolumeCreationOptions::FilesystemType::APFS);
+ #elif defined (TC_FREEBSD) || defined (TC_SOLARIS)
+ 		FilesystemTypeChoice->Append (L"UFS",				(void *) VolumeCreationOptions::FilesystemType::UFS);
++#elif defined (TC_OPENBSD)
++		FilesystemTypeChoice->Append (L"FFS",				(void *) VolumeCreationOptions::FilesystemType::FFS);
+ #endif
+ 
+ 		if (!disable32bitFilesystems && filesystemSize <= TC_MAX_FAT_SECTOR_COUNT * sectorSize)
+@@ -94,6 +96,7 @@
+ 		case VolumeCreationOptions::FilesystemType::MacOsExt:	FilesystemTypeChoice->SetStringSelection (L"Mac OS Extended"); break;
+ 		case VolumeCreationOptions::FilesystemType::APFS:		FilesystemTypeChoice->SetStringSelection (L"APFS"); break;
+ 		case VolumeCreationOptions::FilesystemType::UFS:		FilesystemTypeChoice->SetStringSelection (L"UFS"); break;
++		case VolumeCreationOptions::FilesystemType::FFS:		FilesystemTypeChoice->SetStringSelection (L"FFS"); break;
+ 
+ 		default:
+ 			throw ParameterIncorrect (SRC_POS);

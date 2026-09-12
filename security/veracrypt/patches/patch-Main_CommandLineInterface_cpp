@@ -1,0 +1,15 @@
+SPDX-License-Identifier: Apache-2.0
+
+Index: Main/CommandLineInterface.cpp
+--- Main/CommandLineInterface.cpp.orig
++++ Main/CommandLineInterface.cpp
+@@ -337,6 +337,9 @@
+ #elif defined (TC_FREEBSD) || defined (TC_SOLARIS)
+ 				else if (str.IsSameAs (L"UFS", false))
+ 					ArgFilesystem = VolumeCreationOptions::FilesystemType::UFS;
++#elif defined (TC_OPENBSD)
++				else if (str.IsSameAs (L"FFS", false))
++					ArgFilesystem = VolumeCreationOptions::FilesystemType::FFS;
+ #endif
+ 				else
+ 					throw_err (LangString["UNKNOWN_OPTION"] + L": " + str);

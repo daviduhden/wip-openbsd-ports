@@ -42,7 +42,13 @@ readable by the ports build user even when the Git checkout is private.
 
 Without arguments the script retains its interactive OpenBSD bootstrap
 workflow, which replaces the ports checkout and configures the host.
-Use `--copy-only` when you already have a checkout.
+Use `--copy-only` when you already have a checkout. Use `--no-provision`
+to keep the interactive workflow but skip creating the `user` account
+and configuring doas:
+
+```sh
+doas ./fetch-ports.ksh --no-provision
+```
 
 Every patch has one target file, an `Index:` header and an
 `SPDX-License-Identifier:` for that component. Dependency sources requiring

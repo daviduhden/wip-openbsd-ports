@@ -1,13 +1,116 @@
 # SimpleXMQ v7.0.1 test investigation
 
-## September 12: new OpenBSD log, static corrections and patch refresh
+## September 12 follow-up: native MQ pass and static Chat build fixes
+
+Status: SIMPLEXMQ_NATIVE_SUITE_PASSED in the supplied log;
+SIMPLEX_CHAT_REQUIRES_OPENBSD_TESTING after the changes below. Packaging is
+still blocked by the supplied environment's SQLCipher library mismatch.
+This pass used source inspection and clean patch application only: no
+compiler, Cabal solver, build, test suite or runtime probe was executed.
+
+### Latest supplied OpenBSD results
+
+The latest log is [`../simplexmq-build-test.log`](../simplexmq-build-test.log),
+SHA256 `20f5a7a068e2a0b5da1f3df15801f8e5b7a3fbf018d13025c2f41bd3805a4376`.
+It records GHC 9.10.3 on x86_64-openbsd and ends with:
+
+```text
+Finished in 1991.1549 seconds
+816 examples, 0 failures, 38 pending
+Test suite simplexmq-test: PASS
+1 of 1 test suites (1 of 1 test cases) passed.
+```
+
+All AUTH key combinations pass for both message stores. Both two-server
+XFTP CLI examples pass, as do the four added regressions for streaming
+upload progress, receive deadlines, cancellation and file IO exceptions.
+The count increased from 812 to 816 because of those four examples; the
+pending count remains 38. This run's random seed and passing AUTH timing
+samples are not printed, so neither its seed nor timing margins can be reported.
+This run provides native evidence for the earlier MQ corrections; it does
+not establish that every possible timing or transfer issue is resolved.
+
+The supplied MQ dependency updates (Diff 2.0.1, crypton 1.1.5 and zstd
+0.1.4.0) appear in this run. Those existing `cabal.inc` and `distinfo`
+changes, and all supplied logs, were preserved.
+
+### simplex-chat build preparation and a hidden compile failure
+
+[`../simplex-chat-build-test.log`](../simplex-chat-build-test.log), SHA256
+`aa5b0f8e64e8d2609a613fe24f41c2b0bd4dbe3160a2a76a7c454919c6c59250`,
+shows the terminal executable linking successfully. Its test target stops
+at dependency resolution with `unknown package: vector (dependency of
+aeson)`, before compiling or running the Chat suite.
+
+Source inspection of the
+[OpenBSD Cabal module](https://github.com/openbsd/ports/blob/master/devel/cabal/cabal.port.mk)
+confirms that extraction appends every manifest dependency's local path to
+`cabal.project.local`. Chat's `do-test` used `>` to replace that file with
+only its vendored package paths and options. `vector` is already present
+in the manifest and was built earlier in the log; adding another dependency
+or consulting a package index would not repair the lost project paths.
+The recipe now appends its test configuration, preserving the extracted
+dependencies and the module's compiler/linker options.
+
+The same module defines `_MODCABAL_CABAL` with its own environment reset.
+Nesting it inside another `env -i` discarded Chat's test environment. The
+recipe now invokes `${LOCALBASE}/bin/cabal` directly under one environment,
+using `${WRKDIR}` and its existing offline `.cabal/config`, and preserving
+the selected TMPDIR, CABAL_DIR and XDG paths. The online `cabal-inc` home
+is no longer selected by the test recipe.
+
+The patched Haskell source also reveals a subsequent compile blocker:
+`tests/Test.hs` imports both `ChatClient` and `SchemaDump` unqualified and
+calls `withTmpFiles`. The existing SchemaDump patch introduced a second,
+locally defined `withTmpFiles`, exported implicitly by `module SchemaDump
+where`. It therefore makes that call ambiguous. The patch now exports
+only `schemaDumpTest`, matching the API actually used by Test.hs and
+keeping the independent schema helper private. This is a source finding,
+not a compiler diagnostic from the supplied log. No test is removed.
+
+### SQLCipher packaging mismatch
+
+Both supplied logs fail `wantlib-args` because the ports tree advertises
+`sqlcipher.3.5` while the installed package provides `sqlcipher.3.6`.
+This is separate from Haskell compilation and from MQ's passing suite.
+The SimpleX ports already depend on `databases/sqlcipher` and declare
+`WANTLIB = ... sqlcipher ...`; changing or bypassing their library checks
+would not synchronize that dependency. The native ports tree and installed
+SQLCipher package must agree before packaging can succeed. This pass did
+not alter the native machine or its installed packages.
+
+### Patch application for this revision
+
+Read pristine patch targets from the exact cached release/commit archives,
+checking their SHA256 values against the current ports' distinfo. The 14
+checked inputs include the two revised Cabal files; dependency line endings
+were normalized as in post-patch. Applied all patches in fresh scratch
+directories with `patch --batch --forward --fuzz=0 -p0`, additionally
+rejecting any reported offset, fuzz or failed hunk:
+
+| Source tree | Patch applications | Fuzz / offsets / rejects |
+|---|---:|---|
+| simplexmq v7.0.1 | 51 | 0 / 0 / 0 |
+| simplex-chat v7.0.2 | 8 | 0 / 0 / 0 |
+| Chat's pinned simplexmq | 27 | 0 / 0 / 0 |
+| simplexmq dependencies | 22 | 0 / 0 / 0 |
+| simplex-chat dependencies | 19 | 0 / 0 / 0 |
+| Total | 127 | 0 / 0 / 0 |
+
+These checks include the revised SchemaDump patch. They establish patch
+applicability only; the Chat Makefile and export changes still require a
+future native build/test run. The older investigations below retain the
+status and evidence available at the time of each pass.
+
+## Earlier September 12 pass: static corrections and patch refresh
 
 Status: REQUIRES_OPENBSD_TESTING. No build, test suite, isolated example or
 runtime probe was executed during this pass. The user will test on OpenBSD.
 The older runs and conclusions below are historical, not validation of this
 revision.
 
-The new user-supplied `simplexmq-build-test.log` records:
+The earlier user-supplied log, retained as
+[`simplexmq-build-test.log`](simplexmq-build-test.log), records:
 
 ```text
 812 examples, 14 failures, 38 pending

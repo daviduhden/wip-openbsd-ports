@@ -1,5 +1,5 @@
 MODCABAL_MANIFEST	= \
-	Diff	2.0.0	0	\
+	Diff	2.0.1	0	\
 	HUnit	1.6.2.0	0	\
 	OneTuple	0.4.3	0	\
 	Only	0.1	2	\
@@ -44,7 +44,7 @@ MODCABAL_MANIFEST	= \
 	cookie	0.5.1	0	\
 	crypto-token	0.2.0	0	\
 	cryptohash-md5	0.11.101.0	6	\
-	crypton	1.1.4	0	\
+	crypton	1.1.5	0	\
 	crypton-asn1-encoding	0.10.0	0	\
 	crypton-asn1-parse	0.10.0	0	\
 	crypton-asn1-types	0.4.1	0	\
@@ -175,4 +175,4 @@ MODCABAL_MANIFEST	= \
 	word8	0.1.3	0	\
 	yaml	0.11.11.2	0	\
 	zlib	0.7.1.1	0	\
-	zstd	0.1.3.0	0
+	zstd	0.1.4.0	0

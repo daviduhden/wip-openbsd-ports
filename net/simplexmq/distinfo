@@ -1,4 +1,4 @@
-SHA256 (hackage/Diff-2.0.0.tar.gz) = pBSy56bwW7qKm34hZ9TJq37BQs5ourAb20/Eo19rik8=
+SHA256 (hackage/Diff-2.0.1.tar.gz) = Bz/o9NMJTx5J0ymi2v/JKcyDrFUWcxyTtTAXH6/y4PQ=
 SHA256 (hackage/HUnit-1.6.2.0.tar.gz) = sLdTiHH/wFhIb8AHQIhtLzFy+PpoaZNr/oOl4QvXRKs=
 SHA256 (hackage/OneTuple-0.4.3.tar.gz) = ZD0fSOY0gKxtA6jwq1l21mUnybQrH8qB0b83PRAJnGs=
 SHA256 (hackage/Only-0.1.tar.gz) = q3qhk+jCV9O9prCzwcvPdM2qhasIyyDC3WK6JIwasmU=
@@ -57,7 +57,7 @@ SHA256 (hackage/cookie-0.5.1.tar.gz) = Gt3mJybjo7vhR8AlFP4MT18sWi/2OELerBDEUaKm9
 SHA256 (hackage/crypto-token-0.2.0.tar.gz) = AHlI5W5tzkGmamU6fxdaH8MTj4joA1zIwTp0Opkh5VI=
 SHA256 (hackage/cryptohash-md5-0.11.101.0.tar.gz) = OwjbCuOd8rROgwU60w11RqTGIAqFLCKiQKfgOuEIDwU=
 SHA256 (hackage/cryptohash-md5-0.11.101.0_6.cabal) = LkJYbXO9sUm96Cnje2VG2E5g1/tJyTMgYztxwl9N7lQ=
-SHA256 (hackage/crypton-1.1.4.tar.gz) = cQKUmKs/g5klMoYdfgtFZy9bAupubD00sa/NN+Pgrmc=
+SHA256 (hackage/crypton-1.1.5.tar.gz) = vP+EalN0Keqj1kweqIjC37JIBcs62c5sV7GuDzlGI5Q=
 SHA256 (hackage/crypton-asn1-encoding-0.10.0.tar.gz) = SYE6DuJT9ijLgQLdaFeQVgm1LkkMc8VU183wy84pJtI=
 SHA256 (hackage/crypton-asn1-parse-0.10.0.tar.gz) = NcDyeNj8tyC0rYnCp/JW9/sJi59xoK60k6TDwP53KNk=
 SHA256 (hackage/crypton-asn1-types-0.4.1.tar.gz) = Ye/GOHeg0925kqeTg52UJ8FZfglabh9jwE4F/T5OMC0=
@@ -229,8 +229,8 @@ SHA256 (hackage/word8-0.1.3.tar.gz) = JjCTTHVyi/vzkMHwIGsiVQezVPaNQEewbAGKNoI7XY
 SHA256 (hackage/yaml-0.11.11.2.tar.gz) = 7nSSPuWw/vdEE8WKqiDqWbr10p0lamL7R8wnlXDZ3C8=
 SHA256 (hackage/yesodweb-wai-ec5e017d896a78e787a5acea62b37a4e677dec2e.tar.gz) = +0Ano/LQisAFSb913JQRTslft3JwxK7jwERHnjQwWsA=
 SHA256 (hackage/zlib-0.7.1.1.tar.gz) = v5WrAe2SS+gArd6hlfulypfsafN4No9v9Ga9wpZmwcE=
-SHA256 (hackage/zstd-0.1.3.0.tar.gz) = oMK1I15msmliV83uEaQZyhe/84n3iYm1OB6zzhCh8G0=
-SIZE (hackage/Diff-2.0.0.tar.gz) = 24013
+SHA256 (hackage/zstd-0.1.4.0.tar.gz) = 1qHu9Nil+O8v84hVLn5FPetRMMaGisIe767rCrTC5Fw=
+SIZE (hackage/Diff-2.0.1.tar.gz) = 24124
 SIZE (hackage/HUnit-1.6.2.0.tar.gz) = 21179
 SIZE (hackage/OneTuple-0.4.3.tar.gz) = 5299
 SIZE (hackage/Only-0.1.tar.gz) = 1960
@@ -289,7 +289,7 @@ SIZE (hackage/cookie-0.5.1.tar.gz) = 6680
 SIZE (hackage/crypto-token-0.2.0.tar.gz) = 4294
 SIZE (hackage/cryptohash-md5-0.11.101.0.tar.gz) = 11872
 SIZE (hackage/cryptohash-md5-0.11.101.0_6.cabal) = 3086
-SIZE (hackage/crypton-1.1.4.tar.gz) = 654390
+SIZE (hackage/crypton-1.1.5.tar.gz) = 658982
 SIZE (hackage/crypton-asn1-encoding-0.10.0.tar.gz) = 18349
 SIZE (hackage/crypton-asn1-parse-0.10.0.tar.gz) = 4114
 SIZE (hackage/crypton-asn1-types-0.4.1.tar.gz) = 8635
@@ -461,4 +461,4 @@ SIZE (hackage/word8-0.1.3.tar.gz) = 6271
 SIZE (hackage/yaml-0.11.11.2.tar.gz) = 31926
 SIZE (hackage/yesodweb-wai-ec5e017d896a78e787a5acea62b37a4e677dec2e.tar.gz) = 264706
 SIZE (hackage/zlib-0.7.1.1.tar.gz) = 29324
-SIZE (hackage/zstd-0.1.3.0.tar.gz) = 591268
+SIZE (hackage/zstd-0.1.4.0.tar.gz) = 529170

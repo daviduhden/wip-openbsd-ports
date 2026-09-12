@@ -6,11 +6,19 @@ primary shutdown fix, but leaving three connections open until process exit
 makes the suite's final directory cleanup race unnecessary and hides genuine
 store-lifetime mistakes.
 
+Export only schemaDumpTest, as in simplex-chat. Test.hs already imports only
+this entry point, so this keeps helpers private without fixing an existing
+ambiguity or changing the suite's temporary-directory lifecycle.
+
 Index: tests/AgentTests/SchemaDump.hs
 --- tests/AgentTests/SchemaDump.hs.orig
 +++ tests/AgentTests/SchemaDump.hs
-@@ -4,6 +4,7 @@
- module AgentTests.SchemaDump where
+@@ -1,9 +1,10 @@
+ {-# LANGUAGE NamedFieldPuns #-}
+ {-# LANGUAGE OverloadedStrings #-}
+ 
+-module AgentTests.SchemaDump where
++module AgentTests.SchemaDump (schemaDumpTest) where
  
  import Control.DeepSeq
 +import Control.Exception (bracket)

@@ -1,0 +1,28 @@
+SPDX-License-Identifier: Apache-2.0
+
+Index: Driver/Fuse/FuseService.cpp
+--- Driver/Fuse/FuseService.cpp.orig
++++ Driver/Fuse/FuseService.cpp
+@@ -38,6 +38,7 @@
+ #include "Platform/Unix/Poller.h"
+ #include "Volume/EncryptionThreadPool.h"
+ #include "Core/Core.h"
++#include "Core/Unix/UnixUser.h"
+ 
+ namespace VeraCrypt
+ {
+@@ -550,6 +551,14 @@
+ 			catch (...) { }
+ 		}
+ 
++		uid_t doasUid;
++		gid_t doasGid;
++		if (GetDoasUserIds (&doasUid, &doasGid))
++		{
++			FuseService::UserId = doasUid;
++			FuseService::GroupId = doasGid;
++		}
++
+ 		static fuse_operations fuse_service_oper;
+ 
+ 		fuse_service_oper.access = fuse_service_access;

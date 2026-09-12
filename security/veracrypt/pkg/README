@@ -1,0 +1,29 @@
++-------------------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-------------------------------------------------------------------------------
+
+Privilege elevation
+===================
+
+VeraCrypt runs its privileged core service through doas(1).  Add a rule to
+/etc/doas.conf before mounting, creating or formatting volumes:
+
+    permit :wheel cmd ${TRUEPREFIX}/bin/veracrypt
+
+The rule can be restricted further with the "args" option, but it must cover
+both the normal invocation and the "--core-service" mode used internally by
+VeraCrypt.  Do not use "permit nopass" unless you accept passwordless
+elevation for every user allowed by the rule.
+
+The core service is used for operations that require root privileges, such as
+configuring vnd(4) loop devices, mounting and unmounting filesystems,
+changing ownership of mount points and device nodes, and running newfs(8)
+when an OpenBSD FFS filesystem is created inside a volume.
+
+Filesystem creation
+===================
+
+OpenBSD FFS filesystems can be created inside a new volume by selecting the
+"FFS" filesystem in the volume creation wizard or by passing
+"--filesystem=FFS" on the command line.  The filesystem is created with
+newfs(8) on the raw vnd(4) character device.

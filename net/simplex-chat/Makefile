@@ -76,6 +76,7 @@ ENTROPY_V = 0.4.1.11
 WITHERABLE_V = 0.5
 WITHERABLE_TARBALL = ${DISTDIR}/hackage/witherable-${WITHERABLE_V}.tar.gz
 WITHERABLE_DIR = ${WRKDIR}/witherable-${WITHERABLE_V}
+DISTFILES.hs += {witherable-${WITHERABLE_V}/}witherable-${WITHERABLE_V}.tar.gz
 CHAT_CABAL_PACKAGES = \
 	'packages: ${WRKDIR}/simplexmq/simplexmq.cabal' \
 	'packages: ${WRKDIR}/hs-socks/socks.cabal' \

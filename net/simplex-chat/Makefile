@@ -141,6 +141,7 @@ SIMPLEXMQ_PATCHES = \
 	patch-src_Simplex_Messaging_Server_CLI_hs \
 	patch-src_Simplex_Messaging_Server_hs \
 	patch-src_Simplex_Messaging_Server_MsgStore_Journal_hs \
+	patch-src_Simplex_Messaging_Server_Web_hs \
 	patch-src_Simplex_Messaging_Transport_hs \
 	patch-src_Simplex_Messaging_Transport_Client_hs \
 	patch-src_Simplex_Messaging_Transport_HTTP2_hs \
@@ -288,6 +289,11 @@ do-test:
 	# Shared XFTP probes must not leave received files in the global /tmp.
 	mkdir -p -m 700 ${WRKDIR}/test-tmp
 	${CHAT_CABAL_CHECK_PATHS}
+	# Cabal keeps the first value of a repeated per-package flag, so rewrite
+	# the build-only +client_library stanza instead of appending a new one.
+	sed 's/^    flags: +client_library$$/    flags: -client_library/' \
+		${WRKSRC}/cabal.project.local > ${WRKSRC}/cabal.project.local.new
+	mv ${WRKSRC}/cabal.project.local.new ${WRKSRC}/cabal.project.local
 	# Preserve the local dependency paths and options added by devel/cabal.
 	printf '%s\n' \
 		${CHAT_CABAL_PACKAGES} \

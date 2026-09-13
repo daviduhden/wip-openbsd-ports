@@ -1,0 +1,41 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Build the static-file TLS handler against the warp-tls version selected by
+this port.  With warp 3.4.15 and warp-tls 3.4.14, attachConn takes the TVar
+counting in-progress applications as an additional argument; the guard keeps
+the two-argument call used with older warp-tls (as in the simplexmq port)
+working.
+
+Index: src/Simplex/Messaging/Server/Web.hs
+--- src/Simplex/Messaging/Server/Web.hs.orig
++++ src/Simplex/Messaging/Server/Web.hs
+@@ -1,3 +1,4 @@
++{-# LANGUAGE CPP #-}
+ {-# LANGUAGE LambdaCase #-}
+ {-# LANGUAGE NamedFieldPuns #-}
+ {-# LANGUAGE OverloadedStrings #-}
+@@ -19,6 +20,9 @@ module Simplex.Messaging.Server.Web
+   ) where
+ 
+ import qualified Codec.Compression.GZip as GZip
++#if MIN_VERSION_warp(3,4,13)
++import Control.Concurrent.STM (newTVarIO)
++#endif
+ import Control.Logger.Simple
+ import Control.Monad
+ import Data.ByteString (ByteString)
+@@ -99,7 +103,13 @@ attachStaticFiles path action = do
+           WI.serveConnection conn ii th addr transport warpSettings app
+   where
+     -- from warp-tls
+-    withConnection socket cxt = bracket (WT.attachConn socket cxt) (terminate . fst)
++    -- warp-tls 3.4.13+ takes the number of in-progress applications.
++    withConnection socket cxt =
++#if MIN_VERSION_warp(3,4,13)
++      bracket (newTVarIO 0 >>= WT.attachConn socket cxt) (terminate . fst)
++#else
++      bracket (WT.attachConn socket cxt) (terminate . fst)
++#endif
+     -- from warp
+     withTimeout ii conn =
+       bracket

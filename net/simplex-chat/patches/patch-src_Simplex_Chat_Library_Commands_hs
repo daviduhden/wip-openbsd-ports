@@ -131,8 +131,8 @@ Index: src/Simplex/Chat/Library/Commands.hs
 +      forM_ webPreviewState $ \WebPreviewState {webPreviewWorkerAsync} -> cancelStored webPreviewWorkerAsync
 +      atomically (swapTVar expireCIThreads M.empty) >>= mapM_ cancelPublished
 +      atomically (swapTVar timedItemThreads M.empty) >>= mapM_ cancelPublished
-+      mapM_ (\ws -> atomically (swapTVar ws M.empty) >>= mapM_ cancelWorker)
-+        [deliveryTaskWorkers, deliveryJobWorkers]
++      atomically (swapTVar deliveryTaskWorkers M.empty) >>= mapM_ cancelWorker
++      atomically (swapTVar deliveryJobWorkers M.empty) >>= mapM_ cancelWorker
 +      atomically (swapTVar relayRequestWorkers M.empty) >>= mapM_ cancelWorker
 +      readTVarIO remoteHostSessions >>= mapM_ (cancelRemoteHost False . snd)
 +      atomically (stateTVar remoteCtrlSession (,Nothing)) >>= mapM_ (cancelRemoteCtrl False . snd)

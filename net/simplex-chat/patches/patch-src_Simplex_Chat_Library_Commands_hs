@@ -1,0 +1,193 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Join startup, subscription, delivery, cleanup and timed-item tasks before
+returning from /stop. Stop the agent statistics finalizer while its store
+is still open. Publish startup ownership before allowing database access,
+and unmask worker bodies independently of their callers.
+
+Index: src/Simplex/Chat/Library/Commands.hs
+--- src/Simplex/Chat/Library/Commands.hs.orig
++++ src/Simplex/Chat/Library/Commands.hs
+@@ -95,6 +95,7 @@
+ import Simplex.Chat.Web (webPreviewWorker)
+ import Simplex.FileTransfer.Description (FileDescriptionURI (..), maxFileSizeHard)
+ import Simplex.Messaging.Agent
++import Simplex.Messaging.Agent.Client (cancelWorker)
+ import Simplex.Messaging.Agent.Env.SQLite (ServerCfg (..), ServerRoles (..), allRoles)
+ import Simplex.Messaging.Agent.Protocol
+ import Simplex.Messaging.Agent.Store.Entity
+@@ -217,7 +218,7 @@
+
+ -- enableSndFiles has no effect when mainApp is True
+ startChatController :: Bool -> Bool -> CM' (Async ())
+-startChatController mainApp enableSndFiles = do
++startChatController mainApp enableSndFiles = withChatLifecycle $ do
+   asks smpAgent >>= liftIO . resumeAgentClient
+   unless mainApp $ chatWriteVar' subscriptionMode SMOnlyCreate
+   users <- fromRight [] <$> runExceptT (withFastStore' getUsers)
+@@ -235,21 +236,21 @@
+         (userDiff, connDiff) <- withAgent (\a -> syncConnections a aUserIds connIds)
+         withFastStore' setConnectionsSyncTs
+         toView $ CEvtConnectionsDiff (AgentUserId <$> userDiff) (AgentConnId <$> connDiff)
+-    start s users = do
+-      a1 <- async agentSubscriber
++    start s users = E.mask_ $ do
++      a1 <- asyncWithUnmask $ \unmask -> unmask agentSubscriber
+       a2 <-
+         if mainApp
+-          then Just <$> async (subscribeUsers False users)
++          then Just <$> asyncWithUnmask (\unmask -> unmask $ subscribeUsers False users)
+           else pure Nothing
+       atomically . writeTVar s $ Just (a1, a2)
+       if mainApp
+         then do
+           startXFTP xftpStartWorkers
+-          void $ forkIO $ startFilesToReceive users
++          forkChatBackground $ startFilesToReceive users
+           startDeliveryWorkers
+           startRelayRequestWorker_
+           startCleanupManager
+-          void $ forkIO $ mapM_ startExpireCIs users
++          forkChatBackground $ mapM_ startExpireCIs users
+           startRelayChecks users
+           startWebPreview users
+         else when enableSndFiles $ startXFTP xftpStartSndWorkers
+@@ -271,7 +272,7 @@
+       cleanupAsync <- asks cleanupManagerAsync
+       readTVarIO cleanupAsync >>= \case
+         Nothing -> do
+-          a <- Just <$> async (void $ runExceptT cleanupManager)
++          a <- Just <$> asyncWithUnmask (\unmask -> unmask $ void $ runExceptT cleanupManager)
+           atomically $ writeTVar cleanupAsync a
+         _ -> pure ()
+     startRelayChecks users = do
+@@ -280,7 +281,7 @@
+         relayAsync <- asks relayGroupLinkChecksAsync
+         readTVarIO relayAsync >>= \case
+           Nothing -> do
+-            a <- Just <$> async (void $ runExceptT $ runRelayGroupLinkChecks relayUser)
++            a <- Just <$> asyncWithUnmask (\unmask -> unmask $ void $ runExceptT $ runRelayGroupLinkChecks relayUser)
+             atomically $ writeTVar relayAsync a
+           _ -> pure ()
+     startWebPreview users = do
+@@ -293,7 +294,7 @@
+             readTVarIO webPreviewWorkerAsync >>= \case
+               Nothing -> do
+                 cc <- ask
+-                a <- Just <$> async (liftIO $ webPreviewWorker cfg cc relayUsers)
++                a <- Just <$> asyncWithUnmask (\unmask -> unmask $ liftIO $ webPreviewWorker cfg cc relayUsers)
+                 atomically $ writeTVar webPreviewWorkerAsync a
+               _ -> pure ()
+         _ -> pure ()
+@@ -344,24 +345,56 @@
+   calls <- asks currentCalls
+   atomically $ writeTVar calls callsMap
+
++-- Keep /stop restartable and serialize it with controller startup.
++withChatLifecycle :: CM' a -> CM' a
++withChatLifecycle action = do
++  lock <- asks chatLifecycleLock
++  E.bracket_ (atomically $ takeTMVar lock) (atomically $ putTMVar lock ()) action
++
++-- Publish ownership before a startup job can touch either database.
++forkChatBackground :: CM' () -> CM' ()
++forkChatBackground action = E.mask_ $ do
++  ChatController {agentAsync, chatStartThreads} <- ask
++  gate <- newEmptyTMVarIO
++  a <- asyncWithUnmask $ \unmask -> unmask $ whenM (atomically $ takeTMVar gate) action
++  atomically $ do
++    started <- isJust <$> readTVar agentAsync
++    when started $ modifyTVar' chatStartThreads (a :)
++    putTMVar gate started
++
+ stopChatController :: ChatController -> IO ()
+-stopChatController ChatController {smpAgent, agentAsync = s, sndFiles, rcvFiles, expireCIFlags, remoteHostSessions, remoteCtrlSession} = do
+-  readTVarIO remoteHostSessions >>= mapM_ (cancelRemoteHost False . snd)
+-  atomically (stateTVar remoteCtrlSession (,Nothing)) >>= mapM_ (cancelRemoteCtrl False . snd)
+-  disconnectAgentClient smpAgent
+-  readTVarIO s >>= mapM_ (\(a1, a2) -> forkIO $ uninterruptibleCancel a1 >> mapM_ uninterruptibleCancel a2)
+-  closeFiles sndFiles
+-  closeFiles rcvFiles
+-  atomically $ do
+-    keys <- M.keys <$> readTVar expireCIFlags
+-    forM_ keys $ \k -> TM.insert k False expireCIFlags
+-    writeTVar s Nothing
++stopChatController cc = runReaderT (withChatLifecycle $ liftIO stop) cc
+   where
++    ChatController {smpAgent, agentAsync = s, chatStartThreads, sndFiles, rcvFiles,
++      deliveryTaskWorkers, deliveryJobWorkers, relayRequestWorkers,
++      cleanupManagerAsync, relayGroupLinkChecksAsync, webPreviewState,
++      expireCIThreads, expireCIFlags, timedItemThreads,
++      remoteHostSessions, remoteCtrlSession} = cc
++    stop = E.mask_ $ do
++      -- This is also the gate against new startup jobs and agent workers.
++      running <- atomically $ do
++        writeTVar (active smpAgent) False
++        swapTVar s Nothing
++      atomically (swapTVar chatStartThreads []) >>= mapM_ uninterruptibleCancel
++      forM_ running $ \(a1, a2) -> uninterruptibleCancel a1 >> mapM_ uninterruptibleCancel a2
++      cancelStored cleanupManagerAsync
++      cancelStored relayGroupLinkChecksAsync
++      forM_ webPreviewState $ \WebPreviewState {webPreviewWorkerAsync} -> cancelStored webPreviewWorkerAsync
++      atomically (swapTVar expireCIThreads M.empty) >>= mapM_ cancelPublished
++      atomically (swapTVar timedItemThreads M.empty) >>= mapM_ cancelPublished
++      mapM_ (\ws -> atomically (swapTVar ws M.empty) >>= mapM_ cancelWorker)
++        [deliveryTaskWorkers, deliveryJobWorkers]
++      atomically (swapTVar relayRequestWorkers M.empty) >>= mapM_ cancelWorker
++      readTVarIO remoteHostSessions >>= mapM_ (cancelRemoteHost False . snd)
++      atomically (stateTVar remoteCtrlSession (,Nothing)) >>= mapM_ (cancelRemoteCtrl False . snd)
++      stopAgentClient smpAgent
++      closeFiles sndFiles
++      closeFiles rcvFiles
++      atomically $ modifyTVar' expireCIFlags $ M.map (const False)
++    cancelPublished v = atomically (readTMVar v) >>= mapM_ uninterruptibleCancel
++    cancelStored v = atomically (swapTVar v Nothing) >>= mapM_ uninterruptibleCancel
+     closeFiles :: TVar (Map Int64 Handle) -> IO ()
+-    closeFiles files = do
+-      fs <- readTVarIO files
+-      mapM_ hClose fs
+-      atomically $ writeTVar files M.empty
++    closeFiles files = atomically (swapTVar files M.empty) >>= mapM_ hClose
+
+ updateNetworkConfig :: NetworkConfig -> SimpleNetCfg -> NetworkConfig
+ updateNetworkConfig cfg SimpleNetCfg {socksProxy, socksMode, hostMode, requiredHostMode, smpProxyMode_, smpProxyFallback_, smpWebPortServers, tcpTimeout_, logTLSErrors} =
+@@ -563,8 +596,8 @@
+     when restoreChat $ do
+       users <- withFastStore' getUsers
+       lift $ do
+-        void . forkIO $ subscribeUsers True users
+-        void . forkIO $ startFilesToReceive users
++        forkChatBackground $ subscribeUsers True users
++        forkChatBackground $ startFilesToReceive users
+         setAllExpireCIFlags True
+     ok_
+   APISuspendChat t -> do
+@@ -5115,13 +5148,21 @@
+       _ -> True
+
+ startExpireCIThread :: User -> CM' ()
+-startExpireCIThread user@User {userId} = do
+-  expireThreads <- asks expireCIThreads
+-  atomically (TM.lookup userId expireThreads) >>= \case
+-    Nothing -> do
+-      a <- Just <$> async runExpireCIs
+-      atomically $ TM.insert userId a expireThreads
+-    _ -> pure ()
++startExpireCIThread user@User {userId} = E.mask_ $ do
++  ChatController {expireCIThreads = expireThreads, agentAsync} <- ask
++  slot_ <- atomically $ do
++    started <- isJust <$> readTVar agentAsync
++    exists <- TM.member userId expireThreads
++    if started && not exists
++      then do
++        slot <- newEmptyTMVar
++        TM.insert userId slot expireThreads
++        pure $ Just slot
++      else pure Nothing
++  forM_ slot_ $ \slot -> do
++    a <- asyncWithUnmask (\unmask -> unmask runExpireCIs)
++      `E.onException` atomically (putTMVar slot Nothing >> TM.delete userId expireThreads)
++    atomically $ putTMVar slot $ Just a
+   where
+     runExpireCIs = do
+       delay <- asks (initialCleanupManagerDelay . config)

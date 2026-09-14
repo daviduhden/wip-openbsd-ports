@@ -1,0 +1,38 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Collect Haskell query counters under the connection lock even when a
+maintenance test already closed the database, then dispose the agent.
+Never query a closed C handle to collect this metadata.
+
+Index: tests/ChatClient.hs
+--- tests/ChatClient.hs.orig
++++ tests/ChatClient.hs
+@@ -84,7 +84,8 @@
+ import Data.ByteArray (ScrubbedBytes)
+ import qualified Data.Map.Strict as M
+ import Simplex.Messaging.Agent.Client (agentClientStore)
+-import Simplex.Messaging.Agent.Store.Common (withConnection)
++import Control.Concurrent.MVar (withMVar)
++import Simplex.Messaging.Agent.Store.SQLite.Common (DBStore (dbConnection))
+ #endif
+
+ #if defined(dbPostgres)
+@@ -332,13 +333,15 @@
+   stopChatController cc
+   uninterruptibleCancel termAsync
+   uninterruptibleCancel chatAsync
+-  liftIO $ disposeAgentClient smpAgent
+ #if !defined(dbPostgres)
+-  chatStats <- withConnection chatStore $ readTVarIO . DB.slow
++  -- Archive/key-change tests may have closed the stores already. Read only
++  -- the Haskell query counters under their locks, never the closed C handles.
++  chatStats <- withMVar (dbConnection chatStore) $ readTVarIO . DB.slow
+   atomically $ modifyTVar' (chatQueryStats ps) $ M.unionWith combineStats chatStats
+-  agentStats <- withConnection (agentClientStore smpAgent) $ readTVarIO . DB.slow
++  agentStats <- withMVar (dbConnection $ agentClientStore smpAgent) $ readTVarIO . DB.slow
+   atomically $ modifyTVar' (agentQueryStats ps) $ M.unionWith combineStats agentStats
+ #endif
++  disposeAgentClient smpAgent
+   closeDBStore chatStore
+   threadDelay 200000
+ #if !defined(dbPostgres)

@@ -1,0 +1,57 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Reject access to a closed store under its connection lock before calling
+SQLite. Use real nested savepoints to roll back partial writes before
+retrying a uniqueness conflict, preserving the outer transaction.
+
+Index: src/Simplex/Messaging/Agent/Store/SQLite/Common.hs
+--- src/Simplex/Messaging/Agent/Store/SQLite/Common.hs.orig
++++ src/Simplex/Messaging/Agent/Store/SQLite/Common.hs
+@@ -1,6 +1,7 @@
+ {-# LANGUAGE DuplicateRecordFields #-}
+ {-# LANGUAGE LambdaCase #-}
+ {-# LANGUAGE NamedFieldPuns #-}
++{-# LANGUAGE OverloadedStrings #-}
+ {-# LANGUAGE ScopedTypeVariables #-}
+
+ module Simplex.Messaging.Agent.Store.SQLite.Common
+@@ -70,17 +71,22 @@
+   | SQLiteAggrPtrs {stepPtr :: FunPtr SQLiteFunc, finalPtr :: FunPtr SQLiteFuncFinal}
+
+ withConnectionPriority :: DBStore -> Bool -> (DB.Connection -> IO a) -> IO a
+-withConnectionPriority DBStore {dbSem, dbConnection} priority action
+-  | priority = E.bracket_ signal release $ withMVar dbConnection action
++withConnectionPriority DBStore {dbSem, dbConnection, dbClosed} priority action
++  | priority = E.bracket_ signal release $ withMVar dbConnection useConnection
+   | otherwise = lowPriority
+   where
++    -- Check under the same lock used by close/reopen. Never pass the closed
++    -- C handle back to SQLite, including when close won a concurrent race.
++    useConnection db = ifM (readTVarIO dbClosed)
++      (E.throwIO $ SQL.SQLError SQL.ErrorMisuse "SQLite store is closed" "withConnection")
++      (action db)
+     -- To debug FK errors, set foreign_keys = OFF in Simplex.Messaging.Agent.Store.SQLite and use action' instead of action
+     -- action' conn = do
+     --   r <- action conn
+     --   violations <- DB.query_ conn "PRAGMA foreign_key_check" :: IO [ (String, Int, String, Int)]
+     --   unless (null violations) $ print violations
+     --   pure r
+-    lowPriority = wait >> withMVar dbConnection (\db -> ifM free (Just <$> action db) (pure Nothing)) >>= maybe lowPriority pure
++    lowPriority = wait >> withMVar dbConnection (\db -> ifM free (Just <$> useConnection db) (pure Nothing)) >>= maybe lowPriority pure
+     signal = atomically $ modifyTVar' dbSem (+ 1)
+     release = atomically $ modifyTVar' dbSem $ \sem -> if sem > 0 then sem - 1 else 0
+     wait = unlessM free $ atomically $ unlessM ((0 ==) <$> readTVar dbSem) retry
+@@ -104,10 +110,10 @@
+   where
+     transaction db@DB.Connection {conn} = SQL.withImmediateTransaction conn $ action db
+
+--- No-op for SQLite, just tries the action.
+--- This provides a consistent interface with the PostgreSQL version.
++-- Roll back partial work before a uniqueness retry, as PostgreSQL does.
++-- The caller already holds the connection lock and may own a transaction.
+ withSavepoint :: DB.Connection -> SQL.Query -> IO a -> IO (Either SQLError a)
+-withSavepoint _ _ = E.try
++withSavepoint DB.Connection {conn} _ = E.try . SQL.withSavepoint conn
+ {-# INLINE withSavepoint #-}
+
+ dbBusyLoop :: forall a. IO a -> IO a

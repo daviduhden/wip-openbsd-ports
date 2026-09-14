@@ -84,7 +84,9 @@ SIMPLEXMQ_CABAL_PACKAGE_PATHS = \
 	${WRKDIR}/yesod-wai/warp-tls/warp-tls.cabal \
 	${WRKDIR}/simplex-wai/warp/warp.cabal
 SIMPLEXMQ_CABAL_COMMON_OPTIONS = \
-	'constraints: network ==${NETWORK_V}' \
+	'constraints: network ==${NETWORK_V}, http2 ==${HTTP2_V}, tls ==${TLS_V}' \
+	'package simplexmq' \
+	'    flags: +use_crypton -swift -client_postgres -server_postgres -client_library' \
 	'package direct-sqlcipher' \
 	'    flags: +systemlib' \
 	'package zstd' \
@@ -251,6 +253,7 @@ do-test:
 		XDG_CACHE_HOME=${CABAL_INC_HOME}/.cache \
 		XDG_CONFIG_HOME=${CABAL_INC_HOME}/.config \
 		${_MODCABAL_CABAL} v2-test --offline --disable-benchmarks \
+		--test-show-details=streaming \
 		-w ${LOCALBASE}/bin/ghc \
 		-j${MAKE_JOBS} \
 		--flags="${MODCABAL_FLAGS}" ${MODCABAL_BUILD_ARGS} \

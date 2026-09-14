@@ -1,9 +1,7 @@
 SPDX-License-Identifier: AGPL-3.0-only
 
-Keep schema tests independent from the server-backed ChatClient helper.
-Export schemaDumpTest and saveQueryPlans, both used by Test.hs, while
-keeping the private withTmpFiles helper hidden so it does not clash with
-ChatClient.withTmpFiles imported there.
+Bracket every schema-test store and give the strict-table test its own
+temporary directory. Keep the full schema comparison unchanged.
 
 Index: tests/SchemaDump.hs
 --- tests/SchemaDump.hs.orig
@@ -11,19 +9,20 @@ Index: tests/SchemaDump.hs
 @@ -3,12 +3,12 @@
  {-# LANGUAGE OverloadedStrings #-}
  {-# LANGUAGE ScopedTypeVariables #-}
- 
+
 -module SchemaDump where
-+module SchemaDump (schemaDumpTest, saveQueryPlans) where
- 
+-
 -import ChatClient (withTmpFiles)
++module SchemaDump (schemaDumpTest, saveQueryPlans) where
++
  import ChatTests.DBUtils
  import Control.Concurrent.STM
  import Control.DeepSeq
-+import Control.Exception (bracket_)
++import Control.Exception (bracket, bracket_)
  import qualified Control.Exception as E
  import Control.Monad (unless, void)
  import Data.List (dropWhileEnd, sort)
-@@ -29,7 +29,7 @@ import Simplex.Messaging.Agent.Store.Int
+@@ -29,7 +29,7 @@
  import qualified Simplex.Messaging.Agent.Store.SQLite.Migrations as Migrations
  import Simplex.Messaging.Agent.Store.Shared (Migration (..), MigrationConfig (..), MigrationConfirmation (..), MigrationsToRun (..), toDownMigration)
  import Simplex.Messaging.Util (ifM, tshow, whenM)
@@ -31,17 +30,65 @@ Index: tests/SchemaDump.hs
 +import System.Directory (createDirectoryIfMissing, doesFileExist, removeDirectoryRecursive, removeFile)
  import System.Process (readCreateProcess, shell)
  import Test.Hspec
- 
-@@ -51,6 +51,12 @@ appChatQueryPlans = "src/Simplex/Chat/St
+
+@@ -50,6 +50,12 @@
+
  appAgentQueryPlans :: FilePath
  appAgentQueryPlans = "src/Simplex/Chat/Store/SQLite/Migrations/agent_query_plans.txt"
- 
++
 +withTmpFiles :: IO a -> IO a
 +withTmpFiles =
 +  bracket_
 +    (createDirectoryIfMissing False "tests/tmp")
 +    (removeDirectoryRecursive "tests/tmp")
-+
+
  testSchema :: FilePath
  testSchema = "tests/tmp/test_agent_schema.sql"
- 
+@@ -65,24 +71,26 @@
+ testVerifySchemaDump = withTmpFiles $ do
+   savedSchema <- ifM (doesFileExist appSchema) (readFile appSchema) (pure "")
+   savedSchema `deepseq` pure ()
+-  void $ createChatStore (DBOpts testDB chatDBFunctions "" False True TQOff) (MigrationConfig MCError Nothing)
+-  getSchema testDB appSchema `shouldReturn` savedSchema
++  Right st <- createChatStore (DBOpts testDB chatDBFunctions "" False True TQOff) (MigrationConfig MCError Nothing)
++  bracket (pure st) closeDBStore $ \_ ->
++    getSchema testDB appSchema `shouldReturn` savedSchema
+   removeFile testDB
+
+ testVerifyLintFKeyIndexes :: IO ()
+ testVerifyLintFKeyIndexes = withTmpFiles $ do
+   savedLint <- ifM (doesFileExist appLint) (readFile appLint) (pure "")
+   savedLint `deepseq` pure ()
+-  void $ createChatStore (DBOpts testDB chatDBFunctions "" False True TQOff) (MigrationConfig MCError Nothing)
+-  getLintFKeyIndexes testDB "tests/tmp/chat_lint.sql" `shouldReturn` savedLint
++  Right st <- createChatStore (DBOpts testDB chatDBFunctions "" False True TQOff) (MigrationConfig MCError Nothing)
++  bracket (pure st) closeDBStore $ \_ ->
++    getLintFKeyIndexes testDB "tests/tmp/chat_lint.sql" `shouldReturn` savedLint
+   removeFile testDB
+
+ testSchemaMigrations :: IO ()
+ testSchemaMigrations = withTmpFiles $ do
+   let noDownMigrations = dropWhileEnd (\Migration {down} -> isJust down) Store.migrations
+   Right st <- createDBStore (DBOpts testDB chatDBFunctions "" False True TQOff) noDownMigrations (MigrationConfig MCError Nothing)
+-  mapM_ (testDownMigration st) $ drop (length noDownMigrations) Store.migrations
+-  closeDBStore st
++  bracket (pure st) closeDBStore $ \st' ->
++    mapM_ (testDownMigration st') $ drop (length noDownMigrations) Store.migrations
+   removeFile testDB
+   whenM (doesFileExist testSchema) $ removeFile testSchema
+   where
+@@ -103,10 +111,11 @@
+       schema''' `shouldBe` schema'
+
+ testVerifyStrict :: IO ()
+-testVerifyStrict = do
++testVerifyStrict = withTmpFiles $ do
+   Right st <- createDBStore (DBOpts testDB chatDBFunctions "" False True TQOff) Store.migrations (MigrationConfig MCConsole Nothing)
+-  withConnection st (`DB.query_` "SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence' AND sql NOT LIKE '% STRICT'")
+-    `shouldReturn` ([] :: [Only Text])
++  bracket (pure st) closeDBStore $ \st' ->
++    withConnection st' (`DB.query_` "SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence' AND sql NOT LIKE '% STRICT'")
++      `shouldReturn` ([] :: [Only Text])
+
+ skipComparisonForUpMigrations :: [String]
+ skipComparisonForUpMigrations =

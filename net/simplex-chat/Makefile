@@ -98,7 +98,11 @@ CHAT_CABAL_PACKAGE_PATHS = \
 	${WRKDIR}/android-support/android-support.cabal \
 	${WRKDIR}/zip/zip.cabal
 CHAT_CABAL_COMMON_OPTIONS = \
-	'constraints: network ==${NETWORK_V}' \
+	'constraints: network ==${NETWORK_V}, http2 ==${HTTP2_V}, tls ==${TLS_V}' \
+	'package simplex-chat' \
+	'    flags: -swift -client_postgres -client_library' \
+	'package simplexmq' \
+	'    flags: +use_crypton -swift -client_postgres -server_postgres' \
 	'package direct-sqlcipher' \
 	'    flags: +systemlib' \
 	'package zstd' \
@@ -132,6 +136,8 @@ SIMPLEXMQ_PATCHES = \
 	patch-src_Simplex_Messaging_Agent_hs \
 	patch-src_Simplex_Messaging_Agent_Client_hs \
 	patch-src_Simplex_Messaging_Agent_Env_SQLite_hs \
+	patch-src_Simplex_Messaging_Agent_Store_SQLite_hs \
+	patch-src_Simplex_Messaging_Agent_Store_SQLite_Common_hs \
 	patch-src_Simplex_Messaging_Agent_Store_SQLite_Migrations_agent_schema_sql \
 	patch-src_Simplex_Messaging_Client_hs \
 	patch-src_Simplex_Messaging_Client_Agent_hs \
@@ -308,6 +314,7 @@ do-test:
 		XDG_CACHE_HOME=${WRKDIR}/.cache \
 		XDG_CONFIG_HOME=${WRKDIR}/.config \
 		${LOCALBASE}/bin/cabal v2-test --offline --disable-benchmarks \
+		--test-show-details=streaming \
 		-w ${LOCALBASE}/bin/ghc \
 		-j${MAKE_JOBS} \
 		--flags="${MODCABAL_FLAGS}" ${MODCABAL_BUILD_ARGS} \

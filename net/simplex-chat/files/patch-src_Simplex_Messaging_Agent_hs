@@ -1,13 +1,23 @@
 SPDX-License-Identifier: AGPL-3.0-only
 
-Unmask owned agent threads and join the sole finalizer before closing SQLite.
-Shutdown statistics must retain the DB transaction lock, but must not await
-foreground reactivation of a suspended agent or enqueue events to its owner.
+Provide a restartable stop operation that joins the statistics finalizer
+before the store is closed. Serialize stop, resume and disposal so a second
+closer cannot return while the first is still using SQLite. Route acceptance
+to the reply server when the receive queue is already secured, and keep the
+local LET command independent of receive-server ACK retries.
 
 Index: src/Simplex/Messaging/Agent.hs
 --- src/Simplex/Messaging/Agent.hs.orig
 +++ src/Simplex/Messaging/Agent.hs
-@@ -250,7 +250,7 @@ import Simplex.RemoteControl.Invitation
+@@ -41,6 +41,7 @@
+     getSMPAgentClient,
+     getSMPAgentClient_,
+     disconnectAgentClient,
++    stopAgentClient,
+     disposeAgentClient,
+     resumeAgentClient,
+     withConnLock,
+@@ -250,7 +251,7 @@
  import Simplex.RemoteControl.Types
  import System.Mem.Weak (deRefWeak)
  import UnliftIO.Async (mapConcurrently)
@@ -15,35 +25,55 @@ Index: src/Simplex/Messaging/Agent.hs
 +import UnliftIO.Concurrent (forkIO, killThread, mkWeakThreadId, threadDelay)
  import qualified UnliftIO.Exception as E
  import UnliftIO.STM
- 
-@@ -273,10 +273,11 @@ getSMPAgentClient_ clientId cfg initServ
+
+@@ -273,25 +274,28 @@
        liftIO $ checkServers "SMP" smp >> checkServers "XFTP" xftp
        currentTs <- liftIO getCurrentTime
        notices <- liftIO $ withTransaction store (`getClientNotices` presetServers) `catchAll_` pure []
 -      c@AgentClient {acThread} <- liftIO . newAgentClient clientId initServers currentTs notices =<< ask
 -      t <- runAgentThreads c `forkFinally` const (liftIO $ disconnectAgentClient c)
 -      atomically . writeTVar acThread . Just =<< mkWeakThreadId t
--      pure c
-+      c@AgentClient {acThread, acThreadDone} <- liftIO . newAgentClient clientId initServers currentTs notices =<< ask
-+      E.mask_ $ do
-+        t <- runAgentThreads c `forkFinallyUnmasked` const (liftIO $ disconnectAgentClient c `E.finally` atomically (putTMVar acThreadDone ()))
-+        atomically . writeTVar acThread . Just =<< mkWeakThreadId t
-+        pure c
++      c' <- liftIO . newAgentClient clientId initServers currentTs notices =<< ask
++      let c = c' {acBackgroundMode = backgroundMode}
++      liftIO $ resumeAgentClient c
+       pure c
      checkServers protocol srvs =
        forM_ (M.assocs srvs) $ \(userId, srvs') -> checkUserServers ("getSMPAgentClient " <> protocol <> " " <> tshow userId) srvs'
-     runAgentThreads c
-@@ -289,7 +290,7 @@ getSMPAgentClient_ clientId cfg initServ
-               run c "cleanupManager" $ cleanupManager c,
-               run c "logServersStats" $ logServersStats c
-             ]
+-    runAgentThreads c
+-      | backgroundMode = run c "subscriber" $ subscriber c
+-      | otherwise = do
+-          restoreServersStats c
+-          raceAny_
+-            [ run c "subscriber" $ subscriber c,
+-              run c "runNtfSupervisor" $ runNtfSupervisor c,
+-              run c "cleanupManager" $ cleanupManager c,
+-              run c "logServersStats" $ logServersStats c
+-            ]
 -            `E.finally` saveServersStats c
-+            `E.finally` saveServersStats_ True c
-     run AgentClient {subQ, acThread} name a =
-       a `E.catchAny` \e -> whenM (isJust <$> readTVarIO acThread) $ do
+-    run AgentClient {subQ, acThread} name a =
+-      a `E.catchAny` \e -> whenM (isJust <$> readTVarIO acThread) $ do
++
++runAgentThreads :: AgentClient -> AM' ()
++runAgentThreads c@AgentClient {acBackgroundMode}
++  | acBackgroundMode = run c "subscriber" $ subscriber c
++  | otherwise = do
++      restoreServersStats c
++      raceAny_
++        [ run c "subscriber" $ subscriber c,
++          run c "runNtfSupervisor" $ runNtfSupervisor c,
++          run c "cleanupManager" $ cleanupManager c,
++          run c "logServersStats" $ logServersStats c
++        ]
++        `E.finally` saveServersStats_ True c
++  where
++    run AgentClient {subQ, active} name a =
++      a `E.catchAny` \e -> whenM (readTVarIO active) $ do
          logError $ "Agent thread " <> name <> " crashed: " <> tshow e
-@@ -306,14 +307,26 @@ logServersStats c = do
+         atomically $ writeTBQueue subQ ("", "", AEvt SAEConn $ ERR $ CRITICAL True $ show e)
+
+@@ -306,14 +310,26 @@
      liftIO $ threadDelay' int
- 
+
  saveServersStats :: AgentClient -> AM' ()
 -saveServersStats c@AgentClient {subQ, smpServersStats, xftpServersStats, ntfServersStats} = do
 +saveServersStats = saveServersStats_ False
@@ -69,21 +99,102 @@ Index: src/Simplex/Messaging/Agent.hs
 +    else tryAllErrors' (withStore' c (`updateServersStats` stats)) >>= \case
 +      Left e -> atomically $ writeTBQueue subQ ("", "", AEvt SAEConn $ ERR $ INTERNAL $ show e)
 +      Right () -> pure ()
- 
+
  restoreServersStats :: AgentClient -> AM' ()
  restoreServersStats c@AgentClient {smpServersStats, xftpServersStats, ntfServersStats, srvStatsStartedAt} = do
-@@ -335,10 +348,10 @@ disconnectAgentClient c@AgentClient {age
- 
- -- only used in the tests
+@@ -333,17 +349,45 @@
+   closeXFTPAgent xa
+   logConnection c False
+
+--- only used in the tests
++-- Stop all agent threads, including the statistics finalizer, before its
++-- owner closes or replaces the store. Unlike dispose, this permits restart.
++stopAgentClient :: AgentClient -> IO ()
++stopAgentClient c = withAgentLifecycle c $ stopAgentClient_ c
++
++stopAgentClient_ :: AgentClient -> IO ()
++stopAgentClient_ c@AgentClient {acThread, acThreadDone} = do
++  atomically $ writeTVar (active c) False
++  t_ <- readTVarIO acThread
++  forM_ t_ $ \t -> do
++    deRefWeak t >>= mapM_ killThread
++    atomically $ readTMVar acThreadDone
++    atomically $ writeTVar acThread Nothing
++
  disposeAgentClient :: AgentClient -> IO ()
 -disposeAgentClient c@AgentClient {acThread, agentEnv = Env {store}} = do
 -  t_ <- atomically (swapTVar acThread Nothing) $>>= (liftIO . deRefWeak)
 -  disconnectAgentClient c
 -  mapM_ killThread t_
-+disposeAgentClient AgentClient {acThread, acThreadDone, agentEnv = Env {store}} = do
-+  t_ <- atomically $ swapTVar acThread Nothing
-+  mapM_ (deRefWeak >=> mapM_ killThread) t_
-+  mapM_ (const $ atomically $ readTMVar acThreadDone) t_
-   liftIO $ closeDBStore store
- 
+-  liftIO $ closeDBStore store
++disposeAgentClient c@AgentClient {agentEnv = Env {store}} = withAgentLifecycle c $ do
++  stopAgentClient_ c
++  closeDBStore store
+
  resumeAgentClient :: AgentClient -> IO ()
+-resumeAgentClient c = atomically $ writeTVar (active c) True
+-{-# INLINE resumeAgentClient #-}
++resumeAgentClient c@AgentClient {acThread, acThreadDone, agentEnv} = withAgentLifecycle c $ do
++  atomically $ writeTVar (active c) True
++  readTVarIO acThread >>= \case
++    Just _ -> pure ()
++    Nothing -> do
++      atomically $ do
++        void $ tryTakeTMVar acThreadDone
++        -- A stopped session has no operations left to complete. In particular,
++        -- do not carry a suspended database gate into the new supervisor.
++        writeTVar (agentState c) ASForeground
++        forM_ agentOperations $ \op -> writeTVar (op c) $ AgentOpState False 0
++      let run = runReaderT (runAgentThreads c) agentEnv
++          done _ = disconnectAgentClient c `E.finally` atomically (putTMVar acThreadDone ())
++      t <- run `forkFinallyUnmasked` done
++      atomically . writeTVar acThread . Just =<< mkWeakThreadId t
++
++withAgentLifecycle :: AgentClient -> IO a -> IO a
++withAgentLifecycle AgentClient {acLifecycleLock} =
++  E.bracket_ (atomically $ takeTMVar acLifecycleLock) (atomically $ putTMVar acLifecycleLock ()) . E.mask_
+
+ createUser :: AgentClient -> Bool -> NonEmpty (ServerCfg 'PSMP) -> NonEmpty (ServerCfg 'PXFTP) -> AE UserId
+ createUser c = withAgentEnv c .:. createUser' c
+@@ -886,8 +930,10 @@
+ allowConnectionAsync' :: AgentClient -> ACorrId -> ConnId -> ConfirmationId -> ConnInfo -> AM ()
+ allowConnectionAsync' c corrId connId confId ownConnInfo =
+   withStore c (`getConn` connId) >>= \case
+-    SomeConn _ (RcvConnection _ RcvQueue {server}) ->
+-      enqueueCommand c corrId connId (Just server) $ AClientCommand $ LET confId ownConnInfo
++    SomeConn _ (RcvConnection _ _) ->
++      -- LET only updates local state and schedules the network command.
++      -- It must not wait behind an ACK to an unavailable receive server.
++      enqueueCommand c corrId connId Nothing $ AClientCommand $ LET confId ownConnInfo
+     _ -> throwE $ CMD PROHIBITED "allowConnectionAsync"
+
+ -- TODO
+@@ -1474,9 +1520,15 @@
+ allowConnection' c connId confId ownConnInfo = withConnLock c connId "allowConnection" $ do
+   withStore c (`getConn` connId) >>= \case
+     SomeConn _ (RcvConnection _ RcvQueue {server, rcvId}) -> do
+-      AcceptedConfirmation {senderConf = SMPConfirmation {senderKey}} <-
++      AcceptedConfirmation {senderConf = SMPConfirmation {senderKey, smpReplyQueues}} <-
+         withStore c $ \db -> acceptConfirmation db confId ownConnInfo
+-      enqueueCommand c "" connId (Just server) . AInternalCommand $ ICAllowSecure rcvId senderKey
++      -- When the sender already secured our receive queue, acceptance only
++      -- needs the reply server. A pending confirmation ACK on the receive
++      -- server must not block it when that server goes offline.
++      let commandServer = case (senderKey, smpReplyQueues) of
++            (Nothing, q : _) -> qServer q
++            _ -> server
++      enqueueCommand c "" connId (Just commandServer) . AInternalCommand $ ICAllowSecure rcvId senderKey
+     _ -> throwE $ CMD PROHIBITED "allowConnection"
+
+ -- | Accept contact (ACPT command) in Reader monad
+@@ -1907,7 +1959,9 @@
+           tryCommand . withNextSrv c userId storageSrvs triedHosts [qServer q] $ \srv -> do
+             sqSecured <- joinConnSrv c NRMBackground userId connId enableNtfs cReq connInfo pqEnc subMode srv
+             notify $ JOINED sqSecured
+-        LET confId ownCInfo -> withServer' . tryCommand $ allowConnection' c connId confId ownCInfo >> notify OK
++        -- Also accept persisted LET commands that older versions assigned
++        -- to a server; newly queued LET commands have no network dependency.
++        LET confId ownCInfo -> tryCommand $ allowConnection' c connId confId ownCInfo >> notify OK
+         ACK msgId rcptInfo_ -> withServer' . tryCommand $ ackMessage' c connId msgId rcptInfo_ >> notify OK
+         SWCH ->
+           noServer . tryWithLock "switchConnection" $

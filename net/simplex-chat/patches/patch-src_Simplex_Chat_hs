@@ -1,0 +1,25 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Track controller startup jobs and serialize its start/stop lifetime.
+
+Index: src/Simplex/Chat.hs
+--- src/Simplex/Chat.hs.orig
++++ src/Simplex/Chat.hs
+@@ -179,6 +179,8 @@
+         inputQ <- newTBQueueIO tbqSize
+         outputQ <- newTBQueueIO tbqSize
+         subscriptionMode <- newTVarIO SMSubscribe
++        chatLifecycleLock <- newTMVarIO ()
++        chatStartThreads <- newTVarIO []
+         chatLock <- newEmptyTMVarIO
+         entityLocks <- TM.emptyIO
+         sndFiles <- newTVarIO M.empty
+@@ -217,6 +219,8 @@
+               currentRemoteHost,
+               smpAgent,
+               agentAsync,
++              chatLifecycleLock,
++              chatStartThreads,
+               chatStore,
+               chatStoreChanged,
+               random,

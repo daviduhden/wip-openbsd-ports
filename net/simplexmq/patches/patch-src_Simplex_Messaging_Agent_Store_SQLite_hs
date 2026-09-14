@@ -1,0 +1,65 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Serialize close and reopen with connection users and recheck closed state
+under the connection lock. Mask publication of handle changes so a closer
+cannot leave a freed handle marked open or race a second close.
+
+Index: src/Simplex/Messaging/Agent/Store/SQLite.hs
+--- src/Simplex/Messaging/Agent/Store/SQLite.hs.orig
++++ src/Simplex/Messaging/Agent/Store/SQLite.hs
+@@ -44,7 +44,7 @@
+
+ import Control.Concurrent.MVar
+ import Control.Concurrent.STM
+-import Control.Exception (bracketOnError, onException, throwIO)
++import Control.Exception (bracketOnError, mask_, onException, throwIO)
+ import Control.Monad
+ import Data.Bits (xor)
+ import Data.ByteArray (ScrubbedBytes)
+@@ -69,7 +69,7 @@
+ import Simplex.Messaging.Agent.Store.SQLite.Util
+ import Simplex.Messaging.Agent.Store.Shared (Migration (..), MigrationConfig (..), MigrationError (..))
+ import qualified Simplex.Messaging.Crypto as C
+-import Simplex.Messaging.Util (ifM, packZipWith, safeDecodeUtf8)
++import Simplex.Messaging.Util (ifM, packZipWith, safeDecodeUtf8, unlessM)
+ import System.Directory (copyFile, createDirectoryIfMissing, doesFileExist)
+ import System.FilePath (takeDirectory, takeFileName, (</>))
+
+@@ -149,9 +149,9 @@
+ {-# INLINE xorMd5Combine #-}
+
+ closeDBStore :: DBStore -> IO ()
+-closeDBStore st@DBStore {dbClosed} =
+-  ifM (readTVarIO dbClosed) (putStrLn "closeDBStore: already closed") $
+-    withConnection st $ \conn -> do
++closeDBStore DBStore {dbConnection, dbClosed} = mask_ $
++  withMVar dbConnection $ \conn ->
++    unlessM (readTVarIO dbClosed) $ do
+       DB.close conn
+       atomically $ writeTVar dbClosed True
+
+@@ -161,15 +161,15 @@
+
+ openSQLiteStore_ :: DBStore -> ScrubbedBytes -> Bool -> IO ()
+ openSQLiteStore_ DBStore {dbConnection, dbFilePath, dbFunctions, dbKey, dbClosed} key keepKey =
+-  bracketOnError
+-    (takeMVar dbConnection)
+-    (tryPutMVar dbConnection)
+-    $ \DB.Connection {slow, track} -> do
+-      DB.Connection {conn} <- connectDB dbFilePath dbFunctions key track
+-      atomically $ do
+-        writeTVar dbClosed False
+-        writeTVar dbKey $! storeKey key keepKey
+-      putMVar dbConnection DB.Connection {conn, slow, track}
++  modifyMVarMasked_ dbConnection $ \old@DB.Connection {slow, track} ->
++    ifM (readTVarIO dbClosed)
++      (do
++        DB.Connection {conn} <- connectDB dbFilePath dbFunctions key track
++        atomically $ do
++          writeTVar dbClosed False
++          writeTVar dbKey $! storeKey key keepKey
++        pure DB.Connection {conn, slow, track})
++      (pure old)
+
+ reopenDBStore :: DBStore -> IO ()
+ reopenDBStore st@DBStore {dbKey, dbClosed} =

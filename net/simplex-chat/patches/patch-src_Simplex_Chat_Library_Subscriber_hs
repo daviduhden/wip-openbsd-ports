@@ -1,0 +1,28 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Finish initial chat history and connection probes before announcing the
+contact as connected. Unlocked readers such as /last_item_id must see the
+complete initial history; connection-sync commands must not race probes
+still using the connection record.
+
+Index: src/Simplex/Chat/Library/Subscriber.hs
+--- src/Simplex/Chat/Library/Subscriber.hs.orig
++++ src/Simplex/Chat/Library/Subscriber.hs
+@@ -624,7 +624,6 @@
+               ct' = ct {activeConn = Just conn'} :: Contact
+           -- [incognito] print incognito profile used for this contact
+           incognitoProfile <- forM customUserProfileId $ \profileId -> withStore (\db -> getProfileById db userId profileId)
+-          toView $ CEvtContactConnected user ct' (fmap fromLocalProfile incognitoProfile)
+           let createE2EItem = createInternalChatItem user (CDDirectRcv ct') (CIRcvDirectE2EEInfo $ e2eInfoEncrypted $ Just pqEnc) Nothing
+           -- TODO [short links] get contact request by contactRequestId, check encryption (UserContactRequest.pqSupport)?
+           when (directOrUsed ct') $ case (preparedContact ct', contactRequestId' ct') of
+@@ -642,6 +641,9 @@
+           when (contactConnInitiated conn') $ do
+             probeMatchingMembers ct' (contactConnIncognito ct')
+             withStore' $ \db -> resetContactConnInitiated db user conn'
++          -- Publish readiness after the initial history has been committed.
++          -- Readers such as /last_item_id do not take the contact lock.
++          toView $ CEvtContactConnected user ct' (fmap fromLocalProfile incognitoProfile)
+           forM_ viaUserContactLink $ \userContactLinkId -> do
+             (ucl, gli_) <- withStore $ \db -> getUserContactLinkById db userId userContactLinkId
+             -- let UserContactLink {addressSettings = AddressSettings {autoReply}} = ucl

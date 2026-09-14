@@ -1,0 +1,54 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Publish joinable timed-item tasks under an exception mask. Their owner
+can now wait for cancellation before closing or replacing the chat store.
+
+Index: src/Simplex/Chat/Library/Internal.hs
+--- src/Simplex/Chat/Library/Internal.hs.orig
++++ src/Simplex/Chat/Library/Internal.hs
+@@ -107,7 +107,8 @@
+ import Simplex.Messaging.Version
+ import System.FilePath (takeFileName, (</>))
+ import System.IO (Handle, IOMode (..), hFlush)
+-import UnliftIO.Concurrent (forkFinally, mkWeakThreadId)
++import UnliftIO.Async (asyncWithUnmask)
++import qualified UnliftIO.Exception as E
+ import UnliftIO.Directory
+ import UnliftIO.IO (hClose, openFile)
+ import UnliftIO.STM
+@@ -1631,18 +1632,23 @@
+
+ startTimedItemThread :: User -> (ChatRef, ChatItemId) -> UTCTime -> CM ()
+ startTimedItemThread user itemRef deleteAt = do
+-  itemThreads <- asks timedItemThreads
+-  threadTVar_ <- atomically $ do
+-    exists <- TM.member itemRef itemThreads
+-    if not exists
+-      then do
+-        threadTVar <- newTVar Nothing
+-        TM.insert itemRef threadTVar itemThreads
+-        pure $ Just threadTVar
+-      else pure Nothing
+-  forM_ threadTVar_ $ \threadTVar -> do
+-    tId <- mkWeakThreadId =<< deleteTimedItem user itemRef deleteAt `forkFinally` const (atomically $ TM.delete itemRef itemThreads)
+-    atomically $ writeTVar threadTVar (Just tId)
++  cc <- ask
++  liftIO $ E.mask_ $ do
++    let itemThreads = timedItemThreads cc
++    threadVar_ <- atomically $ do
++      started <- isJust <$> readTVar (agentAsync cc)
++      exists <- TM.member itemRef itemThreads
++      if started && not exists
++        then do
++          threadVar <- newEmptyTMVar
++          TM.insert itemRef threadVar itemThreads
++          pure $ Just threadVar
++        else pure Nothing
++    forM_ threadVar_ $ \threadVar -> do
++      let work = void $ runReaderT (runExceptT $ deleteTimedItem user itemRef deleteAt) cc
++      a <- asyncWithUnmask (\unmask -> unmask work `E.finally` atomically (TM.delete itemRef itemThreads))
++        `E.onException` atomically (putTMVar threadVar Nothing >> TM.delete itemRef itemThreads)
++      atomically $ putTMVar threadVar $ Just a
+
+ deleteTimedItem :: User -> (ChatRef, ChatItemId) -> UTCTime -> CM ()
+ deleteTimedItem user (ChatRef cType chatId scope, itemId) deleteAt = do

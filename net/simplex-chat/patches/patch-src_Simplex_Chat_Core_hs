@@ -7,7 +7,15 @@ and close its stores.
 Index: src/Simplex/Chat/Core.hs
 --- src/Simplex/Chat/Core.hs.orig
 +++ src/Simplex/Chat/Core.hs
-@@ -34,6 +34,8 @@
+@@ -13,6 +13,7 @@
+   )
+ where
+ 
++import Control.Concurrent.STM (retry)
+ import Control.Logger.Simple
+ import Control.Monad
+ import Control.Monad.Except
+@@ -34,6 +35,8 @@
  import Simplex.Chat.Types
  import Simplex.Chat.Types.Preferences (FeatureAllowed (..), FilesPreference (..), Preferences (..), emptyChatPrefs)
  import Simplex.Chat.View (ChatResponseEvent, serializeChatError, serializeChatResponse, simplexChatContact)
@@ -16,16 +24,16 @@ Index: src/Simplex/Chat/Core.hs
  import Simplex.Messaging.Agent.Protocol
  import Simplex.Messaging.Agent.Store.Common (DBStore, withTransaction)
  import Simplex.Messaging.Agent.Store.Shared (MigrationConfig (..), MigrationConfirmation (..))
-@@ -42,6 +44,8 @@
+@@ -42,6 +45,8 @@
  import System.IO (hFlush, stdout)
  import Text.Read (readMaybe)
  import UnliftIO.Async
 +import qualified UnliftIO.Exception as E
 +import UnliftIO.STM
-
+ 
  simplexChatCore :: ChatConfig -> ChatOpts -> (User -> ChatController -> IO ()) -> IO ()
  simplexChatCore cfg@ChatConfig {confirmMigrations, testView, chatHooks} opts@ChatOpts {coreOptions = coreOptions@CoreChatOpts {dbOptions, logAgent, yesToUpMigrations, migrationBackupPath, maintenance}, createBot, userDisplayName, userImageFile} chat =
-@@ -82,19 +86,35 @@
+@@ -82,19 +87,35 @@
                pure u
            unless testView $ putStrLn $ "Current user: " <> userStr u
            runSimplexChat cfg opts u cc chat
@@ -33,7 +41,7 @@ Index: src/Simplex/Chat/Core.hs
      noMaintenance = when maintenance $ do
        putStrLn "exiting: no active user in maintenance mode"
        exitFailure
-
+ 
  runSimplexChat :: ChatConfig -> ChatOpts -> User -> ChatController -> (User -> ChatController -> IO ()) -> IO ()
  runSimplexChat ChatConfig {testView} ChatOpts {coreOptions = CoreChatOpts {chatRelay, chatRelayServer, headless, maintenance}} u cc@ChatController {config = ChatConfig {chatHooks}} chat
 -  | maintenance = wait =<< async (chat u cc)
@@ -62,6 +70,6 @@ Index: src/Simplex/Chat/Core.hs
 +        Nothing -> pure ()
 +        Just (Left e) -> E.throwIO e
 +        Just (Right ()) -> E.throwIO $ userError "Agent subscriber stopped unexpectedly"
-
+ 
  sendChatCmdStr :: ChatController -> String -> IO (Either ChatError ChatResponse)
  sendChatCmdStr cc s = runReaderT (execChatCommand Nothing (encodeUtf8 $ T.pack s) 0) cc

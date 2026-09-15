@@ -1,0 +1,43 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Register a command's server in its transaction, including reply servers
+that do not have a send queue yet. Check that cached deliveries still
+exist before retrying them after connection deletion.
+
+Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
+--- src/Simplex/Messaging/Agent/Store/AgentStore.hs.orig
++++ src/Simplex/Messaging/Agent/Store/AgentStore.hs
+@@ -132,6 +132,7 @@
+     getSndMsgViaRcpt,
+     updateSndMsgRcpt,
+     getPendingQueueMsg,
++    isSndMsgPending,
+     getConnectionsForDelivery,
+     getAllSndQueuesForDelivery,
+     updatePendingMsgRIState,
+@@ -1069,6 +1070,13 @@
+       WHERE c.deleted = 0
+     |]
+ 
++-- A retry may outlive deletion of its connection or replacement of its queue.
++isSndMsgPending :: DB.Connection -> ConnId -> SndQueue -> InternalId -> IO Bool
++isSndMsgPending db connId SndQueue {dbQueueId} msgId =
++  not . null <$> (DB.query db
++    "SELECT 1 FROM snd_message_deliveries WHERE conn_id = ? AND snd_queue_id = ? AND internal_id = ? AND failed = 0"
++    (connId, dbQueueId, msgId) :: IO [Only Int])
++
+ getPendingQueueMsg :: DB.Connection -> ConnId -> SndQueue -> IO (Either StoreError (Maybe (Maybe RcvQueue, PendingMsgData)))
+ getPendingQueueMsg db connId SndQueue {dbQueueId} =
+   getWorkItem "message" getMsgId getMsgData markMsgFailed
+@@ -1504,7 +1512,10 @@
+     serverFields :: ExceptT StoreError IO (Maybe (NonEmpty TransportHost), Maybe ServiceName, Maybe C.KeyHash)
+     serverFields = case srv_ of
+       Just srv@(SMPServer host port _) ->
+-        (Just host,Just port,) <$> ExceptT (getServerKeyHash_ db srv)
++        -- A command can target a reply server before its send queue exists.
++        -- Persist the server in the same transaction as the command so it
++        -- can also be resolved after restarting the agent.
++        (Just host,Just port,) <$> liftIO (createServer db srv)
+       Nothing -> pure (Nothing, Nothing, Nothing)
+ 
+ insertedRowId :: DB.Connection -> IO Int64

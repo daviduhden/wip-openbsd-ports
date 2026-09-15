@@ -3,6 +3,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 Exercise rollback of partial writes within an outer transaction. Use the
 store close operation for fixture cleanup, including already closed stores.
 
+Verify that a command can register a new server before queue creation
+and resolve that server after closing and reopening the store.
+
 Index: tests/AgentTests/SQLiteTests.hs
 --- tests/AgentTests/SQLiteTests.hs.orig
 +++ tests/AgentTests/SQLiteTests.hs
@@ -25,7 +28,7 @@ Index: tests/AgentTests/SQLiteTests.hs
  import qualified Simplex.Messaging.Crypto as C
 @@ -67,11 +68,10 @@
  withStore = before createStore' . after removeStore
-
+ 
  withStore2 :: SpecWith (DBStore, DBStore) -> Spec
 -withStore2 = before connect2 . after (removeStore . fst)
 +withStore2 = before connect2 . after (\(s1, s2) -> closeDBStore s2 `E.finally` removeStore s1)
@@ -36,9 +39,9 @@ Index: tests/AgentTests/SQLiteTests.hs
 +    connect2 = E.bracketOnError createStore' removeStore $ \s1@DBStore {dbFilePath} -> do
        s2 <- connectSQLiteStore $ DBOpts dbFilePath [] "" False False DB.TQOff
        pure (s1, s2)
-
+ 
 @@ -89,11 +89,8 @@
-
+ 
  removeStore :: DBStore -> IO ()
  removeStore db@DBStore {dbFilePath} = do
 -  close db
@@ -47,7 +50,7 @@ Index: tests/AgentTests/SQLiteTests.hs
 -  where
 -    close :: DBStore -> IO ()
 -    close st = mapM_ DB.close =<< tryTakeMVar (dbConnection st)
-
+ 
  storeTests :: Spec
  storeTests = do
 @@ -103,6 +100,20 @@
@@ -71,3 +74,23 @@ Index: tests/AgentTests/SQLiteTests.hs
      describe "db methods" $ do
        describe "Queue and Connection management" $ do
          describe "create Rcv connection" $ do
+@@ -136,6 +147,19 @@
+           testCreateSndMsg
+           testCreateRcvAndSndMsgs
+       describe "Work items" $ do
++        it "persists a command's new server before its queue exists" $ \st -> do
++          g <- C.newRandom
++          connId <- withTransaction st $ \db -> do
++            Right connId <- createNewConn db g cData1 {connId = ""} SCMInvitation
++            let command = AClientCommand $ NEW True (ACM SCMInvitation) IKPQOn SMSubscribe
++            createCommand db "reply" connId (Just smpServer1) command `shouldReturn` Right ()
++            pure connId
++          closeDBStore st
++          reopenDBStore st
++          withTransaction st $ \db -> do
++            getPendingCommandServers db [connId] `shouldReturn` [(connId, pure $ Just smpServer1)]
++            Right (Just PendingCommand {corrId}) <- getPendingServerCommand db connId (Just smpServer1)
++            corrId `shouldBe` "reply"
+         it "should getPendingQueueMsg" testGetPendingQueueMsg
+         it "should getPendingServerCommand" testGetPendingServerCommand
+         it "should getNextRcvChunkToDownload" testGetNextRcvChunkToDownload

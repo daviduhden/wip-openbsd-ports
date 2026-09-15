@@ -1,0 +1,7 @@
+# PENDING: the MODCARGO_CRATES checksums and sizes are not recorded yet.
+# Run `make makesum` on OpenBSD, as described in BUILDING.md, to complete
+# this file before building the port.  Only the release tarball below was
+# verified during the static analysis pass.
+
+SHA256 (coreutils-0.11.0.tar.gz) = pHlmEXeDvvGGUMxyTxsdBhtxeskaD+qr3TSRBwPPcKQ=
+SIZE (coreutils-0.11.0.tar.gz) = 2863583

@@ -136,6 +136,7 @@ SIMPLEXMQ_PATCHES = \
 	patch-src_Simplex_Messaging_Agent_hs \
 	patch-src_Simplex_Messaging_Agent_Client_hs \
 	patch-src_Simplex_Messaging_Agent_Env_SQLite_hs \
+	patch-src_Simplex_Messaging_Agent_Store_AgentStore_hs \
 	patch-src_Simplex_Messaging_Agent_Store_SQLite_hs \
 	patch-src_Simplex_Messaging_Agent_Store_SQLite_Common_hs \
 	patch-src_Simplex_Messaging_Agent_Store_SQLite_Migrations_agent_schema_sql \

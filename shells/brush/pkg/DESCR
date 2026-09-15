@@ -1,0 +1,23 @@
+brush is a shell written in Rust that implements POSIX shell behavior
+and a large subset of Bash.  It is intended to run existing scripts and
+.bashrc files, and includes an interactive line editor with syntax
+highlighting, history and programmable completion.
+
+This package installs the shell as ${PREFIX}/bin/brush and as
+${PREFIX}/bin/bash, registers both in /etc/shells, conflicts with
+shells/bash, and declares shells/bash as a secondary pkgpath, so the
+package tools accept it as a provider of that path.  The GNU package
+must not be installed at the same time.
+
+Because the file name is the same, ports that invoke bash(1) need no
+source changes to use this package; their build dependency on
+shells/bash only has to be pointed at shells/brush.
+
+brush is not a complete Bash implementation: select, wait -n, disown
+and logout are not implemented, signal traps are still in progress, and
+there are known edge cases in IFS splitting, printf and alias
+expansion.  Upstream maintains a compatibility reference at
+https://github.com/reubeno/brush/blob/main/docs/reference/compatibility.md
+and validates the shell against bash with a large compatibility test
+suite.  Do not install it as a system-wide replacement for shells/bash
+without testing the affected scripts.

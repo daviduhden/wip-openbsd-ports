@@ -2,10 +2,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 Unmask owned worker bodies while keeping publication and completion callbacks masked.
 
+Preserve cancellation in catchAll and catchAll_ as in tryAllErrors.
+
 Index: src/Simplex/Messaging/Util.hs
 --- src/Simplex/Messaging/Util.hs.orig
 +++ src/Simplex/Messaging/Util.hs
-@@ -10,6 +10,7 @@ module Simplex.Messaging.Util
+@@ -10,6 +10,7 @@
      (<$$),
      (<$$>),
      raceAny_,
@@ -13,7 +15,7 @@ Index: src/Simplex/Messaging/Util.hs
      bshow,
      tshow,
      maybeWord,
-@@ -66,6 +67,7 @@ module Simplex.Messaging.Util
+@@ -66,6 +67,7 @@
      traverseWithKey_,
    ) where
  
@@ -21,7 +23,7 @@ Index: src/Simplex/Messaging/Util.hs
  import Control.Exception (AllocationLimitExceeded (..), AsyncException (..))
  import qualified Control.Exception as E
  import Control.Monad
-@@ -100,6 +102,12 @@ import GHC.Conc (labelThread, myThreadId
+@@ -100,6 +102,12 @@
  import UnliftIO hiding (atomicModifyIORef')
  import qualified UnliftIO.Exception as UE
  
@@ -34,3 +36,12 @@ Index: src/Simplex/Messaging/Util.hs
  raceAny_ :: MonadUnliftIO m => [m a] -> m ()
  raceAny_ = r []
    where
+@@ -261,7 +269,7 @@
+ {-# INLINE tryWriteTBQueue #-}
+ 
+ catchAll :: IO a -> (E.SomeException -> IO a) -> IO a
+-catchAll = E.catch
++catchAll = UE.catch
+ {-# INLINE catchAll #-}
+ 
+ catchAll_ :: IO a -> IO a -> IO a

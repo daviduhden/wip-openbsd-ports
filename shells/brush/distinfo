@@ -1,0 +1,7 @@
+# PENDING: the MODCARGO_CRATES checksums and sizes are not recorded yet.
+# Run `make makesum` on OpenBSD, as described in BUILDING.md, to complete
+# this file before building the port.  Only the release tarball below was
+# verified during the static analysis pass.
+
+SHA256 (brush-brush-shell-v0.4.0.tar.gz) = DM5gdFSXLBi8SjDS9EoskfzPAsRYR1/adyA3Cj3IpPA=
+SIZE (brush-brush-shell-v0.4.0.tar.gz) = 691640

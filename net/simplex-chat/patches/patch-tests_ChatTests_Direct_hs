@@ -4,10 +4,22 @@ Check contact readiness without a settling sleep. Check the ended-call
 status, history, direction and duration against measured elapsed time,
 instead of assuming that the complete call always takes zero seconds.
 
+Exercise cancellation through ordinary, priority and batched store calls.
+
 Index: tests/ChatTests/Direct.hs
 --- tests/ChatTests/Direct.hs.orig
 +++ tests/ChatTests/Direct.hs
-@@ -21,7 +21,8 @@
+@@ -15,18 +15,23 @@
+ import ChatTests.DBUtils
+ import ChatTests.Utils
+ import Control.Concurrent (threadDelay)
+-import Control.Concurrent.Async (concurrently_)
++import Control.Concurrent.Async (AsyncCancelled (..), concurrently_)
++import qualified Control.Exception as E
+ import Control.Monad (forM_, void)
++import Control.Monad.Except (runExceptT)
++import Control.Monad.Reader (runReaderT)
+ import Data.Aeson (ToJSON)
  import qualified Data.Aeson as J
  import qualified Data.ByteString.Char8 as B
  import qualified Data.ByteString.Lazy.Char8 as LB
@@ -17,7 +29,29 @@ Index: tests/ChatTests/Direct.hs
  import qualified Data.Text as T
  import Simplex.Chat.AppSettings (defaultAppSettings)
  import qualified Simplex.Chat.AppSettings as AS
-@@ -186,7 +187,6 @@
+ import Simplex.Chat.Call
+ import Simplex.Chat.Controller (ChatConfig (..), PresetServers (..))
++import qualified Simplex.Chat.Controller as CC
+ import Simplex.Chat.Messages (ChatItemId)
+ import Simplex.Chat.Options
+ import Simplex.Chat.Protocol (supportedChatVRange)
+@@ -52,6 +57,15 @@
+ 
+ chatDirectTests :: SpecWith TestParams
+ chatDirectTests = do
++  describe "store cancellation" $ do
++    it "propagates cancellation through transactions and batches" $ \ps ->
++      withNewTestChat ps "alice" aliceProfile $ \alice -> do
++        let cc = chatController alice
++            killed = E.throwIO E.ThreadKilled :: IO ()
++            cancelled = E.throwIO AsyncCancelled :: IO ()
++        runReaderT (runExceptT $ CC.withStore' $ const killed) cc `shouldThrow` (== E.ThreadKilled)
++        runReaderT (runExceptT $ CC.withFastStore' $ const cancelled) cc `shouldThrow` (== AsyncCancelled)
++        runReaderT (CC.withStoreBatch' $ const [cancelled]) cc `shouldThrow` (== AsyncCancelled)
+   describe "direct messages" $ do
+     describe "add contact and send/receive messages" testAddContact
+     it "retry connecting via the same link" testRetryConnecting
+@@ -186,7 +200,6 @@
        concurrently_
          (bob <## "alice (Alice): contact is connected")
          (alice <## "bob (Bob): contact is connected")
@@ -25,7 +59,7 @@ Index: tests/ChatTests/Direct.hs
        chatsEmpty
        alice #> "@bob hello there 🙂"
        bob <# "alice> hello there 🙂"
-@@ -1336,21 +1336,50 @@
+@@ -1336,21 +1349,50 @@
      threadDelay 100000
      bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "incoming call: connecting...")])
      -- participants can update calls as connected
@@ -75,6 +109,6 @@ Index: tests/ChatTests/Direct.hs
 +              _ -> expectationFailure $ "invalid call duration: " <> duration
 +            _ -> expectationFailure $ "call has not ended: " <> call
 +        _ -> expectationFailure $ "unexpected call history: " <> show items
-
+ 
  testMaintenanceMode :: HasCallStack => TestParams -> IO ()
  testMaintenanceMode ps = do

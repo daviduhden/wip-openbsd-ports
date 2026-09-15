@@ -1,26 +1,34 @@
 SPDX-License-Identifier: AGPL-3.0-only
 
 Keep ownership of controller startup jobs and joinable timed-item tasks.
+Catch only synchronous database exceptions: converting ThreadKilled or
+AsyncCancelled into a ChatError lets workers continue after cancellation
+and can block stopChatController while it joins them.
 
 Index: src/Simplex/Chat/Controller.hs
 --- src/Simplex/Chat/Controller.hs.orig
 +++ src/Simplex/Chat/Controller.hs
-@@ -17,7 +17,6 @@
-
+@@ -17,10 +17,8 @@
+ 
  module Simplex.Chat.Controller where
-
+ 
 -import Control.Concurrent (ThreadId)
  import Control.Concurrent.Async (Async)
  import Control.Exception (Exception)
- import qualified Control.Exception as E
-@@ -99,7 +98,6 @@
+-import qualified Control.Exception as E
+ import Control.Monad.Except
+ import Control.Monad.IO.Unlift
+ import Control.Monad.Reader
+@@ -99,8 +97,8 @@
  import Simplex.RemoteControl.Invitation (RCSignedInvitation, RCVerifiedInvitation)
  import Simplex.RemoteControl.Types
  import System.IO (Handle)
 -import System.Mem.Weak (Weak)
  import UnliftIO.STM
++import qualified UnliftIO.Exception as E
  #if !defined(dbPostgres)
  import qualified Database.SQLite.Simple as SQL
+ import Simplex.Messaging.Agent.Store.SQLite.DB (SlowQueryStats (..))
 @@ -282,6 +280,8 @@
      firstTime :: Bool,
      smpAgent :: AgentClient,

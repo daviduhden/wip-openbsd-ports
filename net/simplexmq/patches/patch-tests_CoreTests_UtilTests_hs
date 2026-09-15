@@ -2,10 +2,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 Regression tests for unmasked worker bodies and completion after cancellation.
 
+Check that catchAll_ handles ordinary failures and rethrows cancellation.
+
 Index: tests/CoreTests/UtilTests.hs
 --- tests/CoreTests/UtilTests.hs.orig
 +++ tests/CoreTests/UtilTests.hs
-@@ -3,17 +3,43 @@
+@@ -3,17 +3,48 @@
  module CoreTests.UtilTests where
  
  import AgentTests.FunctionalAPITests ()
@@ -24,6 +26,11 @@ Index: tests/CoreTests/UtilTests.hs
  
  utilTests :: Spec
  utilTests = do
++  describe "catchAll" $ do
++    it "recovers from synchronous exceptions" $
++      (throwIO (userError "test") `catchAll_` pure ()) `shouldReturn` ()
++    it "preserves cancellation" $
++      (throwIO ThreadKilled `catchAll_` pure ()) `shouldThrow` (== ThreadKilled)
 +  describe "owned worker lifecycle" $ do
 +    it "unmasks worker bodies but masks their completion callbacks" $ do
 +      done <- newEmptyMVar

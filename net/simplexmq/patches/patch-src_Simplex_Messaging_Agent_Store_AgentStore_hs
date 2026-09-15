@@ -18,7 +18,7 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
 @@ -1069,6 +1070,13 @@
        WHERE c.deleted = 0
      |]
- 
+
 +-- A retry may outlive deletion of its connection or replacement of its queue.
 +isSndMsgPending :: DB.Connection -> ConnId -> SndQueue -> InternalId -> IO Bool
 +isSndMsgPending db connId SndQueue {dbQueueId} msgId =
@@ -39,5 +39,5 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
 +        -- can also be resolved after restarting the agent.
 +        (Just host,Just port,) <$> liftIO (createServer db srv)
        Nothing -> pure (Nothing, Nothing, Nothing)
- 
+
  insertedRowId :: DB.Connection -> IO Int64

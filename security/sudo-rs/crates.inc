@@ -1,0 +1,2 @@
+MODCARGO_CRATES +=	glob	0.3.4	# MIT OR Apache-2.0
+MODCARGO_CRATES +=	libc	0.2.189	# MIT OR Apache-2.0

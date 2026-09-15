@@ -18,7 +18,7 @@ Index: src/Simplex/Messaging/Util.hs
 @@ -66,6 +67,7 @@
      traverseWithKey_,
    ) where
- 
+
 +import qualified Control.Concurrent as C
  import Control.Exception (AllocationLimitExceeded (..), AsyncException (..))
  import qualified Control.Exception as E
@@ -26,7 +26,7 @@ Index: src/Simplex/Messaging/Util.hs
 @@ -100,6 +102,12 @@
  import UnliftIO hiding (atomicModifyIORef')
  import qualified UnliftIO.Exception as UE
- 
+
 +-- Publish thread ownership while masked, but do not make a long-lived child
 +-- inherit that mask. Keep its completion callback masked, like forkFinally.
 +forkFinallyUnmasked :: MonadUnliftIO m => m a -> (Either E.SomeException a -> m ()) -> m C.ThreadId
@@ -38,10 +38,10 @@ Index: src/Simplex/Messaging/Util.hs
    where
 @@ -261,7 +269,7 @@
  {-# INLINE tryWriteTBQueue #-}
- 
+
  catchAll :: IO a -> (E.SomeException -> IO a) -> IO a
 -catchAll = E.catch
 +catchAll = UE.catch
  {-# INLINE catchAll #-}
- 
+
  catchAll_ :: IO a -> IO a -> IO a

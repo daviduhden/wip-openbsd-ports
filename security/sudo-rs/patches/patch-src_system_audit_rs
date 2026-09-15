@@ -1,0 +1,44 @@
+SPDX-License-Identifier: Apache-2.0 OR MIT
+
+Index: src/system/audit.rs
+--- src/system/audit.rs.orig
++++ src/system/audit.rs
+@@ -347,6 +347,7 @@
+     }
+ }
+ 
++#[cfg(not(any(test, target_os = "openbsd")))]
+ fn faccess_at(parent: BorrowedFd, path: &CStr, mode: c_int, flags: c_int) -> io::Result<()> {
+     // SAFETY: by design, a correct CStr pointer is passed to faccessat
+     cerr(unsafe { libc::faccessat(parent.as_raw_fd(), path.as_ptr(), mode, flags) }).map(|_| ())
+@@ -413,16 +414,20 @@
+             ));
+         }
+ 
+-        let user_has_write_perms = if cfg!(test) {
+-            // During testing we do a less comprehensive check as we don't have
+-            // permission to set the real user id to arbitrary users, but faccessat
+-            // looks at the real user id.
+-            perms & mode(Category::World, Op::Write) != 0
+-                || (perms & mode(Category::Group, Op::Write) != 0)
+-                    && forbidden_user.in_group_by_gid(GroupId::new(meta.gid()))
+-                || (perms & mode(Category::Owner, Op::Write) != 0)
+-                    && forbidden_user.uid.inner() == meta.uid()
+-        } else {
++        // OpenBSD has no faccessat(2) flag that inspects an already open file
++        // descriptor, so the permission bits are checked directly there.
++        // During testing the same manual check is used as we don't have
++        // permission to set the real user id to arbitrary users, but
++        // faccessat looks at the real user id.
++        #[cfg(any(test, target_os = "openbsd"))]
++        let user_has_write_perms = perms & mode(Category::World, Op::Write) != 0
++            || (perms & mode(Category::Group, Op::Write) != 0)
++                && forbidden_user.in_group_by_gid(GroupId::new(meta.gid()))
++            || (perms & mode(Category::Owner, Op::Write) != 0)
++                && forbidden_user.uid.inner() == meta.uid();
++
++        #[cfg(not(any(test, target_os = "openbsd")))]
++        let user_has_write_perms = {
+             // Only works when forbidden_user is current user. This is enforced
+             // by accepting CurrentUser outside of test mode.
+             // We don't pass AT_EACCESS to faccessat to make it check using the

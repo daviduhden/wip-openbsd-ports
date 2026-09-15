@@ -36,7 +36,7 @@ Index: tests/ChatTests/Direct.hs
  import Simplex.Chat.Options
  import Simplex.Chat.Protocol (supportedChatVRange)
 @@ -52,6 +57,15 @@
- 
+
  chatDirectTests :: SpecWith TestParams
  chatDirectTests = do
 +  describe "store cancellation" $ do
@@ -109,6 +109,6 @@ Index: tests/ChatTests/Direct.hs
 +              _ -> expectationFailure $ "invalid call duration: " <> duration
 +            _ -> expectationFailure $ "call has not ended: " <> call
 +        _ -> expectationFailure $ "unexpected call history: " <> show items
- 
+
  testMaintenanceMode :: HasCallStack => TestParams -> IO ()
  testMaintenanceMode ps = do

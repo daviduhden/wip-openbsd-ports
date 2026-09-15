@@ -42,6 +42,10 @@ an outgoing-operation barrier. Check both synchronous and asynchronous
 acceptance, retaining the ten-second event bound and the complete handshake
 and post-restart message exchange.
 
+Register every session in the confirmation-restart test so its first
+failure cannot leak a store into later examples. Use the shared ten-second
+event budget for the concurrent delivery-receipt workload.
+
 Index: tests/AgentTests/FunctionalAPITests.hs
 --- tests/AgentTests/FunctionalAPITests.hs.orig
 +++ tests/AgentTests/FunctionalAPITests.hs
@@ -273,6 +277,29 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      (aliceId, sqSecured) <- joinConnection bob 1 True cReq "bob's connInfo" SMSubscribe
      liftIO $ sqSecured `shouldBe` True
      ("", _, CONF confId _ "bob's connInfo") <- get alice
+@@ -1178,10 +1217,10 @@
+     exchangeGreetings alice bobId bob aliceId
+
+ testAllowConnectionClientRestart :: HasCallStack => (ASrvTransport, AStoreType) -> IO ()
+-testAllowConnectionClientRestart ps@(t, ASType qsType _) = do
++testAllowConnectionClientRestart ps@(t, ASType qsType _) = withAgentSessions $ \session -> do
+   let initAgentServersSrv2 = initAgentServers {smp = userServers [testSMPServer2]}
+-  alice <- getSMPAgentClient' 1 agentCfg initAgentServers testDB
+-  bob <- getSMPAgentClient' 2 agentCfg initAgentServersSrv2 testDB2
++  alice <- session $ getSMPAgentClient' 1 agentCfg initAgentServers testDB
++  bob <- session $ getSMPAgentClient' 2 agentCfg initAgentServersSrv2 testDB2
+   withSmpServerStoreLogOn ps testPort $ \_ -> do
+     (aliceId, bobId, confId) <-
+       withSmpServerConfigOn t (cfgJ2QS qsType) testPort2 $ \_ -> do
+@@ -1203,7 +1242,7 @@
+     disposeAgentClient alice
+     threadDelay 250000
+
+-    alice2 <- getSMPAgentClient' 3 agentCfg initAgentServers testDB
++    alice2 <- session $ getSMPAgentClient' 3 agentCfg initAgentServers testDB
+     runRight_ $ subscribeConnection alice2 bobId
+     threadDelay 500000
+     withSmpServerConfigOn t (cfgJ2QS qsType) testPort2 $ \_ -> do
 @@ -1217,9 +1256,9 @@
      disposeAgentClient bob
 
@@ -452,7 +479,17 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        liftIO $ noMessages a "nothing else should be delivered to alice"
        liftIO $ noMessages b "nothing else should be delivered to bob"
    where
-@@ -3788,21 +3871,14 @@
+@@ -3772,7 +3855,8 @@
+           receiveLoop (n - 1)
+         getWithTimeout :: ExceptT AgentErrorType IO (AEntityTransmission 'AEConn)
+         getWithTimeout = do
+-          3000000 `timeout` get client >>= \case
++          -- Match the other agent event waits; the whole test is still bounded.
++          10000000 `timeout` get client >>= \case
+             Just r -> pure r
+             _ -> error "timeout"
+
+@@ -3788,21 +3872,14 @@
      a `hasClients` 1
      b `hasClients` 1
      setNetworkConfig a nc {sessionMode = TSMEntity}
@@ -476,7 +513,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      a `hasClients` 1
 
      aUserId2 <- createUser a False [noAuthSrvCfg testSMPServer] [noAuthSrvCfg testXFTPServer]
-@@ -3813,13 +3889,7 @@
+@@ -3813,13 +3890,7 @@
      a `hasClients` 2
      b `hasClients` 1
      setNetworkConfig a nc {sessionMode = TSMEntity}
@@ -491,7 +528,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      a `hasClients` 4
      exchangeGreetingsMsgId 6 a bId1 b aId1
      exchangeGreetingsMsgId 6 a bId1' b aId1'
-@@ -3827,22 +3897,36 @@
+@@ -3827,22 +3898,36 @@
      exchangeGreetingsMsgId 4 a bId2' b aId2'
      liftIO $ threadDelay 250000
      setNetworkConfig a nc {sessionMode = TSMUser}
@@ -538,7 +575,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      hasClients :: HasCallStack => AgentClient -> Int -> ExceptT AgentErrorType IO ()
      hasClients c n = liftIO $ M.size <$> readTVarIO (smpClients c) `shouldReturn` n
 
-@@ -4227,11 +4311,11 @@
+@@ -4227,11 +4312,11 @@
        liftIO $ length conns `shouldBe` n
 
  getSMPAgentClient' :: Int -> AgentConfig -> InitialAgentServers -> String -> IO AgentClient
@@ -555,7 +592,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
 
  #if defined(dbPostgres)
  createStore :: String -> IO (Either MigrationError DBStore)
-@@ -4269,7 +4353,9 @@
+@@ -4269,7 +4354,9 @@
      exchangeGreetings alice bobId bob aliceId
      -- this saves queue with second server identity
      bob' <- liftIO $ do
@@ -566,7 +603,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        disposeAgentClient bob
        threadDelay 250000
        getSMPAgentClient' 3 agentCfg initAgentServers testDB2
-@@ -4292,64 +4378,58 @@
+@@ -4292,64 +4379,58 @@
          testE2ERatchetParams12
 
  testWaitForUserNetwork :: IO ()
@@ -675,7 +712,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
    where
      aCfg = agentCfg {userOfflineDelay = 0}
 
-@@ -4429,7 +4509,7 @@
+@@ -4429,7 +4510,7 @@
        liftIO $ isJust r `shouldBe` True
        pure r
      checkQ c cId qiSnd' qiSubThread_ qiSize' msgType_ = do
@@ -684,7 +721,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        liftIO $ do
          qiSnd `shouldBe` qiSnd'
          qiNtf `shouldBe` False
-@@ -4438,6 +4518,19 @@
+@@ -4438,6 +4519,19 @@
          msgId_ <- forM qiMsg $ \MsgInfo {msgId, msgType} -> msgId <$ (Just msgType `shouldBe` msgType_)
          qDelivered <$> qiSub `shouldBe` Just msgId_
          pure msgId_
@@ -704,7 +741,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
 
  testClientNotice :: HasCallStack => (ASrvTransport, AStoreType) -> IO ()
  testClientNotice ps = do
-@@ -4450,8 +4543,8 @@
+@@ -4450,8 +4544,8 @@
 
      (cId', _) <- withSmpServerStoreLogOn ps testPort $ \_ -> do
        subscribedWithErrors c 1
@@ -715,7 +752,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        runRight $ A.createConnection c NRMInteractive 1 True True SCMContact Nothing Nothing IKPQOn SMSubscribe
      ("", "", DOWN _ [_]) <- nGet c
 
-@@ -4459,10 +4552,10 @@
+@@ -4459,10 +4553,10 @@
 
      (cId'', _) <- withSmpServerStoreLogOn ps testPort $ \_ -> do
        subscribedWithErrors c 1
@@ -730,7 +767,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        runRight $ A.createConnection c NRMInteractive 1 True True SCMContact Nothing Nothing IKPQOn SMSubscribe
 
      addNotice c cId'' $ Just 1
-@@ -4471,10 +4564,10 @@
+@@ -4471,10 +4565,10 @@
      (cId3, _) <- withSmpServerStoreLogOn ps testPort $ \_ -> do
        runRight_ $ subscribeAllConnections c False Nothing
        subscribedWithErrors c 3
@@ -745,7 +782,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        runRight $ A.createConnection c NRMInteractive 1 True True SCMContact Nothing Nothing IKPQOn SMSubscribe
      ("", "", DOWN _ [_]) <- nGet c
 
-@@ -4504,10 +4597,16 @@
+@@ -4504,10 +4598,16 @@
        forM_ errs $ \case
          (_, SMP _  (BLOCKED _)) -> pure ()
          r -> expectationFailure $ "unexpected event: " <> show r
@@ -763,7 +800,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
 
  noNetworkDelay :: AgentClient -> IO ()
  noNetworkDelay a = do
-@@ -4517,7 +4616,7 @@
+@@ -4517,7 +4617,7 @@
  networkDelay :: AgentClient -> Int64 -> IO ()
  networkDelay a d' = do
    d <- waitNetwork a

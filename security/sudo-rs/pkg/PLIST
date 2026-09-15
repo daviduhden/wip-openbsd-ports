@@ -1,0 +1,16 @@
+@conflict sudo-<2
+@pkgpath security/sudo
+@mode 04555
+@bin bin/sudo
+@mode
+bin/sudoedit
+@man man/man5/sudoers.5
+@man man/man8/sudo.8
+@man man/man8/sudoedit.8
+@man man/man8/visudo.8
+@bin sbin/visudo
+share/examples/sudo-rs/
+share/examples/sudo-rs/sudoers
+@mode 0440
+@sample ${SYSCONFDIR}/sudoers
+@mode

@@ -6,17 +6,19 @@ file cleanup so stopChatController can join the web preview worker.
 Index: src/Simplex/Chat/Web.hs
 --- src/Simplex/Chat/Web.hs.orig
 +++ src/Simplex/Chat/Web.hs
-@@ -24,7 +24,7 @@
+@@ -24,7 +24,6 @@
  where
- 
+
  import Control.Concurrent.STM (check, flushTQueue)
 -import Control.Exception (SomeException, catch)
-+import UnliftIO.Exception (SomeException, catch)
  import Control.Logger.Simple
  import Control.Monad
  import Control.Monad.Except (runExceptT)
-@@ -432,4 +432,3 @@
- 
- hasPublicGroup :: GroupInfo -> Bool
- hasPublicGroup GroupInfo {groupProfile = GroupProfile {publicGroup}} = isJust publicGroup
--
+@@ -80,6 +79,7 @@
+ import System.Directory (createDirectoryIfMissing, listDirectory, removeFile, renameFile)
+ import System.FilePath (dropExtension, takeExtension, (</>))
+ import qualified URI.ByteString as U
++import UnliftIO.Exception (SomeException, catch)
+ import UnliftIO.STM
+
+ data WebFileInfo = WebFileInfo

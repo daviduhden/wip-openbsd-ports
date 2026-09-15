@@ -1,0 +1,8 @@
+# The cargo checksums and sizes were taken from the crates.io release
+# metadata during static analysis; verify with `make checksum` on OpenBSD.
+SHA256 (cargo/glob-0.3.4.tar.gz) = 5OuoXqHQqWapg6zQfe7lZuZzldLZa2+znmK1qDPx6ws=
+SIZE (cargo/glob-0.3.4.tar.gz) = 23511
+SHA256 (cargo/libc-0.2.189.tar.gz) = Pq8+3j/ubbGkwu4JG/iotNzNxtF/ZW+weJbucoZ2EvI=
+SIZE (cargo/libc-0.2.189.tar.gz) = 851502
+SHA256 (sudo-rs-0.2.15.tar.gz) = roV8PN6WKhreK5gffgHPlen6BdXF+V+Uz181OUwb+Jk=
+SIZE (sudo-rs-0.2.15.tar.gz) = 1234018

@@ -74,6 +74,49 @@ make package
 Not every target is always useful for every port, but this is the
 standard order when you are refreshing or validating a port.
 
+## Updating Ports
+
+Ports that use `devel/cargo`, `lang/go` or `devel/cabal` keep generated
+dependency data next to the `Makefile`:
+
+- `editors/msedit` uses `devel/cargo` and `crates.inc`.
+- `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/shfmt`
+  and `net/xd-torrent` use `lang/go` and `modules.inc`.
+- `net/simplexmq` and `net/simplex-chat` use `devel/cabal` and
+  `cabal.inc`.
+
+Never edit these files by hand. Regenerating them needs network access,
+while the regular build must stay offline. The short form for each
+module:
+
+```sh
+# devel/cargo, for example editors/msedit
+make clean
+make makesum
+make extract
+make modcargo-gen-crates > /tmp/crates.inc
+cp /tmp/crates.inc crates.inc
+make clean
+make makesum
+make modcargo-gen-crates-licenses > /tmp/crates.inc
+mv /tmp/crates.inc crates.inc
+
+# lang/go, for example net/xd-torrent
+make clean
+make modgo-gen-modules > modules.inc
+make makesum
+
+# devel/cabal, for example net/simplexmq
+make clean
+make makesum
+make cabal-inc
+make makesum
+```
+
+[UPDATE.md](UPDATE.md) has the complete procedure: which version
+variables to bump, how to refresh patches, and how to validate the
+result.
+
 ## Monero
 
 The Monero port is a CMake-based C++ port.
@@ -144,6 +187,41 @@ Notes:
   is Go.
 - `make update-plist` is needed if the binary set or installed
   symlinks change.
+- See [UPDATE.md](UPDATE.md) before bumping the version; it covers the
+  full `modules.inc` regeneration and module checksum workflow.
+
+## MS Edit (editors/msedit)
+
+The MS Edit port is a Rust port that uses the `devel/cargo` module and
+records its crate set in `crates.inc`.
+
+Recommended workflow:
+
+```sh
+cd /usr/ports/editors/msedit
+make clean
+make fetch
+make makesum
+make patch
+make configure
+make build
+make fake
+make update-plist
+make port-lib-depends-check
+make package
+```
+
+Notes:
+
+- `crates.inc` is generated with `make modcargo-gen-crates` and
+  `make modcargo-gen-crates-licenses`; see [UPDATE.md](UPDATE.md) for
+  the update procedure.
+- `MODCARGO_INSTALL` is `No`; the `edit` binary and the license file
+  are installed by the port's own `do-install` target.
+- ICU is loaded with `dlopen()`; `MODCARGO_ENV` pins the library
+  sonames and disables upstream's renaming auto-detection.
+- The port defines its own `do-test` target that exercises the `edit`,
+  `lsh` and `stdext` crates.
 
 ## SimpleXMQ (net/simplexmq)
 
@@ -171,11 +249,15 @@ When upstream releases are updated or `MODCABAL_MANIFEST` drifts:
 ```sh
 cd /usr/ports/net/simplexmq
 make clean
+make makesum
 make cabal-inc
+make makesum
 ```
 
-This updates `distinfo`, `cabal.inc`, and downloads all needed
-packages.
+The first `make makesum` records the new upstream and `DIST_TUPLE`
+checksums; `cabal-inc` then rewrites `cabal.inc`; the second one adds
+the Hackage tarballs from the new manifest to `distinfo`. See
+[UPDATE.md](UPDATE.md) for the complete version-bump procedure.
 
 ### Testing
 
@@ -216,8 +298,13 @@ available when the binary starts.
 ```sh
 cd /usr/ports/net/simplex-chat
 make clean
+make makesum
 make cabal-inc
+make makesum
 ```
+
+See [UPDATE.md](UPDATE.md) for the version variables and patch sets to
+refresh when upstream moves.
 
 ### Testing
 

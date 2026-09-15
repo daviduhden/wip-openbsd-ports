@@ -9,7 +9,7 @@ Index: tests/CoreTests/UtilTests.hs
 +++ tests/CoreTests/UtilTests.hs
 @@ -3,17 +3,48 @@
  module CoreTests.UtilTests where
- 
+
  import AgentTests.FunctionalAPITests ()
 +import Control.Concurrent (killThread)
 +import Control.Concurrent.MVar
@@ -23,7 +23,7 @@ Index: tests/CoreTests/UtilTests.hs
  import Test.Hspec hiding (fit, it)
  import qualified UnliftIO.Exception as UE
  import Util
- 
+
  utilTests :: Spec
  utilTests = do
 +  describe "catchAll" $ do

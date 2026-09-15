@@ -1,0 +1,21 @@
+SPDX-License-Identifier: Apache-2.0 OR MIT
+
+Index: src/pam/mod.rs
+--- src/pam/mod.rs.orig
++++ src/pam/mod.rs
+@@ -22,13 +22,14 @@
+ 
+ #[cfg_attr(target_os = "linux", path = "sys_linuxpam.rs")]
+ #[cfg_attr(target_os = "freebsd", path = "sys_openpam.rs")]
++#[cfg_attr(target_os = "openbsd", path = "sys_openpam.rs")]
+ #[allow(nonstandard_style)]
+ pub mod sys;
+ 
+ #[link(name = "pam")]
+ unsafe extern "C" {}
+ 
+-#[cfg(target_os = "freebsd")]
++#[cfg(any(target_os = "freebsd", target_os = "openbsd"))]
+ const PAM_DATA_SILENT: std::ffi::c_int = 0;
+ 
+ pub use converse::CLIConverser;

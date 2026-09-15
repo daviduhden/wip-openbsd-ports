@@ -1,0 +1,29 @@
+sudo-rs is a memory-safe implementation of sudo and su written in Rust.
+It provides the sudo and visudo commands (with sudoedit as an alias) and
+a Bourne-compatible reimplementation of the sudoers file syntax,
+including the Defaults, Host_Alias/User_Alias/Runas_Alias/Cmnd_Alias and
+@include/@includedir directives.
+
+This package installs the same files as security/sudo
+(${PREFIX}/bin/sudo, ${PREFIX}/bin/sudoedit, ${PREFIX}/sbin/visudo, the
+manual pages and a sample /etc/sudoers) and declares the matching
+@conflict/@pkgpath annotations, so ports that invoke sudo(8) or
+visudo(8) need no source changes.  The su(1) binary built by upstream
+is not installed, as in security/sudo.
+
+Upstream only supports Linux and FreeBSD, so this port carries a first
+porting patch set: it relaxes the platform guard, selects the existing
+OpenPAM bindings, uses closefrom(2) instead of close_range(2), obtains
+the TTY device and process start time from sysctl(2) instead of /proc or
+FreeBSD's kinfo_proc fields, and replaces the AT_EMPTY_PATH and
+POLLRDHUP interfaces that do not exist on OpenBSD.  The result has not
+been built or tested yet and must be treated as experimental.
+
+sudo-rs always authenticates through PAM.  OpenBSD has no PAM in the
+base system: security/openpam must be installed and a /etc/pam.d/sudo
+service has to be configured.  OpenBSD has no pam_unix(8); password
+authentication normally goes through pam_bsdauth(8) and BSD auth.
+
+Do not use this package as a replacement for security/sudo on production
+systems until the patch set has been built and tested; sudo is a
+privileged (setuid root) program.

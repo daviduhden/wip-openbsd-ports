@@ -7,7 +7,7 @@ to the reply server when the receive queue is already secured, and keep the
 local LET command independent of receive-server ACK retries.
 
 Recheck pending deliveries after retry delays and join replaced queue
-workers so they cannot outlive their store or send deleted messages.
+workers. Avoid retrying cached messages deleted while the server was offline.
 
 Index: src/Simplex/Messaging/Agent.hs
 --- src/Simplex/Messaging/Agent.hs.orig
@@ -28,7 +28,7 @@ Index: src/Simplex/Messaging/Agent.hs
 +import UnliftIO.Concurrent (forkIO, killThread, mkWeakThreadId, threadDelay)
  import qualified UnliftIO.Exception as E
  import UnliftIO.STM
- 
+
 @@ -273,25 +274,28 @@
        liftIO $ checkServers "SMP" smp >> checkServers "XFTP" xftp
        currentTs <- liftIO getCurrentTime
@@ -73,10 +73,10 @@ Index: src/Simplex/Messaging/Agent.hs
 +      a `E.catchAny` \e -> whenM (readTVarIO active) $ do
          logError $ "Agent thread " <> name <> " crashed: " <> tshow e
          atomically $ writeTBQueue subQ ("", "", AEvt SAEConn $ ERR $ CRITICAL True $ show e)
- 
+
 @@ -306,14 +310,26 @@
      liftIO $ threadDelay' int
- 
+
  saveServersStats :: AgentClient -> AM' ()
 -saveServersStats c@AgentClient {subQ, smpServersStats, xftpServersStats, ntfServersStats} = do
 +saveServersStats = saveServersStats_ False
@@ -102,13 +102,13 @@ Index: src/Simplex/Messaging/Agent.hs
 +    else tryAllErrors' (withStore' c (`updateServersStats` stats)) >>= \case
 +      Left e -> atomically $ writeTBQueue subQ ("", "", AEvt SAEConn $ ERR $ INTERNAL $ show e)
 +      Right () -> pure ()
- 
+
  restoreServersStats :: AgentClient -> AM' ()
  restoreServersStats c@AgentClient {smpServersStats, xftpServersStats, ntfServersStats, srvStatsStartedAt} = do
 @@ -333,17 +349,45 @@
    closeXFTPAgent xa
    logConnection c False
- 
+
 --- only used in the tests
 +-- Stop all agent threads, including the statistics finalizer, before its
 +-- owner closes or replaces the store. Unlike dispose, this permits restart.
@@ -133,7 +133,7 @@ Index: src/Simplex/Messaging/Agent.hs
 +disposeAgentClient c@AgentClient {agentEnv = Env {store}} = withAgentLifecycle c $ do
 +  stopAgentClient_ c
 +  closeDBStore store
- 
+
  resumeAgentClient :: AgentClient -> IO ()
 -resumeAgentClient c = atomically $ writeTVar (active c) True
 -{-# INLINE resumeAgentClient #-}
@@ -156,7 +156,7 @@ Index: src/Simplex/Messaging/Agent.hs
 +withAgentLifecycle :: AgentClient -> IO a -> IO a
 +withAgentLifecycle AgentClient {acLifecycleLock} =
 +  E.bracket_ (atomically $ takeTMVar acLifecycleLock) (atomically $ putTMVar acLifecycleLock ()) . E.mask_
- 
+
  createUser :: AgentClient -> Bool -> NonEmpty (ServerCfg 'PSMP) -> NonEmpty (ServerCfg 'PXFTP) -> AE UserId
  createUser c = withAgentEnv c .:. createUser' c
 @@ -886,8 +930,10 @@
@@ -170,7 +170,7 @@ Index: src/Simplex/Messaging/Agent.hs
 +      -- It must not wait behind an ACK to an unavailable receive server.
 +      enqueueCommand c corrId connId Nothing $ AClientCommand $ LET confId ownConnInfo
      _ -> throwE $ CMD PROHIBITED "allowConnectionAsync"
- 
+
  -- TODO
 @@ -1474,9 +1520,15 @@
  allowConnection' c connId confId ownConnInfo = withConnLock c connId "allowConnection" $ do
@@ -188,7 +188,7 @@ Index: src/Simplex/Messaging/Agent.hs
 +            _ -> server
 +      enqueueCommand c "" connId (Just commandServer) . AInternalCommand $ ICAllowSecure rcvId senderKey
      _ -> throwE $ CMD PROHIBITED "allowConnection"
- 
+
  -- | Accept contact (ACPT command) in Reader monad
 @@ -1907,7 +1959,9 @@
            tryCommand . withNextSrv c userId storageSrvs triedHosts [qServer q] $ \srv -> do

@@ -28,7 +28,7 @@ Index: tests/AgentTests/SQLiteTests.hs
  import qualified Simplex.Messaging.Crypto as C
 @@ -67,11 +68,10 @@
  withStore = before createStore' . after removeStore
- 
+
  withStore2 :: SpecWith (DBStore, DBStore) -> Spec
 -withStore2 = before connect2 . after (removeStore . fst)
 +withStore2 = before connect2 . after (\(s1, s2) -> closeDBStore s2 `E.finally` removeStore s1)
@@ -39,9 +39,9 @@ Index: tests/AgentTests/SQLiteTests.hs
 +    connect2 = E.bracketOnError createStore' removeStore $ \s1@DBStore {dbFilePath} -> do
        s2 <- connectSQLiteStore $ DBOpts dbFilePath [] "" False False DB.TQOff
        pure (s1, s2)
- 
+
 @@ -89,11 +89,8 @@
- 
+
  removeStore :: DBStore -> IO ()
  removeStore db@DBStore {dbFilePath} = do
 -  close db
@@ -50,7 +50,7 @@ Index: tests/AgentTests/SQLiteTests.hs
 -  where
 -    close :: DBStore -> IO ()
 -    close st = mapM_ DB.close =<< tryTakeMVar (dbConnection st)
- 
+
  storeTests :: Spec
  storeTests = do
 @@ -103,6 +100,20 @@

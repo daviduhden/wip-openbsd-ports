@@ -3,15 +3,15 @@ SPDX-License-Identifier: Apache-2.0
 Index: Main/UserInterface.cpp
 --- Main/UserInterface.cpp.orig
 +++ Main/UserInterface.cpp
-@@ -529,7 +529,11 @@
- 			{
- 				virtual void operator() (string &str)
- 				{
+@@ -40,7 +40,11 @@
+ 		public:
+ 		virtual void operator() (string &str)
+ 		{
 +#ifdef TC_OPENBSD
-+					throw ElevationFailed (SRC_POS, "doas", 1, "");
++			throw ElevationFailed (SRC_POS, "doas", 1, "");
 +#else
- 					throw ElevationFailed (SRC_POS, "sudo", 1, "");
+ 			throw ElevationFailed (SRC_POS, "sudo", 1, "");
 +#endif
- 				}
- 			};
+ 		}
+ 	};
  

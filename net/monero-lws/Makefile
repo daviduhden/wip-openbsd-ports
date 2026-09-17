@@ -2,12 +2,10 @@ COMMENT = Monero Light Wallet Server
 
 GH_ACCOUNT = vtnerd
 GH_PROJECT = monero-lws
-GH_COMMIT = 89e5fdcbb9c8ae2e640b9a874f10a37779984abe
+GH_TAGNAME = v1.0.2
 
 VERSION = 0.18.5.1
-MONERO_SERIES = ${VERSION:C/\.[0-9]+\.[0-9]+$//}
-LWS_VERSION = release-v1.0_${MONERO_SERIES}
-DISTNAME = ${GH_PROJECT}-${LWS_VERSION}
+DISTNAME = ${GH_PROJECT}-${GH_TAGNAME:S/^v//}
 PKGNAME = monero-lws-${VERSION}
 
 DISTFILES = ${GH_DISTFILE} \
@@ -16,7 +14,7 @@ MONERO_DIST = monero-source-v${VERSION}.tar.bz2
 SITES = ${SITES_GITHUB}
 SITES.${MONERO_DIST} = https://downloads.getmonero.org/cli/
 
-WRKDIST = ${WRKDIR}/${GH_PROJECT}-${GH_COMMIT}
+WRKDIST = ${WRKDIR}/${DISTNAME}
 MONERO_WRKSRC = ${WRKDIR}/monero-source-v${VERSION}
 MONERO_WRKBUILD = ${WRKDIR}/monero-build
 LWS_WRKBUILD = ${WRKDIR}/lws-build

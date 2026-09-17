@@ -1,16 +1,20 @@
 COMMENT =		Rust implementation of the Unix core utilities
 
-V =			0.11.0
+V =			0.12.0
 DISTNAME =		coreutils-${V}
 PKGNAME =		uutils-coreutils-${V}
 CATEGORIES =		sysutils
 
 HOMEPAGE =		https://github.com/uutils/coreutils/
 
+GH_ACCOUNT =		uutils
+GH_PROJECT =		coreutils
+GH_TAGNAME =		${V}
+
 # MIT
 PERMIT_PACKAGE =	Yes
 
-WANTLIB +=		${MODCARGO_WANTLIB} m onig
+WANTLIB +=		${MODCARGO_WANTLIB} m
 
 # blake3 ships C and assembly sources that are compiled with the C compiler.
 COMPILER =		base-clang ports-gcc
@@ -19,9 +23,6 @@ COMPILER_LANGS =	c
 MODULES =		devel/cargo
 CONFIGURE_STYLE =	cargo
 SEPARATE_BUILD =	Yes
-
-# expr(1) uses the system Oniguruma through the onig crate.
-LIB_DEPENDS =		textproc/oniguruma
 
 # "unix" selects the upstream feat_os_unix utility set.  Default features are
 # disabled to match upstream's multicall build (GNUmakefile, MULTICALL=y):

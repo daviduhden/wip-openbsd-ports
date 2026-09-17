@@ -1,12 +1,14 @@
+SPDX-License-Identifier: Apache-2.0
+
 Index: Setup/FreeBSD/veracrypt.desktop
 --- Setup/FreeBSD/veracrypt.desktop.orig
 +++ Setup/FreeBSD/veracrypt.desktop
-@@ -3,7 +3,7 @@ Encoding=UTF-8
- Name=VeraCrypt
- GenericName=VeraCrypt
- Comment=VeraCrypt
--Exec=/usr/bin/veracrypt
-+Exec=${TRUEPREFIX}/bin/veracrypt
+@@ -4,7 +4,7 @@
+ GenericName=VeraCrypt volume manager
+ Comment=Create and mount VeraCrypt encrypted volumes
  Icon=veracrypt
+-Exec=/usr/bin/veracrypt %f
++Exec=${TRUEPREFIX}/bin/veracrypt %f
+ Categories=Security;Utility;Filesystem
+ Keywords=encryption,filesystem
  Terminal=false
- Type=Application

@@ -2,12 +2,11 @@ BROKEN-sparc64=	relocation truncated to fit: R_SPARC_GOT13
 
 COMMENT=		free open source disk encryption software
 
-V=			1.25.9
+V=			1.26.29
 DISTNAME=		VeraCrypt_${V}_Source
 PKGNAME=		veracrypt-${V}
 CATEGORIES=		security
 HOMEPAGE=		https://www.veracrypt.fr/
-REVISION=		2
 
 MAINTAINER=		Tietoturvamies <main@tietoturvamies.fi>
 
@@ -18,7 +17,7 @@ SITES=			https://launchpad.net/veracrypt/trunk/${V}/+download/
 EXTRACT_SUFX=		.tar.bz2
 FIX_EXTRACT_PERMISSIONS=Yes
 
-# C++11
+# C++14
 COMPILER=		base-clang ports-gcc
 
 CXXFLAGS_base-clang =	-std=c++14
@@ -26,11 +25,13 @@ CXXFLAGS_base-clang =	-std=c++14
 WANTLIB += ${COMPILER_LIBCXX} c m fuse wx_baseu-3.2 wx_gtk3u_core-3.2
 
 BUILD_DEPENDS=		devel/yasm \
+			security/pcsc-lite \
 			sysutils/coreutils
 
 LIB_DEPENDS=		x11/wxWidgets
 
-RUN_DEPENDS=		devel/desktop-file-utils
+RUN_DEPENDS=		devel/desktop-file-utils \
+			security/pcsc-lite
 
 WRKDIST=		${WRKDIR}/src
 USE_GMAKE=		Yes
@@ -57,7 +58,7 @@ do-install:
 	${INSTALL_DATA} ${WRKSRC}/Setup/FreeBSD/veracrypt.desktop \
 		${PREFIX}/share/applications
 	${INSTALL_DATA_DIR} ${PREFIX}/share/pixmaps/
-	${INSTALL_DATA} ${WRKSRC}/Resources/Icons/VeraCrypt-48x48.xpm \
-		${PREFIX}/share/pixmaps/veracrypt.xpm
+	${INSTALL_DATA} ${WRKSRC}/Resources/Icons/VeraCrypt-48x48.png \
+		${PREFIX}/share/pixmaps/veracrypt.png
 
 .include <bsd.port.mk>

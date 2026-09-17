@@ -18,7 +18,7 @@ Index: Core/Unix/CoreService.cpp
  #include "Platform/FileStream.h"
  #include "Platform/MemoryStream.h"
  #include "Platform/Serializable.h"
-@@ -27,6 +35,24 @@
+@@ -28,6 +36,24 @@
  
  namespace VeraCrypt
  {
@@ -40,10 +40,10 @@ Index: Core/Unix/CoreService.cpp
 +	}
 +#endif
 +
- 	template <class T>
- 	unique_ptr <T> CoreService::GetResponse ()
+ #ifdef TC_MACOSX
+ 	static bool IsMacOSXDevicePathWithPrefix (const string &path, const string &prefix)
  	{
-@@ -88,6 +114,10 @@
+@@ -149,6 +175,10 @@
  
  	void CoreService::ProcessRequests (int inputFD, int outputFD)
  	{
@@ -54,7 +54,19 @@ Index: Core/Unix/CoreService.cpp
  		try
  		{
  			Core = move_ptr(CoreDirect);
-@@ -390,6 +420,36 @@
+@@ -415,7 +445,11 @@
+ 					// This approach also works on newer macOS versions (12.0 and later).
+ 					std::string errorMsg;
+ 
++#ifdef TC_OPENBSD
++					string sudoAbsolutePath = Process::FindSystemBinary("doas", errorMsg);
++#else
+ 					string sudoAbsolutePath = Process::FindSystemBinary("sudo", errorMsg);
++#endif
+ 					if (sudoAbsolutePath.empty())
+ 						throw SystemException(SRC_POS, errorMsg);
+ 
+@@ -507,6 +541,36 @@
  
  	void CoreService::StartElevated (const CoreServiceRequest &request)
  	{
@@ -91,14 +103,25 @@ Index: Core/Unix/CoreService.cpp
  		unique_ptr <Pipe> inPipe (new Pipe());
  		unique_ptr <Pipe> outPipe (new Pipe());
  		Pipe errPipe;
-@@ -411,7 +471,57 @@
- 					if (appPath.empty())
- 						appPath = "veracrypt";
+@@ -522,7 +586,11 @@
+ 				{
+ 					// Throw exception if sudo is not found in secure locations
+ 					std::string errorMsg;
++#ifdef TC_OPENBSD
++					string sudoPath = Process::FindSystemBinary("doas", errorMsg);
++#else
+ 					string sudoPath = Process::FindSystemBinary("sudo", errorMsg);
++#endif
+ 					if (sudoPath.empty())
+ 						throw SystemException(SRC_POS, errorMsg);
  
--					const char *args[] = { "sudo", "-S", "-p", "", appPath.c_str(), TC_CORE_SERVICE_CMDLINE_OPTION, nullptr };
+@@ -551,7 +619,51 @@
+ 					throw_sys_if (dup2 (outPipe->GetWriteFD(), STDOUT_FILENO) == -1);
+ 					throw_sys_if (dup2 (errPipe.GetWriteFD(), STDERR_FILENO) == -1);
+ 
++#ifdef TC_OPENBSD
 +					const char *args[8];
 +
-+#ifdef TC_OPENBSD
 +					if (!authTerminalPath.empty())
 +					{
 +						throw_sys_if (setsid () == -1);
@@ -125,32 +148,26 @@ Index: Core/Unix/CoreService.cpp
 +
 +						close (authFd);
 +
-+						args[0] = "/usr/bin/doas";
++						args[0] = sudoPath.c_str();
 +						args[1] = appPath.c_str();
 +						args[2] = TC_CORE_SERVICE_CMDLINE_OPTION;
 +						args[3] = nullptr;
 +					}
 +					else
 +					{
-+						args[0] = "/usr/bin/doas";
++						args[0] = sudoPath.c_str();
 +						args[1] = "-n";
 +						args[2] = appPath.c_str();
 +						args[3] = TC_CORE_SERVICE_CMDLINE_OPTION;
 +						args[4] = nullptr;
 +					}
 +#else
-+					args[0] = "sudo";
-+					args[1] = "-S";
-+					args[2] = "-p";
-+					args[3] = "";
-+					args[4] = appPath.c_str();
-+					args[5] = TC_CORE_SERVICE_CMDLINE_OPTION;
-+					args[6] = nullptr;
+ 					const char *args[] = { sudoPath.c_str(), "-S", "-p", "", appPath.c_str(), TC_CORE_SERVICE_CMDLINE_OPTION, nullptr };
 +#endif
  					execvp (args[0], ((char* const*) args));
  					throw SystemException (SRC_POS, args[0]);
  				}
-@@ -461,7 +571,17 @@
+@@ -601,7 +713,17 @@
  #if defined(TC_LINUX )
  		Thread::Sleep (1000); // wait 1 second for the forked sudo to start
  #endif
@@ -168,7 +185,7 @@ Index: Core/Unix/CoreService.cpp
  
  		burn (&adminPassword.front(), adminPassword.size());
  
-@@ -527,7 +647,11 @@
+@@ -667,7 +789,11 @@
  					Thread thread;
  					thread.Start (new WaitFunctor (forkedPid));
  
@@ -180,7 +197,7 @@ Index: Core/Unix/CoreService.cpp
  				}
  
  				waitRes = waitpid (forkedPid, &status, 0);
-@@ -560,11 +684,18 @@
+@@ -700,11 +826,18 @@
  			if (!errOutput.empty())
  				strErrOutput.insert (strErrOutput.begin(), errOutput.begin(), errOutput.end());
  
@@ -199,7 +216,7 @@ Index: Core/Unix/CoreService.cpp
  		}
  
  		throw_sys_if (fcntl (outPipe->GetReadFD(), F_SETFL, 0) == -1);
-@@ -578,6 +709,17 @@
+@@ -718,6 +851,17 @@
  
  		AdminInputPipe = move_ptr(inPipe);
  		AdminOutputPipe = move_ptr(outPipe);

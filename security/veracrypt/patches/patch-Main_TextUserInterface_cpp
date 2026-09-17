@@ -3,7 +3,7 @@ SPDX-License-Identifier: Apache-2.0
 Index: Main/TextUserInterface.cpp
 --- Main/TextUserInterface.cpp.orig
 +++ Main/TextUserInterface.cpp
-@@ -810,7 +810,13 @@
+@@ -930,7 +930,13 @@
  		{
  			if (Preferences.NonInteractive)
  			{
@@ -17,19 +17,19 @@ Index: Main/TextUserInterface.cpp
  			}
  			else
  			{
-@@ -837,6 +843,8 @@
+@@ -971,6 +977,8 @@
  				}
  #elif defined (TC_FREEBSD) || defined (TC_SOLARIS)
- 				ShowInfo (L" 3) UFS"); filesystems.push_back (VolumeCreationOptions::FilesystemType::UFS);
+ 				ShowInfo (wxString::Format (L" %li) %s", filesystems.size() + 1, "UFS")); filesystems.push_back (VolumeCreationOptions::FilesystemType::UFS);
 +#elif defined (TC_OPENBSD)
-+				ShowInfo (L" 3) FFS"); filesystems.push_back (VolumeCreationOptions::FilesystemType::FFS);
++				ShowInfo (wxString::Format (L" %li) %s", filesystems.size() + 1, "FFS")); filesystems.push_back (VolumeCreationOptions::FilesystemType::FFS);
  #endif
  
- 				options->Filesystem = filesystems[AskSelection (filesystems.size(), 2) - 1];
-@@ -950,6 +958,13 @@
- 			if (virtualDeviceStr.find ("/dev/rdisk") != 0)
- 				virtualDevice = "/dev/r" + virtualDeviceStr.substr (5);
- #endif
+ 				ssize_t defaultFilesystem = fatAvailable ? 2 : 1;
+@@ -1133,6 +1141,13 @@
+ 			if (!useElevatedAPFSFormatter)
+ 				PrepareMacOSXFormatterDevice (virtualDevice, changedDeviceOwners);
+ #else
 +#ifdef TC_OPENBSD
 +			// newfs(8) requires the raw character device; the block device
 +			// exposed by the loop device driver cannot be used.
@@ -37,6 +37,6 @@ Index: Main/TextUserInterface.cpp
 +			if (virtualDeviceStr.find ("/dev/vnd") == 0)
 +				virtualDevice = "/dev/r" + virtualDeviceStr.substr (5);
 +#endif
+ 			UserId origDeviceOwner ((uid_t) -1);
+ 
  			try
- 			{
- 				File file;

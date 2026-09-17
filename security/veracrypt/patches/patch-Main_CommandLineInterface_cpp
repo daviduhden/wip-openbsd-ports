@@ -3,10 +3,10 @@ SPDX-License-Identifier: Apache-2.0
 Index: Main/CommandLineInterface.cpp
 --- Main/CommandLineInterface.cpp.orig
 +++ Main/CommandLineInterface.cpp
-@@ -337,6 +337,9 @@
- #elif defined (TC_FREEBSD) || defined (TC_SOLARIS)
- 				else if (str.IsSameAs (L"UFS", false))
- 					ArgFilesystem = VolumeCreationOptions::FilesystemType::UFS;
+@@ -415,6 +415,9 @@
+ 					ArgFilesystem = VolumeCreationOptions::FilesystemType::NTFS;
+ 				else if (str.IsSameAs (L"exFAT", false))
+ 					ArgFilesystem = VolumeCreationOptions::FilesystemType::exFAT;
 +#elif defined (TC_OPENBSD)
 +				else if (str.IsSameAs (L"FFS", false))
 +					ArgFilesystem = VolumeCreationOptions::FilesystemType::FFS;

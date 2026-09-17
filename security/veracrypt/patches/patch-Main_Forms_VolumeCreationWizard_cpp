@@ -3,10 +3,10 @@ SPDX-License-Identifier: Apache-2.0
 Index: Main/Forms/VolumeCreationWizard.cpp
 --- Main/Forms/VolumeCreationWizard.cpp.orig
 +++ Main/Forms/VolumeCreationWizard.cpp
-@@ -498,6 +498,13 @@
- 					if (virtualDeviceStr.find ("/dev/rdisk") != 0)
- 						virtualDevice = "/dev/r" + virtualDeviceStr.substr (5);
- #endif
+@@ -870,6 +870,13 @@
+ 					if (!useElevatedAPFSFormatter)
+ 						PrepareMacOSXFormatterDevice (virtualDevice, changedDeviceOwners);
+ #else
 +#ifdef TC_OPENBSD
 +					// newfs(8) requires the raw character device; the block
 +					// device exposed by the loop device driver cannot be used.
@@ -14,6 +14,6 @@ Index: Main/Forms/VolumeCreationWizard.cpp
 +					if (virtualDeviceStr.find ("/dev/vnd") == 0)
 +						virtualDevice = "/dev/r" + virtualDeviceStr.substr (5);
 +#endif
+ 					UserId origDeviceOwner ((uid_t) -1);
+ 
  					try
- 					{
- 						File file;

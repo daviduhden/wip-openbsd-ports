@@ -1,0 +1,4 @@
+httpx2 is a fully featured HTTP client for Python 3. It provides both
+synchronous and asynchronous request APIs, connection pooling, HTTP/1.1
+and HTTP/2 support, redirects, timeouts, proxies and pluggable transports
+built on top of httpcore2.

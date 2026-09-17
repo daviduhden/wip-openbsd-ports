@@ -1,0 +1,4 @@
+OpenTelemetry is a collection of tools, APIs and SDKs to instrument,
+generate, collect and export telemetry data (metrics, logs and traces)
+to help analyse software performance and behaviour. This package
+provides the OpenTelemetry API.

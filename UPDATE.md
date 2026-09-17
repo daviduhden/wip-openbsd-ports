@@ -5,7 +5,7 @@ dependency-tracking port modules:
 
 | Module | Ports | Generated file |
 | --- | --- | --- |
-| `devel/cargo` | `editors/msedit` | `crates.inc` |
+| `devel/cargo` | `editors/msedit`, `converters/py-html-to-markdown`, `devel/py-litellm`, `textproc/py-tiktoken` | `crates.inc` |
 | `lang/go` | `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/shfmt`, `net/xd-torrent` | `modules.inc` |
 | `devel/cabal` | `net/simplexmq`, `net/simplex-chat` | `cabal.inc` |
 

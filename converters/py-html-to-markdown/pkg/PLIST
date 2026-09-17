@@ -1,0 +1,27 @@
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown-${MODPY_DISTV}.dist-info/
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown-${MODPY_DISTV}.dist-info/METADATA
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown-${MODPY_DISTV}.dist-info/RECORD
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown-${MODPY_DISTV}.dist-info/WHEEL
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown-${MODPY_DISTV}.dist-info/licenses/
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown-${MODPY_DISTV}.dist-info/licenses/LICENSE
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown-${MODPY_DISTV}.dist-info/sboms/
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown-${MODPY_DISTV}.dist-info/sboms/html-to-markdown-py.cyclonedx.json
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/__init__.py
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/${MODPY_PYCACHE}/
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/${MODPY_PYCACHE}api.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/${MODPY_PYCACHE}api.${MODPY_PYC_MAGIC_TAG}pyc
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/${MODPY_PYCACHE}exceptions.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/${MODPY_PYCACHE}exceptions.${MODPY_PYC_MAGIC_TAG}pyc
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/${MODPY_PYCACHE}options.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/${MODPY_PYCACHE}options.${MODPY_PYC_MAGIC_TAG}pyc
+@so lib/python${MODPY_VERSION}/site-packages/html_to_markdown/_html_to_markdown${MODPY_ABI3SO}.so
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/_html_to_markdown.pyi
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/api.py
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/bin/
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/bin/html-to-markdown
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/exceptions.py
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/options.py
+lib/python${MODPY_VERSION}/site-packages/html_to_markdown/py.typed

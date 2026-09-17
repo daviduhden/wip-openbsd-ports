@@ -1,8 +1,9 @@
 # Building and Testing These Ports on OpenBSD
 
 Ports use the same `category/port` layout as the OpenBSD ports tree.
-The categories currently present are `devel`, `editors`, `games`,
-`graphics`, `multimedia`, `net`, `sysutils` and `x11`.
+The categories currently present are `converters`, `devel`, `editors`,
+`games`, `graphics`, `multimedia`, `net`, `sysutils`, `textproc`, `www`
+and `x11`.
 List the installable paths without checking out or changing anything:
 
 ```sh
@@ -80,6 +81,9 @@ Ports that use `devel/cargo`, `lang/go` or `devel/cabal` keep generated
 dependency data next to the `Makefile`:
 
 - `editors/msedit` uses `devel/cargo` and `crates.inc`.
+- `converters/py-html-to-markdown`, `devel/py-litellm` and
+  `textproc/py-tiktoken` use `devel/cargo` through `lang/python` and
+  `crates.inc`.
 - `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/shfmt`
   and `net/xd-torrent` use `lang/go` and `modules.inc`.
 - `net/simplexmq` and `net/simplex-chat` use `devel/cabal` and

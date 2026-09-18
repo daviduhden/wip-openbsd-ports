@@ -81,6 +81,10 @@ Ports that use `devel/cargo`, `lang/go` or `devel/cabal` keep generated
 dependency data next to the `Makefile`:
 
 - `editors/msedit` uses `devel/cargo` and `crates.inc`.
+- `sysutils/uutils` uses `devel/cargo` and `crates.inc`, but builds
+  several independent uutils projects, so its crate list is the union
+  over every project `Cargo.lock` and is generated with
+  `make uutils-gen-crates` instead of `make modcargo-gen-crates`.
 - `converters/py-html-to-markdown`, `devel/py-litellm` and
   `textproc/py-tiktoken` use `devel/cargo` through `lang/python` and
   `crates.inc`.
@@ -116,6 +120,10 @@ make makesum
 make cabal-inc
 make makesum
 ```
+
+For `sysutils/uutils`, replace the `make modcargo-gen-crates` step with
+`make uutils-gen-crates` (the module target only understands one
+`Cargo.lock`); the rest of the sequence is unchanged.
 
 [UPDATE.md](UPDATE.md) has the complete procedure: which version
 variables to bump, how to refresh patches, and how to validate the

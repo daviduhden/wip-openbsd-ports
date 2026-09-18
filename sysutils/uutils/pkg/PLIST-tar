@@ -1,0 +1,3 @@
+@conflict gtar-*
+@pkgpath archivers/gtar
+@bin bin/gtar

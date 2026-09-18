@@ -1,0 +1,38 @@
+SPDX-License-Identifier: MIT
+
+Index: brush-core/src/sys/unix/signal.rs
+--- brush-core/src/sys/unix/signal.rs.orig
++++ brush-core/src/sys/unix/signal.rs
+@@ -92,7 +92,7 @@ pub(crate) fn poll_for_stopped_children() -> Result<bool, error::Error> {
+     Ok(found_stopped)
+ }
+ 
+-#[cfg(not(target_os = "macos"))]
++#[cfg(not(any(target_os = "macos", target_os = "openbsd")))]
+ fn waitid_all(
+     flags: nix::sys::wait::WaitPidFlag,
+ ) -> Result<nix::sys::wait::WaitStatus, nix::errno::Errno> {
+@@ -101,11 +101,11 @@ fn waitid_all(
+ 
+ //
+ // N.B. These functions were mostly copied from nix::sys::wait (https://github.com/nix-rust/nix, MIT license)
+-// to enable use of the `waitid` call on macOS. Ideally nix would expose it on macOS and we would
+-// remove this code.
++// to enable use of the `waitid` call on macOS and OpenBSD. Ideally nix would expose it on those
++// platforms and we would remove this code.
+ //
+ 
+-#[cfg(target_os = "macos")]
++#[cfg(any(target_os = "macos", target_os = "openbsd"))]
+ fn waitid_all(
+     flags: nix::sys::wait::WaitPidFlag,
+ ) -> Result<nix::sys::wait::WaitStatus, nix::errno::Errno> {
+@@ -125,7 +125,7 @@ fn waitid_all(
+     siginfo_to_wait_status(siginfo)
+ }
+ 
+-#[cfg(target_os = "macos")]
++#[cfg(any(target_os = "macos", target_os = "openbsd"))]
+ fn siginfo_to_wait_status(
+     siginfo: nix::libc::siginfo_t,
+ ) -> Result<nix::sys::wait::WaitStatus, nix::errno::Errno> {

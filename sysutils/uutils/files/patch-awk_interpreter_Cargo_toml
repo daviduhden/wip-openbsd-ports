@@ -1,0 +1,17 @@
+SPDX-License-Identifier: MIT OR Apache-2.0
+
+Use the indexmap-allocator-api checkout fetched by DIST_TUPLE instead of
+resolving the git dependency from the network at build time.
+
+Index: interpreter/Cargo.toml
+--- interpreter/Cargo.toml.orig
++++ interpreter/Cargo.toml
+@@ -25,7 +25,7 @@
+ # I'm not particularly happy about this, but it's crucial for performance, and
+ # I have audited the two commits. It's pinned to that hash to avoid possible
+ # supply-chain attacks. Hopefully upstream maintainers will change their mind.
+-indexmap-allocator-api = { git = 'https://github.com/Hans-Halverson/indexmap-allocator-api.git', rev = "36852f985c01fb9f58f2d9e510655ca1dbb1f4d0" }
++indexmap-allocator-api = { path = "../../indexmap-allocator-api" }
+ 
+ [lints]
+ workspace = true

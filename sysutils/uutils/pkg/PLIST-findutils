@@ -1,0 +1,6 @@
+@conflict findutils-*
+@pkgpath misc/findutils
+@bin bin/gfind
+@bin bin/glocate
+@bin bin/gupdatedb
+@bin bin/gxargs

@@ -1,0 +1,3 @@
+@conflict gawk-*
+@pkgpath lang/gawk
+@bin bin/gawk

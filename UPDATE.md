@@ -5,7 +5,7 @@ dependency-tracking port modules:
 
 | Module | Ports | Generated file |
 | --- | --- | --- |
-| `devel/cargo` | `editors/msedit`, `converters/py-html-to-markdown`, `devel/py-litellm`, `textproc/py-tiktoken` | `crates.inc` |
+| `devel/cargo` | `editors/msedit`, `converters/py-html-to-markdown`, `devel/py-litellm`, `textproc/py-tiktoken`, `sysutils/uutils` | `crates.inc` |
 | `lang/go` | `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/shfmt`, `net/xd-torrent` | `modules.inc` |
 | `devel/cabal` | `net/simplexmq`, `net/simplex-chat` | `cabal.inc` |
 
@@ -39,6 +39,7 @@ stay offline and must reproduce the build from `distinfo` alone.
 
    ```sh
    make clean=all
+   make extract
    make patch
    make configure
    make build
@@ -70,12 +71,15 @@ Regenerate the crate list:
 ```sh
 cd /usr/ports/editors/msedit
 make clean=all
-make makesum
 make extract
+make patch
+make makesum
 make modcargo-gen-crates
 make modcargo-gen-crates > /tmp/crates.inc
 cp /tmp/crates.inc crates.inc
 make clean=all
+make extract
+make patch
 make makesum
 make modcargo-gen-crates-licenses
 make modcargo-gen-crates-licenses > /tmp/crates.inc
@@ -97,6 +101,13 @@ Notes:
 - `make modcargo-metadata` regenerates the vendored crate metadata
   after manual crate changes; the wrapper target runs it as the build
   user.
+- `sysutils/uutils` builds several uutils projects in one port, so its
+  `crates.inc` is the union over all of their `Cargo.lock` files.
+  Replace the `make modcargo-gen-crates` step with
+  `make uutils-gen-crates`; the license pass and the rest of the
+  sequence do not change. Also refresh the `*_V`/`*_COMMIT` variables
+  for each project and the `DIST_TUPLE` entries that back the tar and
+  awk git dependencies.
 - If a dependency must stay at a version newer than what upstream
   pins, list it in `MODCARGO_CRATES_UPDATE`; the module runs
   `cargo update --package` for each entry during configure.
@@ -125,6 +136,8 @@ Regenerate the module list:
 ```sh
 cd /usr/ports/net/xd-torrent
 make clean=all
+make extract
+make patch
 make modgo-gen-modules
 make modgo-gen-modules > modules.inc
 make makesum
@@ -183,9 +196,13 @@ Regenerate the manifest:
 ```sh
 cd /usr/ports/net/simplexmq
 make clean=all
+make extract
+make patch
 make makesum
 make cabal-inc
 make clean=all
+make extract
+make patch
 make makesum
 ```
 

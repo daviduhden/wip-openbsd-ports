@@ -1,0 +1,3 @@
+@conflict gsed-*
+@pkgpath textproc/gsed
+@bin bin/gsed

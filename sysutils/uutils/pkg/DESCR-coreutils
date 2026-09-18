@@ -14,7 +14,7 @@ The GNU package must not be installed at the same time.
 Because the file names and locations are identical, ports that invoke
 the GNU g*(1) commands need no source changes to use this package;
 their build dependency on sysutils/coreutils only has to be pointed at
-sysutils/uutils-coreutils.
+sysutils/uutils,-coreutils.
 
 The multicall binary itself is installed as
 ${PREFIX}/libexec/uutils/coreutils.  Utility names that GNU coreutils

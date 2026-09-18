@@ -5,10 +5,14 @@ closer join its published action. Foreground requests retry transient
 connection errors against the network; background requests retain the
 cached error and its configured backoff.
 
+Read activity and enqueue disconnection events in the same STM transaction
+so shutdown releases callbacks blocked by a full event queue. Include the
+local XFTP completion worker in worker diagnostics.
+
 Index: src/Simplex/Messaging/Agent/Client.hs
 --- src/Simplex/Messaging/Agent/Client.hs.orig
 +++ src/Simplex/Messaging/Agent/Client.hs
-@@ -195,7 +195,7 @@
+@@ -195,7 +195,7 @@ where
  import Control.Applicative ((<|>))
  import Control.Concurrent (ThreadId, killThread)
  import Control.Concurrent.Async (Async, uninterruptibleCancel)
@@ -17,7 +21,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
  import Control.Exception (AsyncException (..), BlockedIndefinitelyOnSTM (..))
  import Control.Logger.Simple
  import Control.Monad
-@@ -316,7 +316,7 @@
+@@ -316,7 +316,7 @@ import Simplex.Messaging.Version
  import System.Mem.Weak (Weak, deRefWeak)
  import System.Random (randomR)
  import UnliftIO (mapConcurrently, timeout)
@@ -26,7 +30,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
  import UnliftIO.Concurrent (forkIO, mkWeakThreadId)
  import UnliftIO.Directory (doesFileExist, getTemporaryDirectory, removeFile)
  import qualified UnliftIO.Exception as E
-@@ -339,6 +339,9 @@
+@@ -339,6 +339,9 @@ type XFTPTransportSession = TransportSes
 
  data AgentClient = AgentClient
    { acThread :: TVar (Maybe (Weak ThreadId)),
@@ -36,7 +40,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
      active :: TVar Bool,
      subQ :: TBQueue ATransmission,
      msgQ :: TBQueue (ServerTransmissionBatch SMPVersion ErrorType BrokerMsg),
-@@ -402,8 +405,8 @@
+@@ -402,8 +405,8 @@ getAgentWorker = getAgentWorker' id pure
  {-# INLINE getAgentWorker #-}
 
  getAgentWorker' :: forall a k e m. (Ord k, Show k, AnyError e, MonadUnliftIO m) => (a -> Worker) -> (Worker -> STM a) -> String -> Bool -> AgentClient -> k -> TMap k a -> (a -> ExceptT e m ()) -> m a
@@ -47,7 +51,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    where
      getWorker = TM.lookup key ws
      createWorker = do
-@@ -413,7 +416,7 @@
+@@ -413,7 +416,7 @@ getAgentWorker' toW fromW name hasWork c
      whenExists w
        | hasWork = hasWorkToDo (toW w) $> w
        | otherwise = pure w
@@ -56,7 +60,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
        where
          runWork :: m ()
          runWork = tryAllErrors' (work w) >>= restartOrDelete
-@@ -427,7 +430,7 @@
+@@ -427,7 +430,7 @@ getAgentWorker' toW fromW name hasWork c
          shouldRestart e_ Worker {workerId = wId, doWork, action, restarts} t maxRestarts w'
            | wId == workerId (toW w') = do
                rc <- readTVar restarts
@@ -65,7 +69,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
                checkRestarts isActive $ updateRestartCount t rc
            | otherwise =
                pure False -- there is a new worker in the map, no action
-@@ -453,18 +456,21 @@
+@@ -453,18 +456,21 @@ newWorker :: AgentClient -> STM Worker
  newWorker c = do
    workerId <- stateTVar (workerSeq c) $ \next -> (next, next + 1)
    doWork <- newTMVar () -- new worker is created  with "some work to do" (indicated by () in TMVar)
@@ -73,11 +77,10 @@ Index: src/Simplex/Messaging/Agent/Client.hs
 +  (action, cancelled) <- (,) <$> newTMVar Nothing <*> newTVar False
    restarts <- newTVar $ RestartCount 0 0
 -  pure Worker {workerId, doWork, action, restarts}
--
++  pure Worker {workerId, doWork, action, cancelled, restarts}
+
 -runWorkerAsync :: MonadUnliftIO m => Worker -> m () -> m ()
 -runWorkerAsync Worker {action} work =
-+  pure Worker {workerId, doWork, action, cancelled, restarts}
-+
 +runWorkerAsync :: MonadUnliftIO m => TVar Bool -> Worker -> m () -> m ()
 +runWorkerAsync active Worker {action, cancelled} work =
    E.bracket
@@ -94,7 +97,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
 
  data AgentOperation = AONtfNetwork | AORcvNetwork | AOMsgDelivery | AOSndNetwork | AODatabase
    deriving (Eq, Show)
-@@ -514,6 +520,8 @@
+@@ -514,6 +520,8 @@ newAgentClient clientId InitialAgentServ
        qSize = tbqSize cfg
    proxySessTs <- newTVarIO =<< getCurrentTime
    acThread <- newTVarIO Nothing
@@ -103,7 +106,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    active <- newTVarIO True
    subQ <- newTBQueueIO qSize
    msgQ <- newTBQueueIO qSize
-@@ -554,6 +562,9 @@
+@@ -554,6 +562,9 @@ newAgentClient clientId InitialAgentServ
    return
      AgentClient
        { acThread,
@@ -113,7 +116,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
          active,
          subQ,
          msgQ,
-@@ -677,6 +688,7 @@
+@@ -677,6 +688,7 @@ getSMPServerClient :: AgentClient -> Net
  getSMPServerClient c@AgentClient {active, smpClients, workerSeq} nm tSess = do
    unlessM (readTVarIO active) $ throwE INACTIVE
    ts <- liftIO getCurrentTime
@@ -121,7 +124,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    withGetSessVar workerSeq tSess smpClients ts newClient (waitForProtocolClient c nm tSess smpClients)
    where
      newClient v = do
-@@ -689,6 +701,7 @@
+@@ -689,6 +701,7 @@ getSMPProxyClient c@AgentClient {active,
    proxySrv <- maybe (getNextServer c userId proxySrvs [destSrv]) pure proxySrv_
    ts <- liftIO getCurrentTime
    (tSess, auth) <- atomically $ proxiedTransportSession proxySrv
@@ -129,7 +132,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    withGetSessVar workerSeq tSess smpClients ts (newProxyClient tSess auth ts) (waitForProxyClient tSess auth)
    where
      proxiedTransportSession :: SMPServerWithAuth -> STM (SMPTransportSession, Maybe SMP.BasicAuth)
-@@ -798,7 +811,7 @@
+@@ -798,7 +811,7 @@ smpClientDisconnected c@AgentClient {act
  resubscribeSMPSession :: AgentClient -> SMPTransportSession -> AM' ()
  resubscribeSMPSession c@AgentClient {smpSubWorkers, workerSeq} tSess = do
    ts <- liftIO getCurrentTime
@@ -138,7 +141,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    where
      getWorkerVar ts =
        ifM
-@@ -806,7 +819,7 @@
+@@ -806,7 +819,7 @@ resubscribeSMPSession c@AgentClient {smp
          (pure Nothing) -- prevent race with cleanup and adding pending queues in another call
          (Just <$> getSessVar workerSeq tSess smpSubWorkers ts)
      newSubWorker v = do
@@ -147,7 +150,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
        atomically $ putTMVar (sessionVar v) a
      runSubWorker v = do
        ri <- asks $ reconnectInterval . config
-@@ -844,6 +857,7 @@
+@@ -844,6 +857,7 @@ getNtfServerClient :: AgentClient -> Net
  getNtfServerClient c@AgentClient {active, ntfClients, workerSeq, proxySessTs, presetDomains} nm tSess@(_, srv, _) = do
    unlessM (readTVarIO active) $ throwE INACTIVE
    ts <- liftIO getCurrentTime
@@ -155,23 +158,24 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    withGetSessVar workerSeq tSess ntfClients ts (newProtocolClient c tSess ntfClients connectClient) (waitForProtocolClient c nm tSess ntfClients)
    where
      connectClient :: NtfClientVar -> AM NtfClient
-@@ -858,7 +872,7 @@
+@@ -858,7 +872,8 @@ getNtfServerClient c@AgentClient {active
      clientDisconnected :: NtfClientVar -> NtfClient -> IO ()
      clientDisconnected v client = do
        atomically $ removeSessVar v tSess ntfClients
 -      atomically $ writeTBQueue (subQ c) ("", "", AEvt SAENone $ hostEvent DISCONNECT client)
-+      whenM (readTVarIO active) $ atomically $ writeTBQueue (subQ c) ("", "", AEvt SAENone $ hostEvent DISCONNECT client)
++      -- A full event queue must wake on shutdown as well as on consumption.
++      atomically $ whenM (readTVar active) $ writeTBQueue (subQ c) ("", "", AEvt SAENone $ hostEvent DISCONNECT client)
        logInfo . decodeUtf8 $ "Agent disconnected from " <> showServer srv
 
  getXFTPServerClient :: AgentClient -> XFTPTransportSession -> AM XFTPClient
-@@ -879,8 +893,21 @@
+@@ -879,9 +894,22 @@ getXFTPServerClient c@AgentClient {activ
      clientDisconnected :: XFTPClientVar -> XFTPClient -> IO ()
      clientDisconnected v client = do
        atomically $ removeSessVar v tSess xftpClients
 -      atomically $ writeTBQueue (subQ c) ("", "", AEvt SAENone $ hostEvent DISCONNECT client)
-+      whenM (readTVarIO active) $ atomically $ writeTBQueue (subQ c) ("", "", AEvt SAENone $ hostEvent DISCONNECT client)
++      atomically $ whenM (readTVar active) $ writeTBQueue (subQ c) ("", "", AEvt SAENone $ hostEvent DISCONNECT client)
        logInfo . decodeUtf8 $ "Agent disconnected from " <> showServer srv
-+
+
 +-- Only invalidate failures that predate this explicit request. Callers that
 +-- share an in-flight connection must all observe its result, otherwise they
 +-- could keep invalidating each other's fresh failures and retry indefinitely.
@@ -184,10 +188,11 @@ Index: src/Simplex/Messaging/Agent/Client.hs
 +      Just (Left (e, _)) | temporaryAgentError e -> removeSessVar v key clients
 +      _ -> pure ())
 +  NRMBackground -> pure ()
-
++
  waitForProtocolClient ::
    (ProtocolTypeI (ProtoType msg), ProtocolServerClient v err msg) =>
-@@ -916,10 +943,16 @@
+   AgentClient ->
+@@ -916,10 +944,16 @@ newProtocolClient ::
  newProtocolClient c tSess@(userId, srv, entityId_) clients connectClient v =
    tryAllErrors (connectClient v) >>= \case
      Right client -> do
@@ -208,7 +213,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
      Left e -> do
        ei <- asks $ persistErrorInterval . config
        if ei == 0
-@@ -967,11 +1000,11 @@
+@@ -967,11 +1001,11 @@ waitForUserNetwork c =
  closeAgentClient :: AgentClient -> IO ()
  closeAgentClient c = do
    atomically $ writeTVar (active c) False
@@ -221,7 +226,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    clearWorkers smpDeliveryWorkers >>= mapM_ (cancelWorker . fst)
    clearWorkers asyncCmdWorkers >>= mapM_ cancelWorker
    atomically $ SS.clear $ currentSubs c
-@@ -983,12 +1016,14 @@
+@@ -983,12 +1017,14 @@ closeAgentClient c = do
      clear :: Monoid m => (AgentClient -> TVar m) -> IO ()
      clear sel = atomically $ writeTVar (sel c) mempty
      cancelReconnect :: SessionVar (Async ()) -> IO ()
@@ -239,7 +244,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
 
  waitUntilActive :: AgentClient -> IO ()
  waitUntilActive AgentClient {active} = unlessM (readTVarIO active) $ atomically $ unlessM (readTVar active) retry
-@@ -1005,7 +1040,7 @@
+@@ -1005,7 +1041,7 @@ throwWhenNoDelivery c sq =
 
  closeProtocolServerClients :: ProtocolServerClient v err msg => AgentClient -> (AgentClient -> TMap (TransportSession msg) (ClientVar msg)) -> IO ()
  closeProtocolServerClients c clientsSel =
@@ -248,3 +253,44 @@ Index: src/Simplex/Messaging/Agent/Client.hs
 
  reconnectServerClients :: ProtocolServerClient v err msg => AgentClient -> (AgentClient -> TMap (TransportSession msg) (ClientVar msg)) -> IO ()
  reconnectServerClients c clientsSel =
+@@ -2741,7 +2777,9 @@ getAgentWorkersDetails AgentClient {smpC
+   ntfWorkers_ <- workerStats =<< readTVarIO ntfWorkers
+   ntfSMPWorkers_ <- workerStats =<< readTVarIO ntfSMPWorkers
+   xftpRcvWorkers_ <- workerStats =<< readTVarIO xftpRcvWorkers
+-  xftpSndWorkers_ <- workerStats =<< readTVarIO xftpSndWorkers
++  xftpSndWorkers_ <- M.union
++    <$> (workerStats =<< readTVarIO xftpSndWorkers)
++    <*> (workerStats . M.mapKeys (const ("complete" :: ByteString)) =<< readTVarIO xftpSndCompleteWorkers)
+   xftpDelWorkers_ <- workerStats =<< readTVarIO xftpDelWorkers
+   pure
+     AgentWorkersDetails
+@@ -2770,7 +2808,7 @@ getAgentWorkersDetails AgentClient {smpC
+       pure (textKey qa, WorkersDetails {restarts = restartCount, hasWork, hasAction})
+     Env {ntfSupervisor, xftpAgent} = agentEnv
+     NtfSupervisor {ntfWorkers, ntfSMPWorkers} = ntfSupervisor
+-    XFTPAgent {xftpRcvWorkers, xftpSndWorkers, xftpDelWorkers} = xftpAgent
++    XFTPAgent {xftpRcvWorkers, xftpSndWorkers, xftpSndCompleteWorkers, xftpDelWorkers} = xftpAgent
+
+ data AgentWorkersSummary = AgentWorkersSummary
+   { smpClientsCount :: Int,
+@@ -2805,7 +2843,8 @@ getAgentWorkersSummary AgentClient {smpC
+   ntfWorkersCount <- readTVarIO ntfWorkers >>= workerSummary
+   ntfSMPWorkersCount <- readTVarIO ntfSMPWorkers >>= workerSummary
+   xftpRcvWorkersCount <- readTVarIO xftpRcvWorkers >>= workerSummary
+-  xftpSndWorkersCount <- readTVarIO xftpSndWorkers >>= workerSummary
++  sndWorkers <- (<>) <$> (M.elems <$> readTVarIO xftpSndWorkers) <*> (M.elems <$> readTVarIO xftpSndCompleteWorkers)
++  xftpSndWorkersCount <- workerSummary sndWorkers
+   xftpDelWorkersCount <- readTVarIO xftpDelWorkers >>= workerSummary
+   pure
+     AgentWorkersSummary
+@@ -2824,8 +2863,8 @@ getAgentWorkersSummary AgentClient {smpC
+   where
+     Env {ntfSupervisor, xftpAgent} = agentEnv
+     NtfSupervisor {ntfWorkers, ntfSMPWorkers} = ntfSupervisor
+-    XFTPAgent {xftpRcvWorkers, xftpSndWorkers, xftpDelWorkers} = xftpAgent
+-    workerSummary :: M.Map k Worker -> IO WorkersSummary
++    XFTPAgent {xftpRcvWorkers, xftpSndWorkers, xftpSndCompleteWorkers, xftpDelWorkers} = xftpAgent
++    workerSummary :: Foldable f => f Worker -> IO WorkersSummary
+     workerSummary = liftIO . foldM byWork WorkersSummary {numActive = 0, numIdle = 0, totalRestarts = 0}
+       where
+         byWork WorkersSummary {numActive, numIdle, totalRestarts} Worker {action, restarts} = do

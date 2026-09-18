@@ -1,16 +1,35 @@
 SPDX-License-Identifier: AGPL-3.0-only
 
-Retry an XFTP download once when the incremental HTTP/2 reader reports a SIZE
-response.  Under http2 5.x a prematurely terminated response can surface as
-SIZE after partial body consumption; retrying on a fresh client connection
-recovers without accepting unchecked data.  A repeated size mismatch remains
-permanent, and the retry is still subject to all size, digest and authentication
-checks.
+Retry an XFTP download once when the incremental HTTP/2 reader reports SIZE,
+retaining all size, digest and authentication checks.
+
+Preserve resumable files on shutdown. Commit preparation before waking
+uploaders and finalize uploaded files in a separate, joined local worker.
+Recover completion after a restart even when no chunks remain to upload.
+Publish SFDONE only after source cleanup and the completion transaction.
 
 Index: src/Simplex/FileTransfer/Agent.hs
 --- src/Simplex/FileTransfer/Agent.hs.orig
 +++ src/Simplex/FileTransfer/Agent.hs
-@@ -193,12 +193,12 @@ runXFTPRcvWorker c srv Worker {doWork} =
+@@ -108,6 +108,9 @@ startXFTPWorkers_ allWorkers c workDir =
+       lift $ resumeXFTPRcvWork c Nothing
+     startSndFiles :: AgentConfig -> AM ()
+     startSndFiles AgentConfig {sndFilesTTL} = do
++      -- Completion has its own worker so an offline upload or preparation
++      -- cannot hold up files that already have all their replicas.
++      lift $ void $ getXFTPSndCompleteWorker False c
+       -- start worker for files pending encryption/creation
+       lift $ resumeXFTPSndWork c Nothing
+       pendingSndServers <- withStore' c (`getPendingSndFilesServers` sndFilesTTL)
+@@ -121,6 +124,7 @@ closeXFTPAgent :: XFTPAgent -> IO ()
+ closeXFTPAgent a = do
+   stopWorkers $ xftpRcvWorkers a
+   stopWorkers $ xftpSndWorkers a
++  stopWorkers $ xftpSndCompleteWorkers a
+   stopWorkers $ xftpDelWorkers a
+   where
+     stopWorkers workers = atomically (swapTVar workers M.empty) >>= mapM_ (liftIO . cancelWorker)
+@@ -193,12 +197,12 @@ runXFTPRcvWorker c srv Worker {doWork} =
            rcvWorkerInternalError c rcvFileId rcvFileEntityId redirectEntityId_ (Just fileTmpPath) (INTERNAL "chunk has no replicas")
          (fc@RcvFileChunk {userId, rcvFileId, rcvFileEntityId, digest, fileTmpPath, replicas = replica@RcvFileChunkReplica {rcvChunkReplicaId, server, delay} : _}, approvedRelays, redirectEntityId_) -> do
            let ri' = maybe ri (\d -> ri {initialInterval = d, increaseAfter = 0}) delay
@@ -25,8 +44,8 @@ Index: src/Simplex/FileTransfer/Agent.hs
            where
              retryLoop loop e replicaDelay = do
                flip catchAllErrors (\_ -> pure ()) $ do
-@@ -252,17 +252,28 @@ runXFTPRcvWorker c srv Worker {doWork} =
- 
+@@ -252,19 +256,31 @@ runXFTPRcvWorker c srv Worker {doWork} =
+
  -- The first call of action has n == 0, maxN is max number of retries
  withRetryIntervalLimit :: forall m. MonadIO m => Int -> RetryInterval -> (Int64 -> m () -> m ()) -> m ()
 -withRetryIntervalLimit maxN ri action =
@@ -37,7 +56,7 @@ Index: src/Simplex/FileTransfer/Agent.hs
    withRetryIntervalCount ri $ \n delay loop ->
 -    when (n < maxN) $ action delay loop
 +    when (n < maxN) $ action n delay loop
- 
+
  retryOnError :: Text -> AM a -> AM a -> AgentErrorType -> AM a
 -retryOnError name loop done e = do
 +retryOnError = retryOnErrorWhen temporaryOrHostError
@@ -49,7 +68,7 @@ Index: src/Simplex/FileTransfer/Agent.hs
 +  if retryable e
      then loop
      else done
- 
+
 +retryableDownloadError :: Int -> AgentErrorType -> Bool
 +retryableDownloadError n e = temporaryOrHostError e || case e of
 +  BROKER _ (RESPONSE "SIZE") -> n == 0
@@ -57,4 +76,220 @@ Index: src/Simplex/FileTransfer/Agent.hs
 +
  rcvWorkerInternalError :: AgentClient -> DBRcvFileId -> RcvFileId -> Maybe RcvFileId -> Maybe FilePath -> AgentErrorType -> AM ()
  rcvWorkerInternalError c rcvFileId rcvFileEntityId redirectEntityId_ tmpPath err = do
++  liftIO $ throwWhenInactive c
    lift $ forM_ tmpPath (removePath <=< toFSFilePath)
+   withStore' c $ \db -> updateRcvFileError db rcvFileId (show err)
+   notify c (fromMaybe rcvFileEntityId redirectEntityId_) (RFERR err)
+@@ -426,8 +442,9 @@ runXFTPSndPrepareWorker c Worker {doWork
+       -- separate worker to create chunks? record retries and delay on snd_file_chunks?
+       srvs <- forM pendingChunks $ createChunk numRecipients'
+       let allSrvs = S.fromList $ preparedSrvs <> srvs
+-      lift $ forM_ allSrvs $ \srv -> getXFTPSndWorker True c (Just srv)
++      -- Publish the state before waking uploaders, including existing ones.
+       withStore' c $ \db -> updateSndFileStatus db sndFileId SFSUploading
++      lift $ forM_ allSrvs $ \srv -> getXFTPSndWorker True c (Just srv)
+       where
+         AgentConfig {xftpMaxRecipientsPerRequest = maxRecipients, messageRetryInterval = ri} = cfg
+         encryptFileForUpload :: SndFile -> FilePath -> AM (FileDigest, [(XFTPChunkSpec, FileDigest)])
+@@ -487,6 +504,8 @@ runXFTPSndPrepareWorker c Worker {doWork
+
+ sndWorkerInternalError :: AgentClient -> DBSndFileId -> SndFileId -> Maybe FilePath -> AgentErrorType -> AM ()
+ sndWorkerInternalError c sndFileId sndFileEntityId prefixPath err = do
++  -- INACTIVE during shutdown is cancellation, not a permanent file error.
++  liftIO $ throwWhenInactive c
+   lift . forM_ prefixPath $ removePath <=< toFSFilePath
+   withStore' c $ \db -> updateSndFileError db sndFileId (show err)
+   notify c sndFileEntityId $ SFERR err
+@@ -531,7 +550,7 @@ runXFTPSndWorker c srv Worker {doWork} =
+       liftIO $ assertAgentForeground c
+       agentXFTPUploadChunk c userId chunkDigest replica' chunkSpec'
+       liftIO $ waitUntilForeground c
+-      sf@SndFile {sndFileEntityId, prefixPath, chunks} <- withStore c $ \db -> do
++      SndFile {sndFileEntityId, chunks} <- withStore c $ \db -> do
+         lockSndFileForUpdate db sndFileId
+         updateSndChunkReplicaStatus db sndChunkReplicaId SFRSUploaded
+         getSndFile db sndFileId
+@@ -540,12 +559,11 @@ runXFTPSndWorker c srv Worker {doWork} =
+           complete = all chunkUploaded chunks
+       atomically $ incXFTPServerStat c userId srv uploads
+       atomically $ incXFTPServerSizeStat c userId srv uploadsSize (fromIntegral $ toKB chSize)
+-      notify c sndFileEntityId $ SFPROG uploaded total
+-      when complete $ do
+-        (sndDescr, rcvDescrs) <- sndFileToDescrs sf
+-        notify c sndFileEntityId $ SFDONE sndDescr rcvDescrs
+-        lift . forM_ prefixPath $ removePath <=< toFSFilePath
+-        withStore' c $ \db -> updateSndFileComplete db sndFileId
++      -- A single local worker finalizes files, also after restart. Uploaders
++      -- on different servers must not race to finalize the same file.
++      if complete
++        then lift $ void $ getXFTPSndCompleteWorker True c
++        else notify c sndFileEntityId $ SFPROG uploaded total
+       where
+         addRecipients :: SndFileChunk -> SndFileChunkReplica -> AM SndFileChunkReplica
+         addRecipients ch@SndFileChunk {numRecipients} cr@SndFileChunkReplica {sndChunkReplicaId, rcvIdsKeys}
+@@ -556,71 +574,100 @@ runXFTPSndWorker c srv Worker {doWork} =
+               rcvIdsKeys' <- agentXFTPAddRecipients c userId chunkDigest cr numRecipients'
+               cr' <- withStore' c $ \db -> addSndChunkReplicaRecipients db cr $ L.toList rcvIdsKeys'
+               addRecipients ch cr'
+-        sndFileToDescrs :: SndFile -> AM (ValidFileDescription 'FSender, [ValidFileDescription 'FRecipient])
+-        sndFileToDescrs SndFile {digest = Nothing} = throwE $ INTERNAL "snd file has no digest"
+-        sndFileToDescrs SndFile {chunks = []} = throwE $ INTERNAL "snd file has no chunks"
+-        sndFileToDescrs SndFile {digest = Just digest, key, nonce, chunks = chunks@(fstChunk : _), redirect} = do
+-          let chunkSize = FileSize $ sndChunkSize fstChunk
+-              size = FileSize $ sum $ map (fromIntegral . sndChunkSize) chunks
+-          -- snd description
+-          sndDescrChunks <- mapM toSndDescrChunk chunks
+-          let fdSnd = FileDescription {party = SFSender, size, digest, key, nonce, chunkSize, chunks = sndDescrChunks, redirect = Nothing}
+-          validFdSnd <- either (throwE . INTERNAL) pure $ validateFileDescription fdSnd
+-          -- rcv descriptions
+-          let fdRcv = FileDescription {party = SFRecipient, size, digest, key, nonce, chunkSize, chunks = [], redirect}
+-              fdRcvs = createRcvFileDescriptions fdRcv chunks
+-          validFdRcvs <- either (throwE . INTERNAL) pure $ mapM validateFileDescription fdRcvs
+-          pure (validFdSnd, validFdRcvs)
+-        toSndDescrChunk :: SndFileChunk -> AM FileChunk
+-        toSndDescrChunk SndFileChunk {replicas = []} = throwE $ INTERNAL "snd file chunk has no replicas"
+-        toSndDescrChunk ch@SndFileChunk {chunkNo, digest = chDigest, replicas = (SndFileChunkReplica {server, replicaId, replicaKey} : _)} = do
+-          let chunkSize = FileSize $ sndChunkSize ch
+-              replicas = [FileChunkReplica {server, replicaId, replicaKey}]
+-          pure FileChunk {chunkNo, digest = chDigest, chunkSize, replicas}
+-        createRcvFileDescriptions :: FileDescription 'FRecipient -> [SndFileChunk] -> [FileDescription 'FRecipient]
+-        createRcvFileDescriptions fd sndChunks = map (\chunks -> (fd :: (FileDescription 'FRecipient)) {chunks}) rcvChunks
+-          where
+-            rcvReplicas :: [SentRecipientReplica]
+-            rcvReplicas = concatMap toSentRecipientReplicas sndChunks
+-            toSentRecipientReplicas :: SndFileChunk -> [SentRecipientReplica]
+-            toSentRecipientReplicas ch@SndFileChunk {chunkNo, digest, replicas} =
+-              let chunkSize = FileSize $ sndChunkSize ch
+-               in concatMap
+-                    ( \SndFileChunkReplica {server, rcvIdsKeys} ->
+-                        zipWith
+-                          (\rcvNo (replicaId, replicaKey) -> SentRecipientReplica {chunkNo, server, rcvNo, replicaId, replicaKey, digest, chunkSize})
+-                          [1 ..]
+-                          rcvIdsKeys
+-                    )
+-                    replicas
+-            rcvChunks :: [[FileChunk]]
+-            rcvChunks = map (sortChunks . M.elems) $ M.elems $ foldl' addRcvChunk M.empty rcvReplicas
+-            sortChunks :: [FileChunk] -> [FileChunk]
+-            sortChunks = map reverseReplicas . sortOn (\FileChunk {chunkNo} -> chunkNo)
+-            reverseReplicas ch@FileChunk {replicas} = (ch :: FileChunk) {replicas = reverse replicas}
+-            addRcvChunk :: Map Int (Map Int FileChunk) -> SentRecipientReplica -> Map Int (Map Int FileChunk)
+-            addRcvChunk m SentRecipientReplica {chunkNo, server, rcvNo, replicaId, replicaKey, digest, chunkSize} =
+-              M.alter (Just . addOrChangeRecipient) rcvNo m
+-              where
+-                addOrChangeRecipient :: Maybe (Map Int FileChunk) -> Map Int FileChunk
+-                addOrChangeRecipient = \case
+-                  Just m' -> M.alter (Just . addOrChangeChunk) chunkNo m'
+-                  _ -> M.singleton chunkNo $ FileChunk {chunkNo, digest, chunkSize, replicas = [replica']}
+-                addOrChangeChunk :: Maybe FileChunk -> FileChunk
+-                addOrChangeChunk = \case
+-                  Just ch@FileChunk {replicas} -> ch {replicas = replica' : replicas}
+-                  _ -> FileChunk {chunkNo, digest, chunkSize, replicas = [replica']}
+-                replica' = FileChunkReplica {server, replicaId, replicaKey}
+-        uploadedSize :: [SndFileChunk] -> Int64
+-        uploadedSize = foldl' (\sz ch -> sz + uploadedChunkSize ch) 0
+-        uploadedChunkSize ch
+-          | chunkUploaded ch = fromIntegral (sndChunkSize ch)
+-          | otherwise = 0
+-        totalSize :: [SndFileChunk] -> Int64
+-        totalSize = foldl' (\sz ch -> sz + fromIntegral (sndChunkSize ch)) 0
+-        chunkUploaded :: SndFileChunk -> Bool
+-        chunkUploaded SndFileChunk {replicas} =
+-          any (\SndFileChunkReplica {replicaStatus} -> replicaStatus == SFRSUploaded) replicas
++
++getXFTPSndCompleteWorker :: Bool -> AgentClient -> AM' Worker
++getXFTPSndCompleteWorker hasWork c = do
++  ws <- asks $ xftpSndCompleteWorkers . xftpAgent
++  getAgentWorker "xftp_snd_complete" hasWork c () ws $ \Worker {doWork} -> do
++    ttl <- asks $ sndFilesTTL . config
++    forever $ do
++      lift $ waitForWork doWork
++      liftIO $ assertAgentForeground c
++      withWork c doWork (`getNextSndFileToComplete` ttl) $ \f@SndFile {sndFileId, sndFileEntityId, prefixPath} ->
++        completeSndFile c f `catchAllErrors` sndWorkerInternalError c sndFileId sndFileEntityId prefixPath
++
++completeSndFile :: AgentClient -> SndFile -> AM ()
++completeSndFile c sf@SndFile {sndFileId, sndFileEntityId, prefixPath, chunks} = do
++  (sndDescr, rcvDescrs) <- sndFileToDescrs sf
++  let total = totalSize chunks
++  notify c sndFileEntityId $ SFPROG total total
++  lift . forM_ prefixPath $ removePath <=< toFSFilePath
++  withStore' c $ \db -> updateSndFileComplete db sndFileId
++  -- SFDONE means both the persistent state and local cleanup are complete.
++  notify c sndFileEntityId $ SFDONE sndDescr rcvDescrs
++
++sndFileToDescrs :: SndFile -> AM (ValidFileDescription 'FSender, [ValidFileDescription 'FRecipient])
++sndFileToDescrs SndFile {digest = Nothing} = throwE $ INTERNAL "snd file has no digest"
++sndFileToDescrs SndFile {chunks = []} = throwE $ INTERNAL "snd file has no chunks"
++sndFileToDescrs SndFile {digest = Just digest, key, nonce, chunks = chunks@(fstChunk : _), redirect} = do
++  let chunkSize = FileSize $ sndChunkSize fstChunk
++      size = FileSize $ sum $ map (fromIntegral . sndChunkSize) chunks
++  -- snd description
++  sndDescrChunks <- mapM toSndDescrChunk chunks
++  let fdSnd = FileDescription {party = SFSender, size, digest, key, nonce, chunkSize, chunks = sndDescrChunks, redirect = Nothing}
++  validFdSnd <- either (throwE . INTERNAL) pure $ validateFileDescription fdSnd
++  -- rcv descriptions
++  let fdRcv = FileDescription {party = SFRecipient, size, digest, key, nonce, chunkSize, chunks = [], redirect}
++      fdRcvs = createRcvFileDescriptions fdRcv chunks
++  validFdRcvs <- either (throwE . INTERNAL) pure $ mapM validateFileDescription fdRcvs
++  pure (validFdSnd, validFdRcvs)
++
++toSndDescrChunk :: SndFileChunk -> AM FileChunk
++toSndDescrChunk SndFileChunk {replicas = []} = throwE $ INTERNAL "snd file chunk has no replicas"
++toSndDescrChunk ch@SndFileChunk {chunkNo, digest = chDigest, replicas = (SndFileChunkReplica {server, replicaId, replicaKey} : _)} = do
++  let chunkSize = FileSize $ sndChunkSize ch
++      replicas = [FileChunkReplica {server, replicaId, replicaKey}]
++  pure FileChunk {chunkNo, digest = chDigest, chunkSize, replicas}
++
++createRcvFileDescriptions :: FileDescription 'FRecipient -> [SndFileChunk] -> [FileDescription 'FRecipient]
++createRcvFileDescriptions fd sndChunks = map (\chunks -> (fd :: (FileDescription 'FRecipient)) {chunks}) rcvChunks
++  where
++    rcvReplicas :: [SentRecipientReplica]
++    rcvReplicas = concatMap toSentRecipientReplicas sndChunks
++    toSentRecipientReplicas :: SndFileChunk -> [SentRecipientReplica]
++    toSentRecipientReplicas ch@SndFileChunk {chunkNo, digest, replicas} =
++      let chunkSize = FileSize $ sndChunkSize ch
++       in concatMap
++            ( \SndFileChunkReplica {server, rcvIdsKeys} ->
++                zipWith
++                  (\rcvNo (replicaId, replicaKey) -> SentRecipientReplica {chunkNo, server, rcvNo, replicaId, replicaKey, digest, chunkSize})
++                  [1 ..]
++                  rcvIdsKeys
++            )
++            replicas
++    rcvChunks :: [[FileChunk]]
++    rcvChunks = map (sortChunks . M.elems) $ M.elems $ foldl' addRcvChunk M.empty rcvReplicas
++    sortChunks :: [FileChunk] -> [FileChunk]
++    sortChunks = map reverseReplicas . sortOn (\FileChunk {chunkNo} -> chunkNo)
++    reverseReplicas ch@FileChunk {replicas} = (ch :: FileChunk) {replicas = reverse replicas}
++    addRcvChunk :: Map Int (Map Int FileChunk) -> SentRecipientReplica -> Map Int (Map Int FileChunk)
++    addRcvChunk m SentRecipientReplica {chunkNo, server, rcvNo, replicaId, replicaKey, digest, chunkSize} =
++      M.alter (Just . addOrChangeRecipient) rcvNo m
++      where
++        addOrChangeRecipient :: Maybe (Map Int FileChunk) -> Map Int FileChunk
++        addOrChangeRecipient = \case
++          Just m' -> M.alter (Just . addOrChangeChunk) chunkNo m'
++          _ -> M.singleton chunkNo $ FileChunk {chunkNo, digest, chunkSize, replicas = [replica']}
++        addOrChangeChunk :: Maybe FileChunk -> FileChunk
++        addOrChangeChunk = \case
++          Just ch@FileChunk {replicas} -> ch {replicas = replica' : replicas}
++          _ -> FileChunk {chunkNo, digest, chunkSize, replicas = [replica']}
++        replica' = FileChunkReplica {server, replicaId, replicaKey}
++
++uploadedSize :: [SndFileChunk] -> Int64
++uploadedSize = foldl' (\sz ch -> sz + uploadedChunkSize ch) 0
++
++uploadedChunkSize :: SndFileChunk -> Int64
++uploadedChunkSize ch
++  | chunkUploaded ch = fromIntegral (sndChunkSize ch)
++  | otherwise = 0
++
++totalSize :: [SndFileChunk] -> Int64
++totalSize = foldl' (\sz ch -> sz + fromIntegral (sndChunkSize ch)) 0
++
++chunkUploaded :: SndFileChunk -> Bool
++chunkUploaded SndFileChunk {replicas} =
++  any (\SndFileChunkReplica {replicaStatus} -> replicaStatus == SFRSUploaded) replicas
+
+ deleteSndFileInternal :: AgentClient -> SndFileId -> AM' ()
+ deleteSndFileInternal c sndFileEntityId = deleteSndFilesInternal c [sndFileEntityId]

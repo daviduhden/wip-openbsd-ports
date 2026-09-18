@@ -4,10 +4,13 @@ Register a command's server in its transaction, including reply servers
 that do not have a send queue yet. Check that cached deliveries still
 exist before retrying them after connection deletion.
 
+Select fully uploaded files for recoverable local completion, including
+after restart. Only select chunks for upload after preparation is committed.
+
 Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
 --- src/Simplex/Messaging/Agent/Store/AgentStore.hs.orig
 +++ src/Simplex/Messaging/Agent/Store/AgentStore.hs
-@@ -132,6 +132,7 @@
+@@ -132,6 +132,7 @@ module Simplex.Messaging.Agent.Store.Age
      getSndMsgViaRcpt,
      updateSndMsgRcpt,
      getPendingQueueMsg,
@@ -15,7 +18,15 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
      getConnectionsForDelivery,
      getAllSndQueuesForDelivery,
      updatePendingMsgRIState,
-@@ -1069,6 +1070,13 @@
+@@ -230,6 +231,7 @@ module Simplex.Messaging.Agent.Store.Age
+     getSndFile,
+     getSndFileByEntityId,
+     getNextSndFileToPrepare,
++    getNextSndFileToComplete,
+     updateSndFileError,
+     updateSndFileStatus,
+     updateSndFileEncrypted,
+@@ -1069,6 +1071,13 @@ getAllSndQueuesForDelivery db = map toSn
        WHERE c.deleted = 0
      |]
 
@@ -29,7 +40,7 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
  getPendingQueueMsg :: DB.Connection -> ConnId -> SndQueue -> IO (Either StoreError (Maybe (Maybe RcvQueue, PendingMsgData)))
  getPendingQueueMsg db connId SndQueue {dbQueueId} =
    getWorkItem "message" getMsgId getMsgData markMsgFailed
-@@ -1504,7 +1512,10 @@
+@@ -1504,7 +1513,10 @@ createCommand db corrId connId srv_ cmd
      serverFields :: ExceptT StoreError IO (Maybe (NonEmpty TransportHost), Maybe ServiceName, Maybe C.KeyHash)
      serverFields = case srv_ of
        Just srv@(SMPServer host port _) ->
@@ -41,3 +52,65 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
        Nothing -> pure (Nothing, Nothing, Nothing)
 
  insertedRowId :: DB.Connection -> IO Int64
+@@ -3449,6 +3461,34 @@ getNextSndFileToPrepare db ttl =
+           |]
+           (SFSNew, SFSEncrypting, SFSEncrypted, cutoffTs)
+
++-- Upload status is committed before notifications. Recover files with no
++-- remaining uploads even if shutdown interrupted their final notification.
++getNextSndFileToComplete :: DB.Connection -> NominalDiffTime -> IO (Either StoreError (Maybe SndFile))
++getNextSndFileToComplete db ttl =
++  getWorkItem "snd_file_complete" getFileId (getSndFile db) (markSndFileFailed db)
++  where
++    getFileId :: IO (Maybe DBSndFileId)
++    getFileId = do
++      cutoffTs <- addUTCTime (-ttl) <$> getCurrentTime
++      maybeFirstRow fromOnly $
++        DB.query
++          db
++          [sql|
++            SELECT f.snd_file_id
++            FROM snd_files f
++            WHERE f.status = ? AND f.deleted = 0 AND f.created_at >= ? AND f.failed = 0
++              AND EXISTS (SELECT 1 FROM snd_file_chunks c WHERE c.snd_file_id = f.snd_file_id)
++              AND NOT EXISTS (
++                SELECT 1 FROM snd_file_chunks c
++                WHERE c.snd_file_id = f.snd_file_id AND NOT EXISTS (
++                  SELECT 1 FROM snd_file_chunk_replicas r
++                  WHERE r.snd_file_chunk_id = c.snd_file_chunk_id AND r.replica_status = ?
++                )
++              )
++            ORDER BY f.created_at ASC LIMIT 1
++          |]
++          (SFSUploading, cutoffTs, SFRSUploaded)
++
+ markSndFileFailed :: DB.Connection -> DBSndFileId -> IO ()
+ markSndFileFailed db fileId =
+   DB.execute db "UPDATE snd_files SET failed = 1 WHERE snd_file_id = ?" (Only fileId)
+@@ -3537,12 +3577,12 @@ getNextSndChunkToUpload db server@Protoc
+             JOIN snd_files f ON f.snd_file_id = c.snd_file_id
+             WHERE s.xftp_host = ? AND s.xftp_port = ? AND s.xftp_key_hash = ?
+               AND r.replica_status = ? AND r.replica_number = 1
+-              AND (f.status = ? OR f.status = ?) AND f.deleted = 0 AND f.created_at >= ?
++              AND f.status = ? AND f.deleted = 0 AND f.created_at >= ?
+               AND f.failed = 0
+             ORDER BY r.retries ASC, r.created_at ASC
+             LIMIT 1
+           |]
+-          (host, port, keyHash, SFRSCreated, SFSEncrypted, SFSUploading, cutoffTs)
++          (host, port, keyHash, SFRSCreated, SFSUploading, cutoffTs)
+     getChunkData :: (Int64, DBSndFileId) -> IO (Either StoreError SndFileChunk)
+     getChunkData (sndFileChunkReplicaId, _fileId) = do
+       chunk_ <-
+@@ -3621,9 +3661,9 @@ getPendingSndFilesServers db ttl = do
+         JOIN snd_file_chunks c ON c.snd_file_chunk_id = r.snd_file_chunk_id
+         JOIN snd_files f ON f.snd_file_id = c.snd_file_id
+         WHERE r.replica_status = ? AND r.replica_number = 1
+-          AND (f.status = ? OR f.status = ?) AND f.deleted = 0 AND f.created_at >= ?
++          AND f.status = ? AND f.deleted = 0 AND f.created_at >= ?
+       |]
+-      (SFRSCreated, SFSEncrypted, SFSUploading, cutoffTs)
++      (SFRSCreated, SFSUploading, cutoffTs)
+
+ getCleanupSndFilesPrefixPaths :: DB.Connection -> IO [(DBSndFileId, SndFileId, FilePath)]
+ getCleanupSndFilesPrefixPaths db =

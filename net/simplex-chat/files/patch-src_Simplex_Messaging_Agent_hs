@@ -9,10 +9,13 @@ local LET command independent of receive-server ACK retries.
 Recheck pending deliveries after retry delays and join replaced queue
 workers. Avoid retrying cached messages deleted while the server was offline.
 
+Stop XFTP workers before their transports; recheck cached deliveries after
+both retry delays and suspension/network waits.
+
 Index: src/Simplex/Messaging/Agent.hs
 --- src/Simplex/Messaging/Agent.hs.orig
 +++ src/Simplex/Messaging/Agent.hs
-@@ -41,6 +41,7 @@
+@@ -41,6 +41,7 @@ module Simplex.Messaging.Agent
      getSMPAgentClient,
      getSMPAgentClient_,
      disconnectAgentClient,
@@ -20,7 +23,7 @@ Index: src/Simplex/Messaging/Agent.hs
      disposeAgentClient,
      resumeAgentClient,
      withConnLock,
-@@ -250,7 +251,7 @@
+@@ -250,7 +251,7 @@ import Simplex.RemoteControl.Invitation
  import Simplex.RemoteControl.Types
  import System.Mem.Weak (deRefWeak)
  import UnliftIO.Async (mapConcurrently)
@@ -29,7 +32,7 @@ Index: src/Simplex/Messaging/Agent.hs
  import qualified UnliftIO.Exception as E
  import UnliftIO.STM
 
-@@ -273,25 +274,28 @@
+@@ -273,25 +274,28 @@ getSMPAgentClient_ clientId cfg initServ
        liftIO $ checkServers "SMP" smp >> checkServers "XFTP" xftp
        currentTs <- liftIO getCurrentTime
        notices <- liftIO $ withTransaction store (`getClientNotices` presetServers) `catchAll_` pure []
@@ -74,7 +77,7 @@ Index: src/Simplex/Messaging/Agent.hs
          logError $ "Agent thread " <> name <> " crashed: " <> tshow e
          atomically $ writeTBQueue subQ ("", "", AEvt SAEConn $ ERR $ CRITICAL True $ show e)
 
-@@ -306,14 +310,26 @@
+@@ -306,14 +310,26 @@ logServersStats c = do
      liftIO $ threadDelay' int
 
  saveServersStats :: AgentClient -> AM' ()
@@ -105,8 +108,17 @@ Index: src/Simplex/Messaging/Agent.hs
 
  restoreServersStats :: AgentClient -> AM' ()
  restoreServersStats c@AgentClient {smpServersStats, xftpServersStats, ntfServersStats, srvStatsStartedAt} = do
-@@ -333,17 +349,45 @@
-   closeXFTPAgent xa
+@@ -328,22 +344,53 @@ restoreServersStats c@AgentClient {smpSe
+
+ disconnectAgentClient :: AgentClient -> IO ()
+ disconnectAgentClient c@AgentClient {agentEnv = Env {ntfSupervisor = ns, xftpAgent = xa}} = do
++  atomically $ writeTVar (active c) False
++  -- Stop file workers before closing their transports. Otherwise shutdown
++  -- can turn an interrupted request into a permanent file error.
++  closeXFTPAgent xa
+   closeAgentClient c
+   closeNtfSupervisor ns
+-  closeXFTPAgent xa
    logConnection c False
 
 --- only used in the tests
@@ -159,7 +171,7 @@ Index: src/Simplex/Messaging/Agent.hs
 
  createUser :: AgentClient -> Bool -> NonEmpty (ServerCfg 'PSMP) -> NonEmpty (ServerCfg 'PXFTP) -> AE UserId
  createUser c = withAgentEnv c .:. createUser' c
-@@ -886,8 +930,10 @@
+@@ -886,8 +933,10 @@ joinConnAsync c corrId updateConn connId
  allowConnectionAsync' :: AgentClient -> ACorrId -> ConnId -> ConfirmationId -> ConnInfo -> AM ()
  allowConnectionAsync' c corrId connId confId ownConnInfo =
    withStore c (`getConn` connId) >>= \case
@@ -172,7 +184,7 @@ Index: src/Simplex/Messaging/Agent.hs
      _ -> throwE $ CMD PROHIBITED "allowConnectionAsync"
 
  -- TODO
-@@ -1474,9 +1520,15 @@
+@@ -1474,9 +1523,15 @@ allowConnection' :: AgentClient -> ConnI
  allowConnection' c connId confId ownConnInfo = withConnLock c connId "allowConnection" $ do
    withStore c (`getConn` connId) >>= \case
      SomeConn _ (RcvConnection _ RcvQueue {server, rcvId}) -> do
@@ -190,7 +202,7 @@ Index: src/Simplex/Messaging/Agent.hs
      _ -> throwE $ CMD PROHIBITED "allowConnection"
 
  -- | Accept contact (ACPT command) in Reader monad
-@@ -1907,7 +1959,9 @@
+@@ -1907,7 +1962,9 @@ runCommandProcessing c@AgentClient {subQ
            tryCommand . withNextSrv c userId storageSrvs triedHosts [qServer q] $ \srv -> do
              sqSecured <- joinConnSrv c NRMBackground userId connId enableNtfs cReq connInfo pqEnc subMode srv
              notify $ JOINED sqSecured
@@ -201,17 +213,23 @@ Index: src/Simplex/Messaging/Agent.hs
          ACK msgId rcptInfo_ -> withServer' . tryCommand $ ackMessage' c connId msgId rcptInfo_ >> notify OK
          SWCH ->
            noServer . tryWithLock "switchConnection" $
-@@ -2182,7 +2236,8 @@
+@@ -2182,9 +2239,12 @@ runSmpQueueMsgDelivery c@AgentClient {su
          atomically $ endAgentOperation c AOMsgDelivery -- this operation begins in submitPendingMsg
          let mId = unId msgId
              ri' = maybe id updateRetryInterval2 msgRetryState ri
 -        withRetryLock2 ri' qLock $ \riState loop -> do
-+        -- The connection may have been deleted while a network retry slept.
-+        withRetryLock2 ri' qLock $ \riState loop -> whenM (withStore' c $ \db -> isSndMsgPending db connId sq msgId) $ do
-           liftIO $ waitWhileSuspended c
-           liftIO $ waitForUserNetwork c
+-          liftIO $ waitWhileSuspended c
+-          liftIO $ waitForUserNetwork c
++            pendingAfterWait = do
++              liftIO $ waitWhileSuspended c
++              liftIO $ waitForUserNetwork c
++              -- Deletion can also happen while suspended or offline.
++              withStore' c $ \db -> isSndMsgPending db connId sq msgId
++        withRetryLock2 ri' qLock $ \riState loop -> whenM pendingAfterWait $ do
            resp <- tryAllErrors $ case msgType of
-@@ -2301,8 +2356,10 @@
+             AM_CONN_INFO -> sendConfirmation c NRMBackground sq msgBody
+             AM_CONN_INFO_REPLY -> sendConfirmation c NRMBackground sq msgBody
+@@ -2301,8 +2361,10 @@ runSmpQueueMsgDelivery c@AgentClient {su
                              Nothing -> internalErr msgId "sent QTEST: queue not found in connection"
                              Just (sq', sq'' : sqs') -> do
                                checkSQSwchStatus sq' SSSendingQTEST

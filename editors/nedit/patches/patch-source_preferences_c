@@ -1,9 +1,11 @@
+SPDX-License-Identifier: GPL-2.0-or-later
+
 Add .pp to the list of extensions for Pascal source files.
 
 Index: source/preferences.c
 --- source/preferences.c.orig
 +++ source/preferences.c
-@@ -759,7 +759,7 @@ static PrefDescripRec PrefDescrip[] = {
+@@ -761,7 +761,7 @@
          Makefile:MAKEFILE:::None:8:8::\n\
          Matlab:.M .OCT .SCI:::::::\n\
          NEdit Macro:.NM .NEDITMACRO:::::::\n\
@@ -12,7 +14,7 @@ Index: source/preferences.c
          Perl:.PL .PM .P5:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\":\n\
          PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\":\n\
          Python:.PY:\"^#!.*python\":Auto:None:::\"!\"\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~\":\n\
-@@ -788,7 +788,7 @@ static PrefDescripRec PrefDescrip[] = {
+@@ -790,7 +790,7 @@
          Makefile:Makefile makefile .gmk:::None:8:8::\n\
          Matlab:.m .oct .sci:::::::\n\
          NEdit Macro:.nm .neditmacro:::::::\n\

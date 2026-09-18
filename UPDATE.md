@@ -139,7 +139,8 @@ make clean=all
 make extract
 make patch
 make modgo-gen-modules
-make modgo-gen-modules > modules.inc
+make modgo-gen-modules > /tmp/modules.inc
+mv /tmp/modules.inc modules.inc
 make makesum
 ```
 

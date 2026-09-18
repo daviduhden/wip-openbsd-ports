@@ -9,19 +9,30 @@ Require durable completion and source cleanup when SFDONE is received.
 Also interrupt a fully uploaded file before final progress and recover its
 completion without a server, then download it to verify the descriptions.
 
+Access the added SndFile fields with OverloadedRecordDot: GHC 9.10 rejects
+qualified duplicate record fields in patterns as ambiguous.
+
 Index: tests/XFTPAgent.hs
 --- tests/XFTPAgent.hs.orig
 +++ tests/XFTPAgent.hs
-@@ -10,7 +10,7 @@
-
+@@ -3,6 +3,7 @@
+ {-# LANGUAGE GADTs #-}
+ {-# LANGUAGE LambdaCase #-}
+ {-# LANGUAGE NamedFieldPuns #-}
++{-# LANGUAGE OverloadedRecordDot #-}
+ {-# LANGUAGE OverloadedStrings #-}
+ {-# LANGUAGE PatternSynonyms #-}
+ {-# LANGUAGE RankNTypes #-}
+@@ -10,7 +11,7 @@
+ 
  module XFTPAgent where
-
+ 
 -import AgentTests.FunctionalAPITests (get, rfGet, runRight, runRight_, sfGet, withAgent)
 +import AgentTests.FunctionalAPITests (get, rfGet, runRight, runRight_, sfGet, shouldRespond, skipTestEvent, withAgent)
-
+ 
  import Control.Logger.Simple
  import Control.Monad
-@@ -19,8 +19,6 @@ import Control.Monad.IO.Class
+@@ -19,8 +20,6 @@
  import qualified Data.ByteString.Char8 as B
  import qualified Data.ByteString.Lazy as LB
  import Data.Int (Int64)
@@ -30,7 +41,7 @@ Index: tests/XFTPAgent.hs
  import SMPAgentClient (agentCfg, initAgentServers, testDB, testDB2, testDB3)
  import SMPClient (xit'')
  import Simplex.FileTransfer.Client (XFTPClientConfig (..))
-@@ -30,10 +28,13 @@ import Simplex.FileTransfer.Server.Env (
+@@ -30,10 +29,13 @@
  import Simplex.FileTransfer.Server.Store (STMFileStore)
  import Simplex.FileTransfer.Transport (XFTPErrorType (AUTH))
  import Simplex.FileTransfer.Types (RcvFileId, SndFileId)
@@ -48,7 +59,7 @@ Index: tests/XFTPAgent.hs
  import Simplex.Messaging.Client (pattern NRMInteractive)
  import qualified Simplex.Messaging.Crypto as C
  import Simplex.Messaging.Crypto.File (CryptoFile (..), CryptoFileArgs)
-@@ -74,6 +75,7 @@ xftpAgentTests =
+@@ -74,6 +76,7 @@
        it "should resume receiving file after restart" $ \_ -> testXFTPAgentReceiveRestore
        it "should cleanup rcv tmp path after permanent error" $ \_ -> testXFTPAgentReceiveCleanup
        it "should resume sending file after restart" $ \_ -> testXFTPAgentSendRestore
@@ -56,7 +67,7 @@ Index: tests/XFTPAgent.hs
        xit'' "should cleanup snd prefix path after permanent error" $ \_ -> testXFTPAgentSendCleanup
        it "should delete sent file on server" testXFTPAgentDelete
        it "should resume deleting file after restart" $ \_ -> testXFTPAgentDeleteRestore
-@@ -85,7 +87,7 @@ xftpAgentTests =
+@@ -85,7 +88,7 @@
          it "should pass without basic auth" $ \_ -> testXFTPServerTest Nothing (noAuthSrv testXFTPServer2) `shouldReturn` Nothing
          let srv1 = testXFTPServer2 {keyHash = "1234"}
          it "should fail with incorrect fingerprint" $ \_ -> do
@@ -65,7 +76,7 @@ Index: tests/XFTPAgent.hs
          describe "server with password" $ do
            let auth = Just "abcd"
                srv = ProtoServerWithAuth testXFTPServer2
-@@ -267,12 +269,12 @@ testXFTPAgentSendReceiveMatrix :: Spec
+@@ -267,12 +270,12 @@
  testXFTPAgentSendReceiveMatrix = do
    describe "old server" $ do
      it "new clients" $ run oldServer newClient newClient
@@ -80,9 +91,9 @@ Index: tests/XFTPAgent.hs
      it "old sender, new recipient" $ run newServer oldClient newClient
      it "old clients" $ run newServer oldClient oldClient
    where
-@@ -430,27 +432,22 @@ testXFTPAgentSendRestore = withGlobalLog
+@@ -430,27 +433,22 @@
    filePath <- createRandomFile
-
+ 
    -- send file - should not succeed with server down
 -  sfId <- withAgent 1 agentCfg initAgentServers testDB $ \sndr -> runRight $ do
 -    xftpStartWorkers sndr (Just senderFiles)
@@ -98,13 +109,13 @@ Index: tests/XFTPAgent.hs
 +    sfId <- runRight $ do
 +      xftpStartWorkers sndr (Just senderFiles)
 +      xftpSendFile sndr 1 (CF.plain filePath) 2
-+    waitSndFileState sndr sfId $ \FT.SndFile {FT.status = status} -> status == FT.SFSEncrypted
++    waitSndFileState sndr sfId $ \sf -> sf.status == FT.SFSEncrypted
 +    (prefixPath, encPath) <- sndFilePaths sndr sfId
 +    pure (sfId, prefixPath, encPath)
 +
    doesDirectoryExist prefixPath `shouldReturn` True
    doesFileExist encPath `shouldReturn` True
-
+ 
    withXFTPServerStoreLogOn $ \_ ->
      -- send file - should start uploading with server up
 -    withAgent 2 agentCfg initAgentServers testDB $ \sndr' -> do
@@ -115,10 +126,10 @@ Index: tests/XFTPAgent.hs
 -
 -  threadDelay 200000
 +      holdSndProgress sndr' sfId
-
+ 
    withXFTPServerStoreLogOn $ \_ -> do
      -- send file - should continue uploading with server up
-@@ -461,10 +458,13 @@ testXFTPAgentSendRestore = withGlobalLog
+@@ -461,10 +459,13 @@
        liftIO $ testNoRedundancy rfd1
        liftIO $ testNoRedundancy rfd2
        liftIO $ sfId' `shouldBe` sfId
@@ -127,16 +138,16 @@ Index: tests/XFTPAgent.hs
 +      doesDirectoryExist prefixPath `shouldReturn` False
 +      doesFileExist encPath `shouldReturn` False
        pure rfd1
-
+ 
      -- prefix path should be removed after sending file
 -    threadDelay 500000
      doesDirectoryExist prefixPath `shouldReturn` False
      doesFileExist encPath `shouldReturn` False
-
-@@ -476,36 +476,108 @@ testXFTPAgentSendCleanup :: HasCallStack
+ 
+@@ -476,36 +477,108 @@
  testXFTPAgentSendCleanup = withGlobalLogging logCfgNoLogs $ do
    filePath <- createRandomFile
-
+ 
 -  sfId <- withXFTPServerStoreLogOn $ \_ ->
 -    -- send file
 -    withAgent 1 agentCfg initAgentServers testDB $ \sndr -> runRight $ do
@@ -165,7 +176,7 @@ Index: tests/XFTPAgent.hs
 +
    doesDirectoryExist prefixPath `shouldReturn` True
    doesFileExist encPath `shouldReturn` True
-
+ 
    withXFTPServerThreadOn $ \_ ->
 -    -- send file - should fail with AUTH error
      withAgent 2 agentCfg initAgentServers testDB $ \sndr' -> do
@@ -175,11 +186,11 @@ Index: tests/XFTPAgent.hs
 -      sfId' `shouldBe` sfId
 +      sfGet sndr' `shouldRespond`
 +        ("", sfId, SFERR (XFTP "xftp://LcJUMfVhwD8yxjAiSaDzzGF3-kLG4Uh0Fl_ZIjrRwjI=@localhost:8000" AUTH))
-
+ 
 -  -- prefix path should be removed after permanent error
    doesDirectoryExist prefixPath `shouldReturn` False
    doesFileExist encPath `shouldReturn` False
-
+ 
 +-- Leave the fifth of six progress events queued. The last replica is then
 +-- committed, but final progress and completion cannot fit in subQ.
 +testXFTPAgentSendCompleteRestore :: HasCallStack => IO ()
@@ -192,8 +203,8 @@ Index: tests/XFTPAgent.hs
 +        xftpSendFile sndr 1 (CF.plain filePath) 2
 +      replicateM_ 4 $ holdSndProgress sndr sfId >> atomically (readTBQueue $ subQ sndr)
 +      holdSndProgress sndr sfId
-+      waitSndFileState sndr sfId $ \FT.SndFile {FT.status = status, FT.chunks = chunks} ->
-+        status == FT.SFSUploading && length chunks == 6 && all chunkUploaded chunks
++      waitSndFileState sndr sfId $ \sf ->
++        sf.status == FT.SFSUploading && length sf.chunks == 6 && all chunkUploaded sf.chunks
 +      (prefixPath, encPath) <- sndFilePaths sndr sfId
 +      pure (sfId, prefixPath, encPath)
 +
@@ -212,8 +223,8 @@ Index: tests/XFTPAgent.hs
 +    withAgent 3 agentCfg initAgentServers testDB2 $ \rcp ->
 +      runRight_ . void $ testReceive rcp rfd filePath
 +  where
-+    chunkUploaded FT.SndFileChunk {FT.replicas = replicas} = any uploaded replicas
-+    uploaded FT.SndFileChunkReplica {FT.replicaStatus = status} = status == FT.SFRSUploaded
++    chunkUploaded chunk = any uploaded chunk.replicas
++    uploaded rep = rep.replicaStatus == FT.SFRSUploaded
 +
 +getSndFileState :: HasCallStack => AgentClient -> SndFileId -> IO FT.SndFile
 +getSndFileState c sfId = runRight $ withAgentEnv c $ AC.withStore c $ \db -> getSndFileByEntityId db sfId
@@ -222,14 +233,14 @@ Index: tests/XFTPAgent.hs
 +waitSndFileState c sfId ready = loop `shouldRespond` ()
 +  where
 +    loop = do
-+      f@FT.SndFile {FT.status = status} <- getSndFileState c sfId
-+      status `shouldNotBe` FT.SFSError
++      f <- getSndFileState c sfId
++      f.status `shouldNotBe` FT.SFSError
 +      unless (ready f) $ threadDelay 10000 >> loop
 +
 +sndFilePaths :: HasCallStack => AgentClient -> SndFileId -> IO (FilePath, FilePath)
 +sndFilePaths c sfId = do
-+  FT.SndFile {FT.prefixPath = prefixPath} <- getSndFileState c sfId
-+  case prefixPath of
++  sf <- getSndFileState c sfId
++  case sf.prefixPath of
 +    Just p -> do
 +      let path = senderFiles </> p
 +          encPath = path </> "xftp.encrypted"
@@ -240,9 +251,9 @@ Index: tests/XFTPAgent.hs
 +
 +assertSndComplete :: HasCallStack => AgentClient -> SndFileId -> IO ()
 +assertSndComplete c sfId = do
-+  FT.SndFile {FT.status = status, FT.prefixPath = prefixPath} <- getSndFileState c sfId
-+  status `shouldBe` FT.SFSComplete
-+  prefixPath `shouldBe` Nothing
++  sf <- getSndFileState c sfId
++  sf.status `shouldBe` FT.SFSComplete
++  sf.prefixPath `shouldBe` Nothing
 +
 +-- With a one-element queue, leaving progress queued blocks the uploader at
 +-- its next notification. Use a bounded wait and retain the event until stop.

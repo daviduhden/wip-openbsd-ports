@@ -1,0 +1,26 @@
+SPDX-License-Identifier: MIT OR Apache-2.0
+
+Replace the post-monomorphization "Leaked register!" const panic with an
+empty drop.  OpenBSD ports build with panic=unwind, whose cleanup paths
+instantiate Drop for LinearReg and make the const panic fire during
+compilation.  The comment above the impl explicitly allows removing the
+check when it produces false positives.
+
+Index: interpreter/src/ir/lower/utils.rs
+--- interpreter/src/ir/lower/utils.rs.orig
++++ interpreter/src/ir/lower/utils.rs
+@@ -320,13 +320,7 @@ impl Drop for LinearReg {
+ /// but assert _they are_; the rt fallback not catching them is not an excuse.
+ #[cfg(not(debug_assertions))]
+ impl Drop for LinearReg {
+-    fn drop(&mut self) {
+-        fn evil<T>() {
+-            let _ = std::marker::PhantomData::<T>;
+-            const { panic!("Leaked register!") }
+-        }
+-        evil::<()>();
+-    }
++    fn drop(&mut self) {}
+ }
+ 
+ impl From<&LinearReg> for Reg {

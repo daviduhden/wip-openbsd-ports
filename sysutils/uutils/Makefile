@@ -120,11 +120,16 @@ GNU_UTILS =		g[ gb2sum gbase32 gbase64 gbasename gbasenc \
 			gusers gvdir gwc gwho gwhoami gyes
 
 # The tar and awk sources use git dependencies that are not available from
-# crates.io; point them at the checkouts fetched by DIST_TUPLE above.
+# crates.io; point them at the checkouts fetched by DIST_TUPLE above.  The
+# awk register leak check is disabled because the ports profile uses
+# panic=unwind, whose cleanup paths instantiate Drop for LinearReg and make
+# the const panic fire at compile time.
 post-patch:
 	patch -d ${WRKDIR}/tar -p0 < ${FILESDIR}/patch-tar_Cargo_toml
 	patch -d ${WRKDIR}/awk -p0 \
 		< ${FILESDIR}/patch-awk_interpreter_Cargo_toml
+	patch -d ${WRKDIR}/awk -p0 \
+		< ${FILESDIR}/patch-awk_interpreter_src_ir_lower_utils_rs
 
 do-build:
 	cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ${MODCARGO_ENV} \

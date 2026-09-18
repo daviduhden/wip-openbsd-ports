@@ -1,13 +1,29 @@
 SPDX-License-Identifier: AGPL-3.0-only
 
-Associate each worker action with its own completion signal and cancellation
-flag so shutdown can claim and join delivery, notification and XFTP workers
-exactly once before their shared SQLite store is closed.
+Associate each worker action with its completion signal and cancellation
+flag so shutdown joins it before closing the shared SQLite store. Track
+XFTP completion independently from network uploads and file preparation.
 
 Index: src/Simplex/Messaging/Agent/Env/SQLite.hs
 --- src/Simplex/Messaging/Agent/Env/SQLite.hs.orig
 +++ src/Simplex/Messaging/Agent/Env/SQLite.hs
-@@ -323,7 +323,8 @@ newXFTPAgent = do
+@@ -309,6 +309,7 @@ data XFTPAgent = XFTPAgent
+     xftpWorkDir :: TVar (Maybe FilePath),
+     xftpRcvWorkers :: TMap (Maybe XFTPServer) Worker,
+     xftpSndWorkers :: TMap (Maybe XFTPServer) Worker,
++    xftpSndCompleteWorkers :: TMap () Worker,
+     xftpDelWorkers :: TMap XFTPServer Worker
+   }
+
+@@ -317,13 +318,15 @@ newXFTPAgent = do
+   xftpWorkDir <- newTVarIO Nothing
+   xftpRcvWorkers <- TM.emptyIO
+   xftpSndWorkers <- TM.emptyIO
++  xftpSndCompleteWorkers <- TM.emptyIO
+   xftpDelWorkers <- TM.emptyIO
+-  pure XFTPAgent {xftpWorkDir, xftpRcvWorkers, xftpSndWorkers, xftpDelWorkers}
++  pure XFTPAgent {xftpWorkDir, xftpRcvWorkers, xftpSndWorkers, xftpSndCompleteWorkers, xftpDelWorkers}
+
  data Worker = Worker
    { workerId :: Int,
      doWork :: TMVar (),
@@ -16,4 +32,4 @@ Index: src/Simplex/Messaging/Agent/Env/SQLite.hs
 +    cancelled :: TVar Bool,
      restarts :: TVar RestartCount
    }
- 
+

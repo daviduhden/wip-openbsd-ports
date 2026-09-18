@@ -38,7 +38,7 @@ stay offline and must reproduce the build from `distinfo` alone.
 6. Run the full validation workflow:
 
    ```sh
-   make clean
+   make clean=all
    make patch
    make configure
    make build
@@ -69,13 +69,15 @@ Regenerate the crate list:
 
 ```sh
 cd /usr/ports/editors/msedit
-make clean
+make clean=all
 make makesum
 make extract
+make modcargo-gen-crates
 make modcargo-gen-crates > /tmp/crates.inc
 cp /tmp/crates.inc crates.inc
-make clean
+make clean=all
 make makesum
+make modcargo-gen-crates-licenses
 make modcargo-gen-crates-licenses > /tmp/crates.inc
 mv /tmp/crates.inc crates.inc
 ```
@@ -122,7 +124,8 @@ Regenerate the module list:
 
 ```sh
 cd /usr/ports/net/xd-torrent
-make clean
+make clean=all
+make modgo-gen-modules
 make modgo-gen-modules > modules.inc
 make makesum
 ```
@@ -179,9 +182,10 @@ Regenerate the manifest:
 
 ```sh
 cd /usr/ports/net/simplexmq
-make clean
+make clean=all
 make makesum
 make cabal-inc
+make clean=all
 make makesum
 ```
 

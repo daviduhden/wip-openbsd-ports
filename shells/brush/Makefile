@@ -12,7 +12,7 @@ HOMEPAGE =		https://github.com/reubeno/brush/
 # MIT
 PERMIT_PACKAGE =	Yes
 
-WANTLIB +=		${MODCARGO_WANTLIB}
+WANTLIB +=		${MODCARGO_WANTLIB} m
 
 MODULES =		devel/cargo
 CONFIGURE_STYLE =	cargo

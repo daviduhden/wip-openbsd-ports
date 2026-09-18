@@ -1,7 +1,12 @@
+SPDX-License-Identifier: GPL-2.0-or-later
+
+Rename the client program to ncl in its manual page, matching the name
+installed by this package.
+
 Index: doc/nc.pod
 --- doc/nc.pod.orig
 +++ doc/nc.pod
-@@ -3,27 +3,27 @@
+@@ -3,11 +3,11 @@
  
  =head1 NAME
  
@@ -11,21 +16,11 @@ Index: doc/nc.pod
  =head1 SYNOPSYS
  
 -nc [B<-read>] [B<-create>] [B<-line> I<n> | B<+>I<n>] [B<-do> I<command>] 
--   [B<-ask>] [B<-noask>] [B<-svrname> I<name>] [B<-svrcmd> I<command>] 
--   [B<-lm> I<languagemode>] 
--   [B<-geometry> I<geometry> | B<-g> I<geometry>] [B<-icon> | B<-iconic>] 
--   [B<-display> I<[host]:server[.screen]>] 
--   [B<-timeout> I<seconds>] [B<-wait>] [B<-xrm> I<resourcestring>] 
--   [B<-tabbed>] [B<-untabbed>] [B<-group>] 
--   [B<-V> | B<-version>] [B<-h> | B<-help>] [B<-->] [file...]
 +ncl [B<-read>] [B<-create>] [B<-line> I<n> | B<+>I<n>] [B<-do> I<command>] 
-+    [B<-ask>] [B<-noask>] [B<-svrname> I<name>] [B<-svrcmd> I<command>] 
-+    [B<-lm> I<languagemode>] 
-+    [B<-geometry> I<geometry> | B<-g> I<geometry>] [B<-icon> | B<-iconic>] 
-+    [B<-display> I<[host]:server[.screen]>] 
-+    [B<-timeout> I<seconds>] [B<-wait>] [B<-xrm> I<resourcestring>] 
-+    [B<-tabbed>] [B<-untabbed>] [B<-group>] 
-+    [B<-V> | B<-version>] [B<-h> | B<-help>] [B<-->] [file...]
+    [B<-ask>] [B<-noask>] [B<-svrname> I<name>] [B<-svrcmd> I<command>] 
+    [B<-lm> I<languagemode>] 
+    [B<-geometry> I<geometry> | B<-g> I<geometry>] [B<-icon> | B<-iconic>] 
+@@ -18,12 +18,12 @@
  
  =head1 DESCRIPTION
  
@@ -40,7 +35,7 @@ Index: doc/nc.pod
  Client/server mode is useful for integrating NEdit with software development
  environments, mailers, and other programs; or just as a quick way to open files
  from the shell command line without starting a new NEdit session.
-@@ -49,25 +49,25 @@ Go to line number I<n>.
+@@ -49,25 +49,25 @@
  Execute an NEdit macro or action on the file following the -do argument on the
  command line.
  
@@ -70,22 +65,7 @@ Index: doc/nc.pod
  the X resource `nc.serverCommand', by default, I<"nedit -server">.
  
  =item  B<-lm> I<languagemode>
-@@ -107,11 +107,11 @@ increase the time-out period. In most cases, the defau
- 
- =item B<-wait>
- 
--Instructs B<nc> not to return to the shell until all files given
-+Instructs B<ncl> not to return to the shell until all files given
- are closed.
- 
--Normally, B<nc> returns once the files given in its command line
--are opened by the server. When this option is given, nc returns
-+Normally, B<ncl> returns once the files given in its command line
-+are opened by the server. When this option is given, ncl returns
- only after the last file given in this call is closed.
- Note that this option affects all files, not only the ones
- following this option in the command line.
-@@ -167,11 +167,11 @@ for your display:
+@@ -155,11 +155,11 @@
  
  =head1 NOTES
  
@@ -101,7 +81,7 @@ Index: doc/nc.pod
  that is running on a machine with a different host name, even though it may be
  perfectly appropriate for editing a given file.
  
-@@ -182,11 +182,11 @@ command line, for example:
+@@ -170,11 +170,11 @@
  
  =item  incorrect:
  

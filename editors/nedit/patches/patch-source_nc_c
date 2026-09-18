@@ -1,7 +1,12 @@
+SPDX-License-Identifier: GPL-2.0-or-later
+
+Rename the client program in the usage help and avoid the %n printf
+conversion.
+
 Index: source/nc.c
 --- source/nc.c.orig
 +++ source/nc.c
-@@ -112,15 +112,15 @@ static const char cmdLineHelp[] =
+@@ -110,15 +110,15 @@
  #ifdef VMS
  "[Sorry, no on-line help available.]\n"; /* Why is that ? */
  #else
@@ -26,7 +31,7 @@ Index: source/nc.c
  #endif /*VMS*/
  
  /* Structure to hold X Resource values */
-@@ -778,10 +778,10 @@ static void parseCommandLine(int argc, char **argv, Co
+@@ -740,10 +740,10 @@
                 The "long" cast on strlen() is necessary because size_t
                 is 64 bit on Alphas, and 32-bit on most others.  There is
                 no printf format specifier for "size_t", thanx, ANSI. */
@@ -39,7 +44,7 @@ Index: source/nc.c
      	    outPtr += charsWritten;
      	    strcpy(outPtr, path);
      	    outPtr += strlen(path);
-@@ -816,9 +816,9 @@ static void parseCommandLine(int argc, char **argv, Co
+@@ -778,9 +778,9 @@
       * iconic state (and optional language mode and geometry).
       */
      if (toDoCommand[0] != '\0' || fileCount == 0) {

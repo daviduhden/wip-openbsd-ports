@@ -10,7 +10,7 @@ COMMENT-tar =		Rust implementation of tar
 V =			0.12.0
 DISTNAME =		coreutils-${V}
 
-FINDUTILS_V =		0.9.1
+FINDUTILS_V =		0.10.0
 DIFFUTILS_V =		0.5.0
 GREP_V =		0.2.0
 SED_V =			0.2.0

@@ -76,6 +76,10 @@ MODCLANG_COMPILER_LINKS =	No
 MODCARGO_ENV +=		LIBCLANG_PATH=${LOCALBASE}/llvm${MODCLANG_VERSION}/lib \
 			LD_LIBRARY_PATH=${LOCALBASE}/llvm${MODCLANG_VERSION}/lib
 
+# The devel/cargo module makes zstd-sys link the system libzstd without
+# adding its directory to the search path.
+MODCARGO_RUSTFLAGS +=	-L${LOCALBASE}/lib
+
 # The coreutils release is the primary distfile; the remaining projects are
 # pinned tarballs fetched from GitHub by DIST_TUPLE.
 GH_ACCOUNT =		uutils

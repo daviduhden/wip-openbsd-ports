@@ -16,6 +16,10 @@ WANTLIB += c pthread
 
 MODULES =		lang/go
 
+# The module default tests only the root package, which has no Go files;
+# run the whole upstream suite instead.
+TEST_TARGET =	./...
+
 BUILD_DEPENDS =	textproc/groff \
 		textproc/scdoc
 

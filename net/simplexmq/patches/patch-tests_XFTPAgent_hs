@@ -9,8 +9,9 @@ Require durable completion and source cleanup when SFDONE is received.
 Also interrupt a fully uploaded file before final progress and recover its
 completion without a server, then download it to verify the descriptions.
 
-Access the added SndFile fields with OverloadedRecordDot: GHC 9.10 rejects
-qualified duplicate record fields in patterns as ambiguous.
+Access the added SndFile fields with OverloadedRecordDot and give the local
+helpers explicit types: GHC 9.10 rejects qualified duplicate record fields in
+patterns and needs FlexibleContexts for their inferred HasField constraints.
 
 Index: tests/XFTPAgent.hs
 --- tests/XFTPAgent.hs.orig
@@ -144,7 +145,7 @@ Index: tests/XFTPAgent.hs
      doesDirectoryExist prefixPath `shouldReturn` False
      doesFileExist encPath `shouldReturn` False
  
-@@ -476,36 +477,108 @@
+@@ -476,36 +477,110 @@
  testXFTPAgentSendCleanup = withGlobalLogging logCfgNoLogs $ do
    filePath <- createRandomFile
  
@@ -223,7 +224,9 @@ Index: tests/XFTPAgent.hs
 +    withAgent 3 agentCfg initAgentServers testDB2 $ \rcp ->
 +      runRight_ . void $ testReceive rcp rfd filePath
 +  where
++    chunkUploaded :: FT.SndFileChunk -> Bool
 +    chunkUploaded chunk = any uploaded chunk.replicas
++    uploaded :: FT.SndFileChunkReplica -> Bool
 +    uploaded rep = rep.replicaStatus == FT.SFRSUploaded
 +
 +getSndFileState :: HasCallStack => AgentClient -> SndFileId -> IO FT.SndFile

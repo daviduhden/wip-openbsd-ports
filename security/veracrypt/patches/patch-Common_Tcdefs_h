@@ -1,0 +1,18 @@
+SPDX-License-Identifier: Apache-2.0
+
+Set TC_STR_RELEASE_DATE to June 9, 2026, matching TC_RELEASE_DATE_DAY
+and the upstream "Set release date to June 9th 2026" commit.  The awk
+helper in Build/Tools/source_date_epoch.sh requires both dates to agree.
+
+Index: Common/Tcdefs.h
+--- Common/Tcdefs.h.orig
++++ Common/Tcdefs.h
+@@ -73,7 +73,7 @@
+ #define VERSION_NUM						0x0126
+ 
+ // Release date
+-#define TC_STR_RELEASE_DATE			L"June 8, 2026"
++#define TC_STR_RELEASE_DATE			L"June 9, 2026"
+ #define TC_RELEASE_DATE_YEAR			2026
+ #define TC_RELEASE_DATE_MONTH			 6
+ #define TC_RELEASE_DATE_DAY			 9

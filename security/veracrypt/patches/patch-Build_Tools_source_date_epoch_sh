@@ -1,0 +1,22 @@
+SPDX-License-Identifier: Apache-2.0
+
+Continue the month_number ternary expression explicitly: OpenBSD's awk
+does not accept a bare newline after ':' as a line continuation, so the
+release date could not be derived from Common/Tcdefs.h.
+
+Index: Build/Tools/source_date_epoch.sh
+--- Build/Tools/source_date_epoch.sh.orig
++++ Build/Tools/source_date_epoch.sh
+@@ -60,9 +60,9 @@
+ RELEASE_EPOCH=$(awk '
+     function leap(y) { return ((y % 4 == 0 && y % 100 != 0) || (y % 400 == 0)) }
+     function month_number(name) {
+-        return (name == "January" ? 1 : name == "February" ? 2 : name == "March" ? 3 :
+-            name == "April" ? 4 : name == "May" ? 5 : name == "June" ? 6 :
+-            name == "July" ? 7 : name == "August" ? 8 : name == "September" ? 9 :
++        return (name == "January" ? 1 : name == "February" ? 2 : name == "March" ? 3 : \
++            name == "April" ? 4 : name == "May" ? 5 : name == "June" ? 6 : \
++            name == "July" ? 7 : name == "August" ? 8 : name == "September" ? 9 : \
+             name == "October" ? 10 : name == "November" ? 11 : name == "December" ? 12 : 0);
+     }
+     function mdays(m, y) { return (m == 2 ? 28 + leap(y) : (m == 4 || m == 6 || m == 9 || m == 11 ? 30 : 31)) }

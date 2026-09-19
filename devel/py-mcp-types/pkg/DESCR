@@ -1,3 +1,0 @@
-Python types for the Model Context Protocol (MCP), the open standard
-for connecting AI models to external tools and data sources. This
-package provides the protocol data types used by the mcp SDK.

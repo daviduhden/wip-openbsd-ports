@@ -1,4 +1,0 @@
-httpcore2 is a minimal low-level HTTP client. It provides a low-level
-transport layer with connection pooling, synchronous and asynchronous
-I/O, pluggable backends and support for HTTP proxies, used by the
-httpx2 HTTP client library.

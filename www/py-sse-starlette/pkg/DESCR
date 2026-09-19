@@ -1,3 +1,0 @@
-sse-starlette is an extension for Starlette that adds support for
-Server-Sent Events (SSE). It provides responses and utilities for
-streaming real-time events from ASGI applications over HTTP.

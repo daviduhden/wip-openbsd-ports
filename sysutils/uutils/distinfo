@@ -733,7 +733,6 @@ SHA256 (uutils-findutils-0.9.1.tar.gz) = 1txGa3lT8XDMekMywVdsUXG31Je2TgjMY7P89UC
 SHA256 (uutils-grep-0.2.0.tar.gz) = qrtIxfFKpGvvpLCyhIiJ08ov+BnVhVrPq1kPf0fSI7k=
 SHA256 (uutils-sed-0.2.0.tar.gz) = paA7OHG5Y0INFAixFBXJDU1p3wKrTy+CgmtCiZphqHo=
 SHA256 (uutils-tar-95cc92d49fc304b3087542899b29b049fd1e3945.tar.gz) = GKj6w3ASdWelNcODuzn7j1CnlTAWeRxoYqh9ujR4qKM=
-
 SIZE (Hans-Halverson-indexmap-allocator-api-36852f985c01fb9f58f2d9e510655ca1dbb1f4d0.tar.gz) = 89075
 SIZE (cargo/adler2-2.0.1.tar.gz) = 13366
 SIZE (cargo/aes-0.9.2.tar.gz) = 112494

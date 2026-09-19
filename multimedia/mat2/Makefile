@@ -5,7 +5,7 @@ DISTNAME =		mat2-${MODPY_DISTV}
 
 CATEGORIES =		multimedia
 
-HOMEPAGE =		https://0xacab.org/jvoisin/mat2
+HOMEPAGE =		https://github.com/jvoisin/mat2
 
 # GPLv3
 PERMIT_PACKAGE =	Yes

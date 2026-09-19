@@ -1,8 +1,8 @@
 # Building and Testing These Ports on OpenBSD
 
 Ports use the same `category/port` layout as the OpenBSD ports tree.
-The categories currently present are `converters`, `devel`, `editors`,
-`games`, `graphics`, `multimedia`, `net`, `sysutils`, `textproc`, `www`
+The categories currently present are `devel`, `editors`, `games`,
+`graphics`, `multimedia`, `net`, `security`, `shells`, `sysutils`
 and `x11`.
 List the installable paths without checking out or changing anything:
 
@@ -85,9 +85,6 @@ dependency data next to the `Makefile`:
   several independent uutils projects, so its crate list is the union
   over every project `Cargo.lock` and is generated with
   `make uutils-gen-crates` instead of `make modcargo-gen-crates`.
-- `converters/py-html-to-markdown`, `devel/py-litellm` and
-  `textproc/py-tiktoken` use `devel/cargo` through `lang/python` and
-  `crates.inc`.
 - `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/shfmt`
   and `net/xd-torrent` use `lang/go` and `modules.inc`.
 - `net/simplexmq` and `net/simplex-chat` use `devel/cabal` and

@@ -3,7 +3,7 @@ MODCABAL_MANIFEST	= \
 	HUnit	1.6.2.0	0	\
 	OneTuple	0.4.3	0	\
 	Only	0.1	2	\
-	QuickCheck	2.18.0.0	0	\
+	QuickCheck	2.19.0.0	0	\
 	SHA	1.6.4.4	0	\
 	StateVar	1.2.2	0	\
 	ansi-terminal	1.1.5	0	\
@@ -12,7 +12,7 @@ MODCABAL_MANIFEST	= \
 	assoc	1.1.1	2	\
 	async	2.2.6	0	\
 	attoparsec	0.14.4	6	\
-	auto-update	0.2.7	0	\
+	auto-update	0.2.8	0	\
 	base-compat	0.15.0	0	\
 	base-orphans	0.9.4	0	\
 	base16	1.0	4	\
@@ -86,7 +86,7 @@ MODCABAL_MANIFEST	= \
 	http-date	0.0.11	0	\
 	http-semantics	0.4.1	0	\
 	http-types	0.12.6	0	\
-	http2	5.4.4	0	\
+	http2	5.4.4	1	\
 	indexed-traversable	0.1.5	0	\
 	indexed-traversable-instances	0.1.2.1	0	\
 	ini	0.5.1	0	\
@@ -145,7 +145,7 @@ MODCABAL_MANIFEST	= \
 	tasty-hunit	0.10.2	0	\
 	tasty-quickcheck	0.11.1	0	\
 	temporary	1.3	0	\
-	text-iso8601	0.2.0.0	0	\
+	text-iso8601	0.2.0.0	1	\
 	text-short	0.1.6.1	0	\
 	th-abstraction	0.7.2.0	0	\
 	th-compat	0.1.7	0	\
@@ -161,7 +161,7 @@ MODCABAL_MANIFEST	= \
 	transformers-base	0.4.6.1	0	\
 	transformers-compat	0.8	0	\
 	typed-process	0.2.13.0	0	\
-	unicode-data	0.8.0	1	\
+	unicode-data	0.9.0	0	\
 	unicode-transforms	0.4.0.1	9	\
 	unix-compat	0.7.4.1	0	\
 	unix-time	0.5.0	0	\

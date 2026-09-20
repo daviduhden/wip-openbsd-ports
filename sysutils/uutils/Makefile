@@ -189,21 +189,33 @@ do-install:
 
 # The devel/cargo module's modcargo-gen-crates only reads a single Cargo.lock.
 # This port builds several independent projects, so the generated crates.inc
-# is the union over all of them; regenerate it with `make uutils-gen-crates`
+# is the union over all of them.  files/crates-deps-merge.pl merges the
+# registry entries of every lock file the way files/cabal-deps-merge.pl merges
+# the cabal-bundler output for the cabal ports; run `make uutils-gen-crates`
 # and then add licenses with the usual workflow (see BUILDING.md).
 uutils-gen-crates: extract
-	@awk '	/^name = / { n=$$3; gsub("\"", "", n); } \
-		/^version = / { v=$$3; gsub("\"", "", v); } \
-		/^source = "registry\+https:\/\/github.com\/rust-lang\/crates\.io-index"/ \
-			{ print "MODCARGO_CRATES +=\t" n "\t" v; }' \
+	perl ${FILESDIR}/crates-deps-merge.pl \
 		${WRKDIST}/Cargo.lock \
 		${WRKDIR}/findutils/Cargo.lock \
 		${WRKDIR}/diffutils/Cargo.lock \
 		${WRKDIR}/grep/Cargo.lock \
 		${WRKDIR}/sed/Cargo.lock \
 		${WRKDIR}/awk/Cargo.lock \
-		${WRKDIR}/tar/Cargo.lock | \
-		sort -u
+		${WRKDIR}/tar/Cargo.lock > ${.CURDIR}/crates.inc
+
+# The devel/cargo test target runs with --release and debug assertions
+# disabled, so uucore resolves its locale files relative to the test binary
+# instead of the source tree.  Expose the in-tree locales under the release
+# directory so the localization tests find them, then run that test target.
+do-test:
+	mkdir -p ${MODCARGO_TARGET_DIR}/release/locales
+	for d in ${WRKSRC}/src/uu/*/locales; do \
+		u=$${d%/locales}; u=$${u##*/}; \
+		ln -sfn $$d ${MODCARGO_TARGET_DIR}/release/locales/$$u; \
+	done
+	ln -sfn ${WRKSRC}/src/uucore/locales \
+		${MODCARGO_TARGET_DIR}/release/locales/uucore
+	${MODCARGO_TEST_TARGET}
 
 RUN_DEPENDS-main =	${BASE_PKGPATH},-coreutils=${V} \
 			${BASE_PKGPATH},-findutils=${FINDUTILS_V} \

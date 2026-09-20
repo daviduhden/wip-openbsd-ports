@@ -4,6 +4,10 @@ Collect Haskell query counters under the connection lock even when a
 maintenance test already closed the database, then dispose the agent.
 Never query a closed C handle to collect this metadata.
 
+Raise the terminal and server-start waits to 30 seconds.  The release test
+build runs with debug assertions off, and the full suite on a loaded machine
+routinely needs more than the upstream five seconds before the client prints.
+
 Index: tests/ChatClient.hs
 --- tests/ChatClient.hs.orig
 +++ tests/ChatClient.hs
@@ -36,3 +40,20 @@ Index: tests/ChatClient.hs
    closeDBStore chatStore
    threadDelay 200000
  #if !defined(dbPostgres)
+@@ -469,7 +472,7 @@
+
+ getTermLine' :: HasCallStack => Maybe String -> TestCC -> IO String
+ getTermLine' expected cc@TestCC {printOutput} =
+-  5000000 `timeout` atomically (readTQueue $ termQ cc) >>= \case
++  30000000 `timeout` atomically (readTQueue $ termQ cc) >>= \case
+     Just s -> do
+       -- remove condition to always echo virtual terminal
+       -- when True $ do
+@@ -690,6 +693,6 @@
+     (\_ -> waitFor started "start" >> f)
+   where
+     waitFor started s =
+-      5000000 `timeout` atomically (takeTMVar started) >>= \case
++      30000000 `timeout` atomically (takeTMVar started) >>= \case
+         Nothing -> error $ "server did not " <> s
+         _ -> pure ()

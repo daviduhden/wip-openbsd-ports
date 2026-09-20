@@ -119,8 +119,11 @@ make makesum
 ```
 
 For `sysutils/uutils`, replace the `make modcargo-gen-crates` step with
-`make uutils-gen-crates` (the module target only understands one
-`Cargo.lock`); the rest of the sequence is unchanged.
+`make uutils-gen-crates`.  That target runs `files/crates-deps-merge.pl`
+over every project `Cargo.lock` and writes `crates.inc` directly, so the
+`/tmp` redirect and `cp` are not needed.  The `-licenses` pass is
+unchanged; the devel/cargo module only ever reads a single `Cargo.lock`,
+which is why the merge lives in the port.
 
 [UPDATE.md](UPDATE.md) has the complete procedure: which version
 variables to bump, how to refresh patches, and how to validate the

@@ -6,6 +6,9 @@ store close operation for fixture cleanup, including already closed stores.
 Verify that a command can register a new server before queue creation
 and resolve that server after closing and reopening the store.
 
+Mark a prepared send file as uploading before its chunk is expected, matching
+the stricter upload query that only selects committed preparation.
+
 Index: tests/AgentTests/SQLiteTests.hs
 --- tests/AgentTests/SQLiteTests.hs.orig
 +++ tests/AgentTests/SQLiteTests.hs
@@ -94,3 +97,12 @@ Index: tests/AgentTests/SQLiteTests.hs
          it "should getPendingQueueMsg" testGetPendingQueueMsg
          it "should getPendingServerCommand" testGetPendingServerCommand
          it "should getNextRcvChunkToDownload" testGetNextRcvChunkToDownload
+@@ -815,6 +839,8 @@
+     -- create file 2
+     Right fId2 <- createSndFile db g 1 (CryptoFile "filepath" Nothing) 1 "filepath" testFileSbKey testFileCbNonce Nothing
+     updateSndFileEncrypted db 2 (FileDigest "abc") [(XFTPChunkSpec "filepath" 1 1, FileDigest "ghi")]
++    -- Only files whose preparation is committed are selected for upload.
++    updateSndFileStatus db 2 SFSUploading
+     createSndFileReplica_ db 2 newSndChunkReplica1
+
+     -- Left e <- getNextSndChunkToUpload db xftpServer1 86400

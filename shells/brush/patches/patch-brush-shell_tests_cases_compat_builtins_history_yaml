@@ -1,0 +1,32 @@
+SPDX-License-Identifier: MIT
+
+Skip the pty history cases on OpenBSD: the oracle prompt handling
+differs (bash times out waiting for the prompt and is killed).
+
+Index: brush-shell/tests/cases/compat/builtins/history.yaml
+--- brush-shell/tests/cases/compat/builtins/history.yaml.orig
++++ brush-shell/tests/cases/compat/builtins/history.yaml
+@@ -9,6 +9,7 @@ cases:
+       echo else
+ 
+   - name: "existing history file"
++    incompatible_os: ["openbsd"] # Oracle prompt handling differs under the pty
+     pty: true
+     env:
+       HISTFILE: "history-file.txt"
+@@ -26,6 +27,7 @@ cases:
+       #send:Ctrl+D
+ 
+   - name: "existing history file with timestamps"
++    incompatible_os: ["openbsd"] # Oracle prompt handling differs under the pty
+     pty: true
+     env:
+       HISTFILE: "history-file.txt"
+@@ -45,6 +47,7 @@ cases:
+       #send:Ctrl+D
+ 
+   - name: "existing history file with timestamps and HISTTIMEFORMAT"
++    incompatible_os: ["openbsd"] # Oracle prompt handling differs under the pty
+     pty: true
+     env:
+       HISTFILE: "history-file.txt"

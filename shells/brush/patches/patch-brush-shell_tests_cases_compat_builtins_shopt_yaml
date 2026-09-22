@@ -1,0 +1,25 @@
+SPDX-License-Identifier: MIT
+
+Detect OpenBSD as a test-harness host OS and skip the compatibility
+cases that differ on OpenBSD (pty/oracle output, ulimit to infinity,
+extglob handling).
+
+Index: brush-shell/tests/cases/compat/builtins/shopt.yaml
+--- brush-shell/tests/cases/compat/builtins/shopt.yaml.orig
++++ brush-shell/tests/cases/compat/builtins/shopt.yaml
+@@ -23,6 +23,7 @@ cases:
+   - name: "shopt -o interactive defaults"
+     ignore_whitespace: true # Spacing changes across versions
+     min_oracle_version: 5.3 # Options changed in bash 5.3
++    incompatible_os: ["openbsd"] # Oracle produces no output under the pty
+     pty: true
+     args: ["-i", "-c", "shopt -o | sort | grep -v monitor"]
+ 
+@@ -39,6 +40,7 @@ cases:
+   - name: "shopt -o interactive monitor default"
+     ignore_whitespace: true # Spacing changes across versions
+     min_oracle_version: 5.3 # Options changed in bash 5.3
++    incompatible_os: ["openbsd"] # Oracle produces no output under the pty
+     pty: true
+     args: ["-i", "-c", "shopt -o monitor"]
+ 

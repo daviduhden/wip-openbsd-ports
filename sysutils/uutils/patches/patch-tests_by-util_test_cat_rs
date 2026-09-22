@@ -1,0 +1,22 @@
+SPDX-License-Identifier: MIT
+
+Make the uutils test suite pass on OpenBSD.  Tests that rely on the
+filesystem denying access are skipped when running as root (the ports
+test target runs with root privileges), matching the GNU coreutils
+test suite.  Also treat the xattr crate's unsupported-platform error
+as ENOTSUP so optional attribute preservation is silent on OpenBSD.
+
+Index: tests/by-util/test_cat.rs
+--- tests/by-util/test_cat.rs.orig
++++ tests/by-util/test_cat.rs
+@@ -754,6 +754,10 @@ fn test_u_ignored() {
+ #[cfg(unix)]
+ #[cfg_attr(wasi_runner, ignore = "WASI: errno/error-message mismatches")]
+ fn test_write_fast_read_error() {
++    if uutests::util::is_root() {
++        // The filesystem permission checks are bypassed when running as root.
++        return;
++    }
+     use std::os::unix::fs::PermissionsExt;
+ 
+     let (at, mut ucmd) = at_and_ucmd!();

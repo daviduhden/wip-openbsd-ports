@@ -1,0 +1,22 @@
+SPDX-License-Identifier: MIT
+
+Make the uutils test suite pass on OpenBSD.  Tests that rely on the
+filesystem denying access are skipped when running as root (the ports
+test target runs with root privileges), matching the GNU coreutils
+test suite.  Also treat the xattr crate's unsupported-platform error
+as ENOTSUP so optional attribute preservation is silent on OpenBSD.
+
+Index: tests/by-util/test_md5sum.rs
+--- tests/by-util/test_md5sum.rs.orig
++++ tests/by-util/test_md5sum.rs
+@@ -727,6 +727,10 @@ fn test_check_directory_error() {
+ #[test]
+ #[cfg(not(windows))]
+ fn test_continue_after_directory_error() {
++    if uutests::util::is_root() {
++        // The filesystem permission checks are bypassed when running as root.
++        return;
++    }
+     let scene = TestScenario::new(util_name!());
+     let at = &scene.fixtures;
+ 

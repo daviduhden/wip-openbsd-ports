@@ -1,0 +1,22 @@
+SPDX-License-Identifier: MIT
+
+Make the uutils test suite pass on OpenBSD.  Tests that rely on the
+filesystem denying access are skipped when running as root (the ports
+test target runs with root privileges), matching the GNU coreutils
+test suite.  Also treat the xattr crate's unsupported-platform error
+as ENOTSUP so optional attribute preservation is silent on OpenBSD.
+
+Index: tests/by-util/test_nice.rs
+--- tests/by-util/test_nice.rs.orig
++++ tests/by-util/test_nice.rs
+@@ -20,6 +20,10 @@ fn test_get_current_niceness() {
+ #[cfg(unix)]
+ #[cfg(not(target_os = "android"))]
+ fn test_nice_adj_negative() {
++    if uutests::util::is_root() {
++        // The filesystem permission checks are bypassed when running as root.
++        return;
++    }
+     // This assumes the test suite is run as a normal (non-root) user, and as
+     // such attempting to set a negative niceness value will be rejected by
+     // the OS.  If it gets denied, then we know a negative value was parsed

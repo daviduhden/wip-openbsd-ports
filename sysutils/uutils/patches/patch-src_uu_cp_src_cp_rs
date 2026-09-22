@@ -1,0 +1,23 @@
+SPDX-License-Identifier: MIT
+
+Make the uutils test suite pass on OpenBSD.  Tests that rely on the
+filesystem denying access are skipped when running as root (the ports
+test target runs with root privileges), matching the GNU coreutils
+test suite.  Also treat the xattr crate's unsupported-platform error
+as ENOTSUP so optional attribute preservation is silent on OpenBSD.
+
+Index: src/uu/cp/src/cp.rs
+--- src/uu/cp/src/cp.rs.orig
++++ src/uu/cp/src/cp.rs
+@@ -1403,6 +1403,11 @@ fn is_enotsup_error(error: &CpError) -> bool {
+                 return true;
+             }
+             raw == Some(EOPNOTSUPP)
++                // The `xattr` crate has no implementation for some Unix
++                // targets (e.g. OpenBSD) and reports
++                // `io::ErrorKind::Unsupported`; that means extended
++                // attributes are unsupported here, like EOPNOTSUPP.
++                || e.kind() == std::io::ErrorKind::Unsupported
+         }
+         _ => false,
+     }

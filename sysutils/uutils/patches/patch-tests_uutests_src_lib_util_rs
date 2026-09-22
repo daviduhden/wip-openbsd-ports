@@ -1,0 +1,32 @@
+SPDX-License-Identifier: MIT
+
+Make the uutils test suite pass on OpenBSD.  Tests that rely on the
+filesystem denying access are skipped when running as root (the ports
+test target runs with root privileges), matching the GNU coreutils
+test suite.  Also treat the xattr crate's unsupported-platform error
+as ENOTSUP so optional attribute preservation is silent on OpenBSD.
+
+Index: tests/uutests/src/lib/util.rs
+--- tests/uutests/src/lib/util.rs.orig
++++ tests/uutests/src/lib/util.rs
+@@ -99,6 +99,20 @@ pub fn is_ci() -> bool {
+     env::var("CI").is_ok_and(|s| s.eq_ignore_ascii_case("true"))
+ }
+ 
++/// Test if the test suite is running with root (effective user id 0)
++/// privileges.  Tests that rely on the filesystem denying access are skipped
++/// when run as root, matching the GNU coreutils test suite.
++#[cfg(unix)]
++pub fn is_root() -> bool {
++    // SAFETY: geteuid has no preconditions.
++    unsafe { libc::geteuid() == 0 }
++}
++
++#[cfg(not(unix))]
++pub fn is_root() -> bool {
++    false
++}
++
+ /// Check if a locale is available on the system by verifying that
+ /// `locale charmap` returns `"UTF-8"` when `LC_ALL` is set to the given locale.
+ #[cfg(unix)]

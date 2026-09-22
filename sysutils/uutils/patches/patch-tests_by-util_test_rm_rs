@@ -1,0 +1,44 @@
+SPDX-License-Identifier: MIT
+
+Make the uutils test suite pass on OpenBSD.  Tests that rely on the
+filesystem denying access are skipped when running as root (the ports
+test target runs with root privileges), matching the GNU coreutils
+test suite.  Also treat the xattr crate's unsupported-platform error
+as ENOTSUP so optional attribute preservation is silent on OpenBSD.
+
+Index: tests/by-util/test_rm.rs
+--- tests/by-util/test_rm.rs.orig
++++ tests/by-util/test_rm.rs
+@@ -1119,6 +1119,10 @@ fn test_recursive_symlink_loop() {
+ #[cfg(not(windows))]
+ #[test]
+ fn test_only_first_error_recursive() {
++    if uutests::util::is_root() {
++        // The filesystem permission checks are bypassed when running as root.
++        return;
++    }
+     let (at, mut ucmd) = at_and_ucmd!();
+     at.mkdir("a");
+     at.mkdir("a/b");
+@@ -1141,6 +1145,10 @@ fn test_only_first_error_recursive() {
+ #[cfg(not(windows))]
+ #[test]
+ fn test_unreadable_and_nonempty_dir() {
++    if uutests::util::is_root() {
++        // The filesystem permission checks are bypassed when running as root.
++        return;
++    }
+     let (at, mut ucmd) = at_and_ucmd!();
+     at.mkdir_all("a/b");
+     at.set_mode("a", 0o0333);
+@@ -1155,6 +1163,10 @@ fn test_unreadable_and_nonempty_dir() {
+ #[cfg(not(windows))]
+ #[test]
+ fn test_recursive_remove_unreadable_subdir() {
++    if uutests::util::is_root() {
++        // The filesystem permission checks are bypassed when running as root.
++        return;
++    }
+     // Regression test for https://github.com/uutils/coreutils/issues/10966
+     let (at, mut ucmd) = at_and_ucmd!();
+     at.mkdir_all("foo/bar");

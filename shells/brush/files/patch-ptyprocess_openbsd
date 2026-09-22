@@ -1,3 +1,8 @@
+OpenBSD has no ptsname_r and does not acquire the controlling terminal just
+by opening the pty slave: like FreeBSD/macOS it has to call TIOCSCTTY (see
+login_tty(3)).  Add an OpenBSD get_slave_name based on ptsname(3) and route
+OpenBSD to the TIOCSCTTY branch of make_controlling_tty.
+
 Index: src/lib.rs
 --- src/lib.rs.orig
 +++ src/lib.rs
@@ -10,17 +15,33 @@ Index: src/lib.rs
  use nix::sys::stat::Mode;
  use nix::sys::wait::{self, waitpid};
  use nix::sys::{signal, termios};
-@@ -467,8 +467,13 @@
-     fn as_raw_fd(&self) -> RawFd {
-         self.fd.as_raw_fd()
+@@ -469,6 +469,11 @@
      }
-+}
-+
+ }
+ 
 +#[cfg(target_os = "openbsd")]
 +fn get_slave_name(fd: &PtyMaster) -> Result<String> {
 +    unsafe { ptsname(fd) }
- }
- 
++}
++
  #[cfg(any(target_os = "linux", target_os = "android"))]
  fn get_slave_name(fd: &PtyMaster) -> Result<String> {
      nix::pty::ptsname_r(fd)
+@@ -655,7 +660,7 @@
+ }
+ 
+ fn make_controlling_tty(ptm: &Master) -> Result<()> {
+-    #[cfg(not(any(target_os = "freebsd", target_os = "macos")))]
++    #[cfg(not(any(target_os = "freebsd", target_os = "macos", target_os = "openbsd")))]
+     {
+         let pts_name = ptm.get_slave_name()?;
+         // https://github.com/pexpect/ptyprocess/blob/c69450d50fbd7e8270785a0552484182f486092f/ptyprocess/_fork_pty.py
+@@ -702,7 +707,7 @@
+         close(fd)?;
+     }
+ 
+-    #[cfg(any(target_os = "freebsd", target_os = "macos"))]
++    #[cfg(any(target_os = "freebsd", target_os = "macos", target_os = "openbsd"))]
+     {
+         let pts_fd = ptm.get_slave_fd()?;
+ 

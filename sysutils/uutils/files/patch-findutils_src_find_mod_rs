@@ -1,0 +1,42 @@
+SPDX-License-Identifier: MIT
+
+Skip the findutils tests that cannot pass on OpenBSD: the /etc/shadow
+permission check runs as root, the time/newer tests depend on the
+filesystem timestamp/birthtime resolution and clock, and birthtimes are
+not usable in the OpenBSD test environment.
+
+Index: src/find/mod.rs
+--- src/find/mod.rs.orig
++++ src/find/mod.rs
+@@ -817,6 +817,7 @@ mod tests {
+     }
+ 
+     #[test]
++    #[cfg(not(target_os = "openbsd"))]
+     fn find_newer() {
+         // create a temp directory and file that are newer than the static
+         // files in the source tree.
+@@ -1152,9 +1153,9 @@ mod tests {
+     #[test]
+     fn test_find_newer_xy_before_changed_time() {
+         // normal - before the changed time
+-        #[cfg(target_os = "linux")]
++        #[cfg(any(target_os = "linux", target_os = "openbsd"))]
+         let args = ["-newerat", "-newerct", "-newermt"];
+-        #[cfg(not(target_os = "linux"))]
++        #[cfg(not(any(target_os = "linux", target_os = "openbsd")))]
+         let args = ["-newerat", "-newerBt", "-newerct", "-newermt"];
+         let times = ["jan 01, 2000", "jan 01, 2000 00:00:00"];
+ 
+@@ -1175,9 +1176,9 @@ mod tests {
+     #[test]
+     fn test_find_newer_xy_after_changed_time() {
+         // normal - after the changed time
+-        #[cfg(target_os = "linux")]
++        #[cfg(any(target_os = "linux", target_os = "openbsd"))]
+         let args = ["-newerat", "-newerct", "-newermt"];
+-        #[cfg(not(target_os = "linux"))]
++        #[cfg(not(any(target_os = "linux", target_os = "openbsd")))]
+         let args = ["-newerat", "-newerBt", "-newerct", "-newermt"];
+         let times = ["jan 01, 2037", "jan 01, 2037 00:00:00"];
+ 

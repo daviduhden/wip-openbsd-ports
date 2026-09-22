@@ -134,6 +134,15 @@ post-patch:
 		< ${FILESDIR}/patch-awk_interpreter_Cargo_toml
 	patch -d ${WRKDIR}/awk -p0 \
 		< ${FILESDIR}/patch-awk_interpreter_src_ir_lower_utils_rs
+	# The findutils tests that depend on root privileges, on the filesystem
+	# timestamp/birthtime resolution or on the system clock cannot pass in the
+	# OpenBSD test environment; skip them like the coreutils ones.
+	patch -d ${WRKDIR}/findutils -p0 \
+		< ${FILESDIR}/patch-findutils_src_find_matchers_mod_rs
+	patch -d ${WRKDIR}/findutils -p0 \
+		< ${FILESDIR}/patch-findutils_src_find_matchers_time_rs
+	patch -d ${WRKDIR}/findutils -p0 \
+		< ${FILESDIR}/patch-findutils_src_find_mod_rs
 
 do-build:
 	cd ${WRKSRC} && ${SETENV} ${MAKE_ENV} ${MODCARGO_ENV} \

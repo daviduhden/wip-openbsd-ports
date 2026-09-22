@@ -1,0 +1,19 @@
+SPDX-License-Identifier: MIT
+
+Skip the findutils tests that cannot pass on OpenBSD: the /etc/shadow
+permission check runs as root, and the time/newer tests depend on the
+filesystem timestamp/birthtime resolution and clock, which differ in
+the OpenBSD test environment.
+
+Index: src/find/matchers/mod.rs
+--- src/find/matchers/mod.rs.orig
++++ src/find/matchers/mod.rs
+@@ -1951,7 +1951,7 @@ mod tests {
+         assert!(file.is_ok());
+ 
+         // test error when file no permission
+-        #[cfg(unix)]
++        #[cfg(all(unix, not(target_os = "openbsd")))]
+         {
+             let result = get_or_create_file("/etc/shadow");
+             assert!(result.is_err());

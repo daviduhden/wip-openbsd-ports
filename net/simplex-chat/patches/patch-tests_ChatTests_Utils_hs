@@ -4,10 +4,15 @@ OpenBSD builders need more than the upstream 90-second per-example watchdog
 for the complete asynchronous chat integration workloads.  Keep every test
 and assertion intact while retaining a finite cleanup-safe bound.
 
+getProfilePictureByName must not assume the profile image has already been
+delivered: poll for a bounded time and decode the nullable column as Maybe,
+so a late update returns Nothing instead of failing with a NULL-to-Text
+conversion error.
+
 Index: tests/ChatTests/Utils.hs
 --- tests/ChatTests/Utils.hs.orig
 +++ tests/ChatTests/Utils.hs
-@@ -95,7 +95,7 @@ it :: HasCallStack => String -> (ps -> E
+@@ -95,7 +95,7 @@
  it name test =
    Hspec.it name $ \tmp -> timeout t (test tmp) >>= maybe (error "test timed out") pure
    where
@@ -16,3 +21,29 @@ Index: tests/ChatTests/Utils.hs
  
  xit' :: HasCallStack => String -> (ps -> Expectation) -> SpecWith (Arg (ps -> Expectation))
  xit' = if os == "linux" then xit else it
+@@ -677,10 +677,21 @@
+       runExceptT (createNoteFolder db user) >>= either (fail . show) pure
+ 
+ getProfilePictureByName :: TestCC -> String -> IO (Maybe String)
+-getProfilePictureByName cc displayName =
+-  withTransaction (chatStore $ chatController cc) $ \db ->
+-    maybeFirstRow fromOnly $
+-      DB.query db "SELECT image FROM contact_profiles WHERE display_name = ? LIMIT 1" (Only displayName)
++getProfilePictureByName cc displayName = go (300 :: Int)
++  where
++    -- The profile image is delivered by an asynchronous profile update after
++    -- the member joins.  Poll for a bounded time and decode the nullable
++    -- column as Maybe so a not-yet-received image returns Nothing instead of
++    -- failing with a NULL-to-Text conversion error.
++    go 0 = queryImage
++    go n = queryImage >>= maybe (threadDelay 100000 >> go (n - 1)) pure
++    queryImage = do
++      rows <-
++        withTransaction (chatStore $ chatController cc) $ \db ->
++          DB.query db "SELECT image FROM contact_profiles WHERE display_name = ? LIMIT 1" (Only displayName) :: IO [Only (Maybe String)]
++      pure $ case rows of
++        [Only image] -> image
++        _ -> Nothing
+ 
+ pqSndForContact :: TestCC -> ContactId -> IO PQEncryption
+ pqSndForContact = pqForContact_ pqSndEnabled PQEncOff

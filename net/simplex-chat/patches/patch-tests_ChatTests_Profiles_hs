@@ -1,0 +1,138 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Make the timed-message preference examples deterministic by using a ttl
+comfortably larger than the assertions (a 1s ttl is exceeded by the setup on
+a loaded builder).  Give the persistent-server retry examples more time to
+accept connections, and accept the maintenance set-client-service echo and
+its "ok" response in any order.
+
+Index: tests/ChatTests/Profiles.hs
+--- tests/ChatTests/Profiles.hs.orig
++++ tests/ChatTests/Profiles.hs
+@@ -111,9 +111,9 @@
+     it "allow full deletion to contact" testAllowFullDeletionContact
+     it "allow full deletion to group" testAllowFullDeletionGroup
+     it "prohibit direct messages to group members" testProhibitDirectMessages
+-    xit'' "enable timed messages with contact" testEnableTimedMessagesContact
++    it "enable timed messages with contact" testEnableTimedMessagesContact
+     it "enable timed messages in group" testEnableTimedMessagesGroup
+-    xit'' "timed messages enabled globally, contact turns on" testTimedMessagesEnabledGlobally
++    it "timed messages enabled globally, contact turns on" testTimedMessagesEnabledGlobally
+     it "update multiple user preferences for multiple contacts" testUpdateMultipleUserPrefs
+     describe "group preferences for specific member role" $ do
+       it "direct messages" testGroupPrefsDirectForRole
+@@ -2712,41 +2712,41 @@
+   testChat2 aliceProfile bobProfile $
+     \alice bob -> do
+       connectUsers alice bob
+-      alice ##> "/_set prefs @2 {\"timedMessages\": {\"allow\": \"yes\", \"ttl\": 1}}"
++      alice ##> "/_set prefs @2 {\"timedMessages\": {\"allow\": \"yes\", \"ttl\": 20}}"
+       alice <## "you updated preferences for bob:"
+-      alice <## "Disappearing messages: enabled (you allow: yes (1 sec), contact allows: yes)"
++      alice <## "Disappearing messages: enabled (you allow: yes (20 sec), contact allows: yes)"
+       bob <## "alice updated preferences for you:"
+-      bob <## "Disappearing messages: enabled (you allow: yes (1 sec), contact allows: yes (1 sec))"
++      bob <## "Disappearing messages: enabled (you allow: yes (20 sec), contact allows: yes (20 sec))"
+       bob ##> "/set disappear @alice yes"
+       bob <## "your preferences for alice did not change"
+       alice <##> bob
+       threadDelay 500000
+-      alice #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(1, "Disappearing messages: enabled (1 sec)"), (1, "hi"), (0, "hey")])
+-      bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "Disappearing messages: enabled (1 sec)"), (0, "hi"), (1, "hey")])
++      alice #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(1, "Disappearing messages: enabled (20 sec)"), (1, "hi"), (0, "hey")])
++      bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "Disappearing messages: enabled (20 sec)"), (0, "hi"), (1, "hey")])
+       threadDelay 1000000
+       alice <### ["timed message deleted: hi", "timed message deleted: hey"]
+       bob <### ["timed message deleted: hi", "timed message deleted: hey"]
+-      alice #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(1, "Disappearing messages: enabled (1 sec)")])
+-      bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "Disappearing messages: enabled (1 sec)")])
++      alice #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(1, "Disappearing messages: enabled (20 sec)")])
++      bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "Disappearing messages: enabled (20 sec)")])
+       -- turn off, messages are not disappearing
+       bob ##> "/set disappear @alice no"
+       bob <## "you updated preferences for alice:"
+-      bob <## "Disappearing messages: off (you allow: no, contact allows: yes (1 sec))"
++      bob <## "Disappearing messages: off (you allow: no, contact allows: yes (20 sec))"
+       alice <## "bob updated preferences for you:"
+-      alice <## "Disappearing messages: off (you allow: yes (1 sec), contact allows: no)"
++      alice <## "Disappearing messages: off (you allow: yes (20 sec), contact allows: no)"
+       alice <##> bob
+       threadDelay 1500000
+-      alice #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(1, "Disappearing messages: enabled (1 sec)"), (0, "Disappearing messages: off"), (1, "hi"), (0, "hey")])
+-      bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "Disappearing messages: enabled (1 sec)"), (1, "Disappearing messages: off"), (0, "hi"), (1, "hey")])
++      alice #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(1, "Disappearing messages: enabled (20 sec)"), (0, "Disappearing messages: off"), (1, "hi"), (0, "hey")])
++      bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "Disappearing messages: enabled (20 sec)"), (1, "Disappearing messages: off"), (0, "hi"), (1, "hey")])
+       -- test api
+       bob ##> "/set disappear @alice yes 30s"
+       bob <## "you updated preferences for alice:"
+-      bob <## "Disappearing messages: enabled (you allow: yes (30 sec), contact allows: yes (1 sec))"
++      bob <## "Disappearing messages: enabled (you allow: yes (30 sec), contact allows: yes (20 sec))"
+       alice <## "bob updated preferences for you:"
+       alice <## "Disappearing messages: enabled (you allow: yes (30 sec), contact allows: yes (30 sec))"
+       bob ##> "/set disappear @alice week" -- "yes" is optional
+       bob <## "you updated preferences for alice:"
+-      bob <## "Disappearing messages: enabled (you allow: yes (1 week), contact allows: yes (1 sec))"
++      bob <## "Disappearing messages: enabled (you allow: yes (1 week), contact allows: yes (20 sec))"
+       alice <## "bob updated preferences for you:"
+       alice <## "Disappearing messages: enabled (you allow: yes (1 week), contact allows: yes (1 week))"
+ 
+@@ -2807,20 +2807,20 @@
+       alice ##> "/set disappear yes"
+       alice <## "user profile did not change"
+       connectUsers alice bob
+-      bob ##> "/_set prefs @2 {\"timedMessages\": {\"allow\": \"yes\", \"ttl\": 1}}"
++      bob ##> "/_set prefs @2 {\"timedMessages\": {\"allow\": \"yes\", \"ttl\": 20}}"
+       bob <## "you updated preferences for alice:"
+-      bob <## "Disappearing messages: enabled (you allow: yes (1 sec), contact allows: yes)"
++      bob <## "Disappearing messages: enabled (you allow: yes (20 sec), contact allows: yes)"
+       alice <## "bob updated preferences for you:"
+-      alice <## "Disappearing messages: enabled (you allow: yes (1 sec), contact allows: yes (1 sec))"
++      alice <## "Disappearing messages: enabled (you allow: yes (20 sec), contact allows: yes (20 sec))"
+       alice <##> bob
+       threadDelay 500000
+-      alice #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "Disappearing messages: enabled (1 sec)"), (1, "hi"), (0, "hey")])
+-      bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(1, "Disappearing messages: enabled (1 sec)"), (0, "hi"), (1, "hey")])
++      alice #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "Disappearing messages: enabled (20 sec)"), (1, "hi"), (0, "hey")])
++      bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(1, "Disappearing messages: enabled (20 sec)"), (0, "hi"), (1, "hey")])
+       threadDelay 1000000
+       alice <### ["timed message deleted: hi", "timed message deleted: hey"]
+       bob <### ["timed message deleted: hi", "timed message deleted: hey"]
+-      alice #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "Disappearing messages: enabled (1 sec)")])
+-      bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(1, "Disappearing messages: enabled (1 sec)")])
++      alice #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "Disappearing messages: enabled (20 sec)")])
++      bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(1, "Disappearing messages: enabled (20 sec)")])
+ 
+ testUpdateMultipleUserPrefs :: HasCallStack => TestParams -> IO ()
+ testUpdateMultipleUserPrefs = testChat3 aliceProfile bobProfile cathProfile $
+@@ -3478,7 +3478,7 @@
+       bob <##. "smp agent error: BROKER"
+       withSmpServer' serverCfg' $ do
+         alice <## "subscribed 1 connections on server localhost"
+-        threadDelay 250000
++        threadDelay 2000000
+         bob ##> ("/_connect plan 1 " <> shortLink)
+         bob <## "contact address: known prepared contact alice"
+         bob ##> "/_connect contact @2 text hello"
+@@ -3533,7 +3533,7 @@
+       bob <##. "smp agent error: BROKER"
+       withSmpServer' serverCfg' $ do
+         alice <## "subscribed 1 connections on server localhost"
+-        threadDelay 250000
++        threadDelay 2000000
+         bob ##> ("/_connect plan 1 " <> shortLink)
+         bob <## "contact address: known prepared contact alice"
+         bob ##> "/_connect contact @2 incognito=on text hello"
+@@ -4531,8 +4531,11 @@
+ setClientService :: TestParams -> String -> IO ()
+ setClientService ps onOff =
+   withTestChatCfgOpts ps testCfg testOpts {coreOptions = testCoreOpts {maintenance = True}} "service" $ \service -> do
+-    service ##> ("/set client service 1:service_user " <> onOff)
+-    service <## "ok"
++    let cmd = "/set client service 1:service_user " <> onOff
++    -- The maintenance-mode terminal may deliver the response before the
++    -- command echo under load; accept both in any order.
++    service `send` cmd
++    service <### [ConsoleString cmd, "ok"]
+     
+ subscribeClientService :: TestCC -> Int -> IO ()
+ subscribeClientService service n =

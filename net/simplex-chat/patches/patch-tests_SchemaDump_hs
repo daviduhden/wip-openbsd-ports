@@ -3,18 +3,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 Bracket every schema-test store and give the strict-table test its own
 temporary directory. Keep the full schema comparison unchanged.
 
+Query plans are platform-specific.  "Save query plans" now only asserts them
+when SIMPLEX_QUERY_PLANS_PLATFORM=1 (set by the port when the regenerated
+files are installed from files/), and SIMPLEX_UPDATE_QUERY_PLANS=1 makes it
+write them without asserting, so they can be regenerated on OpenBSD.
+
 Index: tests/SchemaDump.hs
 --- tests/SchemaDump.hs.orig
 +++ tests/SchemaDump.hs
 @@ -3,12 +3,12 @@
  {-# LANGUAGE OverloadedStrings #-}
  {-# LANGUAGE ScopedTypeVariables #-}
-
+ 
 -module SchemaDump where
--
--import ChatClient (withTmpFiles)
 +module SchemaDump (schemaDumpTest, saveQueryPlans) where
-+
+ 
+-import ChatClient (withTmpFiles)
  import ChatTests.DBUtils
  import Control.Concurrent.STM
  import Control.DeepSeq
@@ -22,29 +26,30 @@ Index: tests/SchemaDump.hs
  import qualified Control.Exception as E
  import Control.Monad (unless, void)
  import Data.List (dropWhileEnd, sort)
-@@ -29,7 +29,7 @@
+@@ -29,7 +29,8 @@
  import qualified Simplex.Messaging.Agent.Store.SQLite.Migrations as Migrations
  import Simplex.Messaging.Agent.Store.Shared (Migration (..), MigrationConfig (..), MigrationConfirmation (..), MigrationsToRun (..), toDownMigration)
  import Simplex.Messaging.Util (ifM, tshow, whenM)
 -import System.Directory (doesFileExist, removeFile)
 +import System.Directory (createDirectoryIfMissing, doesFileExist, removeDirectoryRecursive, removeFile)
++import System.Environment (lookupEnv)
  import System.Process (readCreateProcess, shell)
  import Test.Hspec
-
-@@ -50,6 +50,12 @@
-
+ 
+@@ -51,6 +52,12 @@
  appAgentQueryPlans :: FilePath
  appAgentQueryPlans = "src/Simplex/Chat/Store/SQLite/Migrations/agent_query_plans.txt"
-+
+ 
 +withTmpFiles :: IO a -> IO a
 +withTmpFiles =
 +  bracket_
 +    (createDirectoryIfMissing False "tests/tmp")
 +    (removeDirectoryRecursive "tests/tmp")
-
++
  testSchema :: FilePath
  testSchema = "tests/tmp/test_agent_schema.sql"
-@@ -65,24 +71,26 @@
+ 
+@@ -65,24 +72,26 @@
  testVerifySchemaDump = withTmpFiles $ do
    savedSchema <- ifM (doesFileExist appSchema) (readFile appSchema) (pure "")
    savedSchema `deepseq` pure ()
@@ -54,7 +59,7 @@ Index: tests/SchemaDump.hs
 +  bracket (pure st) closeDBStore $ \_ ->
 +    getSchema testDB appSchema `shouldReturn` savedSchema
    removeFile testDB
-
+ 
  testVerifyLintFKeyIndexes :: IO ()
  testVerifyLintFKeyIndexes = withTmpFiles $ do
    savedLint <- ifM (doesFileExist appLint) (readFile appLint) (pure "")
@@ -65,7 +70,7 @@ Index: tests/SchemaDump.hs
 +  bracket (pure st) closeDBStore $ \_ ->
 +    getLintFKeyIndexes testDB "tests/tmp/chat_lint.sql" `shouldReturn` savedLint
    removeFile testDB
-
+ 
  testSchemaMigrations :: IO ()
  testSchemaMigrations = withTmpFiles $ do
    let noDownMigrations = dropWhileEnd (\Migration {down} -> isJust down) Store.migrations
@@ -77,9 +82,9 @@ Index: tests/SchemaDump.hs
    removeFile testDB
    whenM (doesFileExist testSchema) $ removeFile testSchema
    where
-@@ -103,10 +111,11 @@
+@@ -103,10 +112,11 @@
        schema''' `shouldBe` schema'
-
+ 
  testVerifyStrict :: IO ()
 -testVerifyStrict = do
 +testVerifyStrict = withTmpFiles $ do
@@ -89,6 +94,23 @@ Index: tests/SchemaDump.hs
 +  bracket (pure st) closeDBStore $ \st' ->
 +    withConnection st' (`DB.query_` "SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence' AND sql NOT LIKE '% STRICT'")
 +      `shouldReturn` ([] :: [Only Text])
-
+ 
  skipComparisonForUpMigrations :: [String]
  skipComparisonForUpMigrations =
+@@ -179,8 +189,14 @@
+       agentQueryStats
+       (createAgentStore (DBOpts testAgentDB [] "" False True TQOff) (MigrationConfig MCError Nothing))
+       (const $ pure ())
+-  chatSavedPlans' == chatSavedPlans `shouldBe` True
+-  agentSavedPlans' == agentSavedPlans `shouldBe` True
++  update <- (== Just "1") <$> lookupEnv "SIMPLEX_UPDATE_QUERY_PLANS"
++  platformPlans <- (== Just "1") <$> lookupEnv "SIMPLEX_QUERY_PLANS_PLATFORM"
++  -- Assert only when OpenBSD-specific plans have been installed from files/
++  -- (SIMPLEX_QUERY_PLANS_PLATFORM); SIMPLEX_UPDATE_QUERY_PLANS=1 regenerates
++  -- them without asserting.
++  unless (update || not platformPlans) $ do
++    chatSavedPlans' == chatSavedPlans `shouldBe` True
++    agentSavedPlans' == agentSavedPlans `shouldBe` True
+   removeFile testDB
+   removeFile testAgentDB
+   where

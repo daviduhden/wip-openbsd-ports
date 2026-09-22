@@ -1,0 +1,44 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Make the chat-list preview item selection deterministic.
+
+findGroupChatPreviews_, findDirectChatPreviews_ and findLocalChatPreviews_
+picked the last chat item ordering only by the timestamp column, while the
+canonical item queries (getChatItemIDs CRLast, get*ChatItemLast) order by
+item_ts/created_at and chat_item_id.  When several items share the same
+timestamp - a burst of internal items, e.g. the group feature items followed
+by RGEMemberConnected - SQLite could return any of them, so the chat list
+preview showed a group feature item ("SimpleX links: on", "Recent history:
+off", "Direct messages: on") instead of the "connected" event.  Use the same
+chat_item_id tie-break as the rest of the store.
+
+Index: src/Simplex/Chat/Store/Messages.hs
+--- src/Simplex/Chat/Store/Messages.hs.orig
++++ src/Simplex/Chat/Store/Messages.hs
+@@ -806,7 +806,7 @@
+             SELECT chat_item_id
+             FROM chat_items ci
+             WHERE ci.user_id = ? AND ci.contact_id = ct.contact_id
+-            ORDER BY ci.created_at DESC
++            ORDER BY ci.created_at DESC, chat_item_id DESC
+             LIMIT 1
+           ) AS chat_item_id,
+           COALESCE(ChatStats.UnreadCount, 0),
+@@ -908,7 +908,7 @@
+             SELECT chat_item_id
+             FROM chat_items ci
+             WHERE ci.user_id = ? AND ci.group_id = g.group_id AND ci.group_scope_tag IS NULL AND ci.group_scope_group_member_id IS NULL
+-            ORDER BY ci.item_ts DESC
++            ORDER BY ci.item_ts DESC, chat_item_id DESC
+             LIMIT 1
+           ) AS chat_item_id,
+           COALESCE(ChatStats.UnreadCount, 0),
+@@ -1019,7 +1019,7 @@
+             SELECT chat_item_id
+             FROM chat_items ci
+             WHERE ci.user_id = ? AND ci.note_folder_id = nf.note_folder_id
+-            ORDER BY ci.created_at DESC
++            ORDER BY ci.created_at DESC, chat_item_id DESC
+             LIMIT 1
+           ) AS chat_item_id,
+           COALESCE(ChatStats.UnreadCount, 0),

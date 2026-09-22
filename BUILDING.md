@@ -328,6 +328,33 @@ make do-test
 This runs the upstream test suite (`simplex-chat-test`) using
 `cabal v2-test` with the same `allow-newer: *` bound relaxation.
 
+The suite is run without the `CI` environment variable.  The examples that are
+inherently wall-clock sensitive or need an interactive terminal were made
+deterministic by the port patches (larger TTLs, synchronous expiry and bounded
+polling) or are skipped explicitly; see the comments in
+`patches/patch-tests_*`.
+
+### Query plans
+
+`Save query plans` compares the SQLite `EXPLAIN QUERY PLAN` output collected
+during the run with the checked-in files, which are platform-specific.  On
+OpenBSD they must be regenerated once and installed from `files/`:
+
+```sh
+cd /usr/ports/net/simplex-chat
+make do-test SIMPLEX_UPDATE_QUERY_PLANS=1
+cp /usr/obj/ports/simplex-chat-*/simplex-chat-*/src/Simplex/Chat/Store/SQLite/Migrations/chat_query_plans.txt files/
+cp /usr/obj/ports/simplex-chat-*/simplex-chat-*/src/Simplex/Chat/Store/SQLite/Migrations/agent_query_plans.txt files/
+make clean && make do-test
+```
+
+`SIMPLEX_UPDATE_QUERY_PLANS=1` makes the test write the plans without
+asserting them.  Until the OpenBSD files are installed from `files/`, the
+example only writes the plans and does not assert, so the default
+`make do-test` is green.  Once `files/chat_query_plans.txt` and
+`files/agent_query_plans.txt` exist, `post-patch` installs them and the
+example verifies them (`SIMPLEX_QUERY_PLANS_PLATFORM=1`).
+
 ## Practical Validation
 
 After packaging, the important checks are:

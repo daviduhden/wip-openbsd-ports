@@ -1,0 +1,26 @@
+Index: src/lib.rs
+--- src/lib.rs.orig
++++ src/lib.rs
+@@ -46,7 +46,7 @@
+ use nix::fcntl::{fcntl, open, FcntlArg, FdFlag, OFlag};
+ use nix::libc::{self, winsize, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO};
+ use nix::pty::PtyMaster;
+-use nix::pty::{grantpt, posix_openpt, unlockpt};
++use nix::pty::{grantpt, posix_openpt, ptsname, unlockpt};
+ use nix::sys::stat::Mode;
+ use nix::sys::wait::{self, waitpid};
+ use nix::sys::{signal, termios};
+@@ -467,8 +467,13 @@
+     fn as_raw_fd(&self) -> RawFd {
+         self.fd.as_raw_fd()
+     }
++}
++
++#[cfg(target_os = "openbsd")]
++fn get_slave_name(fd: &PtyMaster) -> Result<String> {
++    unsafe { ptsname(fd) }
+ }
+ 
+ #[cfg(any(target_os = "linux", target_os = "android"))]
+ fn get_slave_name(fd: &PtyMaster) -> Result<String> {
+     nix::pty::ptsname_r(fd)

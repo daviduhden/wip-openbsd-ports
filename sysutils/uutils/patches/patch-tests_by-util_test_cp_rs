@@ -1,0 +1,66 @@
+SPDX-License-Identifier: MIT
+
+Make the uutils test suite pass on OpenBSD.  Tests that rely on the
+filesystem denying access are skipped when running as root (the ports
+test target runs with root privileges), matching the GNU coreutils
+test suite.  Also treat the xattr crate's unsupported-platform error
+as ENOTSUP so optional attribute preservation is silent on OpenBSD.
+
+Index: tests/by-util/test_cp.rs
+--- tests/by-util/test_cp.rs.orig
++++ tests/by-util/test_cp.rs
+@@ -3978,6 +3978,10 @@ fn test_cp_recursive_char_device(#[case] flag: &str) {
+     ignore = "WASI sandbox: host paths (/dev, /private) not visible"
+ )]
+ fn test_cp_recursive_char_device_no_permission(#[case] flag: &str) {
++    if uutests::util::is_root() {
++        // The filesystem permission checks are bypassed when running as root.
++        return;
++    }
+     new_ucmd!()
+         .args(&[flag, "/dev/null", "null2"])
+         .fails()
+@@ -4049,6 +4053,10 @@ fn test_cp_recursive_block_device(#[case] flag: &str) {
+ #[test]
+ #[cfg(unix)]
+ fn test_cp_block_device_no_permission() {
++    if uutests::util::is_root() {
++        // The filesystem permission checks are bypassed when running as root.
++        return;
++    }
+     use nix::sys::stat::{Mode, SFlag, mknod as nix_mknod};
+     let ts = TestScenario::new(util_name!());
+     let at = &ts.fixtures;
+@@ -5129,6 +5137,10 @@ fn test_cp_only_source_no_target() {
+ 
+ #[test]
+ fn test_cp_dest_no_permissions() {
++    if uutests::util::is_root() {
++        // The filesystem permission checks are bypassed when running as root.
++        return;
++    }
+     let ts = TestScenario::new(util_name!());
+     let at = &ts.fixtures;
+ 
+@@ -5196,6 +5208,10 @@ fn test_cp_readonly_dest_recursive() {
+ /// Test copying to readonly file when another file exists
+ #[test]
+ fn test_cp_readonly_dest_with_existing_file() {
++    if uutests::util::is_root() {
++        // The filesystem permission checks are bypassed when running as root.
++        return;
++    }
+     let ts = TestScenario::new(util_name!());
+     let at = &ts.fixtures;
+ 
+@@ -5234,6 +5250,10 @@ fn test_cp_readonly_source() {
+ /// Test readonly source and destination (should fail)
+ #[test]
+ fn test_cp_readonly_source_and_dest() {
++    if uutests::util::is_root() {
++        // The filesystem permission checks are bypassed when running as root.
++        return;
++    }
+     let ts = TestScenario::new(util_name!());
+     let at = &ts.fixtures;
+ 

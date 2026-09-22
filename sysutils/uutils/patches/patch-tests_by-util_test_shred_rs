@@ -1,0 +1,33 @@
+SPDX-License-Identifier: MIT
+
+Make the uutils test suite pass on OpenBSD.  Tests that rely on the
+filesystem denying access are skipped when running as root (the ports
+test target runs with root privileges), matching the GNU coreutils
+test suite.  Also treat the xattr crate's unsupported-platform error
+as ENOTSUP so optional attribute preservation is silent on OpenBSD.
+
+Index: tests/by-util/test_shred.rs
+--- tests/by-util/test_shred.rs.orig
++++ tests/by-util/test_shred.rs
+@@ -135,6 +135,10 @@ fn test_shred_u() {
+ 
+ #[test]
+ fn test_shred_force() {
++    if uutests::util::is_root() {
++        // The filesystem permission checks are bypassed when running as root.
++        return;
++    }
+     let scene = TestScenario::new(util_name!());
+     let at = &scene.fixtures;
+ 
+@@ -472,6 +476,10 @@ fn test_shred_trailing_slash_on_dir() {
+ #[test]
+ #[cfg(unix)]
+ fn test_shred_inaccessible_file_reports_real_error() {
++    if uutests::util::is_root() {
++        // The filesystem permission checks are bypassed when running as root.
++        return;
++    }
+     // A file whose parent directory lacks search permission must not be
+     // misreported as "No such file or directory": `Path::exists()` and
+     // `Path::is_file()` collapse the permission error into `false`.

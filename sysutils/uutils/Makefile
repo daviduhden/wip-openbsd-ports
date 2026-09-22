@@ -211,6 +211,10 @@ uutils-gen-crates: extract
 # disabled, so uucore resolves its locale files relative to the test binary
 # instead of the source tree.  Expose the in-tree locales under the release
 # directory so the localization tests find them, then run that test target.
+# The meta-package bundles several independent cargo workspaces, so run the
+# tests of every packaged project, not only coreutils.
+UUTILS_TEST_WORKSPACES =	findutils diffutils grep sed awk tar
+
 do-test:
 	mkdir -p ${MODCARGO_TARGET_DIR}/release/locales
 	for d in ${WRKSRC}/src/uu/*/locales; do \
@@ -220,6 +224,10 @@ do-test:
 	ln -sfn ${WRKSRC}/src/uucore/locales \
 		${MODCARGO_TARGET_DIR}/release/locales/uucore
 	${MODCARGO_TEST_TARGET}
+.for _ws in ${UUTILS_TEST_WORKSPACES}
+	cd ${WRKDIR}/${_ws} && ${SETENV} ${MAKE_ENV} ${MODCARGO_ENV} \
+		${MODCARGO_CARGO_BIN} test --release
+.endfor
 
 RUN_DEPENDS-main =	${BASE_PKGPATH},-coreutils=${V} \
 			${BASE_PKGPATH},-findutils=${FINDUTILS_V} \

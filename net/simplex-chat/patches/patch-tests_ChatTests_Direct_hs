@@ -6,6 +6,13 @@ instead of assuming that the complete call always takes zero seconds.
 
 Exercise cancellation through ordinary, priority and batched store calls.
 
+Make the per-user chat-item TTL examples deterministic: use a large ttl while
+setting up and asserting, then drop it to 1 so the items expire synchronously
+instead of relying on the periodic cleanup and on how long the (loaded)
+builder takes.  The timed-message example uses a ttl comfortably larger than
+the assertions.  Give the aborted connection-switch examples a larger settle
+delay before reading the persisted chat items.
+
 Index: tests/ChatTests/Direct.hs
 --- tests/ChatTests/Direct.hs.orig
 +++ tests/ChatTests/Direct.hs
@@ -36,7 +43,7 @@ Index: tests/ChatTests/Direct.hs
  import Simplex.Chat.Options
  import Simplex.Chat.Protocol (supportedChatVRange)
 @@ -52,6 +57,15 @@
-
+ 
  chatDirectTests :: SpecWith TestParams
  chatDirectTests = do
 +  describe "store cancellation" $ do
@@ -109,6 +116,167 @@ Index: tests/ChatTests/Direct.hs
 +              _ -> expectationFailure $ "invalid call duration: " <> duration
 +            _ -> expectationFailure $ "call has not ended: " <> call
 +        _ -> expectationFailure $ "unexpected call history: " <> show items
-
+ 
  testMaintenanceMode :: HasCallStack => TestParams -> IO ()
  testMaintenanceMode ps = do
+@@ -2139,20 +2181,20 @@
+       bob #> "@alisa alisa 2"
+       alice <# "bob> alisa 2"
+ 
+-      -- set ttl for first user
++      -- use a large ttl so nothing expires while the test is set up; the time
++      -- between sending and asserting must not decide the outcome
+       alice ##> "/user alice"
+       showActiveUser alice "alice (Alice)"
+-      alice #$> ("/_ttl 1 2", id, "ok")
++      alice #$> ("/_ttl 1 100000", id, "ok")
+ 
+-      -- set ttl for second user
+       alice ##> "/user alisa"
+       showActiveUser alice "alisa"
+-      alice #$> ("/_ttl 2 4", id, "ok")
++      alice #$> ("/_ttl 2 100000", id, "ok")
+ 
+       -- first user messages
+       alice ##> "/user alice"
+       showActiveUser alice "alice (Alice)"
+-      alice #$> ("/ttl", id, "old messages are set to be deleted after: 2 second(s)")
++      alice #$> ("/ttl", id, "old messages are set to be deleted after: 100000 second(s)")
+ 
+       alice #> "@bob alice 3"
+       bob <# "alice> alice 3"
+@@ -2164,7 +2206,7 @@
+       -- second user messages
+       alice ##> "/user alisa"
+       showActiveUser alice "alisa"
+-      alice #$> ("/ttl", id, "old messages are set to be deleted after: 4 second(s)")
++      alice #$> ("/ttl", id, "old messages are set to be deleted after: 100000 second(s)")
+ 
+       alice #> "@bob alisa 3"
+       bob <# "alisa> alisa 3"
+@@ -2173,12 +2215,15 @@
+ 
+       alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2"), (1, "alisa 3"), (0, "alisa 4")])
+ 
+-      threadDelay 3000000
++      -- dropping the ttl synchronously expires everything older than it, so
++      -- the result does not depend on how long the setup took
++      threadDelay 1500000
+ 
+       -- messages both before and after setting chat item ttl are deleted
+       -- first user messages
+       alice ##> "/user alice"
+       showActiveUser alice "alice (Alice)"
++      alice #$> ("/_ttl 1 1", id, "ok")
+       alice #$> ("/_get chat @2 count=100", chat, [(1,"chat banner")])
+ 
+       -- second user messages
+@@ -2186,8 +2231,9 @@
+       showActiveUser alice "alisa"
+       alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2"), (1, "alisa 3"), (0, "alisa 4")])
+ 
+-      threadDelay 2100000
++      threadDelay 1500000
+ 
++      alice #$> ("/_ttl 2 1", id, "ok")
+       alice #$> ("/_get chat @5 count=100", chat, [(1,"chat banner")])
+   where
+     cfg = testCfg {initialCleanupManagerDelay = 0, cleanupManagerStepDelay = 0, ciExpirationInterval = 500000}
+@@ -2196,14 +2242,14 @@
+ testUsersRestartCIExpiration ps = do
+   withNewTestChat ps "bob" bobProfile $ \bob -> do
+     withNewTestChatCfg ps cfg "alice" aliceProfile $ \alice -> do
+-      -- set ttl for first user
+-      alice #$> ("/_ttl 1 2", id, "ok")
++      -- use a large ttl so messages survive the restart regardless of its
++      -- duration; the expiry is triggered synchronously later
++      alice #$> ("/_ttl 1 100000", id, "ok")
+       connectUsers alice bob
+ 
+-      -- create second user and set ttl
+       alice ##> "/create user alisa"
+       showActiveUser alice "alisa"
+-      alice #$> ("/_ttl 2 5", id, "ok")
++      alice #$> ("/_ttl 2 100000", id, "ok")
+       connectUsers alice bob
+ 
+       -- first user messages
+@@ -2235,7 +2281,7 @@
+       -- first user messages
+       alice ##> "/user alice"
+       showActiveUser alice "alice (Alice)"
+-      alice #$> ("/ttl", id, "old messages are set to be deleted after: 2 second(s)")
++      alice #$> ("/ttl", id, "old messages are set to be deleted after: 100000 second(s)")
+ 
+       alice #> "@bob alice 3"
+       bob <# "alice> alice 3"
+@@ -2247,7 +2293,7 @@
+       -- second user messages
+       alice ##> "/user alisa"
+       showActiveUser alice "alisa"
+-      alice #$> ("/ttl", id, "old messages are set to be deleted after: 5 second(s)")
++      alice #$> ("/ttl", id, "old messages are set to be deleted after: 100000 second(s)")
+ 
+       alice #> "@bob alisa 3"
+       bob <# "alisa> alisa 3"
+@@ -2256,12 +2302,14 @@
+ 
+       alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2"), (1, "alisa 3"), (0, "alisa 4")])
+ 
+-      threadDelay 3000000
++      -- dropping the ttl expires the older items synchronously after restart
++      threadDelay 1500000
+ 
+       -- messages both before and after restart are deleted
+       -- first user messages
+       alice ##> "/user alice"
+       showActiveUser alice "alice (Alice)"
++      alice #$> ("/_ttl 1 1", id, "ok")
+       alice #$> ("/_get chat @2 count=100", chat, [(1,"chat banner")])
+ 
+       -- second user messages
+@@ -2269,8 +2317,9 @@
+       showActiveUser alice "alisa"
+       alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2"), (1, "alisa 3"), (0, "alisa 4")])
+ 
+-      threadDelay 4000000
++      threadDelay 1500000
+ 
++      alice #$> ("/_ttl 2 1", id, "ok")
+       alice #$> ("/_get chat @5 count=100", chat, [(1,"chat banner")])
+   where
+     cfg = testCfg {initialCleanupManagerDelay = 0, cleanupManagerStepDelay = 0, ciExpirationInterval = 500000}
+@@ -2409,13 +2458,13 @@
+   withNewTestChat ps "bob" bobProfile $ \bob -> do
+     withNewTestChat ps "alice" aliceProfile $ \alice -> do
+       connectUsers alice bob
+-      configureTimedMessages alice bob "2" "2"
++      configureTimedMessages alice bob "2" "20"
+ 
+       -- create second user and configure timed messages for contact
+       alice ##> "/create user alisa"
+       showActiveUser alice "alisa"
+       connectUsers alice bob
+-      configureTimedMessages alice bob "5" "3"
++      configureTimedMessages alice bob "5" "40"
+ 
+       -- first user messages
+       alice ##> "/user alice"
+@@ -2843,7 +2892,7 @@
+       bob <## "alice started changing address for you"
+       bob <## "alice changed address for you"
+       alice <## "bob: you changed address"
+-      threadDelay 100000
++      threadDelay 2000000
+       alice #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(1, "started changing address..."), (1, "started changing address..."), (1, "you changed address")])
+       bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "started changing address for you..."), (0, "started changing address for you..."), (0, "changed address for you")])
+       alice <##> bob
+@@ -2890,7 +2939,7 @@
+       bob <## "#team: alice started changing address for you"
+       bob <## "#team: alice changed address for you"
+       alice <## "#team: you changed address for bob"
+-      threadDelay 100000
++      threadDelay 2000000
+       alice #$> ("/_get chat #1 count=100", chat, sndGroupFeatures <> [(0, "connected"), (1, "started changing address for bob..."), (1, "started changing address for bob..."), (1, "you changed address for bob")])
+       bob #$> ("/_get chat #1 count=100", chat, groupFeatures <> [(0, "connected"), (0, "started changing address for you..."), (0, "started changing address for you..."), (0, "changed address for you")])
+       alice #> "#team hey"

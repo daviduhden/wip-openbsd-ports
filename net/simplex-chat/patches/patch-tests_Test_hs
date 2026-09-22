@@ -1,0 +1,43 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Do not let the CI environment variable decide which examples run.  The
+broadcast bot example needs an interactive stdin (the bot reads stdin in a
+loop and gets EOF in a non-interactive build), so skip it unconditionally,
+and run the directory and "Save query plans" examples so the
+platform-specific query plans can be verified on OpenBSD.
+
+Index: tests/Test.hs
+--- tests/Test.hs.orig
++++ tests/Test.hs
+@@ -9,7 +9,6 @@
+ import ChatTests
+ import ChatTests.DBUtils
+ import ChatTests.Names (chatNamesTests)
+-import ChatTests.Utils (xdescribe'')
+ import Control.Logger.Simple
+ import Data.Time.Clock.System
+ import BadgeTests
+@@ -74,7 +73,7 @@
+       describe "Random servers" randomServersTests
+ #if !defined(dbPostgres)
+       around (tmpTestBracket chatQueryStats agentQueryStats) $ describe "names tests" chatNamesTests
+-      around (tmpTestBracket chatQueryStats agentQueryStats) $ xdescribe'' "SimpleX Directory names" directoryNameTests
++      around (tmpTestBracket chatQueryStats agentQueryStats) $ describe "SimpleX Directory names" directoryNameTests
+ #endif
+ #if defined(dbPostgres)
+       createdDropDb . around testBracket
+@@ -86,11 +85,11 @@
+           describe "Mobile API Tests" mobileTests
+ #endif
+           describe "SimpleX chat client" chatTests
+-          xdescribe'' "SimpleX Broadcast bot" broadcastBotTests
+-          xdescribe'' "SimpleX Directory service bot" directoryServiceTests
++          xdescribe "SimpleX Broadcast bot" broadcastBotTests
++          describe "SimpleX Directory service bot" directoryServiceTests
+           describe "Remote session" remoteTests
+ #if !defined(dbPostgres)
+-          xdescribe'' "Save query plans" saveQueryPlans
++          describe "Save query plans" saveQueryPlans
+ #endif
+   where
+ #if defined(dbPostgres)

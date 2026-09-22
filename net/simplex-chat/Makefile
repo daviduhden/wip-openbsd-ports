@@ -183,6 +183,15 @@ post-patch:
 	find ${WRKDIR} -type f \( -name '*.hs' -o -name '*.cabal' \
 		-o -name '*.sql' -o -name '*.h' -o -name '*.c' \) \
 		-exec ${LOCALBASE}/bin/dos2unix -q {} +
+	# Query plans are platform-specific.  If the OpenBSD plans have been
+	# regenerated (make do-test SIMPLEX_UPDATE_QUERY_PLANS=1, then copied to
+	# files/), install them so "Save query plans" verifies them.
+	for _plans in chat_query_plans.txt agent_query_plans.txt; do \
+		if [ -f ${FILESDIR}/$$_plans ]; then \
+			${INSTALL_DATA} ${FILESDIR}/$$_plans \
+				${WRKSRC}/src/Simplex/Chat/Store/SQLite/Migrations/$$_plans; \
+		fi; \
+	done
 	patch -d ${WRKDIR}/direct-sqlcipher -p0 \
 		< ${FILESDIR}/patch-direct-sqlcipher_cabal
 	if [ ! -f ${WITHERABLE_DIR}/witherable.cabal ]; then \
@@ -308,7 +317,17 @@ do-test:
 		${CHAT_CABAL_TEST_OPTIONS} \
 		>> ${WRKSRC}/cabal.project.local
 	# Invoke Cabal directly: _MODCABAL_CABAL would reset this environment.
+	# SIMPLEX_UPDATE_QUERY_PLANS=1 regenerates the platform-specific query
+	# plans instead of asserting them (see tests/SchemaDump.hs); run once and
+	# copy the generated files into files/ to enable the assertion on
+	# subsequent runs.
+	_plans=""; \
+	if [ -f ${FILESDIR}/chat_query_plans.txt ] && [ -f ${FILESDIR}/agent_query_plans.txt ]; then \
+		_plans=1; \
+	fi; \
 	cd ${WRKBUILD} && exec ${SETENV} ${MAKE_ENV} \
+		SIMPLEX_QUERY_PLANS_PLATFORM=$$_plans \
+		SIMPLEX_UPDATE_QUERY_PLANS=${SIMPLEX_UPDATE_QUERY_PLANS} \
 		TMPDIR=${WRKDIR}/test-tmp \
 		HOME=${WRKDIR} \
 		CABAL_DIR=${WRKDIR}/.cabal \

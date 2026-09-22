@@ -1,0 +1,169 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Replace fixed sleeps in front of asynchronous state with bounded polling and
+give the owner-signed roster and group-forwarding setup deterministic waits.
+
+Group forwarding: the host learns that two members are directly connected
+from their x.grp.mem.con messages; a late message overwrites the MRIntroduced
+relation the test forces and forwarding is disabled, making the example time
+out.  Wait until both relations are already MRConnected before forcing.
+
+Promoted-members roster: the owner-signed roster snapshot and the owner intros
+arrive asynchronously and have no terminal event, so poll the database for the
+applied member role (checkMemberRowEventually) instead of relying on a fixed
+sleep.  Negative checks stay immediate.
+
+Also give the group-link member role / blocked name checks and the group
+history disappearing-message TTL more time on a loaded builder.
+
+Index: tests/ChatTests/Groups.hs
+--- tests/ChatTests/Groups.hs.orig
++++ tests/ChatTests/Groups.hs
+@@ -2990,7 +2990,7 @@
+             bob <## "#team: you joined the group"
+         ]
+ 
+-      threadDelay 100000
++      threadDelay 2000000
+ 
+       alice ##> "/ms team"
+       alice
+@@ -3224,7 +3224,7 @@
+       bob <## "#team: joining the group..."
+       bob <## "#team: join rejected, reason: GRRBlockedName"
+ 
+-      threadDelay 100000
++      threadDelay 2000000
+ 
+       alice `hasContactProfiles` ["alice"]
+       memCount <- withCCTransaction alice $ \db ->
+@@ -5175,7 +5175,7 @@
+ 
+ setupGroupForwarding :: TestCC -> TestCC -> TestCC -> IO ()
+ setupGroupForwarding host invitee1 invitee2 = do
+-  threadDelay 1000000 -- delay so member relations don't get overwritten to connected
++  waitForGroupMembersConnected host invitee1 invitee2
+ 
+   invitee1Name <- userName invitee1
+   invitee2Name <- userName invitee2
+@@ -5206,6 +5206,31 @@
+   invitee2Name <- userName invitee2
+   updateGroupForwardingVectors host invitee1Name invitee2Name MRIntroduced
+ 
++-- The host learns that two members are directly connected from their
++-- x.grp.mem.con messages; when those arrive they update the member relations
++-- vector to MRSubjectConnected/MRConnected.  Breaking the direct connection and
++-- forcing MRIntroduced before those notifications are processed races with
++-- them: the later notification overwrites MRIntroduced with a "connected"
++-- state, forwarding is disabled and the test times out with no output.  Wait
++-- until both relations are already MRConnected (so no later notification can
++-- change them), then force MRIntroduced.  Bounded at 30s.
++waitForGroupMembersConnected :: TestCC -> TestCC -> TestCC -> IO ()
++waitForGroupMembersConnected host invitee1 invitee2 = go (300 :: Int)
++  where
++    go 0 = pure ()
++    go n = do
++      invitee1Name <- userName invitee1
++      invitee2Name <- userName invitee2
++      connected <- withCCTransaction host $ \db -> do
++        [(i1, v1)] <- DB.query db
++          "SELECT index_in_group, member_relations_vector FROM group_members WHERE local_display_name = ?"
++          (Only invitee1Name)
++        [(i2, v2)] <- DB.query db
++          "SELECT index_in_group, member_relations_vector FROM group_members WHERE local_display_name = ?"
++          (Only invitee2Name)
++        pure $ getRelation i2 (fromMaybe B.empty v1) == MRConnected && getRelation i1 (fromMaybe B.empty v2) == MRConnected
++      if connected then pure () else threadDelay 100000 >> go (n - 1)
++
+ updateGroupForwardingVectors :: TestCC -> String -> String -> MemberRelation -> IO ()
+ updateGroupForwardingVectors host invitee1Name invitee2Name relation = do
+   void $ withCCTransaction host $ \db -> do
+@@ -6198,12 +6223,12 @@
+       threadDelay 1000000
+ 
+       -- 3 seconds so that messages 2 and 3 are not deleted for alice before sending history to cath
+-      alice ##> "/set disappear #team on 4"
++      alice ##> "/set disappear #team on 20"
+       alice <## "updated group preferences:"
+-      alice <## "Disappearing messages: on (4 sec)"
++      alice <## "Disappearing messages: on (20 sec)"
+       bob <## "alice updated group #team:"
+       bob <## "updated group preferences:"
+-      bob <## "Disappearing messages: on (4 sec)"
++      bob <## "Disappearing messages: on (20 sec)"
+ 
+       bob #> "#team 2"
+       alice <# "#team bob> 2"
+@@ -9870,6 +9895,23 @@
+     DB.query db "SELECT member_role FROM group_members WHERE local_display_name = ?" (Only name) :: IO [Only T.Text]
+   map (\(Only r) -> r) roles `shouldBe` maybeToList expectedRole
+ 
++-- The owner-signed roster snapshot and the owner intros are delivered
++-- asynchronously after a member joins and there is no terminal event for an
++-- applied roster, so the row may not exist yet under load.  Poll the database
++-- with a bounded timeout (30s, matching the terminal/server waits) before
++-- asserting the applied role.  Only use this for positive checks; an absent
++-- row ("Nothing") is synchronous and must be asserted with checkMemberRow.
++checkMemberRowEventually :: HasCallStack => TestCC -> T.Text -> Maybe T.Text -> IO ()
++checkMemberRowEventually cc name expectedRole = go (300 :: Int)
++  where
++    go 0 = checkMemberRow cc name expectedRole
++    go n = do
++      roles <- withCCTransaction cc $ \db ->
++        DB.query db "SELECT member_role FROM group_members WHERE local_display_name = ?" (Only name) :: IO [Only T.Text]
++      if map (\(Only r) -> r) roles == maybeToList expectedRole
++        then pure ()
++        else threadDelay 100000 >> go (n - 1)
++
+ -- The wire member id for a named member (look it up on a client that knows the name, e.g. the owner), used to
+ -- find a member by id on a subscriber that only knows it by member-id hash (e.g. after roster recovery).
+ getMemberIdByName :: TestCC -> T.Text -> IO ByteString
+@@ -9953,10 +9995,8 @@
+               checkMemberRole frank "cath" "moderator"
+   where
+     checkMemberRole :: HasCallStack => TestCC -> T.Text -> T.Text -> IO ()
+-    checkMemberRole cc name expectedRole = do
+-      roles <- withCCTransaction cc $ \db ->
+-        DB.query db "SELECT member_role FROM group_members WHERE local_display_name = ?" (Only name) :: IO [Only T.Text]
+-      map (\(Only r) -> r) roles `shouldBe` [expectedRole]
++    checkMemberRole cc name expectedRole =
++      checkMemberRowEventually cc name (Just expectedRole)
+ 
+ testChannelSubscriberRosterCatchUp :: HasCallStack => TestParams -> IO ()
+ testChannelSubscriberRosterCatchUp ps =
+@@ -10126,7 +10166,7 @@
+               threadDelay 100000
+               memberJoinChannel "team" [bob] [alice, cath] shortLink fullLink eve
+               threadDelay 1000000 -- the served roster arrives async; wait before reading the applied state
+-              checkMemberRow eve "cath" (Just "admin")
++              checkMemberRowEventually eve "cath" (Just "admin")
+               -- admin -> observer (crossing out of roster, since member is now in-roster): roster drops cath
+               threadDelay 100000
+               alice ##> "/mr #team cath observer"
+@@ -10205,7 +10245,7 @@
+         threadDelay 1000000
+         -- the forged attribution only resolves to a privileged author if the victim already holds the
+         -- owner at GROwner (established via the group link on join) - this documents and guards that premise
+-        checkMemberRow cath "alice" (Just "owner")
++        checkMemberRowEventually cath "alice" (Just "owner")
+         ownerMemId <- ownerMemberId bob
+         connId <- relayConnIdToMember bob "cath"
+         -- the malicious relay forges the announcement, choosing the new member's role and signing key
+@@ -10930,7 +10970,7 @@
+           memberJoinChannel "team" [bob] [alice, cath] shortLink fullLink dan
+           -- dan reassembles the multi-chunk roster from the served snapshot (arrives async)
+           threadDelay 1000000
+-          checkMemberRow dan "cath" (Just "moderator")
++          checkMemberRowEventually dan "cath" (Just "moderator")
+   where
+     cfg = testCfg {fileChunkSize = 30}
+ 
+@@ -10962,7 +11002,7 @@
+           threadDelay 1000000
+           -- the rejected roster never elevates cath: the intro caps her to the channel default, so she
+           -- stays observer (not moderator), and the version must not advance to the corrupted roster's version 1
+-          checkMemberRow frank "cath" (Just "observer")
++          checkMemberRowEventually frank "cath" (Just "observer")
+           checkRosterNotApplied frank
+   where
+     -- the version is the second guarantee (the role is asserted above): frank holds exactly the team

@@ -334,6 +334,19 @@ deterministic by the port patches (larger TTLs, synchronous expiry and bounded
 polling) or are skipped explicitly; see the comments in
 `patches/patch-tests_*`.
 
+### Test TLS certificate
+
+`post-patch` installs `files/server.crt` over
+`tests/fixtures/tls/server.crt`.  The upstream fixture is only valid from
+2022-01-11, and `crypton-x509` maps "not yet valid" to
+`CertificateRejectExpired` ("certificate has expired"), so a host whose clock
+has drifted behind 2022 rejects every handshake and fails almost the whole
+suite.  The replacement is signed by the unchanged `tests/fixtures/tls/ca.crt`
+(so the server fingerprints pinned throughout the tests stay valid), reuses the
+unchanged `server.key`, and is valid from 1970, which keeps the tests working
+with a clock that is simply wrong.  The CA certificate is not time-checked
+because `crypton-x509-validation` finds it in the trust store.
+
 ### Query plans
 
 `Save query plans` compares the SQLite `EXPLAIN QUERY PLAN` output collected

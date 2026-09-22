@@ -1,0 +1,23 @@
+SPDX-License-Identifier: MIT
+
+Detect OpenBSD as a test-harness host OS and skip the compatibility
+cases that differ on OpenBSD (pty/oracle output, ulimit to infinity,
+extglob handling).
+
+Index: brush-test-harness/src/util.rs
+--- brush-test-harness/src/util.rs.orig
++++ brush-test-harness/src/util.rs
+@@ -6,6 +6,13 @@ use descape::UnescapeExt;
+ /// Get the OS ID from /etc/os-release file.
+ /// Returns the value of the ID field, which is the canonical OS identifier.
+ /// For example: "ubuntu", "opensuse-tumbleweed", "fedora", etc.
++#[cfg(target_os = "openbsd")]
++pub fn get_host_os_id() -> Option<String> {
++    // OpenBSD does not ship /etc/os-release, so report the OS id directly.
++    Some(String::from("openbsd"))
++}
++
++#[cfg(not(target_os = "openbsd"))]
+ pub fn get_host_os_id() -> Option<String> {
+     os_release::OsRelease::new().ok().and_then(|info| {
+         if info.id.is_empty() {

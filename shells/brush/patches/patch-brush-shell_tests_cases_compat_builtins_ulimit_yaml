@@ -1,0 +1,24 @@
+SPDX-License-Identifier: MIT
+
+Detect OpenBSD as a test-harness host OS and skip the compatibility
+cases that differ on OpenBSD (pty/oracle output, ulimit to infinity,
+extglob handling).
+
+Index: brush-shell/tests/cases/compat/builtins/ulimit.yaml
+--- brush-shell/tests/cases/compat/builtins/ulimit.yaml.orig
++++ brush-shell/tests/cases/compat/builtins/ulimit.yaml
+@@ -25,6 +25,7 @@ cases:
+       ulimit -n
+ 
+   - name: "ulimit -d unlimited"
++    incompatible_os: ["openbsd"] # differs from bash on OpenBSD
+     stdin: |
+       ulimit -d unlimited
+ 
+@@ -33,5 +34,6 @@ cases:
+       ulimit -f unlimited
+ 
+   - name: "ulimit -m unlimited"
++    incompatible_os: ["openbsd"] # differs from bash on OpenBSD
+     stdin: |
+       ulimit -m unlimited

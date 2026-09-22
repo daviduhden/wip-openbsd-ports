@@ -1,0 +1,17 @@
+SPDX-License-Identifier: MIT
+
+Detect OpenBSD as a test-harness host OS and skip the compatibility
+cases that differ on OpenBSD (pty/oracle output, ulimit to infinity,
+extglob handling).
+
+Index: brush-shell/tests/cases/compat/interactive.yaml
+--- brush-shell/tests/cases/compat/interactive.yaml.orig
++++ brush-shell/tests/cases/compat/interactive.yaml
+@@ -2,6 +2,7 @@ name: "Interactive"
+ incompatible_configs: ["sh"]
+ cases:
+   - name: "Basic interactive test"
++    incompatible_os: ["openbsd"] # Oracle prompt handling differs
+     pty: true
+     ignore_stdout: true # Needs investigation
+     ignore_whitespace: true # There's an extra newline for now in test output

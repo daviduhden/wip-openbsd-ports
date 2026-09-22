@@ -192,6 +192,14 @@ post-patch:
 				${WRKSRC}/src/Simplex/Chat/Store/SQLite/Migrations/$$_plans; \
 		fi; \
 	done
+	# The checked-in TLS fixtures only become valid on 2022-01-11.  A build or
+	# test host whose clock has drifted behind that date makes crypton-x509
+	# report every peer certificate as CertificateRejectExpired ("certificate
+	# has expired", it maps InFuture to the same reason), which fails almost
+	# the whole suite.  Install a server certificate signed by the same CA, so
+	# the pinned fingerprints stay valid, but valid from 1970.
+	${INSTALL_DATA} ${FILESDIR}/server.crt \
+		${WRKSRC}/tests/fixtures/tls/server.crt
 	patch -d ${WRKDIR}/direct-sqlcipher -p0 \
 		< ${FILESDIR}/patch-direct-sqlcipher_cabal
 	if [ ! -f ${WITHERABLE_DIR}/witherable.cabal ]; then \

@@ -57,7 +57,7 @@ WANTLIB-coreutils =	${MODCARGO_WANTLIB} m
 WANTLIB-findutils =	${MODCARGO_WANTLIB} onig
 WANTLIB-diffutils =	${MODCARGO_WANTLIB}
 WANTLIB-grep =		${MODCARGO_WANTLIB} onig
-WANTLIB-awk =		${MODCARGO_WANTLIB}
+WANTLIB-awk =		${MODCARGO_WANTLIB} m
 WANTLIB-sed =		${MODCARGO_WANTLIB}
 WANTLIB-tar =		${MODCARGO_WANTLIB} zstd
 
@@ -192,16 +192,20 @@ do-install:
 # is the union over all of them.  files/crates-deps-merge.pl merges the
 # registry entries of every lock file the way files/cabal-deps-merge.pl merges
 # the cabal-bundler output for the cabal ports; run `make uutils-gen-crates`
-# and then add licenses with the usual workflow (see BUILDING.md).
+# and then add licenses with the usual workflow (see BUILDING.md).  Keep the
+# checkout and installed ports tree in sync when both are present.
 uutils-gen-crates: extract
 	perl ${FILESDIR}/crates-deps-merge.pl \
+		--output ${.CURDIR}/crates.inc \
+		--output /usr/ports/sysutils/uutils/crates.inc \
+		--licenses ${.CURDIR}/crates.inc \
 		${WRKDIST}/Cargo.lock \
 		${WRKDIR}/findutils/Cargo.lock \
 		${WRKDIR}/diffutils/Cargo.lock \
 		${WRKDIR}/grep/Cargo.lock \
 		${WRKDIR}/sed/Cargo.lock \
 		${WRKDIR}/awk/Cargo.lock \
-		${WRKDIR}/tar/Cargo.lock > ${.CURDIR}/crates.inc
+		${WRKDIR}/tar/Cargo.lock
 
 # The devel/cargo test target runs with --release and debug assertions
 # disabled, so uucore resolves its locale files relative to the test binary

@@ -69,7 +69,7 @@ MODCABAL_MANIFEST	= \
 	generic-deriving	1.14.7	0	\
 	generic-random	1.5.0.1	0	\
 	generically	0.1.1	5	\
-	half	0.3.3	2	\
+	half	0.3.3	3	\
 	hashable	1.5.1.0	0	\
 	haskell-lexer	1.2.1	0	\
 	hpke	0.1.0	0	\
@@ -148,7 +148,7 @@ MODCABAL_MANIFEST	= \
 	these	1.2.1	3	\
 	time-compat	1.9.9	1	\
 	time-hourglass	0.3.0	0	\
-	time-manager	0.3.2	0	\
+	time-manager	0.4.0	0	\
 	timeit	2.0	0	\
 	tls	2.4.3	0	\
 	tls-session-manager	0.1.0	1	\

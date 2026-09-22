@@ -91,7 +91,7 @@ SHA256 (hackage/generic-random-1.5.0.1.tar.gz) = 3TRRgIeI2ZIR7erCcofbVBfpcjTOkiG
 SHA256 (hackage/generically-0.1.1.tar.gz) = BMWkNr7EsEH3GnM/VqG9f0NfY93o0+tcH0jVW028Q88=
 SHA256 (hackage/generically-0.1.1_5.cabal) = f+QVI01FXrWEAkd4mayWnkY3TQuqsJ6N3TGfY5Sko2k=
 SHA256 (hackage/half-0.3.3.tar.gz) = 9HYElijW/3lyL7BzwB6F8qEbLvODX9w/whph8F0XqwI=
-SHA256 (hackage/half-0.3.3_2.cabal) = s5VJt/jNQZrCLZxJ8IN9erwGcM3ff0L0SbEOV23Bwss=
+SHA256 (hackage/half-0.3.3_3.cabal) = FnZUE/hMD2OlKMCpP/4o4He7NnLbZ9bbFXh5haW2QUA=
 SHA256 (hackage/hashable-1.5.1.0.tar.gz) = 7Qt8EM6Syf/kVCDa3DjG0520hv82M/8TVnzJ9195sRI=
 SHA256 (hackage/haskell-lexer-1.2.1.tar.gz) = nXbhUoEGsbMubkZSZOOTgcpLRQtypLUzHn5RJ2QKGkE=
 SHA256 (hackage/hpke-0.1.0.tar.gz) = GgDgXDRLF/fSsorhlXbCrsNI1xyZVYP4WIJkpZ3If6I=
@@ -201,7 +201,7 @@ SHA256 (hackage/these-1.2.1_3.cabal) = uhrsmlAusrP5DvJU9CBGijxOW5t+gyTj3ccDUUPJJ
 SHA256 (hackage/time-compat-1.9.9.tar.gz) = kPrd7VPPnBWFXuv4CelTavj4XQDjK4L3yLUG0vrffCU=
 SHA256 (hackage/time-compat-1.9.9_1.cabal) = DCkeDDyH7giyUXEHtikBsQKgQNyGIDtTvfB6lv9WMuA=
 SHA256 (hackage/time-hourglass-0.3.0.tar.gz) = nHx8dN2lAzFgMoYGyz6HJCAaut+aFAJxxzyJomErnSI=
-SHA256 (hackage/time-manager-0.3.2.tar.gz) = d23sHgAKnDBrF0dJV3bCQAWRprUbLNWLg1zXpCntNhk=
+SHA256 (hackage/time-manager-0.4.0.tar.gz) = 5xU09KmWGFIMiQ89AFpA3u0kAGbi5G+/xPbri7XItmM=
 SHA256 (hackage/timeit-2.0.tar.gz) = oU305XjbNx5cYJ8HhCCRRFRfnK6QAm0kozmAQvfFkeo=
 SHA256 (hackage/tls-2.4.3.tar.gz) = ot0PhRMa+Z0rfe8McShpkJLcBP5nkm/7j8UsYsGpxVE=
 SHA256 (hackage/tls-session-manager-0.1.0.tar.gz) = KacUVvjTOhwiNrUt2AMfCdgJEmF8xfAHPZUcmBNvvR4=
@@ -233,7 +233,7 @@ SHA256 (hackage/wai-3.2.5.tar.gz) = et0Z9TcaGFD414XbJAHtsUTfsnVaexrE0jN+vHce1Go=
 SHA256 (hackage/wai-app-static-3.2.1.tar.gz) = J/smqGsLOEmlnEBGv91Eaiiv7hK46EbDjFHy7GcEBHQ=
 SHA256 (hackage/wai-extra-3.1.18.tar.gz) = 7mN0C43UeLARlviWhgOxvA7gCqVQLRftrleav9DxUPc=
 SHA256 (hackage/wai-logger-2.5.0.tar.gz) = XPvTB2sflKyjvS3vBrE2s2oi03l08xx3MrhSbr7D4YQ=
-SHA256 (hackage/warp-3.4.15.tar.gz) = g1QLj8UCjzIfwrsY006PlGZcd5GJmIGHlXAVpH6cLUE=
+SHA256 (hackage/warp-3.4.16.tar.gz) = fdCbny+GjkZH/pYWLwY6mdp5Gg5XR50ep0shDsuLLxc=
 SHA256 (hackage/warp-tls-3.4.14.tar.gz) = lVTAjEUJGw2oU2TTDzCxPzM6/OnhRqfTVZ2w26q5txM=
 SHA256 (hackage/websockets-0.13.0.0.tar.gz) = mvgU92RRsK28zrLEbK5GP2PF3lCytr5m9O9NFc4qSbU=
 SHA256 (hackage/websockets-0.13.0.0_6.cabal) = 6vDsazkMbvZidTTol7czFRqudcm0QbKHVAETWc//p1s=
@@ -335,7 +335,7 @@ SIZE (hackage/generic-random-1.5.0.1.tar.gz) = 21703
 SIZE (hackage/generically-0.1.1.tar.gz) = 2870
 SIZE (hackage/generically-0.1.1_5.cabal) = 1203
 SIZE (hackage/half-0.3.3.tar.gz) = 8359
-SIZE (hackage/half-0.3.3_2.cabal) = 2011
+SIZE (hackage/half-0.3.3_3.cabal) = 2011
 SIZE (hackage/hashable-1.5.1.0.tar.gz) = 90605
 SIZE (hackage/haskell-lexer-1.2.1.tar.gz) = 14602
 SIZE (hackage/hpke-0.1.0.tar.gz) = 25281
@@ -445,7 +445,7 @@ SIZE (hackage/these-1.2.1_3.cabal) = 2384
 SIZE (hackage/time-compat-1.9.9.tar.gz) = 64400
 SIZE (hackage/time-compat-1.9.9_1.cabal) = 5488
 SIZE (hackage/time-hourglass-0.3.0.tar.gz) = 32660
-SIZE (hackage/time-manager-0.3.2.tar.gz) = 8547
+SIZE (hackage/time-manager-0.4.0.tar.gz) = 13779
 SIZE (hackage/timeit-2.0.tar.gz) = 2117
 SIZE (hackage/tls-2.4.3.tar.gz) = 195039
 SIZE (hackage/tls-session-manager-0.1.0.tar.gz) = 4453
@@ -477,7 +477,7 @@ SIZE (hackage/wai-3.2.5.tar.gz) = 13580
 SIZE (hackage/wai-app-static-3.2.1.tar.gz) = 23531
 SIZE (hackage/wai-extra-3.1.18.tar.gz) = 87221
 SIZE (hackage/wai-logger-2.5.0.tar.gz) = 6615
-SIZE (hackage/warp-3.4.15.tar.gz) = 79601
+SIZE (hackage/warp-3.4.16.tar.gz) = 87194
 SIZE (hackage/warp-tls-3.4.14.tar.gz) = 10145
 SIZE (hackage/websockets-0.13.0.0.tar.gz) = 41195
 SIZE (hackage/websockets-0.13.0.0_6.cabal) = 7815

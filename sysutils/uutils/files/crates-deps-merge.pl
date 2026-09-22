@@ -25,14 +25,40 @@
 #   SKIP  comma-separated crate names to exclude
 #
 # Usage:
-#   env SKIP=... perl crates-deps-merge.pl \
-#       Cargo.lock extra/Cargo.lock ... > crates.inc
+#   env SKIP=... perl crates-deps-merge.pl [--output FILE ...] \
+#       [--licenses FILE] \
+#       Cargo.lock extra/Cargo.lock ...
 
 use strict;
 use warnings;
 
 my %skip = map { $_ => 1 } split /,/, $ENV{SKIP} // '';
 my %seen;
+my @output;
+my $licenses;
+
+while (@ARGV && $ARGV[0] =~ /^--(?:output|licenses)(?:=(.*))?$/) {
+    my $option = $1;
+    my $name = shift @ARGV;
+    my $file = defined $option ? $option : shift @ARGV;
+    die "$name requires a file\n" unless defined $file && length $file;
+    if ($name eq '--licenses') {
+        $licenses = $file;
+    } else {
+        push @output, $file;
+    }
+}
+
+my %license;
+if (defined $licenses && -f $licenses) {
+    open my $old, '<', $licenses or die "$licenses: $!";
+    while (my $line = <$old>) {
+        if ($line =~ /^MODCARGO_CRATES \+=\t([^\t]+\t[^\t]+)(\t#.*)?\n?$/) {
+            $license{$1} = $2 // '';
+        }
+    }
+    close $old;
+}
 
 for my $file (@ARGV) {
     open my $fh, '<', $file or die "$file: $!";
@@ -65,7 +91,19 @@ for my $file (@ARGV) {
     close $fh;
 } ## end for my $file (@ARGV)
 
-print "MODCARGO_CRATES +=\t$_\n" for sort keys %seen;
+my @lines = map {
+    "MODCARGO_CRATES +=\t$_" . ($license{$_} // '') . "\n"
+} sort keys %seen;
+
+if (@output) {
+    for my $file (@output) {
+        open my $out, '>', $file or die "$file: $!";
+        print {$out} @lines;
+        close $out or die "$file: $!";
+    }
+} else {
+    print @lines;
+}
 
 # A package only counts when it comes from crates.io; everything else is
 # provided by DIST_TUPLE or lives in the source tree.

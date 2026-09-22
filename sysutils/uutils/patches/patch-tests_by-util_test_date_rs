@@ -3,13 +3,48 @@ SPDX-License-Identifier: MIT
 Make the uutils test suite pass on OpenBSD.  Tests that rely on the
 filesystem denying access are skipped when running as root (the ports
 test target runs with root privileges), matching the GNU coreutils
-test suite.  Also treat the xattr crate's unsupported-platform error
-as ENOTSUP so optional attribute preservation is silent on OpenBSD.
+test suite.
+
+Never let the suite reset the system clock: the `date --set` examples call
+clock_settime(2), which needs root and changes the date for every process on
+the machine, including the rest of this test run and any later port tests.
+Require an explicit opt-in (UUTILS_TEST_SET_SYSTEM_DATE) for those examples,
+because the ports test target runs as root.
 
 Index: tests/by-util/test_date.rs
 --- tests/by-util/test_date.rs.orig
 +++ tests/by-util/test_date.rs
-@@ -604,6 +604,10 @@ fn test_date_for_invalid_file() {
+@@ -511,10 +511,19 @@
+     new_ucmd!().arg("+%%N").succeeds().stdout_is("%N\n");
+ }
+ 
++/// Setting the system clock requires root and would leave every process on the
++/// machine -- including the rest of this test run -- with a wrong date.  The
++/// OpenBSD ports test target runs as root, so the `date --set` tests that call
++/// `clock_settime` are skipped unless the operator explicitly opts in.
++#[cfg(all(unix, not(target_vendor = "apple")))]
++fn date_set_is_allowed() -> bool {
++    std::env::var_os("UUTILS_TEST_SET_SYSTEM_DATE").is_some()
++}
++
+ #[test]
+ #[cfg(all(unix, not(target_vendor = "apple")))]
+ fn test_date_set_valid() {
+-    if geteuid().is_root() {
++    if geteuid().is_root() && date_set_is_allowed() {
+         new_ucmd!()
+             .arg("--set")
+             .arg("2020-03-12 13:30:00+08:00")
+@@ -582,7 +591,7 @@
+ #[test]
+ #[cfg(all(unix, not(target_vendor = "apple")))]
+ fn test_date_set_valid_2() {
+-    if geteuid().is_root() {
++    if geteuid().is_root() && date_set_is_allowed() {
+         new_ucmd!()
+             .arg("--set")
+             .arg("Sat 20 Mar 2021 14:53:01 AWST") // spell-checker:disable-line
+@@ -604,6 +613,10 @@
  #[test]
  #[cfg(unix)]
  fn test_date_for_no_permission_file() {
@@ -20,3 +55,21 @@ Index: tests/by-util/test_date.rs
      use std::os::unix::fs::PermissionsExt;
      const FILE: &str = "file-no-perm-1";
  
+@@ -731,7 +744,7 @@
+ #[test]
+ #[cfg(all(unix, not(target_vendor = "apple")))]
+ fn test_date_set_valid_3() {
+-    if geteuid().is_root() {
++    if geteuid().is_root() && date_set_is_allowed() {
+         new_ucmd!()
+             .arg("--set")
+             .arg("Sat 20 Mar 2021 14:53:01") // Local timezone
+@@ -743,7 +756,7 @@
+ #[test]
+ #[cfg(all(unix, not(target_vendor = "apple")))]
+ fn test_date_set_valid_4() {
+-    if geteuid().is_root() {
++    if geteuid().is_root() && date_set_is_allowed() {
+         new_ucmd!()
+             .arg("--set")
+             .arg("2020-03-11 21:45:00") // Local timezone

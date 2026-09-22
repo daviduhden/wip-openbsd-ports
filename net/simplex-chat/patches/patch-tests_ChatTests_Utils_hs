@@ -21,7 +21,7 @@ Index: tests/ChatTests/Utils.hs
  
  xit' :: HasCallStack => String -> (ps -> Expectation) -> SpecWith (Arg (ps -> Expectation))
  xit' = if os == "linux" then xit else it
-@@ -677,10 +677,21 @@
+@@ -677,10 +677,23 @@
        runExceptT (createNoteFolder db user) >>= either (fail . show) pure
  
  getProfilePictureByName :: TestCC -> String -> IO (Maybe String)
@@ -36,7 +36,9 @@ Index: tests/ChatTests/Utils.hs
 +    -- column as Maybe so a not-yet-received image returns Nothing instead of
 +    -- failing with a NULL-to-Text conversion error.
 +    go 0 = queryImage
-+    go n = queryImage >>= maybe (threadDelay 100000 >> go (n - 1)) pure
++    go n = do
++      image <- queryImage
++      maybe (threadDelay 100000 >> go (n - 1)) (pure . Just) image
 +    queryImage = do
 +      rows <-
 +        withTransaction (chatStore $ chatController cc) $ \db ->

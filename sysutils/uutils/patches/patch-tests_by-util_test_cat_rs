@@ -1,9 +1,9 @@
 SPDX-License-Identifier: MIT
 
 Make the uutils test suite pass on OpenBSD.  Tests that rely on the
-filesystem denying access are skipped when running as root (the ports
-test target runs with root privileges), matching the GNU coreutils
-test suite.  Also treat the xattr crate's unsupported-platform error
+filesystem denying access are skipped when running as root, in case the
+suite is run with root privileges, matching the GNU coreutils test
+suite.  Also treat the xattr crate's unsupported-platform error
 as ENOTSUP so optional attribute preservation is silent on OpenBSD.
 
 Index: tests/by-util/test_cat.rs

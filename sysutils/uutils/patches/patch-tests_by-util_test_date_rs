@@ -1,15 +1,15 @@
 SPDX-License-Identifier: MIT
 
 Make the uutils test suite pass on OpenBSD.  Tests that rely on the
-filesystem denying access are skipped when running as root (the ports
-test target runs with root privileges), matching the GNU coreutils
-test suite.
+filesystem denying access are skipped when running as root, in case the
+suite is run with root privileges, matching the GNU coreutils test
+suite.
 
 Never let the suite reset the system clock: the `date --set` examples call
 clock_settime(2), which needs root and changes the date for every process on
 the machine, including the rest of this test run and any later port tests.
 Require an explicit opt-in (UUTILS_TEST_SET_SYSTEM_DATE) for those examples,
-because the ports test target runs as root.
+in case the suite is run as root.
 
 Index: tests/by-util/test_date.rs
 --- tests/by-util/test_date.rs.orig
@@ -19,9 +19,9 @@ Index: tests/by-util/test_date.rs
  }
  
 +/// Setting the system clock requires root and would leave every process on the
-+/// machine -- including the rest of this test run -- with a wrong date.  The
-+/// OpenBSD ports test target runs as root, so the `date --set` tests that call
-+/// `clock_settime` are skipped unless the operator explicitly opts in.
++/// machine -- including the rest of this test run -- with a wrong date.  If the
++/// suite is run as root, the `date --set` tests that call `clock_settime` are
++/// skipped unless the operator explicitly opts in.
 +#[cfg(all(unix, not(target_vendor = "apple")))]
 +fn date_set_is_allowed() -> bool {
 +    std::env::var_os("UUTILS_TEST_SET_SYSTEM_DATE").is_some()

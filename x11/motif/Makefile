@@ -1,23 +1,21 @@
 COMMENT=	Motif toolkit
 
-DISTNAME=	motif-2.3.9
-WRKDIST=	${WRKDIR}/motif-motif-2.3.9
+GH_ACCOUNT=	thentenaar
+GH_PROJECT=	motif
+GH_TAGNAME=	v2.5.2
 
-SHARED_LIBS +=  Xm                   6.2      # 4.4
-SHARED_LIBS +=  Mrm                  4.2      # 4.4
-SHARED_LIBS +=  Uil                  5.1      # 4.4
+SHARED_LIBS +=  Xm                   6.3      # 5.1
+SHARED_LIBS +=  Mrm                  4.3      # 5.1
+SHARED_LIBS +=  Uil                  5.2      # 5.1
 
 CATEGORIES=	x11
-HOMEPAGE=	https://github.com/jontrulson/motif
-
-# Upstream: jontrulson/motif (fork with modern fixes)
-SITES=		https://github.com/jontrulson/motif/archive/refs/tags/
+HOMEPAGE=	https://github.com/thentenaar/motif
 
 # LGPLv2.1
 PERMIT_PACKAGE=	Yes
 
-WANTLIB=  ICE SM X11 Xau Xext Xft Xmu Xpm Xrender Xt c expat fontconfig freetype
-WANTLIB+= iconv jpeg m png pthread xcb z
+WANTLIB=  ICE SM X11 Xau Xcursor Xext Xft Xmu Xpm Xrandr Xrender Xt c expat
+WANTLIB+= fontconfig freetype iconv jpeg m png pthread xcb z
 
 LIB_DEPENDS=	converters/libiconv \
 		graphics/jpeg \
@@ -29,13 +27,11 @@ CONFIGURE_STYLE=autoreconf
 AUTORECONF=	./autogen.sh
 AUTOCONF_VERSION=	2.73
 AUTOMAKE_VERSION=	1.16
-CONFIGURE_ARGS=	--enable-themes \
-		--enable-xft \
-		--enable-jpeg \
-		--disable-printing \
-		--enable-png
-CONFIGURE_ENV=	CPPFLAGS='-I${X11BASE}/include -I${LOCALBASE}/include \
-		    -DRGB_TXT="\"${X11BASE}/share/X11/rgb.txt\""' \
+CONFIGURE_ARGS=	--with-xft \
+		--with-jpeg \
+		--with-png \
+		--enable-demos
+CONFIGURE_ENV=	CPPFLAGS='-I${X11BASE}/include -I${LOCALBASE}/include' \
 		LDFLAGS='-L${LOCALBASE}/lib'
 
 post-install:
@@ -47,8 +43,5 @@ post-install:
 	mv ${PREFIX}/man/man4/mwmrc.4 ${PREFIX}/man/man5/mwmrc.5
 # demo programs
 	mv ${PREFIX}/share/Xm ${PREFIX}/lib/Xm
-	mv ${PREFIX}/man/manm/exm_in_c.man ${PREFIX}/lib/Xm/Exm/app_in_c/
-	mv ${PREFIX}/man/manm/simpleDemo.man ${PREFIX}/lib/Xm/Exm/simple_app/
-	rmdir ${PREFIX}/man/manm
 
 .include <bsd.port.mk>

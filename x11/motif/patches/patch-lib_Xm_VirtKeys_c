@@ -1,9 +1,11 @@
+SPDX-License-Identifier: LGPL-2.1-or-later
+
 Check bounds before accessing the keycaps table.
 
 Index: lib/Xm/VirtKeys.c
 --- lib/Xm/VirtKeys.c.orig
 +++ lib/Xm/VirtKeys.c
-@@ -558,10 +558,16 @@ FindVirtKey(Display *dpy,
+@@ -514,10 +514,16 @@
    XmDisplay     xmDisplay = (XmDisplay) XmGetXmDisplay( dpy);
    XmVKeyBinding keyBindings = xmDisplay->display.bindings;
    KeyCode       min_kcode;
@@ -16,9 +18,9 @@ Index: lib/Xm/VirtKeys.c
 +
 +  XDisplayKeycodes(dpy, &min_kc, &max_kc);
 +  if (keycode < min_kcode || keycode > max_kc)
-+    return; 
++    return;
 +
 +  EffectiveSMMask = EffectiveStdModMask( dpy, kc_map, ks_per_kc);
-   
+ 
    /* Get the modifiers from the actual event */
    Modifiers VirtualStdMods = 0;

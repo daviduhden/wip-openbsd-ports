@@ -69,13 +69,14 @@ broker(int fd, int dry, int slew_only)
 			/* SOCK_SEQPACKET preserves boundaries; reject truncation,
 			 * embedded NULs and extra fields. No request is queued. */
 			if (n >= (ssize_t)sizeof(buf) - 1 ||
-			    strlen(buf) != (size_t)n || n < 3 || buf[1] != ' ' ||
-			    (buf[0] != 'A' && buf[0] != 'J') ||
-			    parse_offset(buf + 2, &offset) == -1 || remaining ||
-			    (!first && now.tv_sec - last.tv_sec < 60) ||
-			    (buf[0] == 'J' && (!first || slew_only)) ||
-			    (buf[0] == 'A' && (offset > 30 * NS || offset < -30 * NS))) {
-				reply(fd, "ERROR invalid or disallowed correction");
+			    strlen(buf) != (size_t)n || n < 3 || buf[1] !=
+			    ' ' || (buf[0] != 'A' && buf[0] != 'J') || parse_offset(buf +
+			    2, &offset) == -1 || remaining || (!first &&
+			    now.tv_sec - last.tv_sec < 60) || (buf[0] == 'J' &&
+			    (!first || slew_only)) || (buf[0] == 'A' &&
+			    (offset > 30 * NS || offset < -30 * NS))) {
+				reply(fd,
+				    "ERROR invalid or disallowed correction");
 				return -1;
 			}
 			first = 0;
@@ -95,7 +96,8 @@ broker(int fd, int dry, int slew_only)
 			}
 		}
 		if (remaining && (now.tv_sec > tick.tv_sec + 1 ||
-		    (now.tv_sec == tick.tv_sec + 1 && now.tv_nsec >= tick.tv_nsec))) {
+		    (now.tv_sec == tick.tv_sec + 1 &&
+		     now.tv_nsec >= tick.tv_nsec))) {
 			int64_t step = remaining > STEP ? STEP :
 			    remaining < -STEP ? -STEP : remaining;
 			/* Never catch up with a burst after scheduling delays. */
@@ -125,10 +127,10 @@ main(int argc, char **argv)
 	uid_t uid;
 	gid_t gid, groups[2];
 	char *args[] = {"${MODPY_BIN}", "-sBP", "-m", "sdwdate.openbsd",
-	    "--broker", NULL, NULL, NULL, NULL};
+		"--broker", NULL, NULL, NULL, NULL};
 	char *env[] = {"PATH=${LOCALBASE}/bin:/usr/bin:/bin",
-	    "PYTHONPATH=${TRUEPREFIX}/libexec/sdwdate", "HOME=/var/db/sdwdate",
-	    "LANG=C.UTF-8", "TZ=UTC", NULL};
+		"PYTHONPATH=${TRUEPREFIX}/libexec/sdwdate", "HOME=/var/db/sdwdate",
+		"LANG=C.UTF-8", "TZ=UTC", NULL};
 	int ai = 5;
 
 	for (int i = 1; i < argc; i++) {
@@ -139,12 +141,14 @@ main(int argc, char **argv)
 		else if (!strcmp(argv[i], "--once"))
 			once = 1;
 		else {
-			fprintf(stderr, "usage: sdwdate [--dry-run] [--slew-only] [--once]\n");
+			fprintf(stderr,
+			    "usage: sdwdate [--dry-run] [--slew-only] [--once]\n");
 			return 1;
 		}
 	}
 	if (geteuid() != 0 || getuid() != 0) {
-		fprintf(stderr, "sdwdate: start the broker as root (not setuid)\n");
+		fprintf(stderr,
+		    "sdwdate: start the broker as root (not setuid)\n");
 		return 1;
 	}
 	closefrom(3);
@@ -157,7 +161,8 @@ main(int argc, char **argv)
 	groups[0] = gid;
 	groups[1] = gr->gr_gid;
 	umask(077);
-	lockfd = open("/var/run/sdwdate.lock", O_CREAT | O_RDWR | O_NOFOLLOW, 0600);
+	lockfd = open("/var/run/sdwdate.lock", O_CREAT | O_RDWR | O_NOFOLLOW,
+	    0600);
 	if (lockfd == -1 || fstat(lockfd, &st) == -1 || !S_ISREG(st.st_mode) ||
 	    st.st_uid != 0 || st.st_nlink != 1 || (st.st_mode & 077) ||
 	    flock(lockfd, LOCK_EX | LOCK_NB) == -1) {
@@ -183,8 +188,10 @@ main(int argc, char **argv)
 		if (sv[1] != 3 && dup2(sv[1], 3) == -1)
 			_exit(1);
 		closefrom(4);
-		if (setgroups(2, groups) == -1 || setresgid(gid, gid, gid) == -1 ||
-		    setresuid(uid, uid, uid) == -1 || chdir("/var/db/sdwdate") == -1)
+		if (setgroups(2, groups) == -1 ||
+		    setresgid(gid, gid, gid) == -1 ||
+		    setresuid(uid, uid, uid) == -1 ||
+		    chdir("/var/db/sdwdate") == -1)
 			_exit(1);
 		if (dry)
 			args[ai++] = "--dry-run";
@@ -215,7 +222,8 @@ main(int argc, char **argv)
 		pid_t w = waitpid(child, &status, WNOHANG);
 		if (w == child)
 			return startup_failed ? 1 : stopping ? 0 :
-			    result == 0 && WIFEXITED(status) && WEXITSTATUS(status) == 0 ? 0 : 1;
+			    result == 0 && WIFEXITED(status) && WEXITSTATUS(
+			    status) == 0 ? 0 : 1;
 		if (w == -1 && errno != EINTR)
 			break;
 		struct timespec delay = {0, 100000000};

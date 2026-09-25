@@ -143,6 +143,7 @@ SIMPLEXMQ_PATCHES = \
 	patch-src_Simplex_Messaging_Client_hs \
 	patch-src_Simplex_Messaging_Client_Agent_hs \
 	patch-src_Simplex_Messaging_Crypto_hs \
+	patch-src_Simplex_Messaging_Crypto_Lazy_hs \
 	patch-src_Simplex_Messaging_Notifications_Server_Main_hs \
 	patch-src_Simplex_Messaging_Notifications_Server_hs \
 	patch-src_Simplex_Messaging_Server_CLI_hs \

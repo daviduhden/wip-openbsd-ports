@@ -1,0 +1,28 @@
+SPDX-License-Identifier: BSD-3-Clause
+
+Adapt the ChaCha20-Poly1305 setup to crypton 2.1, where
+ChaChaPoly1305.initialize takes an opaque Key built by
+ChaChaPoly1305.key instead of the raw key, and no longer
+returns CryptoFailable.
+
+Index: Network/TLS/Extra/Cipher.hs
+--- Network/TLS/Extra/Cipher.hs.orig
++++ Network/TLS/Extra/Cipher.hs
+@@ -692,7 +692,7 @@
+ 
+ chacha20poly1305 :: BulkDirection -> BulkKey -> BulkAEAD
+ chacha20poly1305 BulkEncrypt key nonce =
+-    let st = noFail (ChaChaPoly1305.nonce12 nonce >>= ChaChaPoly1305.initialize key)
++    let st = noFail (ChaChaPoly1305.initialize <$> ChaChaPoly1305.key key <*> ChaChaPoly1305.nonce12 nonce)
+      in ( \input ad ->
+             let st2 = ChaChaPoly1305.finalizeAAD (ChaChaPoly1305.appendAAD ad st)
+                 (output, st3) = ChaChaPoly1305.encrypt input st2
+@@ -700,7 +700,7 @@
+              in (output, AuthTag tag)
+         )
+ chacha20poly1305 BulkDecrypt key nonce =
+-    let st = noFail (ChaChaPoly1305.nonce12 nonce >>= ChaChaPoly1305.initialize key)
++    let st = noFail (ChaChaPoly1305.initialize <$> ChaChaPoly1305.key key <*> ChaChaPoly1305.nonce12 nonce)
+      in ( \input ad ->
+             let st2 = ChaChaPoly1305.finalizeAAD (ChaChaPoly1305.appendAAD ad st)
+                 (output, st3) = ChaChaPoly1305.decrypt input st2

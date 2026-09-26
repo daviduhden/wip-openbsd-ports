@@ -45,17 +45,17 @@ MODCABAL_MANIFEST	= \
 	crypto-token	0.2.0	0	\
 	cryptohash-md5	0.11.101.0	6	\
 	cryptohash-sha1	0.11.101.0	6	\
-	crypton	1.1.5	0	\
+	crypton	2.1.1	0	\
 	crypton-asn1-encoding	0.10.0	0	\
 	crypton-asn1-parse	0.10.0	0	\
 	crypton-asn1-types	0.4.1	0	\
 	crypton-connection	0.4.6	0	\
 	crypton-pem	0.3.0	0	\
 	crypton-socks	0.6.2	0	\
-	crypton-x509	1.9.1	0	\
-	crypton-x509-store	1.9.0	0	\
+	crypton-x509	1.9.1	2	\
+	crypton-x509-store	1.9.0	2	\
 	crypton-x509-system	1.9.0	0	\
-	crypton-x509-validation	1.9.1	1	\
+	crypton-x509-validation	1.9.1	3	\
 	cryptostore	0.5.0.0	1	\
 	data-default	0.8.0.2	0	\
 	data-default-class	0.2.0.0	0	\
@@ -75,7 +75,7 @@ MODCABAL_MANIFEST	= \
 	half	0.3.3	3	\
 	hashable	1.5.1.0	0	\
 	haskell-lexer	1.2.1	0	\
-	hpke	0.1.0	0	\
+	hpke	0.2.0	1	\
 	hsc2hs	0.68.10	5	\
 	hspec	2.11.17	0	\
 	hspec-core	2.11.17	0	\
@@ -185,5 +185,5 @@ MODCABAL_MANIFEST	= \
 	websockets	0.13.0.0	6	\
 	word8	0.1.3	0	\
 	yaml	0.11.11.2	0	\
-	zlib	0.7.1.1	0	\
+	zlib	0.7.1.1	1	\
 	zstd	0.1.4.0	0

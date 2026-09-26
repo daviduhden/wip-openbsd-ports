@@ -14,7 +14,7 @@ HOMEPAGE=	https://github.com/thentenaar/motif
 # LGPLv2.1
 PERMIT_PACKAGE=	Yes
 
-WANTLIB=  ICE SM X11 Xau Xcursor Xext Xft Xmu Xpm Xrandr Xrender Xt c expat
+WANTLIB=  ICE SM X11 Xfixes Xcursor Xext Xft Xmu Xpm Xrandr Xrender Xt c expat
 WANTLIB+= fontconfig freetype iconv jpeg m png pthread xcb z
 
 LIB_DEPENDS=	converters/libiconv \

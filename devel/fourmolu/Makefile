@@ -18,11 +18,25 @@ LIB_DEPENDS =	converters/libiconv \
 		devel/gmp \
 		devel/libffi
 
+CABAL_INC_HOME ?=	${WRKDIR}/.cabal-inc-home
+
 # Regenerate cabal.inc with the devel/cabal module's cabal-bundler:
 #	cabal-bundler --openbsd fourmolu-0.20.1.0 > cabal.inc
 cabal-inc:
-	${LOCALBASE}/bin/cabal-bundler --openbsd \
-		${MODCABAL_STEM}-${MODCABAL_VERSION} > ${.CURDIR}/cabal.inc
+	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}
+	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}/.cabal
+	env HOME=${CABAL_INC_HOME} CABAL_DIR=${CABAL_INC_HOME}/.cabal \
+		LC_ALL=en_US.UTF-8 \
+		${LOCALBASE}/bin/cabal update
+	if [ ! -f ${CABAL_INC_HOME}/.cabal/config ] && \
+		[ -f ${CABAL_INC_HOME}/.config/cabal/config ]; then \
+		cp ${CABAL_INC_HOME}/.config/cabal/config \
+			${CABAL_INC_HOME}/.cabal/config; \
+	fi
+	env HOME=${CABAL_INC_HOME} CABAL_DIR=${CABAL_INC_HOME}/.cabal \
+		LC_ALL=en_US.UTF-8 \
+		${LOCALBASE}/bin/cabal-bundler --openbsd \
+			${MODCABAL_STEM}-${MODCABAL_VERSION} > ${.CURDIR}/cabal.inc
 
 .include "cabal.inc"
 

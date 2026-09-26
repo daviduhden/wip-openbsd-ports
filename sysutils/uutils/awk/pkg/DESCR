@@ -1,0 +1,8 @@
+uutils awk is a cross-platform implementation of the AWK language in
+Rust.
+
+This package installs ${PREFIX}/bin/uu-awk.
+
+It is a young, mostly POSIX implementation: GNU extensions, the
+gawk-specific profiling and debugger interfaces, and the auxiliary
+gawkbug, grcat and pwcat programs are not provided.

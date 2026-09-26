@@ -1,9 +1,0 @@
-uutils tar is a cross-platform reimplementation of tar in Rust.
-
-This package installs ${PREFIX}/bin/gtar, the name used by
-archivers/gtar.  It conflicts with archivers/gtar and declares it as a
-secondary pkgpath, so the package tools accept it as a provider of that
-path.  The GNU package must not be installed at the same time.
-
-Upstream has not made a release yet: the package is built from a pinned
-commit and the remote archive helper grmt(8) is not provided.

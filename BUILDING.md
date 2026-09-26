@@ -1,6 +1,8 @@
 # Building and Testing These Ports on OpenBSD
 
-Ports use the same `category/port` layout as the OpenBSD ports tree.
+Ports use the same `category/port` layout as the OpenBSD ports tree,
+including nested subports grouped under a shared directory
+(`category/group/port`, like `sysutils/uutils/awk`).
 The categories currently present are `devel`, `editors`, `games`,
 `graphics`, `multimedia`, `net`, `security`, `shells`, `sysutils`,
 `www` and `x11`.
@@ -35,8 +37,11 @@ doas ./fetch-ports.ksh --copy-only /usr/ports
 
 Each port is copied to its existing category, never over the complete
 category directory. Replaced ports are saved under
-`TREE/.wip-backups/category-port.XXXXXXXX/port`; nested CVS metadata is
-preserved. Stale patches are not carried into the new copy. Paths that
+`TREE/.wip-backups/category-port.XXXXXXXX/port` (the category slashes are
+replaced by underscores for a nested subport); nested CVS metadata is
+preserved. Copying a nested subport also installs the files its group
+shares with the subports, for example `Makefile.inc`, without touching any
+sibling port. Stale patches are not carried into the new copy. Paths that
 name categories, traverse parents or use symlinked port roots are rejected.
 The local account entries from `user.list` are merged as well. Files become
 readable by the ports build user even when the Git checkout is private.
@@ -81,10 +86,9 @@ Ports that use `devel/cargo`, `lang/go` or `devel/cabal` keep generated
 dependency data next to the `Makefile`:
 
 - `editors/msedit` uses `devel/cargo` and `crates.inc`.
-- `sysutils/uutils` uses `devel/cargo` and `crates.inc`, but builds
-  several independent uutils projects, so its crate list is the union
-  over every project `Cargo.lock` and is generated with
-  `make uutils-gen-crates` instead of `make modcargo-gen-crates`.
+- `sysutils/uutils` is a group of subports (`coreutils`, `findutils`,
+  `diffutils`, `grep`, `sed`, `awk`, `tar`); each builds one project
+  and keeps its own `crates.inc`.
 - `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/shfmt`
   and `net/xd-torrent` use `lang/go` and `modules.inc`.
 - `devel/fourmolu`, `net/simplexmq` and `net/simplex-chat` use
@@ -118,12 +122,12 @@ make cabal-inc
 make makesum
 ```
 
-For `sysutils/uutils`, replace the `make modcargo-gen-crates` step with
-`make uutils-gen-crates`.  That target runs `files/crates-deps-merge.pl`
-over every project `Cargo.lock` and writes `crates.inc` directly, so the
-`/tmp` redirect and `cp` are not needed.  The `-licenses` pass is
-unchanged; the devel/cargo module only ever reads a single `Cargo.lock`,
-which is why the merge lives in the port.
+Each `sysutils/uutils` subport builds a single project from a single
+`Cargo.lock`, so the regular `make modcargo-gen-crates` sequence above
+applies inside its directory.  Refresh the pinned revision in the
+subport `Makefile` first: `GH_TAGNAME` for the released projects, and
+`AWK_COMMIT`/`INDEXMAP_COMMIT` or `TAR_COMMIT`/`UUCORE_COMMIT` plus the
+matching `DIST_TUPLE` entries for the unreleased ones.
 
 [UPDATE.md](UPDATE.md) has the complete procedure: which version
 variables to bump, how to refresh patches, and how to validate the

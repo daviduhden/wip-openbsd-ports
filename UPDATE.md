@@ -101,15 +101,13 @@ Notes:
 - `make modcargo-metadata` regenerates the vendored crate metadata
   after manual crate changes; the wrapper target runs it as the build
   user.
-- `sysutils/uutils` builds several uutils projects in one port, so its
-  `crates.inc` is the union over all of their `Cargo.lock` files.
-  `files/crates-deps-merge.pl` performs that merge, mirroring
-  `files/cabal-deps-merge.pl` for the cabal ports. Replace the
-  `make modcargo-gen-crates` step with `make uutils-gen-crates`; the
-  target writes `crates.inc` directly, so no `/tmp` redirect is needed.
-  The license pass and the rest of the sequence do not change. Also
-  refresh the `*_V`/`*_COMMIT` variables for each project and the
-  `DIST_TUPLE` entries that back the tar and awk git dependencies.
+- `sysutils/uutils` is a group of subports, each building one uutils
+  project from a single `Cargo.lock`, so the `make modcargo-gen-crates`
+  sequence above applies inside each subport directory.  Also refresh
+  the pinned revision in the subport `Makefile`: `GH_TAGNAME` for the
+  released projects, and `AWK_COMMIT`/`INDEXMAP_COMMIT` or
+  `TAR_COMMIT`/`UUCORE_COMMIT` plus the matching `DIST_TUPLE` entries
+  for the unreleased ones.
 - If a dependency must stay at a version newer than what upstream
   pins, list it in `MODCARGO_CRATES_UPDATE`; the module runs
   `cargo update --package` for each entry during configure.

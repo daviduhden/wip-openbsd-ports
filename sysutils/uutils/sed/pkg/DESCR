@@ -1,0 +1,2 @@
+Rust reimplementation of the sed utility with some GNU sed, FreeBSD sed,
+and other extensions.

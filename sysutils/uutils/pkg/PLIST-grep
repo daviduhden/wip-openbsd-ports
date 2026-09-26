@@ -1,5 +1,0 @@
-@conflict ggrep-*
-@pkgpath sysutils/ggrep
-bin/gegrep
-bin/gfgrep
-@bin bin/ggrep

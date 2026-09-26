@@ -1,8 +1,0 @@
-uutils grep is a cross-platform reimplementation of GNU grep in Rust.
-
-This package installs the same file names as sysutils/ggrep:
-${PREFIX}/bin/ggrep, plus ${PREFIX}/bin/gegrep and
-${PREFIX}/bin/gfgrep wrappers that invoke it with -E and -F.  It
-conflicts with sysutils/ggrep and declares it as a secondary pkgpath,
-so the package tools accept it as a provider of that path.  The GNU
-package must not be installed at the same time.

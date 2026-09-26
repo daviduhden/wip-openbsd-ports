@@ -1,0 +1,5 @@
+@bin bin/uu-find
+@bin bin/uu-locate
+@bin bin/uu-testing-commandline
+@bin bin/uu-updatedb
+@bin bin/uu-xargs

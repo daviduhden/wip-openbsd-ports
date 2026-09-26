@@ -1,0 +1,2 @@
+The goal of uutils-diffutils is to be a drop-in replacement for the GNU
+diffutils commands (diff, cmp, diff3, sdiff) in Rust.

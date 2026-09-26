@@ -7,7 +7,7 @@ dependency-tracking port modules:
 | --- | --- | --- |
 | `devel/cargo` | `editors/msedit`, `sysutils/uutils` | `crates.inc` |
 | `lang/go` | `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/shfmt`, `net/xd-torrent` | `modules.inc` |
-| `devel/cabal` | `net/simplexmq`, `net/simplex-chat` | `cabal.inc` |
+| `devel/cabal` | `devel/fourmolu`, `net/simplexmq`, `net/simplex-chat` | `cabal.inc` |
 
 The generated file lists every dependency the build is allowed to use.
 It is derived from upstream metadata, never edited by hand, and always
@@ -175,7 +175,7 @@ Notes:
 
 ## Cabal Ports
 
-Examples: `net/simplexmq` and `net/simplex-chat`.
+Examples: `devel/fourmolu`, `net/simplexmq` and `net/simplex-chat`.
 
 `cabal.inc` records `MODCABAL_MANIFEST`, the Hackage dependency set.
 It is produced by a port-specific `cabal-inc` target that calls

@@ -87,8 +87,8 @@ dependency data next to the `Makefile`:
   `make uutils-gen-crates` instead of `make modcargo-gen-crates`.
 - `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/shfmt`
   and `net/xd-torrent` use `lang/go` and `modules.inc`.
-- `net/simplexmq` and `net/simplex-chat` use `devel/cabal` and
-  `cabal.inc`.
+- `devel/fourmolu`, `net/simplexmq` and `net/simplex-chat` use
+  `devel/cabal` and `cabal.inc`.
 
 Never edit these files by hand. Regenerating them needs network access,
 while the regular build must stay offline. The short form for each

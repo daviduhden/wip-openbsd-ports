@@ -1,0 +1,6 @@
+Fourmolu is a formatter for Haskell source code.
+
+It is a fork of Ormolu that focuses on configurability: the formatting
+options are read from fourmolu.yaml, so a project can pin the style it
+expects while still using a single formatter.  Fourmolu formats files in
+place, prints the result to stdout, or reads it from stdin.

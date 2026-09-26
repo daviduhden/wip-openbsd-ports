@@ -2,8 +2,8 @@
 
 Ports use the same `category/port` layout as the OpenBSD ports tree.
 The categories currently present are `devel`, `editors`, `games`,
-`graphics`, `multimedia`, `net`, `security`, `shells`, `sysutils`
-and `x11`.
+`graphics`, `multimedia`, `net`, `security`, `shells`, `sysutils`,
+`www` and `x11`.
 List the installable paths without checking out or changing anything:
 
 ```sh

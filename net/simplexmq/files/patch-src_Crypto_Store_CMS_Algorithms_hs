@@ -1,0 +1,19 @@
+SPDX-License-Identifier: BSD-3-Clause
+
+Adapt ccpInit to crypton 2.1, where ChaChaPoly1305.initialize takes
+an opaque Key built by ChaChaPoly1305.key and is total.
+
+Index: src/Crypto/Store/CMS/Algorithms.hs
+--- src/Crypto/Store/CMS/Algorithms.hs.orig
++++ src/Crypto/Store/CMS/Algorithms.hs
+@@ -1333,8 +1333,8 @@
+         -> ChaChaPoly1305.Nonce
+         -> aad
+         -> Either StoreError ChaChaPoly1305.State
+-ccpInit key nonce aad = case ChaChaPoly1305.initialize key nonce of
+-    CryptoPassed s -> return (addAAD s)
++ccpInit key nonce aad = case ChaChaPoly1305.key key of
++    CryptoPassed k -> return (addAAD (ChaChaPoly1305.initialize k nonce))
+     CryptoFailed e -> Left (CryptoError e)
+   where addAAD = ChaChaPoly1305.finalizeAAD . ChaChaPoly1305.appendAAD aad
+ 

@@ -126,6 +126,7 @@ AESON_PATCHES = \
 	patch-src_Data_Aeson_KeyMap_hs
 CRYPTOSTORE_PATCHES = \
 	patch-cryptostore_cabal \
+	patch-src_Crypto_Store_CMS_Algorithms_hs \
 	patch-src_Crypto_Store_Cipher_RC2_Primitive_hs \
 	patch-src_Crypto_Store_PKCS5_PBES1_hs \
 	patch-src_Crypto_Store_Util_hs

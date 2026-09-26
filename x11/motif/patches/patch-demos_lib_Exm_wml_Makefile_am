@@ -1,0 +1,17 @@
+SPDX-License-Identifier: LGPL-2.1-or-later
+
+GNU make provides RM as a built-in variable, BSD make does not, and
+automake no longer defines it either.  Define it so the $(RM)
+recipes work with make(1).
+
+Index: demos/lib/Exm/wml/Makefile.am
+--- demos/lib/Exm/wml/Makefile.am.orig
++++ demos/lib/Exm/wml/Makefile.am
+@@ -1,4 +1,7 @@
+ MAINTAINERCLEANFILES = Makefile.in
++
++# GNU make defines RM; BSD make does not.
++RM = rm -f
+ EXTRA_DIST           = Exm.wml
+ BUILT_SOURCES        = wml-uil.mm
+ CLEANFILES           = $(BUILT_SOURCES) Exm.wmd wml.report tokens.dat      \

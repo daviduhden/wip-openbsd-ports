@@ -61,6 +61,7 @@ include/Xm/ContItemT.h
 include/Xm/Container.h
 include/Xm/ContainerP.h
 include/Xm/ContainerT.h
+include/Xm/Cursor.h
 include/Xm/CutPaste.h
 include/Xm/DataF.h
 include/Xm/DataFP.h
@@ -157,8 +158,6 @@ include/Xm/PictureP.h
 include/Xm/PointInT.h
 include/Xm/Primitive.h
 include/Xm/PrimitiveP.h
-include/Xm/Print.h
-include/Xm/PrintSP.h
 include/Xm/Protocols.h
 include/Xm/ProtocolsP.h
 include/Xm/PushB.h
@@ -241,11 +240,15 @@ include/Xm/XmP.h
 include/Xm/XmStrDefs.h
 include/Xm/XmStrDefs22.h
 include/Xm/XmStrDefs23.h
+include/Xm/XmStrDefs25.h
 include/Xm/Xmfuncs.h
 include/Xm/XmosP.h
 include/Xm/Xmos_r.h
 include/Xm/Xmpoll.h
 include/Xm/XpmP.h
+include/Xm/deprecated.h
+include/Xm/obsolete.h
+include/Xm/version.h
 include/Xm/xmlist.h
 include/uil/
 include/uil/Uil.h
@@ -254,34 +257,6 @@ include/uil/UilDef.h
 include/uil/UilSymDef.h
 include/uil/UilSymGl.h
 include/uil/XmAppl.uil
-lib/X11/bindings/
-lib/X11/bindings/acorn
-lib/X11/bindings/apollo
-lib/X11/bindings/dec
-lib/X11/bindings/dg_AViiON
-lib/X11/bindings/doubleclick
-lib/X11/bindings/hal
-lib/X11/bindings/hitachi
-lib/X11/bindings/hp
-lib/X11/bindings/ibm
-lib/X11/bindings/intergraph
-lib/X11/bindings/intergraph17
-lib/X11/bindings/megatek
-lib/X11/bindings/motorola
-lib/X11/bindings/ncr_at
-lib/X11/bindings/ncr_vt
-lib/X11/bindings/pc
-lib/X11/bindings/sgi
-lib/X11/bindings/siemens_9733
-lib/X11/bindings/siemens_wx200
-lib/X11/bindings/sni
-lib/X11/bindings/sni_97801
-lib/X11/bindings/sony
-lib/X11/bindings/sun
-lib/X11/bindings/sun_at
-lib/X11/bindings/tek
-lib/X11/bindings/xmbind.alias
-lib/X11/system.mwmrc
 lib/Xm/
 lib/Xm/ButtonBox/
 @bin lib/Xm/ButtonBox/bboxdemo
@@ -291,17 +266,24 @@ lib/Xm/Color/
 lib/Xm/Color/colordemo.c
 lib/Xm/Color/util-c.c
 lib/Xm/Column/
-lib/Xm/Column/Column.ad
 @bin lib/Xm/Column/column
 lib/Xm/Column/column.c
 lib/Xm/Exm/
 lib/Xm/Exm/app_in_c/
 @bin lib/Xm/Exm/app_in_c/exm_in_c
-lib/Xm/Exm/app_in_c/exm_in_c.man
+lib/Xm/Exm/app_in_c/manm/
+lib/Xm/Exm/app_in_c/manm/exm_in_c.man
+lib/Xm/Exm/app_in_uil/
+@bin lib/Xm/Exm/app_in_uil/exm_in_uil
+lib/Xm/Exm/app_in_uil/exm_in_uil.c
+lib/Xm/Exm/app_in_uil/exm_in_uil.uid
+lib/Xm/Exm/app_in_uil/exm_in_uil.uil
 lib/Xm/Exm/simple_app/
 lib/Xm/Exm/simple_app/README
+lib/Xm/Exm/simple_app/manm/
+lib/Xm/Exm/simple_app/manm/simpleDemo.man
 @bin lib/Xm/Exm/simple_app/simpleDemo
-lib/Xm/Exm/simple_app/simpleDemo.man
+lib/Xm/Exm/simple_app/simpleDemo.c
 lib/Xm/Ext18list/
 lib/Xm/Ext18list/callbacks-c.c
 lib/Xm/Ext18list/creation.c
@@ -331,34 +313,33 @@ lib/Xm/Tabstack/
 lib/Xm/Tabstack/bxutils.c
 lib/Xm/Tabstack/callbacks.c
 lib/Xm/Tabstack/creation.c
-lib/Xm/Tabstack/creation.h
 lib/Xm/Tabstack/main.c
 @bin lib/Xm/Tabstack/tabstack
 lib/Xm/Tree/
 lib/Xm/Tree/bxutil-c.c
 @bin lib/Xm/Tree/tree
 lib/Xm/Tree/tree.c
+lib/Xm/Xmd/
+lib/Xm/Xmd/helpOn.help
+@bin lib/Xm/Xmd/onHelp
+lib/Xm/aicon/
+@bin lib/Xm/aicon/aicon
+lib/Xm/aicon/aicon.c
+lib/Xm/aicon/aicon.help
 lib/Xm/airport/
 lib/Xm/airport/README
 lib/Xm/airport/XmdAirport.ad
 @bin lib/Xm/airport/airport
-lib/Xm/airport/airport.h
 lib/Xm/airport/dragsource.c
-lib/Xm/airport/dragsource.h
 lib/Xm/airport/dropsite.c
-lib/Xm/airport/dropsite.h
 lib/Xm/airport/main.c
-lib/Xm/airport/main.h
 lib/Xm/animate/
 lib/Xm/animate/README
 lib/Xm/animate/XmdAnimate.ad
-lib/Xm/animate/animate.help
-lib/Xm/animate/animate.man
-lib/Xm/animate/dog.uid
 lib/Xm/animate/dog.uil
-lib/Xm/animate/plane.uid
+lib/Xm/animate/manm/
+lib/Xm/animate/manm/xmanimate.man
 lib/Xm/animate/plane.uil
-lib/Xm/animate/superman.uid
 lib/Xm/animate/superman.uil
 lib/Xm/animate/superman1.xbm
 lib/Xm/animate/superman2.xbm
@@ -368,39 +349,123 @@ lib/Xm/animate/superman5.xbm
 lib/Xm/animate/superman6.xbm
 @bin lib/Xm/animate/xmanimate
 lib/Xm/animate/xmanimate.c
-lib/Xm/animate/xmanimate.man
-lib/Xm/animate/xmanimate.uid
+lib/Xm/animate/xmanimate.help
 lib/Xm/animate/xmanimate.uil
 lib/Xm/autopopups/
 lib/Xm/autopopups/README
 @bin lib/Xm/autopopups/autopopups
 lib/Xm/autopopups/autopopups.c
-lib/Xm/autopopups/autopopups.man
+lib/Xm/autopopups/manm/
+lib/Xm/autopopups/manm/autopopups.man
+lib/Xm/ch05/
+lib/Xm/ch05/Scale/
+lib/Xm/ch05/Scale/README
+lib/Xm/ch05/Scale/interface.c
+lib/Xm/ch05/Scale/manm/
+lib/Xm/ch05/Scale/manm/tic_mark.man
+@bin lib/Xm/ch05/Scale/tic_mark
+lib/Xm/ch05/Scale/tic_mark.c
+lib/Xm/ch06/
+lib/Xm/ch06/combo_box/
+lib/Xm/ch06/combo_box/README
+@bin lib/Xm/ch06/combo_box/combo_box
+lib/Xm/ch06/combo_box/combo_box.c
+lib/Xm/ch06/combo_box/interface.c
+lib/Xm/ch06/combo_box/manm/
+lib/Xm/ch06/combo_box/manm/combo_box.man
+lib/Xm/ch06/spin_box/
+lib/Xm/ch06/spin_box/README
+lib/Xm/ch06/spin_box/interface.c
+lib/Xm/ch06/spin_box/manm/
+lib/Xm/ch06/spin_box/manm/spin_box.man
+@bin lib/Xm/ch06/spin_box/spin_box
+lib/Xm/ch06/spin_box/spin_box.c
+lib/Xm/ch08/
+lib/Xm/ch08/container/
+lib/Xm/ch08/container/README
+@bin lib/Xm/ch08/container/container
+lib/Xm/ch08/container/container.c
+lib/Xm/ch08/container/interface.c
+lib/Xm/ch08/container/manm/
+lib/Xm/ch08/container/manm/container.man
+lib/Xm/ch08/notebook/
+lib/Xm/ch08/notebook/README
+lib/Xm/ch08/notebook/interface.c
+lib/Xm/ch08/notebook/manm/
+lib/Xm/ch08/notebook/manm/notebook.man
+@bin lib/Xm/ch08/notebook/notebook
+lib/Xm/ch08/notebook/notebook.c
+lib/Xm/ch16/
+lib/Xm/ch16/UTMXmText/
+lib/Xm/ch16/UTMXmText/README
+@bin lib/Xm/ch16/UTMXmText/UTMXmText
+lib/Xm/ch16/UTMXmText/UTMXmText.c
+lib/Xm/ch16/UTMXmText/manm/
+lib/Xm/ch16/UTMXmText/manm/UTMXmText.man
+lib/Xm/ch17/
+lib/Xm/ch17/simple_drag/
+lib/Xm/ch17/simple_drag/README
+lib/Xm/ch17/simple_drag/manm/
+lib/Xm/ch17/simple_drag/manm/simple_drag.man
+@bin lib/Xm/ch17/simple_drag/simple_drag
+lib/Xm/ch17/simple_drag/simple_drag.c
+lib/Xm/ch17/simple_drop/
+lib/Xm/ch17/simple_drop/README
+lib/Xm/ch17/simple_drop/manm/
+lib/Xm/ch17/simple_drop/manm/simple_drop.man
+@bin lib/Xm/ch17/simple_drop/simple_drop
+lib/Xm/ch17/simple_drop/simple_drop.c
 lib/Xm/combo2/
 lib/Xm/combo2/Combo.ad
 @bin lib/Xm/combo2/combo
 lib/Xm/combo2/combo.c
+lib/Xm/dainput/
+@bin lib/Xm/dainput/dainput
+lib/Xm/dainput/dainput.c
+lib/Xm/dainput/dainput_dlg.c
+lib/Xm/dainput/dainput_ui.c
+lib/Xm/dogs/
+lib/Xm/dogs/Dog.c
+lib/Xm/dogs/Dog.h
+lib/Xm/dogs/Dog.uil
+lib/Xm/dogs/DogP.h
+lib/Xm/dogs/README
+lib/Xm/dogs/Square.c
+lib/Xm/dogs/Square.h
+lib/Xm/dogs/Square.uil
+lib/Xm/dogs/SquareP.h
+lib/Xm/dogs/bark.bm
+@bin lib/Xm/dogs/dogs
+lib/Xm/dogs/dogs.c
+lib/Xm/dogs/dogs.uid
+lib/Xm/dogs/dogs.uil
+lib/Xm/dogs/down.bm
+lib/Xm/dogs/up.bm
 lib/Xm/drag_and_drop/
 @bin lib/Xm/drag_and_drop/DNDDemo
 lib/Xm/drag_and_drop/DNDDemo.c
-lib/Xm/drag_and_drop/DNDDemo.man
+lib/Xm/drag_and_drop/DNDDemo.h
 lib/Xm/drag_and_drop/DNDDraw.c
 lib/Xm/drag_and_drop/README
+lib/Xm/drag_and_drop/manm/
+lib/Xm/drag_and_drop/manm/DNDDemo.man
+lib/Xm/drag_and_drop/manm/simpledrop.man
 @bin lib/Xm/drag_and_drop/simpledrop
 lib/Xm/drag_and_drop/simpledrop.c
-lib/Xm/drag_and_drop/simpledrop.man
 lib/Xm/draw/
 lib/Xm/draw/README
 lib/Xm/draw/XmdDraw.ad
 @bin lib/Xm/draw/draw
 lib/Xm/draw/draw.c
 lib/Xm/draw/draw.help
-lib/Xm/draw/draw.man
+lib/Xm/draw/manm/
+lib/Xm/draw/manm/draw.man
 lib/Xm/earth/
 lib/Xm/earth/README
 @bin lib/Xm/earth/earth
 lib/Xm/earth/earth.c
-lib/Xm/earth/earth.man
+lib/Xm/earth/manm/
+lib/Xm/earth/manm/earth.man
 lib/Xm/earth/terre.xbm
 lib/Xm/filemanager/
 lib/Xm/filemanager/XmdFilemanager.ad
@@ -412,10 +477,10 @@ lib/Xm/filemanager/exec.xpm
 lib/Xm/filemanager/file.xpm
 @bin lib/Xm/filemanager/filemanager
 lib/Xm/filemanager/filemanager.c
-lib/Xm/filemanager/filemanager.h
 lib/Xm/filemanager/filemanager.help
-lib/Xm/filemanager/filemanager.man
 lib/Xm/filemanager/interface.c
+lib/Xm/filemanager/manm/
+lib/Xm/filemanager/manm/filemanager.man
 lib/Xm/filemanager/none.xpm
 lib/Xm/filemanager/obj.xpm
 lib/Xm/filemanager/pix.xpm
@@ -427,46 +492,35 @@ lib/Xm/filemanager/s_none.xpm
 lib/Xm/filemanager/s_pix.xpm
 lib/Xm/fileview/
 lib/Xm/fileview/English.df
-lib/Xm/fileview/English.uid
 lib/Xm/fileview/English.uil
 lib/Xm/fileview/Fileview.ad
 lib/Xm/fileview/French.df
-lib/Xm/fileview/French.uid
 lib/Xm/fileview/French.uil
 lib/Xm/fileview/German.df
-lib/Xm/fileview/German.uid
 lib/Xm/fileview/German.uil
 lib/Xm/fileview/README
 lib/Xm/fileview/file.c
-lib/Xm/fileview/file.h
-lib/Xm/fileview/fileE.h
 @bin lib/Xm/fileview/fileview
-lib/Xm/fileview/fileview.h
 lib/Xm/fileview/main.c
-lib/Xm/fileview/main.h
-lib/Xm/fileview/mainE.h
 lib/Xm/fileview/text.c
-lib/Xm/fileview/text.h
-lib/Xm/fileview/textE.h
 lib/Xm/fontsel/
-lib/Xm/fontsel/callbacks-c.c
-lib/Xm/fontsel/creation-c.c
 @bin lib/Xm/fontsel/fontsel
-lib/Xm/fontsel/fontsel.c
 lib/Xm/fontsel/fontsel.h
 lib/Xm/getsubres/
 lib/Xm/getsubres/README
 @bin lib/Xm/getsubres/getsubres
 lib/Xm/getsubres/getsubres.c
 lib/Xm/getsubres/getsubres.help
-lib/Xm/getsubres/getsubres.man
+lib/Xm/getsubres/manm/
+lib/Xm/getsubres/manm/getsubres.man
 lib/Xm/helloint/
 lib/Xm/helloint/README
 @bin lib/Xm/helloint/helloint
 lib/Xm/helloint/helloint.c
-lib/Xm/helloint/helloint.man
 lib/Xm/helloint/helloint.uid
 lib/Xm/helloint/helloint.uil
+lib/Xm/helloint/manm/
+lib/Xm/helloint/manm/helloint.man
 lib/Xm/hellomotif/
 lib/Xm/hellomotif/README
 @bin lib/Xm/hellomotif/hellomotif
@@ -479,16 +533,31 @@ lib/Xm/i18ninput/XmdI18nInput.ad
 @bin lib/Xm/i18ninput/i18ninput
 lib/Xm/i18ninput/i18ninput.c
 lib/Xm/i18ninput/i18ninput.help
-lib/Xm/i18ninput/i18ninput.man
 lib/Xm/i18ninput/input.c
+lib/Xm/i18ninput/manm/
+lib/Xm/i18ninput/manm/i18ninput.man
+lib/Xm/motifshell/
+lib/Xm/motifshell/README
+lib/Xm/motifshell/help
+lib/Xm/motifshell/membership
+lib/Xm/motifshell/motif
+@bin lib/Xm/motifshell/motifshell
+lib/Xm/motifshell/motifshell.c
+lib/Xm/motifshell/principles
+lib/Xm/motifshell/research
+lib/Xm/motifshell/welcome
 lib/Xm/panner/
 lib/Xm/panner/README
+lib/Xm/panner/manm/
+lib/Xm/panner/manm/panner.man
 @bin lib/Xm/panner/panner
 lib/Xm/panner/panner.c
-lib/Xm/panner/panner.man
 lib/Xm/periodic/
 lib/Xm/periodic/README
 lib/Xm/periodic/XmdPeriodic.ad
+lib/Xm/periodic/arrow
+lib/Xm/periodic/manm/
+lib/Xm/periodic/manm/periodic.man
 @bin lib/Xm/periodic/periodic
 lib/Xm/periodic/periodic.c
 lib/Xm/periodic/periodic.uid
@@ -498,10 +567,11 @@ lib/Xm/piano/
 lib/Xm/piano/Inv8_part1.piano
 lib/Xm/piano/Inv8_part2.piano
 lib/Xm/piano/README
+lib/Xm/piano/manm/
+lib/Xm/piano/manm/piano.man
 @bin lib/Xm/piano/piano
 lib/Xm/piano/piano.c
 lib/Xm/piano/piano.images
-lib/Xm/piano/piano.man
 lib/Xm/pixmaps/
 lib/Xm/pixmaps/clown.xbm
 lib/Xm/pixmaps/crab.xpm
@@ -519,44 +589,51 @@ lib/Xm/sampler2_0/girlface.xpm
 lib/Xm/sampler2_0/k7.xpm
 lib/Xm/sampler2_0/labir.xpm
 lib/Xm/sampler2_0/main.xpm
+lib/Xm/sampler2_0/manm/
+lib/Xm/sampler2_0/manm/sampler2_0.man
 lib/Xm/sampler2_0/pile.xpm
 lib/Xm/sampler2_0/prev.xpm
 @bin lib/Xm/sampler2_0/sampler2_0
 lib/Xm/sampler2_0/sampler2_0.c
 lib/Xm/sampler2_0/sampler2_0.help
-lib/Xm/sampler2_0/sampler2_0.man
 lib/Xm/sampler2_0/spir.xpm
 lib/Xm/sampler2_0/stack.xpm
 lib/Xm/sampler2_0/text.xpm
 lib/Xm/setDate/
 lib/Xm/setDate/README
 lib/Xm/setDate/XmdSetDate.ad
+lib/Xm/setDate/manm/
+lib/Xm/setDate/manm/setDate.man
 @bin lib/Xm/setDate/setDate
 lib/Xm/setDate/setDate.c
-lib/Xm/setDate/setDate.man
 lib/Xm/todo/
 lib/Xm/todo/README
 lib/Xm/todo/XmdTodo.ad
 lib/Xm/todo/actions.c
 lib/Xm/todo/example.todo
 lib/Xm/todo/io.c
-lib/Xm/todo/page.h
+lib/Xm/todo/manm/
+lib/Xm/todo/manm/todo.man
 @bin lib/Xm/todo/todo
 lib/Xm/todo/todo.c
 lib/Xm/todo/todo.help
-lib/Xm/todo/todo.man
 lib/Xm/tooltips/
 @bin lib/Xm/tooltips/tooltips
 lib/Xm/tooltips/tooltips.c
+lib/Xm/uilsymdump/
+lib/Xm/uilsymdump/README
+@bin lib/Xm/uilsymdump/uilsymdump
+lib/Xm/uilsymdump/uilsymdump.c
 lib/Xm/wsm/
 lib/Xm/wsm/README
 lib/Xm/wsm/client_win.c
 lib/Xm/wsm/command_ui.c
 lib/Xm/wsm/command_ui.h
+lib/Xm/wsm/manm/
+lib/Xm/wsm/manm/wsm.man
 @bin lib/Xm/wsm/wsm
 lib/Xm/wsm/wsm.c
 lib/Xm/wsm/wsm.h
-lib/Xm/wsm/wsm.man
 lib/Xm/wsm/wsmData.c
 lib/Xm/wsm/wsmData.h
 lib/Xm/wsm/wsmDebug.c
@@ -572,6 +649,18 @@ lib/Xm/wsm/wsm_create.h
 lib/Xm/wsm/wsm_ui.h
 lib/Xm/wsm/xrmLib.c
 lib/Xm/wsm/xrmLib.h
+lib/Xm/xmapdef/
+@bin lib/Xm/xmapdef/xmapdef
+lib/Xm/xmapdef/xmapdef.c
+lib/Xm/xmfonts/
+@bin lib/Xm/xmfonts/xmfonts
+lib/Xm/xmfonts/xmfonts.c
+lib/Xm/xmforc/
+@bin lib/Xm/xmforc/xmforc
+lib/Xm/xmforc/xmforc.c
+lib/Xm/xmform/
+@bin lib/Xm/xmform/xmform
+lib/Xm/xmform/xmform.c
 @static-lib lib/libMrm.a
 lib/libMrm.la
 @lib lib/libMrm.so.${LIBMrm_VERSION}
@@ -581,6 +670,9 @@ lib/libUil.la
 @static-lib lib/libXm.a
 lib/libXm.la
 @lib lib/libXm.so.${LIBXm_VERSION}
+lib/pkgconfig/Mrm.pc
+lib/pkgconfig/Uil.pc
+lib/pkgconfig/motif.pc
 @man man/man1/mwm.1
 @man man/man1/uil.1
 @man man/man1/xmbind.1
@@ -833,6 +925,7 @@ lib/libXm.la
 @man man/man3/XmGetPostedFromWidget.3
 @man man/man3/XmGetScaledPixmap.3
 @man man/man3/XmGetSecondaryResourceData.3
+@man man/man3/XmGetSizedPixmap.3
 @man man/man3/XmGetTabGroup.3
 @man man/man3/XmGetTearOffControl.3
 @man man/man3/XmGetVisibility.3
@@ -1279,7 +1372,48 @@ lib/libXm.la
 @man man/man3/XmVaCreateToggleButtonGadget.3
 @man man/man3/XmWidgetGetBaselines.3
 @man man/man3/XmWidgetGetDisplayRect.3
+@man man/man3/XmeResolvePartOffsets.3
 @man man/man5/Traits.5
 @man man/man5/UIL.5
 @man man/man5/WML.5
 @man man/man5/mwmrc.5
+share/X11/
+share/X11/bindings/
+share/X11/bindings/acorn
+share/X11/bindings/apollo
+share/X11/bindings/dec
+share/X11/bindings/dg_AViiON
+share/X11/bindings/doubleclick
+share/X11/bindings/hal
+share/X11/bindings/hitachi
+share/X11/bindings/hp
+share/X11/bindings/ibm
+share/X11/bindings/intergraph
+share/X11/bindings/intergraph17
+share/X11/bindings/megatek
+share/X11/bindings/motorola
+share/X11/bindings/ncr_at
+share/X11/bindings/ncr_vt
+share/X11/bindings/pc
+share/X11/bindings/sgi
+share/X11/bindings/siemens_9733
+share/X11/bindings/siemens_wx200
+share/X11/bindings/sni
+share/X11/bindings/sni_97801
+share/X11/bindings/sony
+share/X11/bindings/sun
+share/X11/bindings/sun_at
+share/X11/bindings/tek
+share/X11/bindings/xmbind.alias
+share/motif/
+share/motif/icons/
+share/motif/icons/xm_error.svg
+share/motif/icons/xm_error.xpm
+share/motif/icons/xm_information.svg
+share/motif/icons/xm_information.xpm
+share/motif/icons/xm_question.svg
+share/motif/icons/xm_question.xpm
+share/motif/icons/xm_warning.svg
+share/motif/icons/xm_warning.xpm
+share/motif/icons/xm_working.svg
+share/motif/icons/xm_working.xpm

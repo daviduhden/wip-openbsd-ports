@@ -56,7 +56,7 @@ SHA256 (hackage/cryptohash-md5-0.11.101.0.tar.gz) = OwjbCuOd8rROgwU60w11RqTGIAqF
 SHA256 (hackage/cryptohash-md5-0.11.101.0_6.cabal) = LkJYbXO9sUm96Cnje2VG2E5g1/tJyTMgYztxwl9N7lQ=
 SHA256 (hackage/cryptohash-sha1-0.11.101.0.tar.gz) = pAQsl60C62jnZld8o1wBlwwz6Wz9dMy03UA+NHaiMkE=
 SHA256 (hackage/cryptohash-sha1-0.11.101.0_6.cabal) = K98p29iWvKhr8ZjIgvqN8csxhDtx8pB+BZt8ELzgrbM=
-SHA256 (hackage/crypton-1.1.5.tar.gz) = vP+EalN0Keqj1kweqIjC37JIBcs62c5sV7GuDzlGI5Q=
+SHA256 (hackage/crypton-2.1.1.tar.gz) = aE5l4ahbltbmHDmG0M7crV8za94eXuayv+kij/a1aBA=
 SHA256 (hackage/crypton-asn1-encoding-0.10.0.tar.gz) = SYE6DuJT9ijLgQLdaFeQVgm1LkkMc8VU183wy84pJtI=
 SHA256 (hackage/crypton-asn1-parse-0.10.0.tar.gz) = NcDyeNj8tyC0rYnCp/JW9/sJi59xoK60k6TDwP53KNk=
 SHA256 (hackage/crypton-asn1-types-0.4.1.tar.gz) = Ye/GOHeg0925kqeTg52UJ8FZfglabh9jwE4F/T5OMC0=
@@ -64,10 +64,12 @@ SHA256 (hackage/crypton-connection-0.4.6.tar.gz) = 1oa3hVgX6oxLyN73m3i8JK73JZc+g
 SHA256 (hackage/crypton-pem-0.3.0.tar.gz) = H62rjLp0xqzXSHPwZBW0oqfISxa0NCUhenvrDsWDBUA=
 SHA256 (hackage/crypton-socks-0.6.2.tar.gz) = qDYIflwndBPHnm2Up780a/th6v+y9VVVh1x23+ymnzs=
 SHA256 (hackage/crypton-x509-1.9.1.tar.gz) = VSYCkDOCclYrexRSAC4a0Nm2uS+zHcJfYRX10to8vA4=
+SHA256 (hackage/crypton-x509-1.9.1_2.cabal) = ZJ2CkplAnmVnW7sfgeak8l4leKd6SkuZMUyibmeL0Fo=
 SHA256 (hackage/crypton-x509-store-1.9.0.tar.gz) = 3pGTQDwR0fsJAIM4Jka+b2z2jtmE9HXRoOFC9377h2Y=
+SHA256 (hackage/crypton-x509-store-1.9.0_2.cabal) = rTiKmbJdjBFyfZb5+TM0Gqug74y/7h3M88GglWhnTMQ=
 SHA256 (hackage/crypton-x509-system-1.9.0.tar.gz) = ie6Bm3iWOlySX9qtgOLmS+bA/t9PJPwrle3bZJuGzv4=
 SHA256 (hackage/crypton-x509-validation-1.9.1.tar.gz) = j8uDQBEUx/aU2ExUPo9/ls6mDFQ6MKdwkDdB0zbuzj0=
-SHA256 (hackage/crypton-x509-validation-1.9.1_1.cabal) = f9EjHgzhO+e7uVo0jaWJGRdNNBVyMJ/0Rx45w7P05oo=
+SHA256 (hackage/crypton-x509-validation-1.9.1_3.cabal) = TT0hYXUs3jFPD3C8X0Cv0te/r71yE+R8jhh21ETRzdA=
 SHA256 (hackage/cryptostore-0.5.0.0.tar.gz) = SQ/OJtJZuAsQzFu/5rTC7d5rZwotNHkt4eYcW4rBlLU=
 SHA256 (hackage/cryptostore-0.5.0.0_1.cabal) = +daGNCtFnTFJwnvHEmkNHDHYg0YBZGCAbfyY37PH8AE=
 SHA256 (hackage/data-default-0.8.0.2.tar.gz) = +n1d5wzO9zgafxfNZJSN4cJLYg3hPhzVXDbCaUmHB5k=
@@ -94,7 +96,8 @@ SHA256 (hackage/half-0.3.3.tar.gz) = 9HYElijW/3lyL7BzwB6F8qEbLvODX9w/whph8F0XqwI
 SHA256 (hackage/half-0.3.3_3.cabal) = FnZUE/hMD2OlKMCpP/4o4He7NnLbZ9bbFXh5haW2QUA=
 SHA256 (hackage/hashable-1.5.1.0.tar.gz) = 7Qt8EM6Syf/kVCDa3DjG0520hv82M/8TVnzJ9195sRI=
 SHA256 (hackage/haskell-lexer-1.2.1.tar.gz) = nXbhUoEGsbMubkZSZOOTgcpLRQtypLUzHn5RJ2QKGkE=
-SHA256 (hackage/hpke-0.1.0.tar.gz) = GgDgXDRLF/fSsorhlXbCrsNI1xyZVYP4WIJkpZ3If6I=
+SHA256 (hackage/hpke-0.2.0.tar.gz) = dyDnQC5bg6u/wi7JiqPjqwCCZOMswGtLzbnelQEmkt0=
+SHA256 (hackage/hpke-0.2.0_1.cabal) = kKUIBqAuq6FrVX5fIvI846CWeB1FjP8ejHhnhDgR+dc=
 SHA256 (hackage/hsc2hs-0.68.10.tar.gz) = b04014j+LKcJHuChAwfuinwGChuokPK/+tFqfU1c73Y=
 SHA256 (hackage/hsc2hs-0.68.10_5.cabal) = ObJf2SmwKwGj/ln+x8qLLabw+eKCJ2t6hOY6RwLE1yU=
 SHA256 (hackage/hspec-2.11.17.tar.gz) = OeTIw7sr4IpMYXR93/A2XGoH78YYWzqAp7iPu2vsl1Y=
@@ -241,6 +244,7 @@ SHA256 (hackage/witherable-0.5.tar.gz) = SENMweRlsTy8ATOpDD7A2CfJO3fOlYB/4KOLZfS
 SHA256 (hackage/word8-0.1.3.tar.gz) = JjCTTHVyi/vzkMHwIGsiVQezVPaNQEewbAGKNoI7XYo=
 SHA256 (hackage/yaml-0.11.11.2.tar.gz) = 7nSSPuWw/vdEE8WKqiDqWbr10p0lamL7R8wnlXDZ3C8=
 SHA256 (hackage/zlib-0.7.1.1.tar.gz) = v5WrAe2SS+gArd6hlfulypfsafN4No9v9Ga9wpZmwcE=
+SHA256 (hackage/zlib-0.7.1.1_1.cabal) = Vti7P5ZWBZ/yS3BdWcxl9vN+Pqkra19bsgK9YHc4u28=
 SHA256 (hackage/zstd-0.1.4.0.tar.gz) = 1qHu9Nil+O8v84hVLn5FPetRMMaGisIe767rCrTC5Fw=
 SIZE (hackage/Diff-2.0.1.tar.gz) = 24124
 SIZE (hackage/HUnit-1.6.2.0.tar.gz) = 21179
@@ -300,7 +304,7 @@ SIZE (hackage/cryptohash-md5-0.11.101.0.tar.gz) = 11872
 SIZE (hackage/cryptohash-md5-0.11.101.0_6.cabal) = 3086
 SIZE (hackage/cryptohash-sha1-0.11.101.0.tar.gz) = 11563
 SIZE (hackage/cryptohash-sha1-0.11.101.0_6.cabal) = 3085
-SIZE (hackage/crypton-1.1.5.tar.gz) = 658982
+SIZE (hackage/crypton-2.1.1.tar.gz) = 1151536
 SIZE (hackage/crypton-asn1-encoding-0.10.0.tar.gz) = 18349
 SIZE (hackage/crypton-asn1-parse-0.10.0.tar.gz) = 4114
 SIZE (hackage/crypton-asn1-types-0.4.1.tar.gz) = 8635
@@ -308,10 +312,12 @@ SIZE (hackage/crypton-connection-0.4.6.tar.gz) = 9382
 SIZE (hackage/crypton-pem-0.3.0.tar.gz) = 5789
 SIZE (hackage/crypton-socks-0.6.2.tar.gz) = 11908
 SIZE (hackage/crypton-x509-1.9.1.tar.gz) = 22867
+SIZE (hackage/crypton-x509-1.9.1_2.cabal) = 2024
 SIZE (hackage/crypton-x509-store-1.9.0.tar.gz) = 13290
+SIZE (hackage/crypton-x509-store-1.9.0_2.cabal) = 1714
 SIZE (hackage/crypton-x509-system-1.9.0.tar.gz) = 4137
 SIZE (hackage/crypton-x509-validation-1.9.1.tar.gz) = 21310
-SIZE (hackage/crypton-x509-validation-1.9.1_1.cabal) = 2113
+SIZE (hackage/crypton-x509-validation-1.9.1_3.cabal) = 2113
 SIZE (hackage/cryptostore-0.5.0.0.tar.gz) = 233880
 SIZE (hackage/cryptostore-0.5.0.0_1.cabal) = 4848
 SIZE (hackage/data-default-0.8.0.2.tar.gz) = 6138
@@ -338,7 +344,8 @@ SIZE (hackage/half-0.3.3.tar.gz) = 8359
 SIZE (hackage/half-0.3.3_3.cabal) = 2011
 SIZE (hackage/hashable-1.5.1.0.tar.gz) = 90605
 SIZE (hackage/haskell-lexer-1.2.1.tar.gz) = 14602
-SIZE (hackage/hpke-0.1.0.tar.gz) = 25281
+SIZE (hackage/hpke-0.2.0.tar.gz) = 26306
+SIZE (hackage/hpke-0.2.0_1.cabal) = 1815
 SIZE (hackage/hsc2hs-0.68.10.tar.gz) = 40517
 SIZE (hackage/hsc2hs-0.68.10_5.cabal) = 3131
 SIZE (hackage/hspec-2.11.17.tar.gz) = 12095
@@ -485,4 +492,5 @@ SIZE (hackage/witherable-0.5.tar.gz) = 10819
 SIZE (hackage/word8-0.1.3.tar.gz) = 6271
 SIZE (hackage/yaml-0.11.11.2.tar.gz) = 31926
 SIZE (hackage/zlib-0.7.1.1.tar.gz) = 29324
+SIZE (hackage/zlib-0.7.1.1_1.cabal) = 5356
 SIZE (hackage/zstd-0.1.4.0.tar.gz) = 529170

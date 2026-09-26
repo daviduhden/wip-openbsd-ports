@@ -68,6 +68,7 @@ TLS_PATCHES = \
 	patch-tls_Network_TLS_Context_hs \
 	patch-tls_Network_TLS_Context_Internal_hs \
 	patch-tls_Network_TLS_Core_hs \
+	patch-tls_Network_TLS_Extra_Cipher_hs \
 	patch-tls_test_HandshakeSpec_hs \
 	patch-tls_test_Run_hs
 UNIX_TIME_V = 0.5.0

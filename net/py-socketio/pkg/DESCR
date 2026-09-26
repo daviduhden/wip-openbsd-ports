@@ -1,0 +1,4 @@
+Socket.IO is a transport protocol that enables real-time bidirectional
+event-based communication between clients (typically web browsers) and a
+server.  This package provides Python implementations of both the client
+and the server, each with standard and asyncio variants.

@@ -1,0 +1,3 @@
+Bidict is a bidirectional mapping library: a dict-like structure that
+provides the inverse mapping for free, with several implementations
+(ordered, frozen, mutable) and type annotations.

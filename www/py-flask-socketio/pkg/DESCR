@@ -1,0 +1,3 @@
+Socket.IO integration for Flask applications: it adds Socket.IO event
+handlers and rooms on top of Flask and python-socketio, and runs with
+the gevent or eventlet async server.

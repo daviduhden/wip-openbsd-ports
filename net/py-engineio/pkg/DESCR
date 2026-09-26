@@ -1,0 +1,3 @@
+Engine.IO is the transport protocol used by Socket.IO.  This package
+provides Python implementations of both the client and the server, with
+standard and asyncio variants.

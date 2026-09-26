@@ -1,0 +1,3 @@
+Rust implementation of GNU findutils: xargs, find, locate and updatedb.
+The goal is to be a full drop-in replacement of the GNU versions of these
+commands.

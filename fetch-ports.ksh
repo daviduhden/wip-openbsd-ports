@@ -204,13 +204,20 @@ list_directories() {
 	done
 }
 
-# Only directories containing a port Makefile are installable.
+# Only directories containing a port Makefile are installable.  A group
+# directory whose Makefile only recurses into subdirectories
+# (bsd.port.subdir.mk) is not itself a port; its nested subports are
+# listed individually instead.
 list_all_directories() {
-	typeset makefile found=0
-	for makefile in */*/Makefile; do
+	typeset makefile port found=0
+	for makefile in */*/Makefile */*/*/Makefile; do
 		[ -f "$makefile" ] || continue
-		validate_port_path "${makefile%/Makefile}" || return 1
-		print -r -- "${makefile%/Makefile}"
+		if grep -q 'bsd\.port\.subdir\.mk' "$makefile"; then
+			continue
+		fi
+		port=${makefile%/Makefile}
+		validate_port_path "$port" || return 1
+		print -r -- "$port"
 		found=1
 	done
 	if [ "$found" -eq 0 ]; then
@@ -249,11 +256,14 @@ choose_target_tree() {
 	done
 }
 
-# Reject category-only paths, traversal and symlinked port roots.
+# Reject category-only paths, traversal and symlinked port roots.  A port
+# path is category/port, or category/group/port for a subport nested under
+# a group directory (like sysutils/uutils/awk or lang/python/3).
 validate_port_path() {
-	typeset port=$1 category name
+	typeset port=$1 prefix="" rest component depth=0
+
 	case "$port" in
-	*/*/* | /* | *[!a-zA-Z0-9_+./-]* | */ | ./* | ../*)
+	/* | */ | ./* | ../* | *[!a-zA-Z0-9_+./-]* | *//*)
 		error "Invalid category/port: $port"
 		return 1
 		;;
@@ -263,37 +273,77 @@ validate_port_path() {
 		return 1
 		;;
 	esac
-	category=${port%/*}
-	name=${port#*/}
-	case "$category:$name" in
-	.*:* | *:.*)
+
+	rest=$port
+	while [ -n "$rest" ]; do
+		component=${rest%%/*}
+		case "$component" in
+		"" | .*)
+			error "Invalid category/port: $port"
+			return 1
+			;;
+		esac
+		if [ -z "$prefix" ]; then
+			prefix=$component
+		else
+			prefix=$prefix/$component
+		fi
+		if [ -L "$prefix" ]; then
+			error "Not a local port directory: $port"
+			return 1
+		fi
+		((depth += 1))
+		[ "$rest" = "$component" ] && break
+		rest=${rest#*/}
+	done
+
+	if [ "$depth" -lt 2 ] || [ "$depth" -gt 3 ]; then
 		error "Invalid category/port: $port"
 		return 1
-		;;
-	esac
-	if [ -L "$category" ] || [ -L "$port" ] ||
-		[ -L "$port/Makefile" ] || [ ! -f "$port/Makefile" ]; then
+	fi
+	if [ -L "$port/Makefile" ] || [ ! -f "$port/Makefile" ]; then
 		error "Not a local port directory: $port"
 		return 1
 	fi
 }
 
 # Replace only one port. Keep the old directory recoverable and preserve
-# nested CVS metadata; never remove a category or unrelated ports.
+# nested CVS metadata; never remove a category or unrelated ports.  For a
+# subport nested under a group directory, also install the files the group
+# shares with its subports (for example Makefile.inc) without touching any
+# sibling port.
 copy_directory() {
-	typeset category name target stage backup="" cvs
+	typeset category name target stage backup="" cvs topcat group
 	validate_port_path "$DIRECTORY" || return 1
 	category=${DIRECTORY%/*}
-	name=${DIRECTORY#*/}
+	name=${DIRECTORY##*/}
+	topcat=${DIRECTORY%%/*}
 	target="$TARGET_TREE/$DIRECTORY"
 	if [ ! -d "$TARGET_TREE/infrastructure" ] ||
 		[ ! -f "$TARGET_TREE/Makefile" ] ||
-		[ ! -d "$TARGET_TREE/$category" ] ||
-		[ -L "$TARGET_TREE/$category" ] || [ -L "$target" ] ||
+		[ ! -d "$TARGET_TREE/$topcat" ] ||
+		[ -L "$TARGET_TREE/$topcat" ] || [ -L "$target" ] ||
 		{ [ -e "$target" ] && [ ! -d "$target" ]; }; then
 		error "Invalid ports tree or destination: $target"
 		return 1
 	fi
+	# Create the group directories and copy the files they share with
+	# their subports, so a subport can be installed on a tree that does
+	# not have the group yet.  Subdirectories are left alone.
+	group=$category
+	while [ "$group" != "$topcat" ]; do
+		if [ -L "$TARGET_TREE/$group" ] ||
+			{ [ -e "$TARGET_TREE/$group" ] && [ ! -d "$TARGET_TREE/$group" ]; }; then
+			error "Invalid destination group: $TARGET_TREE/$group"
+			return 1
+		fi
+		mkdir -p "$TARGET_TREE/$group" || return 1
+		for cvs in "$group"/*; do
+			[ -f "$cvs" ] || continue
+			cp -Rp "$cvs" "$TARGET_TREE/$group/" || return 1
+		done
+		group=${group%/*}
+	done
 	stage=$(mktemp -d "$TARGET_TREE/.wip-port.XXXXXXXX") || return 1
 	cp -Rp "$DIRECTORY" "$stage/port" || return 1
 	# A private Git checkout may be 0700/0600; _pbuild must read the port.
@@ -311,7 +361,8 @@ copy_directory() {
 			return 1
 		fi
 		mkdir -p "$TARGET_TREE/.wip-backups" || return 1
-		backup=$(mktemp -d "$TARGET_TREE/.wip-backups/$category-$name.XXXXXXXX") ||
+		backup=$(mktemp -d \
+			"$TARGET_TREE/.wip-backups/${category//\//_}-$name.XXXXXXXX") ||
 			return 1
 		mv "$target" "$backup/port" || return 1
 		log "Previous $DIRECTORY saved in $backup/port"

@@ -1,0 +1,6 @@
+uutils tar is a cross-platform reimplementation of tar in Rust.
+
+This package installs ${PREFIX}/bin/uu-tar.
+
+Upstream has not made a release yet: the package is built from a pinned
+commit and the remote archive helper grmt(8) is not provided.

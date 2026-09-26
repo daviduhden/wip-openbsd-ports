@@ -1,5 +1,0 @@
-@conflict gdiff-*
-@pkgpath textproc/gdiff
-bin/gcmp
-bin/gdiff
-@bin libexec/uutils/diffutils

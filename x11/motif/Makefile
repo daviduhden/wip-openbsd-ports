@@ -21,6 +21,9 @@ LIB_DEPENDS=	converters/libiconv \
 		graphics/jpeg \
 		graphics/png
 
+# autoreconf runs autopoint even though the tree does not use gettext
+BUILD_DEPENDS=	devel/gettext,-tools
+
 USE_GROFF=	Yes
 
 CONFIGURE_STYLE=autoreconf

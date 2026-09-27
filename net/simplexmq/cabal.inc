@@ -51,11 +51,11 @@ MODCABAL_MANIFEST	= \
 	crypton-connection	0.4.6	1	\
 	crypton-pem	0.3.0	0	\
 	crypton-socks	0.6.2	0	\
-	crypton-x509	1.9.1	2	\
+	crypton-x509	1.9.2	0	\
 	crypton-x509-store	1.9.0	2	\
 	crypton-x509-system	1.9.0	0	\
 	crypton-x509-validation	1.9.1	3	\
-	cryptostore	0.5.0.0	1	\
+	cryptostore	0.6.0.0	0	\
 	data-default	0.8.0.2	0	\
 	data-default-class	0.2.0.0	0	\
 	data-fix	0.3.4	2	\
@@ -95,7 +95,6 @@ MODCABAL_MANIFEST	= \
 	libyaml-clib	0.2.5	0	\
 	lifted-base	0.2.3.12	0	\
 	main-tester	0.2.0.1	0	\
-	memory	0.18.0	1	\
 	mime-types	0.1.2.2	0	\
 	mlkem	0.2.3.0	0	\
 	monad-control	1.0.3.1	0	\
@@ -123,7 +122,7 @@ MODCABAL_MANIFEST	= \
 	recv	0.1.2	0	\
 	resourcet	1.3.0	0	\
 	safe-exceptions	0.1.7.4	1	\
-	scientific	0.3.8.1	0	\
+	scientific	0.3.9.0	0	\
 	semialign	1.4	0	\
 	semigroupoids	6.0.2	1	\
 	serialise	0.2.6.1	5	\

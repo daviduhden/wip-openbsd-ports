@@ -65,7 +65,7 @@ TLS_PATCHES = \
 	patch-tls_test_HandshakeSpec_hs \
 	patch-tls_test_Run_hs
 UNIX_TIME_V = 0.5.0
-CRYPTOSTORE_V = 0.5.0.0
+CRYPTOSTORE_V = 0.6.0.0
 ENTROPY_V = 0.4.1.11
 CABAL_INC_HOME ?= ${WRKDIR}/.cabal-inc-home
 CABAL_INC_SKIP = aeson,socks,direct-sqlcipher,sqlcipher-simple,warp-tls,warp
@@ -104,11 +104,7 @@ AESON_PATCHES = \
 	patch-src_Data_Aeson_Types_FromJSON_hs \
 	patch-src_Data_Aeson_KeyMap_hs
 CRYPTOSTORE_PATCHES = \
-	patch-cryptostore_cabal \
-	patch-src_Crypto_Store_CMS_Algorithms_hs \
-	patch-src_Crypto_Store_Cipher_RC2_Primitive_hs \
-	patch-src_Crypto_Store_PKCS5_PBES1_hs \
-	patch-src_Crypto_Store_Util_hs
+	patch-src_Crypto_Store_CMS_Algorithms_hs
 WARP_PATCHES = \
 	patch-warp_cabal \
 	patch-Network_Wai_Handler_Warp_FileInfoCache_hs \

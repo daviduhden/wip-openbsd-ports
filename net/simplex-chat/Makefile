@@ -4,9 +4,9 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-GH_TAGNAME = v7.0.2
+GH_TAGNAME = v7.0.3
 
-V = 7.0.2
+V = 7.0.3
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -72,7 +72,7 @@ TLS_PATCHES = \
 	patch-tls_test_HandshakeSpec_hs \
 	patch-tls_test_Run_hs
 UNIX_TIME_V = 0.5.0
-CRYPTOSTORE_V = 0.5.0.0
+CRYPTOSTORE_V = 0.6.0.0
 ENTROPY_V = 0.4.1.11
 WITHERABLE_V = 0.5
 WITHERABLE_TARBALL = ${DISTDIR}/hackage/witherable-${WITHERABLE_V}.tar.gz
@@ -125,11 +125,7 @@ AESON_PATCHES = \
 	patch-src_Data_Aeson_Types_FromJSON_hs \
 	patch-src_Data_Aeson_KeyMap_hs
 CRYPTOSTORE_PATCHES = \
-	patch-cryptostore_cabal \
-	patch-src_Crypto_Store_CMS_Algorithms_hs \
-	patch-src_Crypto_Store_Cipher_RC2_Primitive_hs \
-	patch-src_Crypto_Store_PKCS5_PBES1_hs \
-	patch-src_Crypto_Store_Util_hs
+	patch-src_Crypto_Store_CMS_Algorithms_hs
 SIMPLEXMQ_PATCHES = \
 	patch-simplexmq_cabal \
 	patch-src_Simplex_FileTransfer_Agent_hs \

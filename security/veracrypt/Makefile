@@ -25,8 +25,7 @@ CXXFLAGS_base-clang =	-std=c++14
 WANTLIB += ${COMPILER_LIBCXX} c m fuse wx_baseu-3.2 wx_gtk3u_core-3.2
 
 BUILD_DEPENDS=		devel/yasm \
-			security/pcsc-lite \
-			sysutils/coreutils
+			security/pcsc-lite
 
 LIB_DEPENDS=		x11/wxWidgets
 

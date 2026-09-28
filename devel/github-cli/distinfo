@@ -1,4 +1,3 @@
-SHA256 (bsdmp-survey-vv2.3.8.tar.gz) = fPcSUSZ4Kkovs52dRmmAtg+lX8R/EDkhLaLMZJCphMU=
 SHA256 (cli-v2.101.0.zip) = SLs5klYDMaHMpiu5/IT/75+4b1K7A0YikzdUo/9sM60=
 SHA256 (go_modules/bitbucket.org/creachadair/shell/@v/v0.0.8.mod) = p5DeefOWpGgRzfiXR7IMnJJZnIfIuiXfICeZ+ODldMk=
 SHA256 (go_modules/bitbucket.org/creachadair/shell/@v/v0.0.8.zip) = KW2htHeMHqh5EXGvsVathbPZsI2eiI1Wh66jJt2/wyo=
@@ -1310,7 +1309,6 @@ SHA256 (go_modules/sigs.k8s.io/yaml/@v/v1.6.0.mod) = Tjw8HUmmZSRA/3D7R15Urka+LKt
 SHA256 (go_modules/sigs.k8s.io/yaml/@v/v1.6.0.zip) = z4hkikcVgYF7AKQu6NJP1z6w41A5mM9G2OY3h+EeUFI=
 SHA256 (go_modules/software.sslmate.com/src/go-pkcs12/@v/v0.4.0.mod) = +/Vbaah9WjkQgv2brl5MdYEEH+Cbi7k7D+Fs3f6FzpU=
 SHA256 (go_modules/software.sslmate.com/src/go-pkcs12/@v/v0.4.0.zip) = VQGaOR5TAqUbpi6YkJ4AYiS4EgeGbakL6vWC7A3uA28=
-SIZE (bsdmp-survey-vv2.3.8.tar.gz) = 125803
 SIZE (cli-v2.101.0.zip) = 16062085
 SIZE (go_modules/bitbucket.org/creachadair/shell/@v/v0.0.8.mod) = 89
 SIZE (go_modules/bitbucket.org/creachadair/shell/@v/v0.0.8.zip) = 8712

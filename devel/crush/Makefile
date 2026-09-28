@@ -17,6 +17,10 @@ WANTLIB += c pthread
 
 MODULES =		lang/go
 
+# The grep and glob agent tools use ripgrep when it is available and fall
+# back to a pure-Go implementation otherwise.
+RUN_DEPENDS =		textproc/ripgrep
+
 # Upstream release binaries inject the tag version into internal/version.
 MODGO_LDFLAGS +=	-X github.com/charmbracelet/crush/internal/version.Version=${MODGO_VERSION}
 

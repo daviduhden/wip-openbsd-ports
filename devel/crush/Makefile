@@ -18,8 +18,12 @@ WANTLIB += c pthread
 MODULES =		lang/go
 
 # The grep and glob agent tools use ripgrep when it is available and fall
-# back to a pure-Go implementation otherwise.
+# back to a pure-Go implementation otherwise. ripgrep is built with Rust,
+# which is unavailable on armv7 and i386.
+.include <bsd.port.arch.mk>
+.if !empty(RUST_ARCHS:M${MACHINE_ARCH})
 RUN_DEPENDS =		textproc/ripgrep
+.endif
 
 # Upstream release binaries inject the tag version into internal/version.
 MODGO_LDFLAGS +=	-X github.com/charmbracelet/crush/internal/version.Version=${MODGO_VERSION}

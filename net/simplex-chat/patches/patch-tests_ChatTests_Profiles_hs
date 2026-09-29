@@ -122,7 +122,18 @@ Index: tests/ChatTests/Profiles.hs
          bob ##> ("/_connect plan 1 " <> shortLink)
          bob <## "contact address: known prepared contact alice"
          bob ##> "/_connect contact @2 incognito=on text hello"
-@@ -4531,8 +4531,11 @@
+@@ -4435,7 +4435,9 @@
+       cath <## "changed to #club"
+       alice <## "cath updated group #team:"
+       alice <## "changed to #club"
+-      threadDelay 250000
++      -- The owner republishes the group link data in a background thread; give
++      -- the SMP server time to serve the new data before bob resolves the link.
++      threadDelay 2000000
+ 
+       bob ##> ("/_connect plan 1 " <> shortLink)
+       bob <## "group link: ok to connect directly"
+@@ -4531,8 +4533,11 @@
  setClientService :: TestParams -> String -> IO ()
  setClientService ps onOff =
    withTestChatCfgOpts ps testCfg testOpts {coreOptions = testCoreOpts {maintenance = True}} "service" $ \service -> do

@@ -19,9 +19,7 @@ MODULES =		lang/go
 
 # The grep and glob agent tools use ripgrep when it is available and fall
 # back to a pure-Go implementation otherwise. ripgrep is built with Rust,
-# which is unavailable on armv7 and i386, so use the "rust" property (make's
-# :M modifier does not expand variables in its pattern, so
-# "RUST_ARCHS:M${MACHINE_ARCH}" would never match).
+# which is unavailable on armv7 and i386, so use the "rust" property.
 .include <bsd.port.arch.mk>
 .if ${PROPERTIES:Mrust}
 RUN_DEPENDS =		textproc/ripgrep

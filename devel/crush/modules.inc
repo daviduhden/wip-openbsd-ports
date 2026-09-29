@@ -2,9 +2,9 @@ MODGO_MODULES =	\
 	cel.dev/expr										 v0.25.3 \
 	charm.land/bubbles/v2									 v2.2.1 \
 	charm.land/bubbletea/v2									 v2.0.9 \
-	charm.land/catwalk									 v0.52.28 \
+	charm.land/catwalk									 v0.52.49 \
 	charm.land/fang/v2									 v2.0.1 \
-	charm.land/fantasy									 v0.43.1 \
+	charm.land/fantasy									 v0.45.1 \
 	charm.land/glamour/v2									 v2.0.1 \
 	charm.land/lipgloss/v2									 v2.0.6 \
 	charm.land/log/v2									 v2.0.1 \
@@ -91,14 +91,15 @@ MODGO_MODULES =	\
 	github.com/charmbracelet/colorprofile							 v0.4.3 \
 	github.com/charmbracelet/harmonica							 v0.2.0 \
 	github.com/charmbracelet/lipgloss							 v0.7.1 \
+	github.com/charmbracelet/openai-go							 v0.0.0-20260921175203-216db9e71b83 \
 	github.com/charmbracelet/ultraviolet							 v0.0.0-20260811164956-006e29f97886 \
 	github.com/charmbracelet/x/ansi								 v0.11.8 \
 	github.com/charmbracelet/x/editor							 v0.2.0 \
 	github.com/charmbracelet/x/etag								 v0.2.0 \
-	github.com/charmbracelet/x/exp/charmtone						 v0.0.0-20260602025833-85a30b5e440a \
-	github.com/charmbracelet/x/exp/golden							 v0.0.0-20250806222409-83e3a29d542f \
+	github.com/charmbracelet/x/exp/charmtone						 v0.1.0 \
+	github.com/charmbracelet/x/exp/golden							 v0.1.0 \
 	github.com/charmbracelet/x/exp/ordered							 v0.1.0 \
-	github.com/charmbracelet/x/exp/slice							 v0.0.0-20260730164118-7e2d3e6c5238 \
+	github.com/charmbracelet/x/exp/slice							 v0.1.0 \
 	github.com/charmbracelet/x/exp/strings							 v0.1.0 \
 	github.com/charmbracelet/x/json								 v0.2.0 \
 	github.com/charmbracelet/x/powernap							 v0.1.6 \
@@ -281,7 +282,6 @@ MODGO_MODULES =	\
 	github.com/nfnt/resize									 v0.0.0-20180221191011-83c6a9932646 \
 	github.com/nxadm/tail									 v1.4.11 \
 	github.com/onsi/gomega									 v1.34.1 \
-	github.com/openai/openai-go/v3								 v3.56.0 \
 	github.com/opencontainers/go-digest							 v1.0.0 \
 	github.com/opencontainers/image-spec							 v1.1.1 \
 	github.com/orangecms/go-framebuffer							 v0.0.0-20200613202404-a0700d90c330 \
@@ -509,7 +509,6 @@ MODGO_MODFILES =	\
 	github.com/aws/smithy-go								 v1.20.3 \
 	github.com/aws/smithy-go								 v1.27.8 \
 	github.com/aymanbagabas/go-udiff							 v0.2.0 \
-	github.com/aymanbagabas/go-udiff							 v0.3.1 \
 	github.com/charmbracelet/colorprofile							 v0.4.2 \
 	github.com/charmbracelet/ultraviolet							 v0.0.0-20251205161215-1948445e3318 \
 	github.com/charmbracelet/ultraviolet							 v0.0.0-20260205113103-524a6607adb8 \
@@ -518,6 +517,7 @@ MODGO_MODFILES =	\
 	github.com/charmbracelet/x/ansi								 v0.11.7 \
 	github.com/charmbracelet/x/exp/charmtone						 v0.0.0-20250603201427-c31516f43444 \
 	github.com/charmbracelet/x/exp/golden							 v0.0.0-20241212170349-ad4b7ae0f25f \
+	github.com/charmbracelet/x/exp/golden							 v0.0.0-20250806222409-83e3a29d542f \
 	github.com/charmbracelet/x/exp/slice							 v0.0.0-20250327172914-2fdc97757edf \
 	github.com/charmbracelet/x/exp/slice							 v0.0.0-20250904123553-b4e2667e5ad5 \
 	github.com/clipperhouse/displaywidth							 v0.9.0 \
@@ -580,7 +580,6 @@ MODGO_MODFILES =	\
 	github.com/mattn/go-runewidth								 v0.0.23 \
 	github.com/mattn/go-runewidth								 v0.0.24 \
 	github.com/modelcontextprotocol/go-sdk							 v1.3.1 \
-	github.com/openai/openai-go/v3								 v3.54.0 \
 	github.com/pierrec/lz4/v4								 v4.1.14 \
 	github.com/pierrec/lz4/v4								 v4.1.22 \
 	github.com/pkg/errors									 v0.8.1 \

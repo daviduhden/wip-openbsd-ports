@@ -8,6 +8,14 @@ Raise the terminal and server-start waits to 30 seconds.  The release test
 build runs with debug assertions off, and the full suite on a loaded machine
 routinely needs more than the upstream five seconds before the client prints.
 
+Do not divide by zero when merging query statistics.  A query that fails
+before it ever succeeds is recorded with count 0 (DB.updateQueryErrors), and
+the shared per-run maps are merged once per chat (chat and agent store) over
+the whole suite.  When the same failing query is seen in two examples, both
+entries have count 0 and the weighted average divides by zero.  Keep the
+average at 0 in that case; the failure itself is still reported through the
+errs map.
+
 Index: tests/ChatClient.hs
 --- tests/ChatClient.hs.orig
 +++ tests/ChatClient.hs
@@ -19,7 +27,7 @@ Index: tests/ChatClient.hs
 +import Control.Concurrent.MVar (withMVar)
 +import Simplex.Messaging.Agent.Store.SQLite.Common (DBStore (dbConnection))
  #endif
-
+ 
  #if defined(dbPostgres)
 @@ -332,13 +333,15 @@
    stopChatController cc
@@ -40,8 +48,17 @@ Index: tests/ChatClient.hs
    closeDBStore chatStore
    threadDelay 200000
  #if !defined(dbPostgres)
+@@ -349,7 +352,7 @@
+         DB.SlowQueryStats
+           { count = count + count',
+             timeMax = max timeMax timeMax',
+-            timeAvg = (timeAvg * count + timeAvg' * count') `div` (count + count'),
++            timeAvg = if count + count' == 0 then 0 else (timeAvg * count + timeAvg' * count') `div` (count + count'),
+             errs = M.unionWith (+) errs errs'
+           }
+ #endif
 @@ -469,7 +472,7 @@
-
+ 
  getTermLine' :: HasCallStack => Maybe String -> TestCC -> IO String
  getTermLine' expected cc@TestCC {printOutput} =
 -  5000000 `timeout` atomically (readTQueue $ termQ cc) >>= \case

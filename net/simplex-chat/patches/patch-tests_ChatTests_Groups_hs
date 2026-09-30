@@ -78,6 +78,14 @@ Index: tests/ChatTests/Groups.hs
  updateGroupForwardingVectors :: TestCC -> String -> String -> MemberRelation -> IO ()
  updateGroupForwardingVectors host invitee1Name invitee2Name relation = do
    void $ withCCTransaction host $ \db -> do
+@@ -5250,6 +5275,6 @@
+       createGroup3 "team" alice bob cath
+ 
+-      threadDelay 1000000 -- delay so member relations don't get overwritten to connected
++      waitForGroupMembersConnected alice bob cath
+       setupGroupForwardingVectors alice bob cath
+ 
+       bob #> "#team hi there"
 @@ -6199,12 +6224,12 @@
        threadDelay 1000000
  

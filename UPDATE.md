@@ -164,10 +164,9 @@ Notes:
 - Update `MODGO_LDFLAGS` when the path of the upstream version
   variable changes. `devel/github-cli`, `devel/crush` and
   `devel/checkmake` inject version and build metadata this way.
-- `devel/github-cli` patches the `survey` dependency from its module
-  distfile: keep `SURVEY_V` in sync with the version listed in
-  `modules.inc` and refresh the patches under `files/`; the `pre-build`
-  replace points at the patched copy.
+- For ports with `DIST_TUPLE` replacements (`devel/github-cli` replaces
+  `survey` with a patched fork), refresh the pinned commit and check
+  whether the `pre-build` replace is still needed.
 - Recheck `WANTLIB` (`c pthread` is typical), `RUN_DEPENDS` (for
   example `net/i2pd` for xd-torrent) and `post-install` hooks such as
   symlinks and generated manual pages.

@@ -1,17 +1,17 @@
 COMMENT =	command-line access to github pull requests, issues and more
 
-V =		2.101.0
+V =		2.102.0
 MODGO_MODNAME =	github.com/cli/cli/v${V:R:R}
 MODGO_VERSION =	v${V}
 
 DISTNAME =	cli-${MODGO_VERSION}
 PKGNAME =	github-cli-${V}
 
-# The survey module still uses the indirect syscall(2) interface for
-# termios, which OpenBSD 7.5 removed (golang/go#63900).  Patch the module
-# source from its distfile instead of fetching a fork.
-SURVEY_MOD =	github.com/!alec!aivazis/survey/v2
-SURVEY_V =	v2.3.7
+# replace "survey" module with a patched version that uses ioctl
+# instead of unnecessary direct syscall() calls
+SURVEY_V =	vv2.3.8
+DIST_TUPLE =	github bsdmp survey ${SURVEY_V} ../survey
+EXTRACT_ONLY =	bsdmp-survey-${SURVEY_V}.tar.gz
 
 CATEGORIES =	devel
 HOMEPAGE =	https://cli.github.com/
@@ -29,19 +29,6 @@ MODGO_LDFLAGS +=	-X "${MODGO_MODNAME}/internal/build.Version=$V"
 TEST_TARGET =	./...
 
 PORTHOME =	${WRKDIR}
-
-post-extract:
-	${UNZIP} -oq ${DISTDIR}/go_modules/${SURVEY_MOD}/@v/${SURVEY_V}.zip \
-	    -d ${WRKDIR}/survey-extract
-	mv ${WRKDIR}/survey-extract/github.com/AlecAivazis/survey/v2@${SURVEY_V} \
-	    ${WRKDIR}/survey
-	rm -rf ${WRKDIR}/survey-extract
-
-post-patch:
-	patch -d ${WRKDIR}/survey -p0 \
-	    < ${FILESDIR}/patch-survey_terminal_runereader_posix_go
-	patch -d ${WRKDIR}/survey -p0 \
-	    < ${FILESDIR}/patch-survey_go_mod
 
 pre-build:
 	cd ${WRKSRC}; ${MODGO_CMD} mod edit -replace \

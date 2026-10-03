@@ -5,6 +5,8 @@ contact as connected. Unlocked readers such as /last_item_id must see the
 complete initial history; connection-sync commands must not race probes
 still using the connection record.
 
+Publish group readiness after committing initial history, as for contacts.
+
 Index: src/Simplex/Chat/Library/Subscriber.hs
 --- src/Simplex/Chat/Library/Subscriber.hs.orig
 +++ src/Simplex/Chat/Library/Subscriber.hs
@@ -26,3 +28,28 @@ Index: src/Simplex/Chat/Library/Subscriber.hs
            forM_ viaUserContactLink $ \userContactLinkId -> do
              (ucl, gli_) <- withStore $ \db -> getUserContactLinkById db userId userContactLinkId
              -- let UserContactLink {addressSettings = AddressSettings {autoReply}} = ucl
+@@ -894,7 +896,6 @@
+                     pure gInfo {membership = membership {memberStatus = GSMemConnected}}
+                   else pure gInfo
+               pure (m {memberStatus = GSMemConnected}, gInfo')
+-            toView $ CEvtUserJoinedGroup user gInfo' m'
+             when (isRelay membership) $ do
+               cc <- ask
+               atomically $ channelProfileUpdated cc groupId groupProfile
+@@ -908,10 +909,15 @@
+                   let prepared = preparedGroup gInfo''
+                   unless (isJust prepared) $ createGroupFeatureItems user cd CIRcvGroupFeature gInfo''
+                   memberConnectedChatItem gInfo'' scopeInfo m''
++                  -- Publish readiness after initial history, before the welcome message.
++                  toView $ CEvtUserJoinedGroup user gInfo' m'
+                   let welcomeMsgId_ = (\PreparedGroup {welcomeSharedMsgId = mId} -> mId) <$> prepared
+                   unless (memberPending membership || isJust welcomeMsgId_) $ maybeCreateGroupDescrLocal gInfo'' m''
+               )
+-              (memberConnectedChatItem gInfo'' scopeInfo m'')
++              ( do
++                  memberConnectedChatItem gInfo'' scopeInfo m''
++                  toView $ CEvtUserJoinedGroup user gInfo' m'
++              )
+             where
+               firstConnectedHost
+                 | useRelays' gInfo = do

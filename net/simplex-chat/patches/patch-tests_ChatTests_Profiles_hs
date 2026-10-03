@@ -6,6 +6,8 @@ a loaded builder).  Give the persistent-server retry examples more time to
 accept connections, and accept the maintenance set-client-service echo and
 its "ok" response in any order.
 
+Independent member connections have no defined completion order. Assert both.
+
 Index: tests/ChatTests/Profiles.hs
 --- tests/ChatTests/Profiles.hs.orig
 +++ tests/ChatTests/Profiles.hs
@@ -104,7 +106,21 @@ Index: tests/ChatTests/Profiles.hs
  
  testUpdateMultipleUserPrefs :: HasCallStack => TestParams -> IO ()
  testUpdateMultipleUserPrefs = testChat3 aliceProfile bobProfile cathProfile $
-@@ -3478,7 +3478,7 @@
+@@ -3217,9 +3217,10 @@
+         do
+           cath <## "#team: alice added dan (Daniel) to the group (connecting...)"
+           cath <## "#team: new member dan is connected",
+-        do
+-          dan <## "#team: member bob (Bob) is connected"
+-          dan <## "#team: member cath (Catherine) is connected"
++        dan
++          <### [ "#team: member bob (Bob) is connected",
++                 "#team: member cath (Catherine) is connected"
++               ]
+       ]
+     dan ##> ("/_connect plan 1 " <> fullLink)
+     dan <## "group link: known group #team"
+@@ -3478,7 +3479,7 @@
        bob <##. "smp agent error: BROKER"
        withSmpServer' serverCfg' $ do
          alice <## "subscribed 1 connections on server localhost"
@@ -113,7 +129,7 @@ Index: tests/ChatTests/Profiles.hs
          bob ##> ("/_connect plan 1 " <> shortLink)
          bob <## "contact address: known prepared contact alice"
          bob ##> "/_connect contact @2 text hello"
-@@ -3533,7 +3533,7 @@
+@@ -3533,7 +3534,7 @@
        bob <##. "smp agent error: BROKER"
        withSmpServer' serverCfg' $ do
          alice <## "subscribed 1 connections on server localhost"
@@ -122,7 +138,7 @@ Index: tests/ChatTests/Profiles.hs
          bob ##> ("/_connect plan 1 " <> shortLink)
          bob <## "contact address: known prepared contact alice"
          bob ##> "/_connect contact @2 incognito=on text hello"
-@@ -4435,7 +4435,9 @@
+@@ -4435,7 +4436,9 @@
        cath <## "changed to #club"
        alice <## "cath updated group #team:"
        alice <## "changed to #club"
@@ -133,7 +149,7 @@ Index: tests/ChatTests/Profiles.hs
  
        bob ##> ("/_connect plan 1 " <> shortLink)
        bob <## "group link: ok to connect directly"
-@@ -4531,8 +4533,11 @@
+@@ -4531,8 +4534,11 @@
  setClientService :: TestParams -> String -> IO ()
  setClientService ps onOff =
    withTestChatCfgOpts ps testCfg testOpts {coreOptions = testCoreOpts {maintenance = True}} "service" $ \service -> do

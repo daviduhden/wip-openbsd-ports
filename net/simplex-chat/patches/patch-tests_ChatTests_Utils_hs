@@ -9,6 +9,8 @@ delivered: poll for a bounded time and decode the nullable column as Maybe,
 so a late update returns Nothing instead of failing with a NULL-to-Text
 conversion error.
 
+Independent member connections have no defined completion order. Assert both.
+
 Index: tests/ChatTests/Utils.hs
 --- tests/ChatTests/Utils.hs.orig
 +++ tests/ChatTests/Utils.hs
@@ -49,3 +51,16 @@ Index: tests/ChatTests/Utils.hs
  
  pqSndForContact :: TestCC -> ContactId -> IO PQEncryption
  pqSndForContact = pqForContact_ pqSndEnabled PQEncOff
+@@ -810,8 +823,10 @@
+     [ cc1 <## "#team: dan joined the group",
+       do
+         cc4 <## ("#" <> gName <> ": you joined the group")
+-        cc4 <## ("#" <> gName <> ": member " <> sName2 <> " is connected")
+-        cc4 <## ("#" <> gName <> ": member " <> sName3 <> " is connected"),
++        cc4
++          <### [ ConsoleString ("#" <> gName <> ": member " <> sName2 <> " is connected"),
++                 ConsoleString ("#" <> gName <> ": member " <> sName3 <> " is connected")
++               ],
+       do
+         cc2 <## ("#" <> gName <> ": " <> name1 <> " added " <> sName4 <> " to the group (connecting...)")
+         cc2 <## ("#" <> gName <> ": new member " <> name4 <> " is connected"),

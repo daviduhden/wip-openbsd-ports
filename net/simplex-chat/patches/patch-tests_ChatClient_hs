@@ -16,6 +16,13 @@ entries have count 0 and the weighted average divides by zero.  Keep the
 average at 0 in that case; the failure itself is still reported through the
 errs map.
 
+Keep silence assertions in the example body, so failed examples retain their
+original exception and all bracket finalizers still stop clients. Report the
+actual terminal timeout.
+
+Initialize the virtual terminal reader before starting chat output, so its
+baseline cannot discard command echoes or subscription events.
+
 Index: tests/ChatClient.hs
 --- tests/ChatClient.hs.orig
 +++ tests/ChatClient.hs
@@ -29,7 +36,22 @@ Index: tests/ChatClient.hs
  #endif
  
  #if defined(dbPostgres)
-@@ -332,13 +333,15 @@
+@@ -321,10 +322,12 @@
+   ct <- newChatTerminal t opts
+   Right cc <- newChatController db (Just user) cfg opts False
+   void $ execChatCommand' (SetTempFolder (tmpPath </> dbPrefix)) 0 `runReaderT` cc
++  termQ <- newTQueueIO
++  readerReady <- newEmptyTMVarIO
++  termAsync <- async $ readTerminalOutput t termQ readerReady
++  atomically $ takeTMVar readerReady
+   chatAsync <- async $ runSimplexChat cfg opts user cc $ \_u cc' -> runChatTerminal ct cc' opts
+   unless maintenance $ atomically $ readTVar (agentAsync cc) >>= \a -> when (isNothing a) retry
+-  termQ <- newTQueueIO
+-  termAsync <- async $ readTerminalOutput t termQ
+   pure TestCC {chatController = cc, virtualTerminal = t, chatAsync, termAsync, termQ, printOutput}
+ 
+ stopTestChat :: TestParams -> TestCC -> IO ()
+@@ -332,13 +335,15 @@
    stopChatController cc
    uninterruptibleCancel termAsync
    uninterruptibleCancel chatAsync
@@ -48,7 +70,7 @@ Index: tests/ChatClient.hs
    closeDBStore chatStore
    threadDelay 200000
  #if !defined(dbPostgres)
-@@ -349,7 +352,7 @@
+@@ -349,7 +354,7 @@
          DB.SlowQueryStats
            { count = count + count',
              timeMax = max timeMax timeMax',
@@ -57,7 +79,57 @@ Index: tests/ChatClient.hs
              errs = M.unionWith (+) errs errs'
            }
  #endif
-@@ -469,7 +472,7 @@
+@@ -392,7 +397,11 @@
+ withTestChatOpts ps = withTestChatCfgOpts ps testCfg
+ 
+ withTestChatCfgOpts :: HasCallStack => TestParams -> ChatConfig -> ChatOpts -> String -> (HasCallStack => TestCC -> IO a) -> IO a
+-withTestChatCfgOpts ps cfg opts dbPrefix = bracket (startTestChat ps cfg opts dbPrefix) (\cc -> cc <// 100000 >> stopTestChat ps cc)
++withTestChatCfgOpts ps cfg opts dbPrefix runTest =
++  bracket
++    (startTestChat ps cfg opts dbPrefix)
++    (stopTestChat ps)
++    (\cc -> runTest cc >>= ((cc <// 100000) $>))
+ 
+ -- enable output for specific test.
+ -- usage: withTestOutput $ testChat2 aliceProfile bobProfile $ \alice bob -> do ...
+@@ -419,10 +428,13 @@
+         }
+     enableNames srv@UserServer {roles} = (srv :: UserServer 'PSMP) {roles = (roles :: ServerRolesOverride) {names = Just True}}
+ 
+-readTerminalOutput :: VirtualTerminal -> TQueue String -> IO ()
+-readTerminalOutput t termQ = do
++readTerminalOutput :: VirtualTerminal -> TQueue String -> TMVar () -> IO ()
++readTerminalOutput t termQ readerReady = do
+   let w = virtualWindow t
+-  winVar <- atomically $ newTVar . init =<< readTVar w
++  winVar <- atomically $ do
++    v <- newTVar . init =<< readTVar w
++    putTMVar readerReady ()
++    pure v
+   forever . atomically $ do
+     win <- readTVar winVar
+     win' <- init <$> readTVar w
+@@ -450,16 +462,15 @@
+ 
+ testChatN :: HasCallStack => ChatConfig -> ChatOpts -> [Profile] -> (HasCallStack => [TestCC] -> IO ()) -> TestParams -> IO ()
+ testChatN cfg opts ps test params =
+-  bracket (getTestCCs $ zip ps [1 ..]) endTests test
++  bracket (getTestCCs $ zip ps [1 ..]) (mapConcurrently_ $ stopTestChat params) $ \tcs -> do
++    test tcs
++    mapConcurrently_ (<// 100000) tcs
+   where
+     useClientServices = False
+     -- useClientServices = True
+     getTestCCs :: [(Profile, Int)] -> IO [TestCC]
+     getTestCCs [] = pure []
+     getTestCCs ((p, db) : envs') = (:) <$> createTestChat params cfg opts (show db) useClientServices p <*> getTestCCs envs'
+-    endTests tcs = do
+-      mapConcurrently_ (<// 100000) tcs
+-      mapConcurrently_ (stopTestChat params) tcs
+ 
+ (<//) :: HasCallStack => TestCC -> Int -> Expectation
+ (<//) cc t = timeout t (getTermLine cc) `shouldReturn` Nothing
+@@ -469,7 +480,7 @@
  
  getTermLine' :: HasCallStack => Maybe String -> TestCC -> IO String
  getTermLine' expected cc@TestCC {printOutput} =
@@ -66,7 +138,16 @@ Index: tests/ChatClient.hs
      Just s -> do
        -- remove condition to always echo virtual terminal
        -- when True $ do
-@@ -690,6 +693,6 @@
+@@ -482,7 +493,7 @@
+       let expectedMsg = case expected of
+             Just e -> ", expected: " <> show e
+             Nothing -> ""
+-      error $ name <> ": no output for 5 seconds" <> expectedMsg
++      error $ name <> ": no output for 30 seconds" <> expectedMsg
+ 
+ userName :: TestCC -> IO [Char]
+ userName (TestCC ChatController {currentUser} _ _ _ _ _) =
+@@ -690,6 +701,6 @@
      (\_ -> waitFor started "start" >> f)
    where
      waitFor started s =

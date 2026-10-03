@@ -4,9 +4,9 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-GH_TAGNAME = v7.0.3
+GH_TAGNAME = v7.0.4
 
-V = 7.0.3
+V = 7.0.4
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -169,6 +169,10 @@ LIB_DEPENDS = archivers/zstd \
 BUILD_DEPENDS = converters/dos2unix
 TEST_DEPENDS = databases/sqlite3
 
+# Hspec selection and diagnostic options for targeted ports test runs.
+SIMPLEX_TEST_OPTIONS ?=
+SIMPLEX_TEST_OUTPUT ?= 0
+
 CHAT_CABAL_CHECK_PATHS = \
 	for _pkg in ${CHAT_CABAL_PACKAGE_PATHS}; do \
 		if [ ! -f "$$_pkg" ]; then \
@@ -192,7 +196,7 @@ post-patch:
 		fi; \
 	done
 	patch -d ${WRKDIR}/direct-sqlcipher -p0 \
-		< ${FILESDIR}/patch-direct-sqlcipher_cabal
+		< ${FILESDIR}/direct-sqlcipher/patch-direct-sqlcipher_cabal
 	if [ ! -f ${WITHERABLE_DIR}/witherable.cabal ]; then \
 		${TAR} -C ${WRKDIR} -xzf ${WITHERABLE_TARBALL}; \
 	fi
@@ -204,37 +208,37 @@ post-patch:
 		${CHAT_CABAL_BUILD_OPTIONS} \
 		>> ${WRKSRC}/cabal.project.local
 .for _p in ${SIMPLEXMQ_PATCHES}
-	patch -d ${WRKDIR}/simplexmq -p0 < ${FILESDIR}/${_p}
+	patch -d ${WRKDIR}/simplexmq -p0 < ${FILESDIR}/simplexmq/${_p}
 .endfor
 .for _p in ${AESON_PATCHES}
-	patch -d ${WRKDIR}/aeson -p0 < ${FILESDIR}/${_p}
+	patch -d ${WRKDIR}/aeson -p0 < ${FILESDIR}/aeson/${_p}
 .endfor
 .for _p in ${CRYPTOSTORE_PATCHES}
 	if [ -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} ]; then \
 		patch -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} -p0 \
-			< ${FILESDIR}/${_p}; \
+			< ${FILESDIR}/cryptostore/${_p}; \
 	fi
 .endfor
 	patch -d ${WRKDIR}/network-${NETWORK_V} -p0 \
-		< ${FILESDIR}/patch-network_cabal
+		< ${FILESDIR}/network/patch-network_cabal
 .for _p in ${TLS_PATCHES}
-	patch -d ${WRKDIR}/tls-${TLS_V} -p0 < ${FILESDIR}/${_p}
+	patch -d ${WRKDIR}/tls-${TLS_V} -p0 < ${FILESDIR}/tls/${_p}
 .endfor
 .for _p in ${HTTP2_PATCHES}
-	patch -d ${WRKDIR}/http2-${HTTP2_V} -p0 < ${FILESDIR}/${_p}
+	patch -d ${WRKDIR}/http2-${HTTP2_V} -p0 < ${FILESDIR}/http2/${_p}
 .endfor
 	${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include
-	${INSTALL_DATA} ${FILESDIR}/HsNetworkConfig.h \
+	${INSTALL_DATA} ${FILESDIR}/network/HsNetworkConfig.h \
 		${WRKDIR}/network-${NETWORK_V}/include/HsNetworkConfig.h
 	if [ -f ${WRKDIR}/unix-time-${UNIX_TIME_V}/unix-time.cabal ]; then \
 		patch -d ${WRKDIR}/unix-time-${UNIX_TIME_V} -p0 \
-			< ${FILESDIR}/patch-unix-time_cabal; \
-		${INSTALL_DATA} ${FILESDIR}/UnixTimeConfig.h \
+			< ${FILESDIR}/unix-time/patch-unix-time_cabal; \
+		${INSTALL_DATA} ${FILESDIR}/unix-time/UnixTimeConfig.h \
 			${WRKDIR}/unix-time-${UNIX_TIME_V}/cbits/config.h; \
 	fi
 	if [ -f ${WRKDIR}/entropy-${ENTROPY_V}/entropy.cabal ]; then \
 		patch -d ${WRKDIR}/entropy-${ENTROPY_V} -p0 \
-			< ${FILESDIR}/patch-entropy_cabal; \
+			< ${FILESDIR}/entropy/patch-entropy_cabal; \
 	fi
 
 cabal-inc: patch
@@ -325,6 +329,7 @@ do-test:
 		_plans=1; \
 	fi; \
 	cd ${WRKBUILD} && exec ${SETENV} ${MAKE_ENV} \
+		SIMPLEX_TEST_OUTPUT=${SIMPLEX_TEST_OUTPUT} \
 		SIMPLEX_QUERY_PLANS_PLATFORM=$$_plans \
 		SIMPLEX_UPDATE_QUERY_PLANS=${SIMPLEX_UPDATE_QUERY_PLANS} \
 		TMPDIR=${WRKDIR}/test-tmp \
@@ -334,6 +339,7 @@ do-test:
 		XDG_CONFIG_HOME=${WRKDIR}/.config \
 		${LOCALBASE}/bin/cabal v2-test --offline --disable-benchmarks \
 		--test-show-details=streaming \
+		--test-options=${SIMPLEX_TEST_OPTIONS:Q} \
 		-w ${LOCALBASE}/bin/ghc \
 		-j${MAKE_JOBS} \
 		--flags="${MODCABAL_FLAGS}" ${MODCABAL_BUILD_ARGS} \

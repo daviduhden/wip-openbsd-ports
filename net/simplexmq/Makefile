@@ -133,44 +133,44 @@ post-patch:
 		-o -name '*.sql' -o -name '*.h' -o -name '*.c' \) \
 		-exec ${LOCALBASE}/bin/dos2unix -q {} +
 	patch -d ${WRKDIR}/direct-sqlcipher -p0 \
-		< ${FILESDIR}/patch-direct-sqlcipher_cabal
+		< ${FILESDIR}/direct-sqlcipher/patch-direct-sqlcipher_cabal
 	${SIMPLEXMQ_CABAL_CHECK_PATHS}
 	printf '%s\n' \
 		${SIMPLEXMQ_CABAL_PACKAGES} \
 		${SIMPLEXMQ_CABAL_COMMON_OPTIONS} \
 		>> ${WRKSRC}/cabal.project.local
 .for _p in ${AESON_PATCHES}
-	patch -d ${WRKDIR}/aeson -p0 < ${FILESDIR}/${_p}
+	patch -d ${WRKDIR}/aeson -p0 < ${FILESDIR}/aeson/${_p}
 .endfor
 .for _p in ${CRYPTOSTORE_PATCHES}
 	if [ -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} ]; then \
 		patch -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} -p0 \
-			< ${FILESDIR}/${_p}; \
+			< ${FILESDIR}/cryptostore/${_p}; \
 	fi
 .endfor
 .for _p in ${WARP_PATCHES}
-	patch -d ${WRKDIR}/simplex-wai/warp -p0 < ${FILESDIR}/${_p}
+	patch -d ${WRKDIR}/simplex-wai/warp -p0 < ${FILESDIR}/warp/${_p}
 .endfor
 .for _p in ${TLS_PATCHES}
-	patch -d ${WRKDIR}/tls-${TLS_V} -p0 < ${FILESDIR}/${_p}
+	patch -d ${WRKDIR}/tls-${TLS_V} -p0 < ${FILESDIR}/tls/${_p}
 .endfor
 .for _p in ${HTTP2_PATCHES}
-	patch -d ${WRKDIR}/http2-${HTTP2_V} -p0 < ${FILESDIR}/${_p}
+	patch -d ${WRKDIR}/http2-${HTTP2_V} -p0 < ${FILESDIR}/http2/${_p}
 .endfor
 	patch -d ${WRKDIR}/network-${NETWORK_V} -p0 \
-		< ${FILESDIR}/patch-network_cabal
+		< ${FILESDIR}/network/patch-network_cabal
 	${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include
-	${INSTALL_DATA} ${FILESDIR}/HsNetworkConfig.h \
+	${INSTALL_DATA} ${FILESDIR}/network/HsNetworkConfig.h \
 		${WRKDIR}/network-${NETWORK_V}/include/HsNetworkConfig.h
 	if [ -f ${WRKDIR}/unix-time-${UNIX_TIME_V}/unix-time.cabal ]; then \
 		patch -d ${WRKDIR}/unix-time-${UNIX_TIME_V} -p0 \
-			< ${FILESDIR}/patch-unix-time_cabal; \
-		${INSTALL_DATA} ${FILESDIR}/UnixTimeConfig.h \
+			< ${FILESDIR}/unix-time/patch-unix-time_cabal; \
+		${INSTALL_DATA} ${FILESDIR}/unix-time/UnixTimeConfig.h \
 			${WRKDIR}/unix-time-${UNIX_TIME_V}/cbits/config.h; \
 	fi
 	if [ -f ${WRKDIR}/entropy-${ENTROPY_V}/entropy.cabal ]; then \
 		patch -d ${WRKDIR}/entropy-${ENTROPY_V} -p0 \
-			< ${FILESDIR}/patch-entropy_cabal; \
+			< ${FILESDIR}/entropy/patch-entropy_cabal; \
 	fi
 
 cabal-inc: patch
@@ -244,13 +244,14 @@ do-test:
 		${SIMPLEXMQ_CABAL_COMMON_OPTIONS} \
 		${SIMPLEXMQ_CABAL_TEST_OPTIONS} \
 		>> ${WRKSRC}/cabal.project.local
+	# Invoke Cabal directly so the module wrapper does not reset HOME.
 	cd ${WRKBUILD} && exec ${SETENV} ${MAKE_ENV} \
 		TMPDIR=${WRKDIR}/test-tmp \
 		HOME=${CABAL_INC_HOME} \
 		CABAL_DIR=${CABAL_INC_HOME}/.cabal \
 		XDG_CACHE_HOME=${CABAL_INC_HOME}/.cache \
 		XDG_CONFIG_HOME=${CABAL_INC_HOME}/.config \
-		${_MODCABAL_CABAL} v2-test --offline --disable-benchmarks \
+		${LOCALBASE}/bin/cabal v2-test --offline --disable-benchmarks \
 		--test-show-details=streaming \
 		-w ${LOCALBASE}/bin/ghc \
 		-j${MAKE_JOBS} \

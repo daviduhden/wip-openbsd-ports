@@ -6,18 +6,22 @@ loop and gets EOF in a non-interactive build), so skip it unconditionally,
 and run the directory and "Save query plans" examples so the
 platform-specific query plans can be verified on OpenBSD.
 
+Allow opt-in terminal traces when investigating failures hidden by cleanup.
+
 Index: tests/Test.hs
 --- tests/Test.hs.orig
 +++ tests/Test.hs
-@@ -9,7 +9,6 @@
+@@ -9,8 +9,8 @@
  import ChatTests
  import ChatTests.DBUtils
  import ChatTests.Names (chatNamesTests)
 -import ChatTests.Utils (xdescribe'')
  import Control.Logger.Simple
++import System.Environment (lookupEnv)
  import Data.Time.Clock.System
  import BadgeTests
-@@ -74,7 +73,7 @@
+ import JSONTests
+@@ -74,7 +74,7 @@
        describe "Random servers" randomServersTests
  #if !defined(dbPostgres)
        around (tmpTestBracket chatQueryStats agentQueryStats) $ describe "names tests" chatNamesTests
@@ -26,7 +30,7 @@ Index: tests/Test.hs
  #endif
  #if defined(dbPostgres)
        createdDropDb . around testBracket
-@@ -86,11 +85,11 @@
+@@ -86,11 +86,11 @@
            describe "Mobile API Tests" mobileTests
  #endif
            describe "SimpleX chat client" chatTests
@@ -41,3 +45,20 @@ Index: tests/Test.hs
  #endif
    where
  #if defined(dbPostgres)
+@@ -99,10 +99,12 @@
+         . after_ (dropDatabaseAndUser testDBConnectInfo)
+     testBracket test = withSmpServer $ tmpBracket $ \tmpPath -> test TestParams {tmpPath, printOutput = False}
+ #else
+-    testBracket chatQueryStats agentQueryStats test =
+-      withSmpServer $ tmpBracket $ \tmpPath -> test TestParams {tmpPath, chatQueryStats, agentQueryStats, printOutput = False}
+-    tmpTestBracket chatQueryStats agentQueryStats test =
+-      tmpBracket $ \tmpPath -> test TestParams {tmpPath, chatQueryStats, agentQueryStats, printOutput = False}
++    testBracket chatQueryStats agentQueryStats test = do
++      printOutput <- (== Just "1") <$> lookupEnv "SIMPLEX_TEST_OUTPUT"
++      withSmpServer $ tmpBracket $ \tmpPath -> test TestParams {tmpPath, chatQueryStats, agentQueryStats, printOutput}
++    tmpTestBracket chatQueryStats agentQueryStats test = do
++      printOutput <- (== Just "1") <$> lookupEnv "SIMPLEX_TEST_OUTPUT"
++      tmpBracket $ \tmpPath -> test TestParams {tmpPath, chatQueryStats, agentQueryStats, printOutput}
+ #endif
+     tmpBracket test = do
+       t <- getSystemTime

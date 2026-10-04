@@ -1,0 +1,12 @@
+Register the service account already declared in pkg/PLIST and the
+repository user.list. Apply manually to the ports framework, not WRKSRC.
+ID 906 must remain free or assigned to _simplexmq before applying.
+
+Index: infrastructure/db/user.list
+--- infrastructure/db/user.list.orig
++++ infrastructure/db/user.list
+@@ -414,3 +414,4 @@
+ 903 _iaxmodem		_iaxmodem	telephony/iaxmodem
+ 904 _neighbot		_neighbot	net/neighbot
+ 905 _pgweb		_pgweb		www/pgweb
++906 _simplexmq		_simplexmq	net/simplexmq

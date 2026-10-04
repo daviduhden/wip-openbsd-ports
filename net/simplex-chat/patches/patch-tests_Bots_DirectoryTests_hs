@@ -1,0 +1,38 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+Join the directory service and its database finalizers before closing its
+log or removing the enclosing temporary directory. killThread alone does
+not wait for finalizers to finish.
+
+Index: tests/Bots/DirectoryTests.hs
+--- tests/Bots/DirectoryTests.hs.orig
++++ tests/Bots/DirectoryTests.hs
+@@ -10,8 +10,9 @@
+ import ChatTests.DBUtils
+ import ChatTests.Groups (memberJoinChannel, prepareChannel1Relay)
+ import ChatTests.Utils
+-import Control.Concurrent (forkIO, killThread, threadDelay)
+-import Control.Exception (finally)
++import Control.Concurrent (threadDelay)
++import Control.Concurrent.Async (withAsync)
++import Control.Exception (bracket)
+ import Control.Monad (forM_, void, when)
+ import qualified Data.Aeson as J
+ import qualified Data.Text as T
+@@ -1737,11 +1738,11 @@
+       test superUser dsLink
+ 
+ runDirectory :: ChatConfig -> DirectoryOpts -> IO () -> IO ()
+-runDirectory cfg opts@DirectoryOpts {directoryLog} action = do
+-  st <- openDirectoryLog directoryLog
+-  t <- forkIO $ directoryService st opts cfg
+-  threadDelay 500000
+-  action `finally` (mapM_ hClose (directoryLogFile st) >> killThread t)
++runDirectory cfg opts@DirectoryOpts {directoryLog} action =
++  bracket (openDirectoryLog directoryLog) (mapM_ hClose . directoryLogFile) $ \st ->
++    withAsync (directoryService st opts cfg) $ \_ -> do
++      threadDelay 500000
++      action
+ 
+ registerGroup :: TestCC -> TestCC -> String -> String -> IO ()
+ registerGroup su u n fn = registerGroupId su u n fn 1 1

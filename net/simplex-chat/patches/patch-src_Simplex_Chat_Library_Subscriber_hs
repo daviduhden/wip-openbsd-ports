@@ -7,6 +7,9 @@ still using the connection record.
 
 Publish group readiness after committing initial history, as for contacts.
 
+Publish switch progress after persisting its history item, for contacts
+and group members, so readers observing completion see completed history.
+
 Index: src/Simplex/Chat/Library/Subscriber.hs
 --- src/Simplex/Chat/Library/Subscriber.hs.orig
 +++ src/Simplex/Chat/Library/Subscriber.hs
@@ -28,6 +31,18 @@ Index: src/Simplex/Chat/Library/Subscriber.hs
            forM_ viaUserContactLink $ \userContactLinkId -> do
              (ucl, gli_) <- withStore $ \db -> getUserContactLinkById db userId userContactLinkId
              -- let UserContactLink {addressSettings = AddressSettings {autoReply}} = ucl
+@@ -667,10 +669,10 @@
+           where
+             ctItem = AChatItem SCTDirect SMDSnd (DirectChat ct)
+         SWITCH qd phase cStats -> do
+-          toView $ CEvtContactSwitch user ct (SwitchProgress qd phase cStats)
+           when (phase == SPStarted || phase == SPCompleted) $ case qd of
+             QDRcv -> createInternalChatItem user (CDDirectSnd ct) (CISndConnEvent $ SCESwitchQueue phase Nothing) Nothing
+             QDSnd -> createInternalChatItem user (CDDirectRcv ct) (CIRcvConnEvent $ RCESwitchQueue phase) Nothing
++          toView $ CEvtContactSwitch user ct (SwitchProgress qd phase cStats)
+         RSYNC rss cryptoErr_ cStats ->
+           case (rss, connectionCode, cryptoErr_) of
+             (RSRequired, _, Just cryptoErr) -> processErr cryptoErr
 @@ -894,7 +896,6 @@
                      pure gInfo {membership = membership {memberStatus = GSMemConnected}}
                    else pure gInfo
@@ -53,3 +68,16 @@ Index: src/Simplex/Chat/Library/Subscriber.hs
              where
                firstConnectedHost
                  | useRelays' gInfo = do
+@@ -1184,11 +1190,11 @@
+           when (isUserGrpFwdRelay gInfo) $ serveRoster user gInfo m -- roster ahead of the resumed backlog
+           sendPendingGroupMessages user gInfo m conn
+       SWITCH qd phase cStats -> do
+-        toView $ CEvtGroupMemberSwitch user gInfo m (SwitchProgress qd phase cStats)
+         (gInfo', m', scopeInfo) <- mkGroupChatScope gInfo m
+         when (phase == SPStarted || phase == SPCompleted) $ case qd of
+           QDRcv -> createInternalChatItem user (CDGroupSnd gInfo' scopeInfo) (CISndConnEvent . SCESwitchQueue phase . Just $ groupMemberRef m') Nothing
+           QDSnd -> createInternalChatItem user (CDGroupRcv gInfo' scopeInfo m') (CIRcvConnEvent $ RCESwitchQueue phase) Nothing
++        toView $ CEvtGroupMemberSwitch user gInfo m (SwitchProgress qd phase cStats)
+       RSYNC rss cryptoErr_ cStats -> do
+         (gInfo', m', scopeInfo) <- mkGroupChatScope gInfo m
+         case (rss, connectionCode, cryptoErr_) of

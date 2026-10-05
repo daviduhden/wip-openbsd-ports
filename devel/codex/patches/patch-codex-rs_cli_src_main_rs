@@ -1,0 +1,11 @@
+Raise the macro expansion recursion limit for the CLI to 256.
+
+Index: codex-rs/cli/src/main.rs
+--- codex-rs/cli/src/main.rs.orig
++++ codex-rs/cli/src/main.rs
+@@ -1,3 +1,5 @@
++#![recursion_limit = "256"]
++
+ use clap::Args;
+ use clap::CommandFactory;
+ use clap::Parser;

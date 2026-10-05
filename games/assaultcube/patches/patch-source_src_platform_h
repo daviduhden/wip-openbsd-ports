@@ -3,6 +3,9 @@ SPDX-License-Identifier: LicenseRef-Cube-Engine
 LicenseRef-Cube-Engine: source/README_CUBEENGINE.txt, zlib license with
 the additional prohibition on relicensing without written permission.
 
+Leave _FORTIFY_SOURCE handling to the OpenBSD toolchain instead of
+applying the upstream GNU-compiler override.
+
 Index: source/src/platform.h
 --- source/src/platform.h.orig
 +++ source/src/platform.h

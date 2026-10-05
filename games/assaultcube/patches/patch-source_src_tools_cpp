@@ -3,6 +3,9 @@ SPDX-License-Identifier: LicenseRef-Cube-Engine
 LicenseRef-Cube-Engine: source/README_CUBEENGINE.txt, zlib license with
 the additional prohibition on relicensing without written permission.
 
+Use OpenBSD pthread_set_name_np and its pthread_np.h declaration when
+naming worker threads; retain pthread_setname_np elsewhere.
+
 Index: source/src/tools.cpp
 --- source/src/tools.cpp.orig
 +++ source/src/tools.cpp

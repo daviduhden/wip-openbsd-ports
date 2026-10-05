@@ -1,5 +1,9 @@
 SPDX-License-Identifier: BSD-3-Clause
 
+Add OpenBSD build settings for the ports Boost -mt libraries, local
+include/library paths and pthreads. Omit separate libatomic linkage on
+OpenBSD while retaining it for other platforms.
+
 Index: Makefile
 --- Makefile.orig
 +++ Makefile

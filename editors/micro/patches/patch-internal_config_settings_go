@@ -1,0 +1,15 @@
+Use base-system doas as the default privilege command on OpenBSD.
+Keep upstream sucmd configuration and its save/truncate call sites intact.
+
+Index: internal/config/settings.go
+--- internal/config/settings.go.orig
++++ internal/config/settings.go
+@@ -128,7 +128,7 @@
+ 	"pluginrepos":    []string{},
+ 	"savehistory":    true,
+ 	"scrollbarchar":  "|",
+-	"sucmd":          "sudo",
++	"sucmd":          "doas",
+ 	"tabhighlight":   false,
+ 	"tabreverse":     true,
+ 	"xterm":          false,

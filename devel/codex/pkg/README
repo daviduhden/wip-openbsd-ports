@@ -1,0 +1,44 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+You may use OpenAI commercial services or misc/llama.cpp, for the last
+one you should add into ~/.codex/config.toml:
+
+	model_provider = "local"
+	model = "local"
+	web_search = "disabled"
+
+	[model_providers.local]
+	name = "llama-server"
+	base_url = "http://127.0.0.1:8080/v1"
+	wire_api = "responses"
+
+${PKGSTEM} uses a lot of memory, it starts with 256Mb per agent/worker
+thread, and you may need to bump your limits (`ulimit -d`) or raise
+datasize limit in used login class..
+
+Also, ${PKGSTEM} may use a lot of open files, you may need to raise both
+the system-wide maxfiles and used login class limits.
+
+The local app-server daemon uses ${LOCALBASE}/bin/codex from this package.
+It starts automatically for eligible interactive sessions, or explicitly with:
+
+	codex app-server daemon start
+	codex app-server daemon version
+	codex app-server daemon stop
+
+Use --no-daemon for an embedded session. Daemon sockets, PID records, logs,
+and settings remain under CODEX_HOME (default ~/.codex); no daemon executable
+or package manifest is installed there. The daemon inherits the environment
+of the terminal that starts it, shared by later clients.
+
+Daemon binaries are updated with pkg_add -u. Restart a running daemon with
+`codex app-server daemon restart` after updating the package; a running process
+continues using its old image until restarted. The daemon's internal updater
+and --from-cli package installation are disabled for this port.
+
+When migrating from an existing internally managed daemon, stop it with the
+old CLI before replacing the package. No user-managed package files are deleted.
+There is no system rc.d service: the daemon runs as the invoking user and is
+not automatically restarted after reboot.

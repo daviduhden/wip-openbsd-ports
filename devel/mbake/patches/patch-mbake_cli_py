@@ -1,5 +1,9 @@
 SPDX-License-Identifier: MIT
 
+Use gmake for GNU make syntax validation on OpenBSD, whose base make is
+BSD make. Skip the version-command update check and direct explicit
+self-updates to pkg_add instead of replacing the installed Python package.
+
 Index: mbake/cli.py
 --- mbake/cli.py.orig
 +++ mbake/cli.py

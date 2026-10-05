@@ -1,5 +1,10 @@
 SPDX-License-Identifier: Apache-2.0
 
+Elevate the OpenBSD core service with doas rather than sudo. Forward
+interactive authentication through a private controlling pseudoterminal,
+use doas -n for fast elevation, and keep the terminal master open for
+the service lifetime. Report doas-specific failures and configuration.
+
 Index: Core/Unix/CoreService.cpp
 --- Core/Unix/CoreService.cpp.orig
 +++ Core/Unix/CoreService.cpp

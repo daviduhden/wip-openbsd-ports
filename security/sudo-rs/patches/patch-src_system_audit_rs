@@ -1,5 +1,9 @@
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
+Use owner/group/world write bits to audit an already open file on
+OpenBSD, where the descriptor-based faccessat path is unavailable. Keep
+the faccessat implementation for other production targets.
+
 Index: src/system/audit.rs
 --- src/system/audit.rs.orig
 +++ src/system/audit.rs

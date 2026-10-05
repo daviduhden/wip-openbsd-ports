@@ -1,0 +1,15 @@
+Default to package-manager updates rather than checking upstream releases
+at startup. An explicit user setting still overrides this default.
+
+Index: codex-rs/core/src/config/mod.rs
+--- codex-rs/core/src/config/mod.rs.orig
++++ codex-rs/core/src/config/mod.rs
+@@ -4070,7 +4070,7 @@
+ 
+         let review_model = override_review_model.or(cfg.review_model);
+ 
+-        let check_for_update_on_startup = cfg.check_for_update_on_startup.unwrap_or(true);
++        let check_for_update_on_startup = cfg.check_for_update_on_startup.unwrap_or(false);
+         let model_catalog = load_model_catalog(cfg.model_catalog_json.clone())?;
+ 
+         let log_dir = cfg

@@ -1,5 +1,8 @@
 SPDX-License-Identifier: Apache-2.0
 
+Offer FFS in the OpenBSD GUI filesystem selector and restore that
+selection when displaying existing creation options.
+
 Index: Main/Forms/VolumeFormatOptionsWizardPage.cpp
 --- Main/Forms/VolumeFormatOptionsWizardPage.cpp.orig
 +++ Main/Forms/VolumeFormatOptionsWizardPage.cpp

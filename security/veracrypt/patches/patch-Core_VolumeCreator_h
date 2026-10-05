@@ -1,5 +1,8 @@
 SPDX-License-Identifier: Apache-2.0
 
+Represent FFS as the OpenBSD native filesystem and select /sbin/newfs
+for its formatter.
+
 Index: Core/VolumeCreator.h
 --- Core/VolumeCreator.h.orig
 +++ Core/VolumeCreator.h

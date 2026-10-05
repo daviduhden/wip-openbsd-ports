@@ -1,5 +1,8 @@
 SPDX-License-Identifier: MIT
 
+Report the Go runtime version even when the build does not inject a
+goversion linker value.
+
 Index: cmd/checkmake/main.go
 --- cmd/checkmake/main.go.orig
 +++ cmd/checkmake/main.go

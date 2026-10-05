@@ -1,0 +1,42 @@
+Allow the port to select its already installed codex as the app-server
+executable. System ownership is a build-time setting and takes precedence
+over user-managed packages; it never opts into the internal release updater.
+
+Index: codex-rs/app-server-daemon/src/managed_install.rs
+--- codex-rs/app-server-daemon/src/managed_install.rs.orig
++++ codex-rs/app-server-daemon/src/managed_install.rs
+@@ -13,6 +13,14 @@
+ use tokio::fs;
+ use tokio::process::Command;
+ use tokio::time::timeout;
++
++/// A distributor-owned executable has no managed package or internal updater.
++/// This is a build-time choice, so the runtime environment cannot redirect it.
++pub(crate) fn system_codex_bin() -> Option<&'static Path> {
++    option_env!("CODEX_SYSTEM_DAEMON_PATH")
++        .filter(|path| !path.is_empty())
++        .map(Path::new)
++}
+ 
+ /// New daemons own their packages, regardless of how the calling CLI was installed.
+ /// Preserve legacy launch state, including logs left after a daemon is stopped;
+@@ -57,6 +65,9 @@
+ 
+ /// Resolve both packaged and legacy binaries without requiring a valid install.
+ pub(crate) fn managed_codex_bin(codex_home: &Path) -> PathBuf {
++    if let Some(path) = system_codex_bin() {
++        return path.to_path_buf();
++    }
+     let root = package_root(codex_home);
+     let current = root.join("current");
+     let packaged = current.join("bin").join(managed_codex_file_name());
+@@ -72,6 +83,9 @@
+ 
+ /// Only latest-channel stable releases may run the public latest-version updater.
+ pub(crate) fn is_stable_standalone_release(codex_home: &Path, codex_bin: &Path) -> bool {
++    if system_codex_bin().is_some() {
++        return false;
++    }
+     let standalone = package_root(codex_home);
+     let Ok(releases) = std::fs::canonicalize(standalone.join("releases")) else {
+         return false;

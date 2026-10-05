@@ -1,5 +1,8 @@
 SPDX-License-Identifier: MIT
 
+Match the validation command assertions to the CLI GNU make selection
+rather than requiring the literal executable name make.
+
 Index: tests/test_validate_command.py
 --- tests/test_validate_command.py.orig
 +++ tests/test_validate_command.py

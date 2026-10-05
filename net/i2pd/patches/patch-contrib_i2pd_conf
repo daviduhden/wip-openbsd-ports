@@ -1,5 +1,8 @@
 SPDX-License-Identifier: BSD-3-Clause
 
+Use /etc/i2pd for tunnel configuration and certificates, log through
+syslog, and leave the HTTP console disabled in the packaged configuration.
+
 Index: contrib/i2pd.conf
 --- contrib/i2pd.conf.orig
 +++ contrib/i2pd.conf

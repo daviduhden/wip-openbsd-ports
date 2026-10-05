@@ -3,6 +3,10 @@ SPDX-License-Identifier: LicenseRef-Cube-Engine
 LicenseRef-Cube-Engine: source/README_CUBEENGINE.txt, zlib license with
 the additional prohibition on relicensing without written permission.
 
+Preserve the OpenBSD ports CXXFLAGS instead of replacing them with
+upstream optimization flags. Skip the bundled ENet build when the port
+selects USE_SYSTEM_ENET.
+
 Index: source/src/Makefile
 --- source/src/Makefile.orig
 +++ source/src/Makefile

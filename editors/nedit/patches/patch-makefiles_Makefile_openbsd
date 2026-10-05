@@ -1,3 +1,6 @@
+Honor the ports compiler, flags and installation paths. Enable mkstemp
+and link the Motif/Xft font libraries used by this fork, omitting libXp.
+
 Index: makefiles/Makefile.openbsd
 --- makefiles/Makefile.openbsd.orig
 +++ makefiles/Makefile.openbsd

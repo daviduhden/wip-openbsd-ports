@@ -1,3 +1,6 @@
+Highlight BSD integer typedefs and fixed-width integer types as storage
+types in the default C++ syntax patterns.
+
 Index: source/highlightData.c
 --- source/highlightData.c.orig
 +++ source/highlightData.c

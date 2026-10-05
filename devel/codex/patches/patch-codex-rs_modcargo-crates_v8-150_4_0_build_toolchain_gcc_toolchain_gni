@@ -32,7 +32,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/toolchain/gcc_toolchain.gni
    gcc_toolchain(target_name) {
 -    _path = "$clang_base_path/bin"
 -    _is_path_absolute = get_path_info(_path, "abspath") == _path
- 
+-
 -    # Preserve absolute paths for tools like distcc.
 -    if (_is_path_absolute && filter_include([ _path ], [ "//*" ]) == []) {
 -      prefix = _path
@@ -42,6 +42,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/toolchain/gcc_toolchain.gni
 -
 -    cc = "${prefix}/clang"
 -    cxx = "${prefix}/clang++"
++
 +    cc = "cc"
 +    cxx = "c++"
      ld = cxx

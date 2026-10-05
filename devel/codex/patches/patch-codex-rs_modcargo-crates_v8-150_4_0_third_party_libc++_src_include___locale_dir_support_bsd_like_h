@@ -40,9 +40,10 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/third_party/libc++/src/include/__loca
  
  #  if _LIBCPP_HAS_WIDE_CHARACTERS
 -inline _LIBCPP_HIDE_FROM_ABI wint_t __btowc(int __c, __locale_t __loc) { return ::btowc_l(__c, __loc); }
-+inline _LIBCPP_HIDE_FROM_ABI wint_t __btowc(int __c, __locale_t __loc) { return ::btowc(__c); }
- 
+-
 -inline _LIBCPP_HIDE_FROM_ABI int __wctob(wint_t __c, __locale_t __loc) { return ::wctob_l(__c, __loc); }
++inline _LIBCPP_HIDE_FROM_ABI wint_t __btowc(int __c, __locale_t __loc) { return ::btowc(__c); }
++
 +inline _LIBCPP_HIDE_FROM_ABI int __wctob(wint_t __c, __locale_t __loc) { return ::wctob(__c); }
  
  inline _LIBCPP_HIDE_FROM_ABI size_t

@@ -4,17 +4,17 @@ pthread_stackseg_np on OpenBSD.
 Index: codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/stack/stack.cc
 --- codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/stack/stack.cc.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/stack/stack.cc
-@@ -19,6 +19,10 @@
+@@ -17,6 +17,10 @@
+ #include <windows.h>
+ #else
  #include <pthread.h>
- #endif
- 
-+#if PA_BUILDFLAG(IS_BSD)
-+#include <pthread_np.h>
 +#endif
 +
- #if PA_BUILDFLAG(PA_LIBC_GLIBC)
- extern "C" void* __libc_stack_end;
++#if PA_BUILDFLAG(IS_BSD)
++#include <pthread_np.h>
  #endif
+ 
+ #if PA_BUILDFLAG(PA_LIBC_GLIBC)
 @@ -49,6 +53,36 @@ void* GetStackTop() {
  
  void* GetStackTop() {

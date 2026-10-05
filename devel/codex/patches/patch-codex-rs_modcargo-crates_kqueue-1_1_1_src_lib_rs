@@ -43,9 +43,10 @@ Index: codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs
                  format!("{filename:?} was not being watched"),
              ));
 -        }
-+        };
- 
+-
 -        self.watched = new_watched;
++        };
++
          let ret = self.delete_kevents(Ident::Fd(fd), filter);
          let close_err = unsafe { close(fd) };
          if close_err != 0 {
@@ -73,12 +74,13 @@ Index: codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs
 -    } else {
 -        unsafe { kevent(watcher.queue, ptr::null(), 0, &mut kev, 1, ptr::null()) }
 -    };
-+    let started_at = Instant::now();
- 
+-
 -    match ret {
 -        -1 => Some(Event::from_error(kev, watcher)),
 -        0 => None, // timeout expired
 -        _ => Some(Event::new(kev, watcher)),
++    let started_at = Instant::now();
++
 +    loop {
 +        let mut kev = kevent::new(
 +            0,

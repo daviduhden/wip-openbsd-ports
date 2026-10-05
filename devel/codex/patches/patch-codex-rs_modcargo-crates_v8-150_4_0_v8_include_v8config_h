@@ -20,18 +20,18 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/v8/include/v8config.h
    || defined(V8_TARGET_OS_WIN) \
    || defined(V8_TARGET_OS_CHROMEOS)
  #  error A target OS is defined but V8_HAVE_TARGET_OS is unset.
-@@ -247,6 +249,11 @@ path. Add it with -I<path> to the command line
- # define V8_TARGET_OS_LINUX
- #endif
+@@ -245,6 +247,11 @@ path. Add it with -I<path> to the command line
  
+ #ifdef V8_OS_LINUX
+ # define V8_TARGET_OS_LINUX
++#endif
++
 +#ifdef V8_OS_OPENBSD
 +# define V8_TARGET_OS_OPENBSD
 +# define V8_TARGET_OS_BSD
-+#endif
-+
- #ifdef V8_OS_MACOS
- # define V8_TARGET_OS_MACOS
  #endif
+ 
+ #ifdef V8_OS_MACOS
 @@ -394,6 +401,7 @@ path. Add it with -I<path> to the command line
  #if (defined(_M_X64) || defined(__x86_64__)            /* x64 (everywhere) */  \
       || ((defined(__AARCH64EL__) || defined(_M_ARM64)) /* arm64, but ... */    \

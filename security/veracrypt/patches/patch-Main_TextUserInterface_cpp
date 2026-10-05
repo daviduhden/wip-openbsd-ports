@@ -1,5 +1,9 @@
 SPDX-License-Identifier: Apache-2.0
 
+Offer FFS in the OpenBSD text interface and use the raw vnd device for
+newfs. Preserve the historical FAT default for noninteractive creation
+so scripts must explicitly request native formatting and its elevation.
+
 Index: Main/TextUserInterface.cpp
 --- Main/TextUserInterface.cpp.orig
 +++ Main/TextUserInterface.cpp

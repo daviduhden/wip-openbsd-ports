@@ -1,0 +1,23 @@
+Document the OpenBSD port's doas default in the bundled help and example.
+
+Index: runtime/help/options.md
+--- runtime/help/options.md.orig
++++ runtime/help/options.md
+@@ -454,7 +454,7 @@
+    on BSD it can be "doas." This option can be customized and is only used when
+    saving with su.
+ 
+-    default value: `sudo`
++    default value: `doas`
+ 
+ * `syntax`: enables syntax highlighting.
+ 
+@@ -624,7 +624,7 @@
+     "statusformatl": "$(filename) $(modified)$(overwrite)($(line),$(col)) $(status.paste)| ft:$(opt:filetype) | $(opt:fileformat) | $(opt:encoding)",
+     "statusformatr": "$(bind:ToggleKeyMenu): bindings, $(bind:ToggleHelp): help",
+     "statusline": true,
+-    "sucmd": "sudo",
++    "sucmd": "doas",
+     "syntax": true,
+     "tabhighlight": true,
+     "tabmovement": false,

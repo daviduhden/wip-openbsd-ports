@@ -1,5 +1,9 @@
 SPDX-License-Identifier: GPL-3.0-or-later
 
+Use the ports LOCALBASE for Tor and its GeoIP data. Find optional
+pluggable transport executables on PATH instead of assuming they are
+installed under /usr/local/bin.
+
 Index: cli/onionshare_cli/common.py
 --- cli/onionshare_cli/common.py.orig
 +++ cli/onionshare_cli/common.py

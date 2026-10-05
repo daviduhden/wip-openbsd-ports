@@ -3,6 +3,9 @@ SPDX-License-Identifier: LicenseRef-Cube-Engine
 LicenseRef-Cube-Engine: source/README_CUBEENGINE.txt, zlib license with
 the additional prohibition on relicensing without written permission.
 
+Compute PNG chunk CRCs with zlib instead of the bundled ENet incremental
+CRC helper, allowing the game to link against the system ENet library.
+
 Index: source/src/main.cpp
 --- source/src/main.cpp.orig
 +++ source/src/main.cpp

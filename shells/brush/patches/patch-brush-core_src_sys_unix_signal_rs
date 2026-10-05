@@ -1,5 +1,9 @@
 SPDX-License-Identifier: MIT
 
+Use the local libc waitid wrapper on OpenBSD as on macOS, where the nix
+wrapper is not exposed. Include OpenBSD in siginfo-to-wait-status
+conversion for stopped-child polling.
+
 Index: brush-core/src/sys/unix/signal.rs
 --- brush-core/src/sys/unix/signal.rs.orig
 +++ brush-core/src/sys/unix/signal.rs

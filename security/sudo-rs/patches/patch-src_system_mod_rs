@@ -1,5 +1,9 @@
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
+Add OpenBSD process metadata via sysctl for timestamp and terminal
+identity. Use closefrom before exec instead of unavailable close_range
+flags, and remove the Linux/FreeBSD-only compilation guard.
+
 Index: src/system/mod.rs
 --- src/system/mod.rs.orig
 +++ src/system/mod.rs

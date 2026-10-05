@@ -1,0 +1,28 @@
+Use the port-installed executable without requiring codex-package.json or
+copying a CLI package to CODEX_HOME. Reject explicit --from-cli replacement
+when the distributor owns the selected executable.
+
+Index: codex-rs/app-server-daemon/src/prepare_install.rs
+--- codex-rs/app-server-daemon/src/prepare_install.rs.orig
++++ codex-rs/app-server-daemon/src/prepare_install.rs
+@@ -26,6 +26,9 @@
+ 
+ /// Prepare a missing package while the caller holds the daemon operation lock.
+ pub(super) async fn prepare(daemon: &Daemon, settings: &DaemonSettings) -> Result<()> {
++    if managed_install::system_codex_bin().is_some() {
++        return daemon.ensure_managed_codex_bin();
++    }
+     let source = InstallContext::current().package_layout.as_ref();
+     // Keep package replacement state out of the CLI dispatcher's async stack frame.
+     Box::pin(prepare_from_package(
+@@ -46,6 +49,10 @@
+     confirm: impl FnOnce(&InstallRequest) -> Result<bool>,
+ ) -> Result<Option<crate::UpdateOutput>> {
+     crate::ensure_supported_platform()?;
++    anyhow::ensure!(
++        managed_install::system_codex_bin().is_none(),
++        "the daemon is managed by the system package manager; use pkg_add -u"
++    );
+     #[cfg(windows)]
+     crate::backend::windows::ensure_not_elevated()?;
+     let daemon = Daemon::from_environment()?;

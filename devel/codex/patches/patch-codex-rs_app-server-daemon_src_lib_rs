@@ -1,0 +1,50 @@
+Keep daemon lifecycle and IPC while disabling both scheduled and explicit
+internal package updates for the port-installed executable. Report system
+ownership through the existing UpdateStatus::Unsupported response.
+
+Index: codex-rs/app-server-daemon/src/lib.rs
+--- codex-rs/app-server-daemon/src/lib.rs.orig
++++ codex-rs/app-server-daemon/src/lib.rs
+@@ -278,6 +278,10 @@
+     restore_release: Option<String>,
+ ) -> Result<()> {
+     ensure_supported_platform()?;
++    anyhow::ensure!(
++        managed_install::system_codex_bin().is_none(),
++        "the daemon is managed by the system package manager; use pkg_add -u"
++    );
+     #[cfg(windows)]
+     backend::windows::ensure_not_elevated()?;
+     update_loop::run(http_client_factory, restore_release).await
+@@ -287,6 +291,20 @@
+     http_client_factory: codex_http_client::HttpClientFactory,
+ ) -> Result<UpdateOutput> {
+     ensure_supported_platform()?;
++    if let Some(path) = managed_install::system_codex_bin() {
++        let daemon = Daemon::from_environment()?;
++        return Ok(UpdateOutput {
++            status: UpdateStatus::Unsupported,
++            managed_codex_path: path.to_path_buf(),
++            installed_version: daemon.managed_codex_version_best_effort().await,
++            running_version: client::probe(&daemon.socket_path)
++                .await
++                .ok()
++                .map(|info| info.app_server_version),
++            message: "The daemon is managed by the system package manager; use pkg_add -u."
++                .to_string(),
++        });
++    }
+     #[cfg(windows)]
+     backend::windows::ensure_not_elevated()?;
+     update_loop::request_manual_update(&Daemon::from_environment()?, http_client_factory).await
+@@ -868,6 +886,10 @@
+ 
+     async fn ensure_managed_updater(&self, settings: &DaemonSettings) -> Result<bool> {
+         let updater = backend::pid_update_loop_backend(self.backend_paths(settings));
++        if managed_install::system_codex_bin().is_some() {
++            updater.stop().await?;
++            return Ok(false);
++        }
+         if !settings.auto_update_enabled {
+             updater.stop().await?;
+             return Ok(false);

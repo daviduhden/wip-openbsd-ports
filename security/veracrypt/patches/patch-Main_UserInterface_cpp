@@ -1,5 +1,8 @@
 SPDX-License-Identifier: Apache-2.0
 
+Name doas in OpenBSD elevation failures to match the core service
+launcher, retaining sudo diagnostics on other platforms.
+
 Index: Main/UserInterface.cpp
 --- Main/UserInterface.cpp.orig
 +++ Main/UserInterface.cpp

@@ -1,3 +1,6 @@
+Document the client as ncl, matching the installed executable name and
+avoiding confusion with the system nc(1). Explain the package rename.
+
 Index: doc/nedit.pod
 --- doc/nedit.pod.orig
 +++ doc/nedit.pod

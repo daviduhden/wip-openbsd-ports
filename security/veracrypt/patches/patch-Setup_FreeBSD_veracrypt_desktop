@@ -1,5 +1,8 @@
 SPDX-License-Identifier: Apache-2.0
 
+Point the desktop launcher at the executable installed under TRUEPREFIX
+rather than the upstream /usr/bin path.
+
 Index: Setup/FreeBSD/veracrypt.desktop
 --- Setup/FreeBSD/veracrypt.desktop.orig
 +++ Setup/FreeBSD/veracrypt.desktop

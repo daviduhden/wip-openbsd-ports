@@ -1,3 +1,6 @@
+Avoid the %n printf conversion when constructing geometry strings. Use
+sprintf return values to advance the output pointer instead.
+
 Index: util/misc.c
 --- util/misc.c.orig
 +++ util/misc.c

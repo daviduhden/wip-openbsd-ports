@@ -1,5 +1,8 @@
 SPDX-License-Identifier: MIT
 
+Use the same GNU make selection as the CLI in the syntax-check fixture,
+so OpenBSD tests do not invoke base BSD make with GNU options.
+
 Index: tests/conftest.py
 --- tests/conftest.py.orig
 +++ tests/conftest.py

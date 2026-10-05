@@ -1,5 +1,8 @@
 SPDX-License-Identifier: Apache-2.0
 
+Pass the raw /dev/rvnd device to OpenBSD newfs during GUI formatting
+rather than the corresponding block /dev/vnd device.
+
 Index: Main/Forms/VolumeCreationWizard.cpp
 --- Main/Forms/VolumeCreationWizard.cpp.orig
 +++ Main/Forms/VolumeCreationWizard.cpp

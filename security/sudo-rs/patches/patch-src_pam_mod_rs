@@ -1,5 +1,8 @@
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
+Select the OpenPAM bindings for OpenBSD and supply the same
+PAM_DATA_SILENT fallback used on FreeBSD.
+
 Index: src/pam/mod.rs
 --- src/pam/mod.rs.orig
 +++ src/pam/mod.rs

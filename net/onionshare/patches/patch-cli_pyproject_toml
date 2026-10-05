@@ -1,5 +1,9 @@
 SPDX-License-Identifier: GPL-3.0-or-later
 
+Align Python dependency metadata with packages supplied by ports: relax
+selected version bounds, omit upstream build tools and the eventlet
+backend, and declare wsproto. Flask-SocketIO remains a port RUN_DEPENDS.
+
 Index: cli/pyproject.toml
 --- cli/pyproject.toml.orig
 +++ cli/pyproject.toml

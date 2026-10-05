@@ -1,5 +1,8 @@
 SPDX-License-Identifier: GPL-3.0-or-later
 
+Check GeoIP paths relative to the selected Tor prefix, allowing the
+LOCALBASE configured by the port instead of two hardcoded prefixes.
+
 Index: cli/tests/test_cli_common.py
 --- cli/tests/test_cli_common.py.orig
 +++ cli/tests/test_cli_common.py

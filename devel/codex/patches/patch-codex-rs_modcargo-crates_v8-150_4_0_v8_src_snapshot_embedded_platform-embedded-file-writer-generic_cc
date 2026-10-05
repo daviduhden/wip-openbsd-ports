@@ -4,17 +4,17 @@ to support the required memory protections.
 Index: codex-rs/modcargo-crates/v8-150.4.0/v8/src/snapshot/embedded/platform-embedded-file-writer-generic.cc
 --- codex-rs/modcargo-crates/v8-150.4.0/v8/src/snapshot/embedded/platform-embedded-file-writer-generic.cc.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/v8/src/snapshot/embedded/platform-embedded-file-writer-generic.cc
-@@ -9,6 +9,10 @@
+@@ -8,6 +8,10 @@
+ #include <cinttypes>
  
  #include "src/objects/instruction-stream.h"
- 
++
 +#if V8_OS_OPENBSD
 +#include <sys/param.h>
 +#endif
-+
+ 
  namespace v8 {
  namespace internal {
- 
 @@ -35,6 +39,10 @@ const char* DirectiveAsString(DataDirective directive)
  void PlatformEmbeddedFileWriterGeneric::SectionText() {
    if (target_os_ == EmbeddedTargetOs::kChromeOS) {

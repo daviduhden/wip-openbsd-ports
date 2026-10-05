@@ -13,7 +13,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
  
    # This switch is used to enable -Wexit-time-destructors by default. This
    # warning serves as a flip switch to allow a gradual migration of targets
-@@ -314,13 +314,16 @@ config("default_include_dirs") {
+@@ -314,12 +314,15 @@ config("default_include_dirs") {
  # Compiler instrumentation can introduce dependencies in DSOs to symbols in
  # the executable they are loaded into, so they are unresolved at link-time.
  config("no_unresolved_symbols") {
@@ -24,13 +24,12 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
        "-Wl,-z,defs",
        "-Wl,--as-needed",
      ]
-   }
++  }
 +  if (current_cpu == "x86" && is_openbsd) {
 +    ldflags = [ "-Wl,-z,notext", "-Wl,--strip-all" ]
-+  }
+   }
  }
  
- # compiler ---------------------------------------------------------------------
 @@ -440,6 +443,10 @@ config("compiler") {
      # --------------------------------
      cflags += [ "-fno-strict-aliasing" ]  # See http://crbug.com/32204
@@ -108,24 +107,23 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
  }
  
  config("rustc_revision") {
-@@ -1933,10 +1942,15 @@ config("default_warnings") {
+@@ -1933,9 +1942,14 @@ config("default_warnings") {
        # TODO(crbug.com/432275627): Fix and re-enable.
        "-Wno-uninitialized-const-pointer",
  
 -      # TODO(crbug.com/495753203): Fix and re-enable.
 -      "-Wno-unused-but-set-global",
      ]
- 
++
 +    if (!is_bsd) {
 +      cflags += [
 +        # TODO(crbug.com/495753203): Fix and re-enable.
 +        "-Wno-unused-but-set-global",
 +      ]
 +    }
-+
+ 
      cflags_cc += [
        # TODO(crbug.com/328490295): Fix and re-enable for C flags.
-       "-Wenum-compare-conditional",
 @@ -2304,8 +2318,8 @@ config("export_dynamic") {
  # 2. Remove the thin_archive config, so that the .a file actually contains all
  #    .o files, instead of just references to .o files in the build directoy

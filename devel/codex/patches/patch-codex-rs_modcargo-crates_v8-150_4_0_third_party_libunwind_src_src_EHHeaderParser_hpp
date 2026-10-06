@@ -1,0 +1,27 @@
+Recognize DW_EH_PE_omit before masking the table encoding; otherwise
+0xff becomes 0x0f and takes the unknown-encoding abort path.
+Reference: www/chromium/patches/patch-third_party_libunwind_src_src_EHHeaderParser_hpp.
+
+Index: codex-rs/modcargo-crates/v8-150.4.0/third_party/libunwind/src/src/EHHeaderParser.hpp
+--- codex-rs/modcargo-crates/v8-150.4.0/third_party/libunwind/src/src/EHHeaderParser.hpp.orig
++++ codex-rs/modcargo-crates/v8-150.4.0/third_party/libunwind/src/src/EHHeaderParser.hpp
+@@ -161,6 +161,10 @@
+ 
+ template <typename A>
+ size_t EHHeaderParser<A>::getTableEntrySize(uint8_t tableEnc) {
++  if (tableEnc == DW_EH_PE_omit) {
++    return 0;
++  }
++
+   switch (tableEnc & 0x0f) {
+   case DW_EH_PE_sdata2:
+   case DW_EH_PE_udata2:
+@@ -174,8 +178,6 @@
+   case DW_EH_PE_sleb128:
+   case DW_EH_PE_uleb128:
+     _LIBUNWIND_ABORT("Can't binary search on variable length encoded data.");
+-  case DW_EH_PE_omit:
+-    return 0;
+   default:
+     _LIBUNWIND_ABORT("Unknown DWARF encoding for search table.");
+   }

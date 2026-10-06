@@ -1,25 +1,17 @@
-Include BSD in the iterator-debugging configuration and omit separate
-libdl/librt linkage from the reused Linux defaults on this port.
+Use the current Chromium BSD default-libraries branch without altering Linux.
+The former iterator-debugging hunk is redundant with is_linux on OpenBSD.
 
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/BUILD.gn
 --- codex-rs/modcargo-crates/v8-150.4.0/build/config/BUILD.gn.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/config/BUILD.gn
-@@ -119,7 +119,7 @@ config("debug") {
-       # builds, and we have to tell it to turn it off.
-       defines += [ "_HAS_ITERATOR_DEBUGGING=0" ]
-     }
--  } else if ((is_linux || is_chromeos) && current_cpu == "x64" &&
-+  } else if ((is_linux || is_bsd || is_chromeos) && current_cpu == "x64" &&
-              enable_iterator_debugging) {
-     # Enable libstdc++ debugging facilities to help catch problems early, see
-     # http://crbug.com/65151 .
-@@ -211,9 +211,7 @@ config("default_libs") {
+@@ -209,6 +209,10 @@
+     # Targets should choose to explicitly link frameworks they require. Since
+     # linking can have run-time side effects, nothing should be listed here.
      libs = []
++  } else if (is_bsd) {
++    libs = [
++      "pthread",
++    ]
    } else if (is_linux || is_chromeos) {
      libs = [
--      "dl",
-       "pthread",
--      "rt",
-     ]
-   }
- }
+       "dl",

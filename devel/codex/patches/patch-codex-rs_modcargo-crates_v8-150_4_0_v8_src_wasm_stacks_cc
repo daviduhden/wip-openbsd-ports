@@ -1,0 +1,31 @@
+Mark only the usable WASM stack segment with MAP_STACK on OpenBSD.
+Preserve both no-access guard pages and the existing allocation lifetime.
+
+Index: codex-rs/modcargo-crates/v8-150.4.0/v8/src/wasm/stacks.cc
+--- codex-rs/modcargo-crates/v8-150.4.0/v8/src/wasm/stacks.cc.orig
++++ codex-rs/modcargo-crates/v8-150.4.0/v8/src/wasm/stacks.cc
+@@ -3,6 +3,10 @@
+ // found in the LICENSE file.
+ 
+ #include "src/wasm/stacks.h"
++
++#if V8_OS_OPENBSD
++#include <sys/mman.h>
++#endif
+ 
+ #include "src/base/platform/platform.h"
+ #include "src/execution/frames.h"
+@@ -86,6 +90,13 @@
+                                 "StackMemory::StackSegment::StackSegment");
+   }
+   limit_ += page_size;
++#if V8_OS_OPENBSD
++  if (mmap(limit_, size_, PROT_READ | PROT_WRITE,
++           MAP_FIXED | MAP_STACK | MAP_ANON | MAP_PRIVATE, -1, 0) == MAP_FAILED) {
++    V8::FatalProcessOutOfMemory(nullptr,
++                              "StackMemory::StackSegment::StackSegment");
++  }
++#endif
+ #ifdef V8_ENABLE_SANDBOX_HARDWARE_SUPPORT
+   // The actual stack memory must be accessible to sandboxed code, so we need
+   // to register it as sandbox extension memory here.

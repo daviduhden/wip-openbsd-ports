@@ -8,7 +8,7 @@ USE_NOEXECONLY =	Yes
 
 COMMENT =		OpenAI terminal-based coding agent
 
-DPB_PROPERTIES =	parallel
+DPB_PROPERTIES =	lonesome
 
 USE_WXNEEDED =		Yes
 
@@ -83,6 +83,10 @@ MODCARGO_ENV +=		V8_FROM_SOURCE=1 \
 			use_sysroot=false \
 			use_glib=false \
 			v8_enable_cet_ibt=true"
+
+# codex-core exhausts LLVM memory when other crates build concurrently.
+# Override cargo.port.mk CARGO_BUILD_JOBS without limiting native V8 builds.
+MODCARGO_BUILD_ARGS +=	-j 1
 
 # Makes the build look more alive while compiling v8
 MODCARGO_BUILD_ARGS +=	-vv

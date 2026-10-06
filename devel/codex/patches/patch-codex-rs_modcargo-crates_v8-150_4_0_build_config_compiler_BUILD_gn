@@ -4,7 +4,7 @@ omitting unsupported flags and enabling the wxneeded JIT executable flag.
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
 --- codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
-@@ -203,7 +203,7 @@ declare_args() {
+@@ -203,7 +203,7 @@
    # This greatly reduces the size of debug builds, at the cost of
    # debugging information which is required by some specialized
    # debugging tools.
@@ -13,7 +13,16 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
  
    # This switch is used to enable -Wexit-time-destructors by default. This
    # warning serves as a flip switch to allow a gradual migration of targets
-@@ -314,12 +314,15 @@ config("default_include_dirs") {
+@@ -296,7 +296,7 @@
+ #
+ # Since this is referenced both when passing the file and when deciding which
+ # warnings to enable, store it in a separate variable here.
+-use_clang_warning_suppression_file =
++use_clang_warning_suppression_file = !is_bsd &&
+     is_clang && clang_warning_suppression_file != ""
+ 
+ # default_include_dirs ---------------------------------------------------------
+@@ -314,12 +314,15 @@
  # Compiler instrumentation can introduce dependencies in DSOs to symbols in
  # the executable they are loaded into, so they are unresolved at link-time.
  config("no_unresolved_symbols") {
@@ -30,7 +39,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
    }
  }
  
-@@ -440,6 +443,10 @@ config("compiler") {
+@@ -440,6 +443,10 @@
      # --------------------------------
      cflags += [ "-fno-strict-aliasing" ]  # See http://crbug.com/32204
  
@@ -41,7 +50,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
      # Stack protection. ShadowCallStack and Stack protector address the same
      # problems. Therefore, we only enable one or the other. Clang advertises SCS
      # as a stronger alternative to StackProtector, so we give SCS precedence
-@@ -588,9 +595,9 @@ config("compiler") {
+@@ -588,9 +595,9 @@
    if (is_clang) {
      # Flags for diagnostics.
      cflags += [ "-fcolor-diagnostics" ]
@@ -53,7 +62,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
        # Combine after https://github.com/llvm/llvm-project/pull/192241
        cflags += [ "/clang:-fdiagnostics-show-inlining-chain" ]
      }
-@@ -615,7 +622,7 @@ config("compiler") {
+@@ -615,7 +622,7 @@
      }
    }
  
@@ -62,7 +71,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
      cflags += [ "-fcrash-diagnostics-dir=" + clang_diagnostic_dir ]
      if (save_reproducers_on_lld_crash && use_lld) {
        ldflags += [
-@@ -1071,7 +1078,8 @@ config("linker") {
+@@ -1071,7 +1078,8 @@
          # errors. We only apply fatal warnings when using lld.
          ldflags += [ "-Wl,-fatal_warnings" ]
        }
@@ -72,7 +81,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
          ldflags += [ "-Wl,--fatal-warnings" ]
        }
      }
-@@ -1418,7 +1426,7 @@ config("compiler_deterministic") {
+@@ -1418,7 +1426,7 @@
        "-file-prefix-map",
        rebase_path("//.", "") + "=" + rebase_path("//.", root_build_dir),
      ]
@@ -81,7 +90,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
        # We don't use clang -cc1as on Windows (yet? https://crbug.com/762167)
        asmflags = [ "-Wa,-fdebug-compilation-dir,." ]
      }
-@@ -1471,7 +1479,7 @@ config("compiler_deterministic") {
+@@ -1471,7 +1479,7 @@
  
  config("clang_revision") {
    if (is_clang && clang_base_path == default_clang_base_path &&
@@ -90,7 +99,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
      _perform_consistency_checks = current_toolchain == default_toolchain
      if (llvm_force_head_revision) {
        _head_revision_stamp_path = "//third_party/llvm-build/force_head_revision"
-@@ -1584,7 +1592,7 @@ config("clang_warning_suppression") {
+@@ -1584,7 +1592,7 @@
  # See also: https://crbug.com/40891132#comment10
  ubsan_hardening("c_array_bounds") {
    sanitizer = "array-bounds"
@@ -99,7 +108,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
  
    # Because we've enabled array-bounds sanitizing we also want to suppress
    # the related warning about "unsafe-buffer-usage-in-static-sized-array",
-@@ -1598,6 +1606,7 @@ ubsan_hardening("c_array_bounds") {
+@@ -1598,6 +1606,7 @@
  # `NOTREACHED()` at the end of such functions.
  ubsan_hardening("return") {
    sanitizer = "return"
@@ -107,10 +116,13 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
  }
  
  config("rustc_revision") {
-@@ -1933,9 +1942,14 @@ config("default_warnings") {
-       # TODO(crbug.com/432275627): Fix and re-enable.
-       "-Wno-uninitialized-const-pointer",
+@@ -1930,12 +1939,16 @@
+       # TODO(crbug.com/376641662): Fix and re-enable.
+       "-Wno-nontrivial-memcall",
  
+-      # TODO(crbug.com/432275627): Fix and re-enable.
+-      "-Wno-uninitialized-const-pointer",
+-
 -      # TODO(crbug.com/495753203): Fix and re-enable.
 -      "-Wno-unused-but-set-global",
      ]
@@ -119,12 +131,14 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
 +      cflags += [
 +        # TODO(crbug.com/495753203): Fix and re-enable.
 +        "-Wno-unused-but-set-global",
++        # TODO(crbug.com/432275627): Fix and re-enable.
++        "-Wno-uninitialized-const-pointer",
 +      ]
 +    }
  
      cflags_cc += [
        # TODO(crbug.com/328490295): Fix and re-enable for C flags.
-@@ -2304,8 +2318,8 @@ config("export_dynamic") {
+@@ -2304,8 +2317,8 @@
  # 2. Remove the thin_archive config, so that the .a file actually contains all
  #    .o files, instead of just references to .o files in the build directoy
  config("thin_archive") {
@@ -135,7 +149,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
      # The macOS and iOS linker ld64.ldd doesn't support thin archive without
      # symbol table, gcc on linux also throws the error `archive has no index`.
      # AIX does support -s option, not -S option.
-@@ -2748,7 +2762,7 @@ config("afdo_optimize_size") {
+@@ -2748,7 +2761,7 @@
  # There are some targeted places that AFDO regresses, so we provide a separate
  # config to allow AFDO to be disabled per-target.
  config("afdo") {
@@ -144,7 +158,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
      cflags = []
      if (clang_emit_debug_info_for_profiling) {
        # Add the following flags to generate debug info for profiling.
-@@ -2775,7 +2789,7 @@ config("afdo") {
+@@ -2775,7 +2788,7 @@
        cflags += [ "-Wno-backend-plugin" ]
        inputs = [ _clang_sample_profile ]
      }
@@ -153,7 +167,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
      cflags = [ "-fauto-profile=${auto_profile_path}" ]
      inputs = [ auto_profile_path ]
    }
-@@ -2827,10 +2841,6 @@ config("split_dwarf") {
+@@ -2827,10 +2840,6 @@
    # thinlto requires -gsplit-dwarf in ldflags.
    if (use_thin_lto && !is_apple) {
      ldflags = split_dwarf_flags
@@ -164,7 +178,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
    }
  }
  
-@@ -2909,7 +2919,7 @@ config("symbols") {
+@@ -2909,7 +2918,7 @@
      }
  
      if (current_os != "zos") {
@@ -173,7 +187,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
      }
  
      if (is_clang && !is_tsan && !is_asan && !use_dwarf5) {
-@@ -2932,7 +2942,7 @@ config("symbols") {
+@@ -2932,7 +2941,7 @@
      # Disable debugger index for Android, which uses lldb. lldb can create (and
      # cache) its own index in about 20 seconds, so there's no need to pay the
      # price of an index on every link.
@@ -182,7 +196,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
                          (use_lld || use_mold) && !is_wasm && !is_android
      if (_add_symbol_index) {
        if (use_dwarf5) {
-@@ -2972,7 +2982,7 @@ config("symbols") {
+@@ -2972,7 +2981,7 @@
      cflags += [ "-gomit-unreferenced-methods" ]
    }
  

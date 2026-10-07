@@ -17,6 +17,7 @@ GH_ACCOUNT =		openai
 GH_PROJECT =		codex
 GH_TAGNAME =		rust-v${V}
 PKGNAME =		codex-${V}
+REVISION =		0
 
 # only build the Rust workspace (the repo also contains JS tooling).
 WRKSRC =		${WRKDIST}/codex-rs
@@ -86,7 +87,7 @@ MODCARGO_ENV +=		V8_FROM_SOURCE=1 \
 
 # codex-core exhausts LLVM memory when other crates build concurrently.
 # Override cargo.port.mk CARGO_BUILD_JOBS without limiting native V8 builds.
-MODCARGO_BUILD_ARGS +=	-j 1
+MAKE_JOBS !=    sysctl -n hw.ncpuonline
 
 # Makes the build look more alive while compiling v8
 MODCARGO_BUILD_ARGS +=	-vv
@@ -98,8 +99,12 @@ MODCARGO_BUILD_ARGS +=	-p codex-cli \
 			--bin codex \
 			--bin codex-code-mode-host
 
-# The daemon is another invocation of codex, owned and updated by pkg_add.
-MODCARGO_ENV +=		CODEX_SYSTEM_DAEMON_PATH=${LOCALBASE}/bin/codex
+# The CLI and daemon share one executable and the same package metadata.
+# Only pkg_add installs or replaces it; Codex owns the per-user process.
+MODCARGO_ENV +=		CODEX_SYSTEM_DAEMON_PATH=${LOCALBASE}/libexec/codex/bin/codex
+
+CODEX_TARGET =		${MACHINE_ARCH:S/amd64/x86_64/}-unknown-openbsd
+SUBST_VARS +=		V CODEX_TARGET
 
 MAKE_ENV =		${MODCARGO_ENV}
 
@@ -117,12 +122,22 @@ post-patch:
 	    ${V8_DISTDIR}/third_party/icu/common/
 
 post-build:
+	${SUBST_CMD} -c ${FILESDIR}/codex-package.json \
+	    ${WRKBUILD}/codex-package.json
 .for s in bash fish zsh
 	cd ${WRKBUILD}/target/release && \
 		./codex completion $s > codex.$s
 .endfor
 
 post-install:
+	${INSTALL_DATA_DIR} ${PREFIX}/libexec/codex/bin
+	mv ${PREFIX}/bin/codex ${PREFIX}/libexec/codex/bin/
+	mv ${PREFIX}/bin/codex-code-mode-host ${PREFIX}/libexec/codex/bin/
+	ln -s ../libexec/codex/bin/codex ${PREFIX}/bin/codex
+	ln -s ../libexec/codex/bin/codex-code-mode-host \
+	    ${PREFIX}/bin/codex-code-mode-host
+	${INSTALL_DATA} ${WRKBUILD}/codex-package.json \
+	    ${PREFIX}/libexec/codex/
 	mv ${PREFIX}/bin/logs_client ${PREFIX}/bin/codex-logs-client
 	${INSTALL_DATA_DIR} ${PREFIX}/share/bash-completion/completions \
 		${PREFIX}/share/fish/vendor_completions.d \

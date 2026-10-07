@@ -1,0 +1,7 @@
+{
+  "layoutVersion": 1,
+  "version": "${V}",
+  "target": "${CODEX_TARGET}",
+  "variant": "codex",
+  "entrypoint": "bin/codex"
+}

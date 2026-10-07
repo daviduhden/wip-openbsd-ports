@@ -1,0 +1,28 @@
+Keep the daemon enabled while directing package updates to pkg_add.
+Do not offer self-installation actions for a distributor-owned executable.
+
+Index: codex-rs/tui/src/app/daemon_menu.rs
+--- codex-rs/tui/src/app/daemon_menu.rs.orig
++++ codex-rs/tui/src/app/daemon_menu.rs
+@@ -38,6 +38,10 @@
+         let unavailable = if matches!(self.app_server_target, AppServerTarget::Remote { .. }) {
+             Some(
+                 "Manage this server on its host. Local daemon updates are unavailable for remote connections.",
++            )
++        } else if codex_app_server_daemon::system_daemon_path().is_some() {
++            Some(
++                "The daemon is installed by the system package manager. Use pkg_add -u, then codex app-server daemon restart.",
+             )
+         } else if self.daemon_cli_executable.is_none() {
+             Some("Run the Codex CLI to manage the daemon from this menu.")
+@@ -89,7 +93,9 @@
+         let Some(executable) = &self.daemon_cli_executable else {
+             return;
+         };
+-        if matches!(self.app_server_target, AppServerTarget::Remote { .. }) {
++        if matches!(self.app_server_target, AppServerTarget::Remote { .. })
++            || codex_app_server_daemon::system_daemon_path().is_some()
++        {
+             return;
+         }
+         let mut explanation = match source {

@@ -1,6 +1,11 @@
-@bin bin/codex
-@bin bin/codex-code-mode-host
+bin/codex
+bin/codex-code-mode-host
 @bin bin/codex-logs-client
+libexec/codex/
+libexec/codex/bin/
+@bin libexec/codex/bin/codex
+@bin libexec/codex/bin/codex-code-mode-host
+libexec/codex/codex-package.json
 share/bash-completion/completions/codex
 share/doc/codex/
 share/doc/codex/CLA.md

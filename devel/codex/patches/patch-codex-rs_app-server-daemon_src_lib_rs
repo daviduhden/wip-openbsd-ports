@@ -1,11 +1,24 @@
-Keep daemon lifecycle and IPC while disabling both scheduled and explicit
-internal package updates for the port-installed executable. Report system
-ownership through the existing UpdateStatus::Unsupported response.
+Use a distributor-owned executable with the normal daemon lifecycle and IPC.
+Reject binary self-updates and incompatible running daemons; installation
+and replacement belong to pkg_add.
 
 Index: codex-rs/app-server-daemon/src/lib.rs
 --- codex-rs/app-server-daemon/src/lib.rs.orig
 +++ codex-rs/app-server-daemon/src/lib.rs
-@@ -278,6 +278,10 @@
+@@ -221,6 +221,12 @@
+     Restart,
+ }
+ 
++/// A distributor-owned daemon is installed and updated outside Codex.
++/// Process lifecycle and IPC still use the normal managed-daemon backend.
++pub fn system_daemon_path() -> Option<&'static Path> {
++    managed_install::system_codex_bin()
++}
++
+ pub async fn run(command: LifecycleCommand) -> Result<LifecycleOutput> {
+     ensure_supported_platform()?;
+     #[cfg(windows)]
+@@ -278,6 +284,10 @@
      restore_release: Option<String>,
  ) -> Result<()> {
      ensure_supported_platform()?;
@@ -16,7 +29,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
      #[cfg(windows)]
      backend::windows::ensure_not_elevated()?;
      update_loop::run(http_client_factory, restore_release).await
-@@ -287,6 +291,20 @@
+@@ -287,6 +297,20 @@
      http_client_factory: codex_http_client::HttpClientFactory,
  ) -> Result<UpdateOutput> {
      ensure_supported_platform()?;
@@ -37,7 +50,23 @@ Index: codex-rs/app-server-daemon/src/lib.rs
      #[cfg(windows)]
      backend::windows::ensure_not_elevated()?;
      update_loop::request_manual_update(&Daemon::from_environment()?, http_client_factory).await
-@@ -868,6 +886,10 @@
+@@ -444,6 +468,15 @@
+                 self.wait_until_ready().await?,
+             )
+         };
++        if managed_install::system_codex_bin().is_some() {
++            anyhow::ensure!(
++                info.app_server_version == env!("CARGO_PKG_VERSION"),
++                "system-managed daemon is running version {} but this CLI requires {}; \
++                 run `codex app-server daemon restart` after pkg_add -u",
++                info.app_server_version,
++                env!("CARGO_PKG_VERSION")
++            );
++        }
+         if backend.is_some()
+             && let Err(err) = managed.ensure_managed_updater(&settings).await
+         {
+@@ -868,6 +901,10 @@
  
      async fn ensure_managed_updater(&self, settings: &DaemonSettings) -> Result<bool> {
          let updater = backend::pid_update_loop_backend(self.backend_paths(settings));
@@ -48,3 +77,15 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          if !settings.auto_update_enabled {
              updater.stop().await?;
              return Ok(false);
+@@ -957,6 +994,11 @@
+         }
+ 
+         let managed_codex_path = self.managed_codex_bin.display();
++        if managed_install::system_codex_bin().is_some() {
++            return Err(anyhow!(
++                "system daemon executable not found at {managed_codex_path}; reinstall the codex package with pkg_add"
++            ));
++        }
+         Err(anyhow!(
+             "daemon executable not found at {managed_codex_path}; repair the existing installation, or run `codex app-server daemon start` to install a missing daemon"
+         ))

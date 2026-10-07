@@ -21,24 +21,41 @@ datasize limit in used login class..
 Also, ${PKGSTEM} may use a lot of open files, you may need to raise both
 the system-wide maxfiles and used login class limits.
 
-The local app-server daemon uses ${LOCALBASE}/bin/codex from this package.
-It starts automatically for eligible interactive sessions, or explicitly with:
+The local app-server daemon is enabled for eligible interactive sessions by
+upstream's daemon_auto_start feature (enabled by default). It uses the same
+executable as the CLI, installed at:
+
+	${LOCALBASE}/libexec/codex/bin/codex
+
+${LOCALBASE}/bin/codex is a link to that executable. The code-mode host is
+installed beside it, and ${LOCALBASE}/libexec/codex/codex-package.json records
+the package's version and native OpenBSD target. Codex checks the manifest and
+executable versions before a new daemon start; no npm or Node.js is needed.
+
+The daemon runs as the invoking user. Codex starts it on demand, detaches it
+from the terminal, and leaves it running for other clients. Lifecycle commands:
 
 	codex app-server daemon start
 	codex app-server daemon version
+	codex app-server daemon restart
 	codex app-server daemon stop
 
-Use --no-daemon for an embedded session. Daemon sockets, PID records, logs,
-and settings remain under CODEX_HOME (default ~/.codex); no daemon executable
-or package manifest is installed there. The daemon inherits the environment
-of the terminal that starts it, shared by later clients.
+PID records, logs, settings, and recovery data remain under CODEX_HOME
+(default ~/.codex). The advertised socket is under app-server-control there;
+on Unix it points to a protected socket under /tmp/codex-daemon-<uid>.
+The daemon inherits the environment of the terminal that starts it, shared
+by later clients. There is no system rc.d service and no restart after reboot.
 
-Daemon binaries are updated with pkg_add -u. Restart a running daemon with
-`codex app-server daemon restart` after updating the package; a running process
-continues using its old image until restarted. The daemon's internal updater
-and --from-cli package installation are disabled for this port.
+The package manager owns the executable, host, and manifest. Use pkg_add -u
+to update them, then `codex app-server daemon restart`. A running process keeps
+its old image; an incompatible daemon version is reported with restart
+instructions rather than being silently reused or internally replaced.
+Restart also picks up port revisions with an unchanged upstream version.
 
-When migrating from an existing internally managed daemon, stop it with the
-old CLI before replacing the package. No user-managed package files are deleted.
-There is no system rc.d service: the daemon runs as the invoking user and is
-not automatically restarted after reboot.
+Codex's daemon updater and --from-cli package replacement are disabled, not
+the daemon. The /daemon update menu directs updates to pkg_add. No daemon
+executable or package manifest is copied to ~/.codex/packages. Other optional
+user-installed components and existing packages are left alone.
+
+When migrating from an internally managed daemon, stop it with the old CLI
+before replacing the package. No user-managed package files are deleted.

@@ -2,9 +2,9 @@ COMMENT = Monero Light Wallet Server
 
 GH_ACCOUNT = vtnerd
 GH_PROJECT = monero-lws
-GH_TAGNAME = v1.0.2
+GH_TAGNAME = v1.0.3
 
-VERSION = 0.18.5.1
+VERSION = 0.18.5.3
 DISTNAME = ${GH_PROJECT}-${GH_TAGNAME:S/^v//}
 PKGNAME = monero-lws-${VERSION}
 

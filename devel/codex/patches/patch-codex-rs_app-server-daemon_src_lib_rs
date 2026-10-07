@@ -5,7 +5,7 @@ and replacement belong to pkg_add.
 Index: codex-rs/app-server-daemon/src/lib.rs
 --- codex-rs/app-server-daemon/src/lib.rs.orig
 +++ codex-rs/app-server-daemon/src/lib.rs
-@@ -221,6 +221,12 @@
+@@ -225,6 +225,12 @@
      Restart,
  }
  
@@ -18,7 +18,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
  pub async fn run(command: LifecycleCommand) -> Result<LifecycleOutput> {
      ensure_supported_platform()?;
      #[cfg(windows)]
-@@ -278,6 +284,10 @@
+@@ -282,6 +288,10 @@
      restore_release: Option<String>,
  ) -> Result<()> {
      ensure_supported_platform()?;
@@ -29,7 +29,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
      #[cfg(windows)]
      backend::windows::ensure_not_elevated()?;
      update_loop::run(http_client_factory, restore_release).await
-@@ -287,6 +297,20 @@
+@@ -291,6 +301,20 @@
      http_client_factory: codex_http_client::HttpClientFactory,
  ) -> Result<UpdateOutput> {
      ensure_supported_platform()?;
@@ -50,7 +50,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
      #[cfg(windows)]
      backend::windows::ensure_not_elevated()?;
      update_loop::request_manual_update(&Daemon::from_environment()?, http_client_factory).await
-@@ -444,6 +468,15 @@
+@@ -448,6 +472,15 @@
                  self.wait_until_ready().await?,
              )
          };
@@ -66,7 +66,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          if backend.is_some()
              && let Err(err) = managed.ensure_managed_updater(&settings).await
          {
-@@ -868,6 +901,10 @@
+@@ -892,6 +925,10 @@
  
      async fn ensure_managed_updater(&self, settings: &DaemonSettings) -> Result<bool> {
          let updater = backend::pid_update_loop_backend(self.backend_paths(settings));
@@ -77,7 +77,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          if !settings.auto_update_enabled {
              updater.stop().await?;
              return Ok(false);
-@@ -957,6 +994,11 @@
+@@ -981,6 +1018,11 @@
          }
  
          let managed_codex_path = self.managed_codex_bin.display();

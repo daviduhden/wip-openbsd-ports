@@ -1,262 +1,304 @@
-# Daemon de Codex suministrado por el paquete de OpenBSD
+# Codex daemon provided by the OpenBSD package
 
-**ENABLED_WITH_SMALL_UPSTREAM_PATCH** — diseño implementado para Codex
-0.160.1. La validación de esta tarea es exclusivamente estática: no acredita
-una compilación ni una sesión real en OpenBSD.
+**ENABLED_WITH_SMALL_UPSTREAM_PATCH** — design implemented for Codex
+0.160.1. Validation for this task is exclusively static: it does not establish
+that the port builds or that a real session works on OpenBSD.
 
-## Alcance y situación encontrada
+## Update to Codex 0.161.0
 
-Fuente: tag `rust-v0.160.1`, commit
-`d27764b82f7118f674371e6d6e76271d9d606edb` de openai/codex.
-Se analizó una copia temporal, eliminada al finalizar.
+The port now targets tag `rust-v0.161.0`, commit
+`979011409de0a60b52f179721948e65531d26144`. The analysis below records the
+original 0.160.1 integration; its system daemon layout and ownership model
+remain in place for 0.161.0. Upstream adds daemon diagnostics, preserves
+previous stderr logs, and passes `--analytics-default-enabled` while honoring
+explicit analytics opt-outs. The package resolver, manifest validation, and
+system update guards remain compatible.
 
-El port encontrado **ya habilitaba el daemon** mediante cuatro parches de
-`app-server-daemon` y `CODEX_SYSTEM_DAEMON_PATH=${LOCALBASE}/bin/codex`.
-No había un parche que pusiera `daemon_auto_start=false` o excluyera OpenBSD.
-La desactivación encontrada afectaba al **actualizador de ejecutables**, no al
-proceso app-server. Esta tarea completa y refuerza esa integración: instala
-metadatos, conserva un layout reconocido por upstream, valida versiones y
-corrige las acciones ofrecidas por el menú de mantenimiento.
+The update refreshes five patches and removes the chatgpt recursion-limit
+patch, which upstream has incorporated. The new Git dependency on rmcp 3.3.0
+and its rmcp-macros crate is supplied by a pinned rust-sdk DIST_TUPLE and a
+local Cargo path. Registry changes add file-id 0.2.3, replace process-wrap
+9.0.1 with 10.0.0, and remove the registry copies of rmcp/rmcp-macros 3.2.0.
+The patched V8 150.4.0, aws-lc-sys 0.45.0, and kqueue 1.1.1 versions are
+unchanged; their archive checksums match the new Cargo.lock. The two new
+registry archives were also verified against Cargo.lock and reviewed for
+Unix/OpenBSD compatibility. No new native library dependency or installed
+file change was identified.
 
-La modificación previa de `MAKE_JOBS` en el Makefile se conserva sin cambios.
-`distinfo` y `crates.inc` tampoco se regeneran. El `distinfo` existente sigue
-nombrando el tarball de 0.160.0: debe actualizarse antes de reconstruir 0.160.1
-(véanse los comandos finales).
+To reduce peak compiler memory usage on memory-constrained machines, the port
+sets `MAKE_JOBS=1` and `CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1`. The Cargo module
+derives `CARGO_BUILD_JOBS` from `MAKE_JOBS`, serializing Cargo jobs; the profile
+override limits each crate to one code generation unit. These settings also
+apply if Cargo rebuilds during installation. Peak memory usage still needs
+validation on OpenBSD; these settings do not guarantee a fixed memory bound.
+This replaces the previous CPU-count-based MAKE_JOBS setting described below.
 
-## Arquitectura upstream y flujo completo
+All 83 remaining patches apply to clean sources without fuzz, offsets, or
+rejects. This update uses static analysis only. The existing `distinfo` and
+`crates.inc` are intentionally retained; both need regeneration on OpenBSD
+before building, including the new rust-sdk source archive. Use the Cargo
+workflow in the repository's [UPDATE.md](../../UPDATE.md), with
+`devel/codex` as the port directory. Temporary sources are deleted when the
+update is complete.
 
-Los enlaces siguientes fijan la versión analizada; los nombres de archivos
-sin enlace son relativos al repositorio upstream.
+## Scope and initial state
 
-1. **Ejecutable y despacho.** `codex-rs/cli/Cargo.toml` define el binario
-   `codex` del package `codex-cli`; depende de `codex-app-server` y
-   `codex-app-server-daemon`. `cli/src/main.rs::main` utiliza
-   `codex_arg0::arg0_dispatch_or_else`, luego `cli_main`. El despacho por
-   argumentos distingue la sesión TUI, `app-server` y `app-server daemon`.
-   `AppServerDaemonSubcommand`, `LifecycleCommand`, `LifecycleOutput` y
-   `BootstrapOutput` representan el mantenimiento del proceso.
-2. **Habilitación.** `features/src/lib.rs` define
-   `Feature::DaemonAutoStart`, key `daemon_auto_start`, `Stage::Stable`,
-   `default_enabled: true`. La función `run_main` de `codex-tui` llega a la
-   orquestación en `tui/src/startup_orchestration.rs`.
-   `daemon_startup::exclusion` y `config_exclusion` conservan las restricciones
-   upstream: por ejemplo `--no-daemon`, `--oss`, selección de executor,
-   workload identity y overrides CLI no reproducibles. No se añade una
-   exclusión por OpenBSD.
-3. **Arranque interactivo.** El bloque `auto_start_daemon` llama a
-   `codex_app_server_daemon::start_with_features`. En
-   `app-server-daemon/src/launch.rs`, esta función toma el lock de operación,
-   conserva overrides y llama a `Daemon::start`.
-4. **Resolución central.** `Daemon::from_environment`,
-   `current_installation` y `current_managed_codex_bin` utilizan
-   `managed_install::managed_codex_bin`. Upstream selecciona
-   `packages/app-server-daemon/current/bin/codex`; `package_root` conserva
-   `packages/standalone/current` si identifica un daemon antiguo mediante
-   PID/logs. `managed_codex_file_name` selecciona `codex` o `codex.exe`.
-5. **Preparación inicial.** `prepare_install::prepare` usa
-   `InstallContext::current().package_layout` y `prepare_from_package`.
-   No descarga necesariamente en el primer arranque: normalmente **copia el
-   paquete completo de la CLI** al home. `validate_package` exige manifest,
-   ejecutable, code-mode host y ripgrep; Linux añade bwrap y Windows sus
-   auxiliares. `package_tree` copia y calcula un digest BLAKE3 del árbol.
-   Se usa un staging bajo `releases/`, locks y selección atómica de `current`.
-   `update_from_cli` permite reemplazarlo explícitamente con `--from-cli`.
-6. **Versión y plataforma.** `CodexPackageManifest.version` es
-   `semver::Version`; `stable_version` filtra versiones estables.
-   `prepare_install::platform_target` enumera Darwin, Linux GNU/musl y
-   Windows MSVC; compara `target` y `entrypoint` del JSON. La identidad del
-   ejecutable se calcula con `managed_install::executable_identity`.
-   `managed_codex_version` ejecuta el seleccionado con `--version` y
-   `parse_codex_version` extrae el segundo término.
-7. **Proceso.** `Daemon::start_managed_backend` construye `BackendPaths` y
-   llama a `backend::pid_backend`, `PidBackend::start`, `start_inner` en
-   `backend/pid_start.rs`. Canonicaliza el ejecutable, reserva un PID file,
-   abre el log y construye `tokio::process::Command`.
-   `PidBackend::command_args` produce:
+Source: tag `rust-v0.160.1`, commit
+`d27764b82f7118f674371e6d6e76271d9d606edb` in openai/codex.
+A temporary copy was analyzed and deleted when the work was complete.
+
+The existing port **already enabled the daemon** through four
+`app-server-daemon` patches and `CODEX_SYSTEM_DAEMON_PATH=${LOCALBASE}/bin/codex`.
+There was no patch setting `daemon_auto_start=false` or excluding OpenBSD.
+The disabled component was the **executable updater**, not the app-server
+process. This task completes and strengthens that integration: it installs
+metadata, preserves a layout recognized by upstream, validates versions, and
+corrects the actions offered by the maintenance menu.
+
+The previous `MAKE_JOBS` change in the Makefile is preserved unchanged.
+`distinfo` and `crates.inc` are also not regenerated. The existing `distinfo`
+still names the 0.160.0 tarball: it must be updated before rebuilding 0.160.1
+(see the commands at the end).
+
+## Upstream architecture and complete flow
+
+The following links pin the version analyzed; file names without links are
+relative to the upstream repository.
+
+1. **Executable and dispatch.** `codex-rs/cli/Cargo.toml` defines the `codex`
+   binary in the `codex-cli` package; it depends on `codex-app-server` and
+   `codex-app-server-daemon`. `cli/src/main.rs::main` uses
+   `codex_arg0::arg0_dispatch_or_else`, followed by `cli_main`. Argument
+   dispatch distinguishes the TUI session, `app-server`, and `app-server daemon`.
+   `AppServerDaemonSubcommand`, `LifecycleCommand`, `LifecycleOutput`, and
+   `BootstrapOutput` represent process management.
+2. **Enablement.** `features/src/lib.rs` defines
+   `Feature::DaemonAutoStart`, key `daemon_auto_start`, `Stage::Stable`, and
+   `default_enabled: true`. The `run_main` function in `codex-tui` reaches the
+   orchestration in `tui/src/startup_orchestration.rs`.
+   `daemon_startup::exclusion` and `config_exclusion` preserve upstream
+   restrictions: for example, `--no-daemon`, `--oss`, executor selection,
+   workload identity, and CLI overrides that cannot be reproduced. No
+   OpenBSD exclusion is added.
+3. **Interactive startup.** The `auto_start_daemon` block calls
+   `codex_app_server_daemon::start_with_features`. In
+   `app-server-daemon/src/launch.rs`, this function acquires the operation lock,
+   preserves overrides, and calls `Daemon::start`.
+4. **Central resolution.** `Daemon::from_environment`,
+   `current_installation`, and `current_managed_codex_bin` use
+   `managed_install::managed_codex_bin`. Upstream selects
+   `packages/app-server-daemon/current/bin/codex`; `package_root` retains
+   `packages/standalone/current` if it identifies an older daemon through
+   PID records or logs. `managed_codex_file_name` selects `codex` or `codex.exe`.
+5. **Initial preparation.** `prepare_install::prepare` uses
+   `InstallContext::current().package_layout` and `prepare_from_package`.
+   The first startup does not necessarily download anything: it normally
+   **copies the entire CLI package** into the home directory. `validate_package`
+   requires a manifest, executable, code-mode host, and ripgrep; Linux also
+   requires bwrap, and Windows requires its helper programs. `package_tree`
+   copies the tree and computes its BLAKE3 digest. Staging under `releases/`,
+   locks, and atomic selection of `current` are used.
+   `update_from_cli` allows explicit replacement with `--from-cli`.
+6. **Version and platform.** `CodexPackageManifest.version` is a
+   `semver::Version`; `stable_version` filters stable versions.
+   `prepare_install::platform_target` enumerates Darwin, Linux GNU/musl, and
+   Windows MSVC; it compares the JSON `target` and `entrypoint`. Executable
+   identity is computed by `managed_install::executable_identity`.
+   `managed_codex_version` runs the selected executable with `--version`, and
+   `parse_codex_version` extracts the second token.
+7. **Process.** `Daemon::start_managed_backend` constructs `BackendPaths` and
+   calls `backend::pid_backend`, `PidBackend::start`, and `start_inner` in
+   `backend/pid_start.rs`. It canonicalizes the executable, reserves a PID file,
+   opens the log, and constructs a `tokio::process::Command`.
+   `PidBackend::command_args` produces:
 
    ```text
    codex app-server [--remote-control] --listen unix:// [-c features.X=Y]
    ```
 
-   Se añade `--managed-daemon` cuando la CLI lo admite. El child recibe stdin
-   y stdout nulos, stderr al log; en Unix ejecuta `setsid()` en `pre_exec`
-   y después `Command::spawn()`, que termina ejecutando el binario nativo.
-   El `codex` hijo vuelve a `cli_main`, rama `Subcommand::AppServer`, y llama
-   a `codex_app_server::run_main_with_transport_options`.
-8. **Publicación y disponibilidad.** `PidRecord` guarda PID, hora de inicio,
-   identidad opcional de proceso y digest del ejecutable.
-   `read_process_details` obtiene `stat` y `lstart` mediante `ps` en el
-   fallback Unix. `wait_until_ready` usa `client::probe`, con polling y
-   timeout de arranque de diez segundos.
+   `--managed-daemon` is added when the CLI supports it. The child receives
+   null stdin and stdout, with stderr directed to the log; on Unix, it calls
+   `setsid()` in `pre_exec`, followed by `Command::spawn()`, which ultimately
+   executes the native binary. The child `codex` returns to `cli_main`, takes
+   the `Subcommand::AppServer` branch, and calls
+   `codex_app_server::run_main_with_transport_options`.
+8. **Publication and readiness.** `PidRecord` stores the PID, start time,
+   optional process identity, and executable digest.
+   `read_process_details` obtains `stat` and `lstart` through `ps` in the
+   Unix fallback. `wait_until_ready` uses `client::probe`, with polling and
+   a ten-second startup timeout.
 9. **IPC.** `codex-app-server-transport`, `codex-uds`,
-   `AppServerTransport::from_listen_url`, `start_control_socket_acceptor` y
-   `codex-app-server-client::RemoteAppServerClient` implementan WebSocket
-   sobre socket Unix y JSON-RPC. `initialize` / `initialized` intercambian
-   `InitializeParams`, capabilities y `InitializeResponse.user_agent`.
-   `client::parse_version_from_user_agent` lee la versión del servidor.
-   La TUI selecciona `AppServerTarget::LocalDaemon`, y
-   `daemon_startup::compatibility_warning` comprueba también features del
-   servidor mediante RPC. No se encontró una negociación separada de
-   versión de protocolo ni un build ID obligatorio para este lifecycle.
-10. **Parada y reinicio.** `Daemon::stop` y `restart_with_settings` mantienen
-    ownership mediante PID records y locks. `PidBackend::stop_with_grace`
-    comprueba identidad, envía SIGTERM y finalmente SIGKILL si hace falta;
-    upstream drena trabajo y conserva recovery con `--managed-daemon`.
-    La CLI saliente no termina necesariamente el daemon: es un proceso
-    por usuario desacoplado, compartido por clientes posteriores.
-11. **Actualizaciones upstream.** `ensure_managed_updater` comprueba
-    settings, `is_stable_standalone_release`, `auto-update-version` y
-    `supports_daemon_update_loop`. El proceso `pid-update-loop` entra en
-    `update_loop::run`, `run_with_http`; espera inicialmente cinco minutos,
-    luego usa el intervalo configurado (sesenta minutos por defecto).
-    `update`, `request_manual_update`, `manual_update::request/run` y
-    `migration::run` cubren actualizaciones explícitas, incluyendo paquetes
-    locales fijados y migraciones legacy.
-12. **Descarga e instalación upstream.** `fetch_installer_script` obtiene
-    `https://chatgpt.com/codex/install.sh` (PowerShell en Windows);
-    `run_installer_script` lo ejecuta con flags `CODEX_INSTALL_DAEMON_ONLY`
-    y guardas de selección. `scripts/install/install.sh` resuelve release
-    metadata en releases.openai.com/GitHub, el asset
-    `codex-package-<target>.tar.gz` y checksums; `download_file_with_fallback`
-    y `install_package_release` descargan/descomprimen con `tar`, instalan
-    un release y retargetean `current`. Hay fallback a un tarball npm de
-    plataforma mediante `install_legacy_platform_npm_release`, no una
-    dependencia necesaria de npm para un daemon Rust. Estos caminos quedan
-    inaccesibles desde el modo suministrado por el sistema.
+   `AppServerTransport::from_listen_url`, `start_control_socket_acceptor`, and
+   `codex-app-server-client::RemoteAppServerClient` implement WebSocket over
+   a Unix socket and JSON-RPC. `initialize` / `initialized` exchange
+   `InitializeParams`, capabilities, and `InitializeResponse.user_agent`.
+   `client::parse_version_from_user_agent` reads the server version.
+   The TUI selects `AppServerTarget::LocalDaemon`, and
+   `daemon_startup::compatibility_warning` also checks server features through
+   RPC. No separate protocol version negotiation or mandatory build ID was
+   found for this lifecycle.
+10. **Stop and restart.** `Daemon::stop` and `restart_with_settings` maintain
+    ownership through PID records and locks. `PidBackend::stop_with_grace`
+    checks identity, sends SIGTERM, and finally sends SIGKILL if necessary;
+    upstream drains work and preserves recovery with `--managed-daemon`.
+    Exiting the CLI does not necessarily stop the daemon: it is a detached
+    process for each user, shared by subsequent clients.
+11. **Upstream updates.** `ensure_managed_updater` checks settings,
+    `is_stable_standalone_release`, `auto-update-version`, and
+    `supports_daemon_update_loop`. The `pid-update-loop` process enters
+    `update_loop::run` and `run_with_http`; it initially waits five minutes,
+    then uses the configured interval (sixty minutes by default).
+    `update`, `request_manual_update`, `manual_update::request/run`, and
+    `migration::run` handle explicit updates, including pinned local packages
+    and legacy migrations.
+12. **Upstream download and installation.** `fetch_installer_script` retrieves
+    `https://chatgpt.com/codex/install.sh` (PowerShell on Windows);
+    `run_installer_script` executes it with `CODEX_INSTALL_DAEMON_ONLY` flags
+    and selection guards. `scripts/install/install.sh` resolves release
+    metadata on releases.openai.com/GitHub, the
+    `codex-package-<target>.tar.gz` asset, and checksums;
+    `download_file_with_fallback` and `install_package_release` download and
+    extract with `tar`, install a release, and repoint `current`. There is
+    a fallback to a platform npm tarball through
+    `install_legacy_platform_npm_release`; npm is not a required dependency
+    for a Rust daemon. These paths are unreachable in the mode that uses
+    a daemon provided by the system.
 
-Fuentes principales:
-[orquestación TUI](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/codex-rs/tui/src/startup_orchestration.rs),
+Primary sources:
+[TUI orchestration](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/codex-rs/tui/src/startup_orchestration.rs),
 [resolver](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/codex-rs/app-server-daemon/src/managed_install.rs),
-[preparación](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/codex-rs/app-server-daemon/src/prepare_install.rs),
-[lanzamiento PID](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/codex-rs/app-server-daemon/src/backend/pid_start.rs),
-[actualizador](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/codex-rs/app-server-daemon/src/update_loop.rs).
+[preparation](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/codex-rs/app-server-daemon/src/prepare_install.rs),
+[PID startup](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/codex-rs/app-server-daemon/src/backend/pid_start.rs),
+[updater](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/codex-rs/app-server-daemon/src/update_loop.rs).
 
-## El error `can't start`: hechos y límites
+## The `can't start` error: facts and limits
 
-Una búsqueda del literal `can't start`, su variante tipográfica y
-`couldn't start` en todo el árbol 0.160.1 no encuentra un emisor de
-`can't start` relacionado con el daemon. Los mensajes `couldn't start`
-que sí existen pertenecen a `cli/src/state_db_recovery.rs`, recuperación
-de bases de datos; no permiten atribuir el mensaje facilitado a esa ruta.
-Sin el comando, la versión y el error completo no puede determinarse su
-emisor ni el errno original. No se inventa una causa raíz de ese caso.
+Searching the entire 0.160.1 tree for the literal `can't start`, its
+curly-apostrophe variant, and `couldn't start` finds no source of a daemon-related
+`can't start` message. The `couldn't start` messages that do exist belong to
+`cli/src/state_db_recovery.rs`, which handles database recovery; they do not
+allow the reported message to be attributed to that path. Without the command,
+version, and full error, its source and original errno cannot be determined.
+No root cause is invented for that case.
 
-Sí puede reconstruirse el fallo de una **instalación upstream desnuda**:
+The failure of a **bare upstream installation** can be reconstructed:
 
-- `managed_codex_bin` devuelve normalmente
-  `~/.codex/packages/app-server-daemon/current/bin/codex`, aún inexistente.
-- `prepare_from_package` encuentra `InstallContext.package_layout == None`
-  si sólo se instaló `/usr/local/bin/codex` sin layout ni manifest, y falla
-  con `this CLI has no complete local package; install a packaged Codex CLI
-  or use the standalone installer`. No llega al spawn.
-- Si se aporta un bundle upstream, `platform_target()` falla con
-  `unsupported packaged daemon platform openbsd/x86_64` o
-  `openbsd/aarch64`, antes de validar/copiar el paquete. El installer shell
-  tampoco ofrece un artefacto OpenBSD. Añadir sólo el JSON no resuelve esto.
-- Estos son bloqueos de **provisión de paquetes**, no ausencia del código
-  del app-server: `ensure_supported_platform()` acepta `cfg(unix)`.
+- `managed_codex_bin` normally returns
+  `~/.codex/packages/app-server-daemon/current/bin/codex`, which does not yet exist.
+- `prepare_from_package` finds `InstallContext.package_layout == None` if only
+  `/usr/local/bin/codex` was installed without a layout or manifest, and fails
+  with `this CLI has no complete local package; install a packaged Codex CLI
+  or use the standalone installer`. It never reaches spawn.
+- If an upstream bundle is supplied, `platform_target()` fails with
+  `unsupported packaged daemon platform openbsd/x86_64` or
+  `openbsd/aarch64`, before validating or copying the package. The shell
+  installer also provides no OpenBSD artifact. Adding only the JSON does
+  not resolve this.
+- These are **package provisioning** blockers, not missing app-server source
+  code: `ensure_supported_platform()` accepts `cfg(unix)`.
 
-Con los parches previos, las dos primeras rutas se evitaban; por ello no
-pueden presentarse como causa probada de un fallo del port ya parcheado.
-Un fallo restante puede estar en ejecutabilidad, bibliotecas, limits,
-identificación PID, estado previo o socket. Upstream ya informa:
+The previous patches bypassed the first two paths; they therefore cannot be
+presented as proven causes of a failure in the already patched port.
+A remaining failure could involve executable permissions, libraries, limits,
+PID identification, previous state, or the socket. Upstream already reports:
 
-- `failed to spawn detached app-server process using <ruta>`, desde
-  `PidBackend::start_inner`, conservando el error de `spawn`/`setsid`;
-- `failed to record pid-managed app-server process <pid> startup`, más
-  tail del stderr cuando falla la identificación;
-- `app server did not become ready on <socket>`, desde
-  `wait_until_ready`/`app_server_not_ready_context`, con path, versión y
-  tail de hasta 4096 bytes del log;
-- la orquestación TUI formatea la cadena `anyhow` con `{err:#}`.
+- `failed to spawn detached app-server process using <path>`, from
+  `PidBackend::start_inner`, preserving the `spawn`/`setsid` error;
+- `failed to record pid-managed app-server process <pid> startup`, plus
+  the tail of stderr when identification fails;
+- `app server did not become ready on <socket>`, from
+  `wait_until_ready`/`app_server_not_ready_context`, with the path, version,
+  and up to 4096 bytes from the end of the log;
+- TUI orchestration formats the `anyhow` error chain with `{err:#}`.
 
-La implementación añade diagnósticos de paquete ausente, manifest inválido,
-versiones incompatibles y timeout de consulta de versión, dirigidos a
-`pkg_add`, sin proponer una descarga como reparación.
+The implementation adds diagnostics for a missing package, invalid manifest,
+incompatible versions, and a version query timeout, directing users to
+`pkg_add` without suggesting a download as a repair.
 
-## Cómo se construye el daemon
+## How the daemon is built
 
-El package `codex-app-server-daemon` es una **biblioteca de lifecycle**;
-no define otro ejecutable de daemon. El servidor real es `codex-app-server`,
-que publica tanto una biblioteca como el target independiente
-`codex-app-server`. La CLI `codex` ya enlaza esa biblioteca y ofrece el
-subcomando `app-server`.
+The `codex-app-server-daemon` package is a **lifecycle library**;
+it does not define another daemon executable. The actual server is
+`codex-app-server`, which provides both a library and the standalone
+`codex-app-server` target. The `codex` CLI already links that library and
+provides the `app-server` subcommand.
 
-Por eso el port construye el daemon al construir `codex-cli --bin codex`.
-No es necesario compilar otra copia ni conseguir fuentes de otro
-repositorio. Un `codex-app-server` aislado no sustituye directamente a
-`codex` en `PidBackend`: el backend también espera `--version`,
-`app-server ...` y comandos `app-server daemon ...` de la CLI multitool.
-Se mantiene ese contrato reutilizando el ejecutable CLI.
+The port therefore builds the daemon when it builds `codex-cli --bin codex`.
+There is no need to compile another copy or obtain source code from another
+repository. A standalone `codex-app-server` is not a direct replacement for
+`codex` in `PidBackend`: the backend also expects `--version`,
+`app-server ...`, and `app-server daemon ...` commands from the multitool CLI.
+That contract is preserved by reusing the CLI executable.
 
-## Manifest y Node/npm
+## Manifest and Node/npm
 
-El nombre real es **`codex-package.json`**, constante
-`PACKAGE_METADATA_FILENAME` en `codex-install-context`.
-`scripts/codex_package/layout.py::build_package_dir` lo genera con:
+The actual file name is **`codex-package.json`**, defined by the
+`PACKAGE_METADATA_FILENAME` constant in `codex-install-context`.
+`scripts/codex_package/layout.py::build_package_dir` generates it with:
 
-| Campo upstream | Significado |
+| Upstream field | Meaning |
 | --- | --- |
-| `layoutVersion` | Versión del layout, actualmente 1 |
-| `version` | Semver del paquete; por defecto workspace.package.version |
-| `target` | Triple nativo de la distribución |
-| `variant` | `codex` o `codex-app-server` |
-| `entrypoint` | Ruta relativa, por ejemplo `bin/codex` |
-| `resourcesDir` | Directorio `codex-resources` del bundle completo |
-| `pathDir` | Directorio `codex-path` del bundle completo |
+| `layoutVersion` | Layout version, currently 1 |
+| `version` | Package semver; defaults to workspace.package.version |
+| `target` | Native distribution target triple |
+| `variant` | `codex` or `codex-app-server` |
+| `entrypoint` | Relative path, such as `bin/codex` |
+| `resourcesDir` | `codex-resources` directory in the complete bundle |
+| `pathDir` | `codex-path` directory in the complete bundle |
 
-`CodexPackageLayout::from_exe` canonicaliza el ejecutable;
-`from_package_bin_dir` reconoce `bin/` cuyo padre contiene el JSON.
-`InstallContext::package_manifest` deserializa sólo `version` como semver.
-`prepare_from_package` lee además `target` y `entrypoint` para la copia
-upstream. La detección de layout no depende de npm ni de un árbol en el home.
+`CodexPackageLayout::from_exe` canonicalizes the executable;
+`from_package_bin_dir` recognizes a `bin/` directory whose parent contains
+the JSON. `InstallContext::package_manifest` deserializes only `version` as
+semver. `prepare_from_package` also reads `target` and `entrypoint` for the
+upstream copy operation. Layout detection does not depend on npm or a tree
+in the home directory.
 
-El port instala los primeros cinco campos. No declara directories de
-recursos o PATH que no instala. La implementación Rust ya trata esos
-**directorios como opcionales**: `code_mode_host_program` busca el host
-junto al binario y `rg_command` usa el ripgrep de RUN_DEPENDS.
-No se presenta esta instalación como un bundle autocopiable completo:
-el modo sistema evita `validate_package`/`package_tree` y toda copia.
+The port installs the first five fields. It does not declare resource or
+PATH directories that it does not install. The Rust implementation already
+treats those **directories as optional**: `code_mode_host_program` looks for
+the host next to the binary, and `rg_command` uses ripgrep from RUN_DEPENDS.
+This installation is not presented as a complete bundle that can copy itself:
+system mode bypasses `validate_package`/`package_tree` and all copying.
 
-`scripts/codex_package/targets.py` y `cargo.py` construyen los binarios del
-bundle desde fuentes. `codex-cli/scripts/build_npm_package.py` monta el
-metapaquete `@openai/codex` y variantes nativas con un vendor tree.
-`codex-cli/bin/codex.js::findCodexExecutable` selecciona el triple según
-`process.platform`/`process.arch`, busca la dependencia de plataforma vía
-`require.resolve(<package>/package.json)` y arranca su binario Rust.
-Su selector no incluye OpenBSD. El shim exporta
-`CODEX_MANAGED_BY_NPM`/BUN/PNPM/VITE_PLUS y `CODEX_MANAGED_PACKAGE_ROOT` para
-clasificación y diagnóstico. **`package.json` de npm no es
-`codex-package.json` del runtime**. El fallback standalone a tarballs npm
-extrae su vendor tree con tar; tampoco exige ejecutar Node.
+`scripts/codex_package/targets.py` and `cargo.py` build the bundle binaries
+from source. `codex-cli/scripts/build_npm_package.py` assembles the
+`@openai/codex` metapackage and native variants with a vendor tree.
+`codex-cli/bin/codex.js::findCodexExecutable` selects the target triple based
+on `process.platform`/`process.arch`, locates the platform dependency through
+`require.resolve(<package>/package.json)`, and launches its Rust binary.
+Its selector does not include OpenBSD. The shim exports
+`CODEX_MANAGED_BY_NPM`/BUN/PNPM/VITE_PLUS and `CODEX_MANAGED_PACKAGE_ROOT` for
+classification and diagnostics. **npm's `package.json` is not the runtime's
+`codex-package.json`**. The standalone fallback to npm tarballs extracts their
+vendor tree with tar; it does not require running Node either.
 
-El port invoca directamente el binario Rust. No instala el shim JS,
-no añade Node/npm y no adapta su selector a un artefacto Linux.
+The port invokes the Rust binary directly. It does not install the JS shim,
+add Node/npm, or adapt its selector to a Linux artifact.
 
-Fuentes:
-[contexto de instalación](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/codex-rs/install-context/src/lib.rs),
-[generador del manifest](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/scripts/codex_package/layout.py),
-[shim npm](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/codex-cli/bin/codex.js).
+Sources:
+[installation context](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/codex-rs/install-context/src/lib.rs),
+[manifest generator](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/scripts/codex_package/layout.py),
+[npm shim](https://github.com/openai/codex/blob/d27764b82f7118f674371e6d6e76271d9d606edb/codex-cli/bin/codex.js).
 
-## Alternativas investigadas
+## Alternatives investigated
 
-| Alternativa | Resultado |
+| Alternative | Result |
 | --- | --- |
-| 1. Path del daemon configurable | No hay override upstream para la provisión externa en el resolver; se conserva el parche previo central |
-| 2. Variable de entorno | El port ya añadió `CODEX_SYSTEM_DAEMON_PATH`; es una variable **de compilación**, consumida con `option_env!`, no un override del usuario en runtime |
-| 3. Constante en build | La variable anterior queda incrustada en los crates; ownership no puede alterarse por el entorno de la sesión |
-| 4. Manifest generado por el port | Implementado con SUBST_CMD, versión `${V}` y target OpenBSD nativo |
-| 5. Instalación bajo PREFIX | Implementada en libexec/codex con layout upstream bin/ y links públicos |
-| 6. Bypass exclusivo download/update | Guardas de prepare, update_from_cli, update, pid-update-loop y ensure_managed_updater; no guardas que deshabiliten start/stop |
-| 7. Reutilizar start/stop/IPC | Backend PID, setsid, señales, sockets, locks, probes y recovery existentes |
-| 8. Modo system-provided pequeño | Resolver central, validación de versión y API pública system_daemon_path para el menú |
-| 9. Resolver central de paquetes | managed_install::managed_codex_bin devuelve el path compilado antes de inspeccionar paquetes del usuario |
-| 10. Mismo source tree/build | CLI y daemon son el mismo ELF; code-mode host se construye en el mismo workspace/version |
+| 1. Configurable daemon path | The upstream resolver has no override for external provisioning; the previous central patch is retained |
+| 2. Environment variable | The port already added `CODEX_SYSTEM_DAEMON_PATH`; this is a **compile-time** variable consumed with `option_env!`, not a user override at runtime |
+| 3. Build constant | The variable above is embedded in the crates; ownership cannot be changed by the session environment |
+| 4. Manifest generated by the port | Implemented with SUBST_CMD, version `${V}`, and the native OpenBSD target |
+| 5. Installation under PREFIX | Implemented in libexec/codex with the upstream bin/ layout and public symlinks |
+| 6. Bypass only download/update | Guards in prepare, update_from_cli, update, pid-update-loop, and ensure_managed_updater; no guards that disable start/stop |
+| 7. Reuse start/stop/IPC | Existing PID backend, setsid, signals, sockets, locks, probes, and recovery |
+| 8. Small system-provided mode | Central resolver, version validation, and public system_daemon_path API for the menu |
+| 9. Central package resolver | managed_install::managed_codex_bin returns the compiled path before inspecting user packages |
+| 10. Same source tree/build | CLI and daemon are the same ELF executable; the code-mode host is built in the same workspace/version |
 
-La ruta externa no se infiere de un archivo `current` en el home y nunca
-vuelve a download como fallback si falta el ejecutable del paquete.
+The external path is not inferred from a `current` file in the home directory,
+and a missing package executable never triggers a download fallback.
 
-## Layout, proceso y plataforma
+## Layout, process, and platform
 
 ```text
 ${PREFIX}/bin/codex -> ../libexec/codex/bin/codex
@@ -265,155 +307,155 @@ ${PREFIX}/bin/codex-logs-client
 ${PREFIX}/libexec/codex/
     codex-package.json
     bin/
-        codex                 # CLI y app-server, un único ejecutable
+        codex                 # CLI and app-server, a single executable
         codex-code-mode-host
-${PREFIX}/share/doc/codex/     # documentación existente
+${PREFIX}/share/doc/codex/     # existing documentation
 ```
 
-`libexec/codex/bin` conserva la convención `bin/` que upstream reconoce:
-no hace falta modificar `codex-install-context` ni instalar un manifest
-global en `${PREFIX}/codex-package.json`. El enlace público `bin/codex`
-es necesario para la CLI de usuario. El link del host conserva su ruta
-preexistente, mientras el lookup interno usa la copia junto al ejecutable.
-PLIST registra los ELF reales con `@bin`; los enlaces se registran como tales.
+`libexec/codex/bin` preserves the `bin/` convention recognized by upstream:
+there is no need to modify `codex-install-context` or install a global
+manifest at `${PREFIX}/codex-package.json`. The public `bin/codex` symlink
+is needed for the user CLI. The host symlink preserves its existing path,
+while internal lookup uses the copy next to the executable.
+PLIST records the actual ELF files with `@bin`; symlinks are recorded as such.
 
-Los targets son `x86_64-unknown-openbsd` y `aarch64-unknown-openbsd`.
-No se añade OpenBSD a listas de descargas sin artefactos, ni se hace alias
-Linux. El lifecycle y transporte ya seleccionan `cfg(unix)` para OpenBSD:
-setsid, flock/locks, SIGTERM/SIGKILL, sockets Unix, modos privados 0700 y
-permisos de socket. Se conserva el parche de ps con `LC_ALL=C`, `TZ=UTC`
-para la identidad basada en `lstart` entre diferentes terminales.
-El socket real se publica bajo `/tmp/codex-daemon-<uid>/<hash>`; la ruta
-anunciada de CODEX_HOME es un enlace, con locks y ownership upstream.
+The targets are `x86_64-unknown-openbsd` and `aarch64-unknown-openbsd`.
+OpenBSD is not added to download lists without artifacts, nor aliased to
+Linux. Lifecycle and transport already select `cfg(unix)` for OpenBSD:
+setsid, flock/locks, SIGTERM/SIGKILL, Unix sockets, private 0700 modes, and
+socket permissions. The ps patch with `LC_ALL=C` and `TZ=UTC` is retained
+for identity based on `lstart` across different terminals.
+The actual socket is published under `/tmp/codex-daemon-<uid>/<hash>`; the
+advertised CODEX_HOME path is a symlink, with upstream locks and ownership.
 
-No hay rc.d, usuario de servicio, arranque de sistema ni updater periódico
-del paquete. El daemon permanece disponible tras salir de una TUI y se
-reinicia bajo demanda tras un reboot o una parada explícita.
+There is no rc.d script, service account, system startup, or periodic package
+updater. The daemon remains available after exiting a TUI and restarts on
+demand after a reboot or an explicit stop.
 
-## Inventario de ~/.codex/packages
+## Inventory of ~/.codex/packages
 
-En el flujo Rust investigado, las raíces reales son `standalone` y
-`app-server-daemon`; no se encontró otro proveedor del daemon bajo esa raíz.
+In the Rust flow examined, the actual roots are `standalone` and
+`app-server-daemon`; no other daemon provider was found under that root.
 
-| Uso | Tratamiento |
+| Use | Handling |
 | --- | --- |
-| `standalone/releases`, `app-server-daemon/releases` | Paquetes con ejecutables CLI/daemon, code-mode host, rg y recursos de plataforma; el modo sistema no crea ni selecciona estos releases |
-| `current`, `auto-update-version`, install locks/staging | Metadatos de selección y preparación de esos paquetes upstream; no se necesitan para el modo sistema |
-| `~/.codex/app-server-daemon` | Estado: PID, settings, locks, stderr logs, loaded-threads.json; se conserva |
-| `~/.codex/app-server-control` | Rendezvous/lock de IPC; se conserva, con socket real temporal protegido |
-| Otras caches, historial, auth, plugins y metadatos de usuario | No son una instalación del daemon; no se eliminan ni se trasladan |
-| Componentes opcionales | Recursos bundled de Linux/Windows no se requieren en OpenBSD; rg es RUN_DEPENDS y el host se instala desde el build. Plugins/MCP/otras descargas opcionales conservan sus políticas existentes |
+| `standalone/releases`, `app-server-daemon/releases` | Packages containing CLI/daemon executables, code-mode host, rg, and platform resources; system mode neither creates nor selects these releases |
+| `current`, `auto-update-version`, install locks/staging | Selection and preparation metadata for those upstream packages; not needed in system mode |
+| `~/.codex/app-server-daemon` | State: PID, settings, locks, stderr logs, loaded-threads.json; retained |
+| `~/.codex/app-server-control` | IPC rendezvous/lock; retained, with a protected temporary socket for actual communication |
+| Other caches, history, auth, plugins, and user metadata | Not a daemon installation; neither deleted nor moved |
+| Optional components | Bundled Linux/Windows resources are not required on OpenBSD; rg is a RUN_DEPENDS dependency, and the host is installed from the build. Plugins/MCP/other optional downloads retain their existing policies |
 
-No se borra `~/.codex/packages`: pueden existir instalaciones anteriores,
-software gestionado por el usuario u otros usos que no corresponde migrar
-con una eliminación indiscriminada.
+`~/.codex/packages` is not deleted: it may contain previous installations,
+software managed by the user, or other uses that should not be migrated
+through indiscriminate deletion.
 
-## Parches y cambios del port
+## Patches and port changes
 
-Los cinco archivos Rust relacionados con esta integración son:
+The five Rust files related to this integration are:
 
-| Parche | Propósito |
+| Patch | Purpose |
 | --- | --- |
-| `patch-codex-rs_app-server-daemon_src_managed_install_rs` | Existente: path compilado prioritario y exclusión de updater latest-channel |
-| `patch-codex-rs_app-server-daemon_src_prepare_install_rs` | Ampliado: bypass de copia; valida manifest semver y versión del ELF con timeout; rechaza --from-cli |
-| `patch-codex-rs_app-server-daemon_src_lib_rs` | Ampliado: API system_daemon_path, mantiene lifecycle, guardas de actualizaciones, diagnóstico pkg_add y rechazo de un daemon activo de otra versión |
-| `patch-codex-rs_app-server-daemon_src_backend_pid_rs` | Existente: identidad ps estable bajo OpenBSD con locale/timezone fijados |
-| `patch-codex-rs_tui_src_app_daemon_menu_rs` | Nuevo: sólo las acciones de instalar/reemplazar se deshabilitan; /daemon indica pkg_add y restart, el proceso sigue habilitado |
+| `patch-codex-rs_app-server-daemon_src_managed_install_rs` | Existing: priority for the compiled path and exclusion of the latest-channel updater |
+| `patch-codex-rs_app-server-daemon_src_prepare_install_rs` | Extended: bypass copying; validate manifest semver and ELF version with a timeout; reject --from-cli |
+| `patch-codex-rs_app-server-daemon_src_lib_rs` | Extended: system_daemon_path API, preserved lifecycle, update guards, pkg_add diagnostics, and rejection of an active daemon running another version |
+| `patch-codex-rs_app-server-daemon_src_backend_pid_rs` | Existing: stable ps identity on OpenBSD with fixed locale/time zone |
+| `patch-codex-rs_tui_src_app_daemon_menu_rs` | New: only installation/replacement actions are disabled; /daemon points to pkg_add and restart, while the process remains enabled |
 
-Otros parches del port, incluyendo Cargo, V8 y la política de actualización
-al arrancar, no se modifican durante esta tarea.
+Other port patches, including Cargo, V8, and the startup update policy,
+are not modified during this task.
 
-Makefile: path compilado a libexec, generación del manifest, traslado de
-los dos binarios y links durante post-install, `REVISION=0` para que
-pkg_add reconozca el cambio respecto a 0.160.1 sin revisión.
-PLIST: rutas reales de libexec, manifest y links.
-`files/codex-package.json`: template pequeño con cinco campos.
-`pkg/README`: uso, ownership, layout, reinicio, socket y migración.
-No cambian MODULES, BUILD_DEPENDS, LIB_DEPENDS ni RUN_DEPENDS.
-El override previo de MAKE_JOBS se conserva.
+Makefile: compiled path to libexec, manifest generation, relocation of the
+two binaries and creation of symlinks during post-install, and `REVISION=0`
+so pkg_add recognizes the change from 0.160.1 without a revision.
+PLIST: actual libexec paths, manifest, and symlinks.
+`files/codex-package.json`: small template with five fields.
+`pkg/README`: usage, ownership, layout, restart, socket, and migration.
+MODULES, BUILD_DEPENDS, LIB_DEPENDS, and RUN_DEPENDS are unchanged.
+The previous MAKE_JOBS override is retained.
 
-## Versionado, flujo resultante y actualización
+## Versioning, resulting flow, and updates
 
 ```text
-make -> codex-cli/codex + codex-code-mode-host + manifest de la misma ${V}
+make -> codex-cli/codex + codex-code-mode-host + manifest with the same ${V}
   |
 pkg_add codex
-  +-- instala ELF compartido CLI/daemon, host, manifest y links
+  +-- installs shared CLI/daemon ELF, host, manifest, and symlinks
          |
        codex
-         +-- daemon_auto_start, política de elegibilidad upstream
-         +-- resolver central -> ejecutable del sistema
+         +-- daemon_auto_start, upstream eligibility policy
+         +-- central resolver -> system executable
          +-- manifest.version == CARGO_PKG_VERSION
-         +-- ejecutable --version == CARGO_PKG_VERSION
-         +-- start con setsid / backend PID
-         +-- initialize / initialized / health check / JSON-RPC sobre UDS
-         +-- running app_server_version == CARGO_PKG_VERSION al iniciar/reusar
-         +-- stop / restart y recovery existentes
+         +-- executable --version == CARGO_PKG_VERSION
+         +-- start with setsid / PID backend
+         +-- initialize / initialized / health check / JSON-RPC over UDS
+         +-- running app_server_version == CARGO_PKG_VERSION on startup/reuse
+         +-- existing stop / restart and recovery
 ```
 
-Upstream permite versiones distintas en algunas instalaciones/updates.
-El modo sistema endurece el arranque: versión exacta de CLI, manifest y
-nuevo ejecutable. Si se intenta reutilizar un daemon vivo de otra versión,
-se informa y se pide `codex app-server daemon restart`; no se interrumpe
-trabajo automáticamente ni se selecciona una copia autodownloaded.
-El mismo ELF para CLI y servidor garantiza además identidad de build
-instalado. Upstream registra digest BLAKE3 del proceso; no se inventa
-otra versión de protocolo ni un build ID en el manifest.
+Upstream allows different versions in some installations/updates.
+System mode tightens startup checks: the CLI, manifest, and new executable
+must have exactly the same version. If reuse of a running daemon with
+another version is attempted, the user is notified and asked to run
+`codex app-server daemon restart`; work is not automatically interrupted,
+and no automatically downloaded copy is selected. Using the same ELF for
+the CLI and server also guarantees the identity of the installed build.
+Upstream records a BLAKE3 digest of the process; no additional protocol
+version or build ID is invented for the manifest.
 
-`pkg_add -u` reemplaza simultáneamente los archivos pertenecientes al
-paquete; el proceso que ya corre mantiene su imagen antigua. El usuario
-reinicia explícitamente el daemon para recoger el nuevo build, también
-cuando sólo cambia la revisión del port y la versión upstream es igual.
-`update` devuelve UpdateStatus::Unsupported con indicación de pkg_add;
-`--from-cli` y `pid-update-loop` se rechazan antes de copia/download.
-Un settings.json previo con autoUpdateEnabled=true no habilita el updater
-en modo sistema. Codex sólo modifica archivos de estado de usuario.
+`pkg_add -u` replaces the files belonging to the package together; a process
+that is already running retains its old image. The user explicitly restarts
+the daemon to pick up the new build, including when only the port revision
+changes and the upstream version stays the same.
+`update` returns UpdateStatus::Unsupported with pkg_add guidance;
+`--from-cli` and `pid-update-loop` are rejected before copying/downloading.
+An existing settings.json with autoUpdateEnabled=true does not enable the
+updater in system mode. Codex only modifies user state files.
 
-## Mantenibilidad y validación estática
+## Maintainability and static validation
 
-El conjunto de cinco parches de integración añade 103 líneas Rust y reemplaza tres líneas, contando las guardas ya
-existentes. La nueva extensión afecta a tres archivos Rust; los otros
-dos parches de daemon se conservan. El layout no requiere parchear el
-resolver de manifest, los shims JS, el protocolo ni el motor app-server.
-La superficie de conflictos es moderada en `Daemon::start`, `prepare` y
-el menú TUI, que upstream cambia con frecuencia; el resolver central es
-pequeño y fácil de reaplicar.
+The five integration patches add 103 Rust lines and replace three lines,
+including the existing guards. The new extension affects three Rust files;
+the other two daemon patches are retained. The layout does not require
+patching the manifest resolver, JS shims, protocol, or app-server engine.
+The risk of conflicts is moderate in `Daemon::start`, `prepare`, and the
+TUI menu, which upstream changes frequently; the central resolver is small
+and easy to reapply.
 
-Sería razonable proponer upstream un provider de daemon compilado por el
-distribuidor, ownership público para la UI y validación de metadata/version,
-con un mensaje configurable para el gestor de paquetes. La corrección de
-locale/TZ de ps también es independiente de la distribución de binarios.
+Reasonable upstream proposals include a daemon provider compiled by the
+distributor, public ownership information for the UI, and metadata/version
+validation, with a configurable package manager message. The ps locale/TZ
+correction is also independent of binary distribution.
 
-Comprobaciones realizadas: los 84 parches de Codex se aplicaron sobre las
-fuentes exactas y las crates parcheadas, sin fuzz, offsets ni rechazos; los
-checksums de estas crates se verificaron contra Cargo.lock. También se
-comprobaron los dos parches de micro 2.0.15, sin fuzz ni offsets. Los tres
-parches nuevos/ampliados se regeneraron y se reaplicaron sobre fuentes
-pristine con resultado idéntico. rustfmt comprobó
-la sintaxis/formato de los archivos modificados (no es un type-check).
-Se comprobó mediante layout temporal de archivos/enlaces la canonicalización,
-localización de JSON y host, y correspondencia de PLIST para ambas
-arquitecturas. bmake expandió ambos triples; el JSON resultante es válido.
-No se compiló, no se ejecutaron tests Rust, no se arrancó Codex, no se
-instalaron paquetes ni se hizo push.
+Checks performed: all 84 Codex patches were applied to the exact sources and
+patched crates without fuzz, offsets, or rejects; checksums for these crates
+were verified against Cargo.lock. The two micro 2.0.15 patches were also
+checked without fuzz or offsets. The three new/extended patches were
+regenerated and reapplied to pristine sources with identical results.
+rustfmt checked the syntax/format of the modified files (this is not a type
+check). A temporary file/symlink layout was used to check canonicalization,
+JSON and host lookup, and PLIST correspondence for both architectures.
+bmake expanded both target triples; the resulting JSON is valid.
+No compilation, Rust tests, Codex startup, package installation, or push
+was performed.
 
-## Validación posterior: ejecutar en OpenBSD -current
+## Follow-up validation: run on OpenBSD -current
 
-Desde el checkout colocado en un árbol de ports compatible con -current:
+From a checkout placed in a ports tree compatible with -current:
 
 ```sh
 cd devel/codex
 make clean
-make makesum                    # distinfo actual aún nombra 0.160.0
+make makesum                    # current distinfo still names 0.160.0
 make build
 make fake
 make lib-depends-check
 make update-plist
-# Revisar el PLIST generado antes de crear el paquete.
+# Review the generated PLIST before creating the package.
 make package
-# Si había un daemon antiguo, detenerlo con la CLI antigua antes de actualizar.
+# If an old daemon exists, stop it with the old CLI before updating.
 codex app-server daemon stop
-# Para primera instalación, omitir la parada anterior si codex no existe.
+# For a first installation, skip the stop above if codex does not exist.
 doas pkg_add -r "$(make show=PKGFILE)"
 pkg_info -L codex
 pkg_info -f codex
@@ -424,9 +466,9 @@ cat /usr/local/libexec/codex/codex-package.json
 /usr/local/libexec/codex/bin/codex --version
 ```
 
-Para probar lifecycle y ausencia de copias sin tocar la configuración
-habitual, elegir un CODEX_HOME nuevo. Este comando prueba primero el daemon,
-luego la TUI (el usuario completará login si procede):
+To test lifecycle and the absence of copies without touching the usual
+configuration, choose a new CODEX_HOME. These commands test the daemon first,
+then the TUI (the user should complete login if needed):
 
 ```sh
 CODEX_HOME=$(mktemp -d /tmp/codex-daemon-check.XXXXXXXX)
@@ -438,28 +480,28 @@ ls -l "$CODEX_HOME/app-server-control/"
 cat "$CODEX_HOME/app-server-daemon/daemon.pid"
 cat "$CODEX_HOME/app-server-daemon/daemon.stderr.log"
 codex --enable daemon_auto_start
-# Tras salir de la TUI: debe seguir vivo y ser reutilizable.
+# After exiting the TUI: it should still be running and reusable.
 codex app-server daemon version
 codex app-server daemon restart
-codex app-server daemon update       # Unsupported + pkg_add; sin descarga
-codex app-server daemon update --from-cli --yes  # rechazo antes de copiar
-# Debe seguir funcionando tras rechazar las actualizaciones internas.
+codex app-server daemon update       # Unsupported + pkg_add; no download
+codex app-server daemon update --from-cli --yes  # rejected before copying
+# It should still work after rejecting internal updates.
 codex app-server daemon version
 codex app-server daemon stop
 test ! -e "$CODEX_HOME/packages/app-server-daemon"
 test ! -e "$CODEX_HOME/packages/standalone"
 find "$CODEX_HOME" -type f \( -perm -0100 -o -perm -0010 -o -perm -0001 \) -print
-# No debe aparecer ningún codex/host autodownloaded.
+# No automatically downloaded codex/host should appear.
 ```
 
-`version` debe mostrar `managedCodexPath` en libexec y versiones compatibles;
-el PID/IPC deben funcionar en start, reutilización, restart y stop. Un home
-limpio permite comprobar que no se generó ninguna segunda copia sin
-confundir archivos viejos. Para confirmar auto-start desde cero en la TUI,
-volver a ejecutar `codex --enable daemon_auto_start` después de stop y
-consultar `version` desde otro terminal con el mismo CODEX_HOME.
+`version` should show `managedCodexPath` in libexec and compatible versions;
+PID/IPC should work during start, reuse, restart, and stop. A clean home
+directory allows checking that no second copy was generated without confusing
+it with old files. To confirm TUI auto-start from scratch, run
+`codex --enable daemon_auto_start` again after stop and query `version` from
+another terminal with the same CODEX_HOME.
 
-Para comprobar la actualización de paquetes en uso normal:
+To check package updates during normal use:
 
 ```sh
 doas pkg_add -u codex
@@ -467,7 +509,8 @@ codex app-server daemon restart
 codex app-server daemon version
 ```
 
-Si falta un binario o el manifest, conservar el mensaje completo y el log:
-la reparación esperada es reinstalar el paquete, no instalar un daemon en
-el home. La prueba interactiva y el error histórico `can't start` permanecen
-pendientes de verificación real y, para este último, del log original.
+If a binary or the manifest is missing, preserve the full message and log:
+the expected repair is to reinstall the package, not install a daemon in
+the home directory. The interactive test and the historical `can't start`
+error still require real-world verification and, for the latter, the original
+log.

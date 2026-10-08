@@ -1,0 +1,4 @@
+Freeze generates PNG and SVG images from source code and terminal
+output. It supports syntax highlighting through Chroma, configurable
+themes, window decorations and font settings, and can capture the
+result of running a command in a pseudo-terminal.

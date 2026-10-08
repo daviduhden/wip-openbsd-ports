@@ -1,0 +1,5 @@
+Confettysh is an SSH server that streams terminal visual effects
+(confetti and fireworks) to connecting clients. It is built on the
+Charm SSH and Bubble Tea stacks and needs no external SSH daemon, PTY
+helper or system service. Host keys and terminal rendering are handled
+entirely in Go.

@@ -1,0 +1,20 @@
+SPDX-License-Identifier: MIT
+
+Declare the Go 1.21 language version required by the module graph.
+
+Building the unmodified go.mod with a current Go toolchain fails with
+"updates to go.mod needed; to update it: go mod tidy" because a
+dependency declares a newer language version. Only the go directive
+changes; the dependency set is unchanged.
+
+Index: go.mod
+--- go.mod.orig
++++ go.mod
+@@ -1,6 +1,6 @@
+ module github.com/charmbracelet/confettysh
+ 
+-go 1.18
++go 1.21
+ 
+ require (
+ 	github.com/charmbracelet/bubbletea v1.2.4

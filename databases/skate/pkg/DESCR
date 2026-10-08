@@ -1,0 +1,4 @@
+Skate is a personal key value store that keeps everything in a local
+embedded database. Values are set and retrieved from the command line,
+with optional scoped namespaces, making it convenient for storing
+small amounts of data in shell scripts.

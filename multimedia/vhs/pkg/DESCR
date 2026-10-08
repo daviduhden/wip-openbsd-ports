@@ -1,0 +1,4 @@
+VHS records terminal sessions described by a declarative tape file and
+produces animated GIF, MP4 or WebM videos, as well as screenshots. Tape
+files drive a real terminal through ttyd, so recorded output reflects
+exactly what a user would see.

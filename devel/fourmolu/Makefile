@@ -2,8 +2,7 @@ COMMENT =	Haskell source code formatter
 
 MODULES =	devel/cabal
 MODCABAL_STEM =	fourmolu
-MODCABAL_VERSION =	0.20.1.0
-MODCABAL_REVISION =	1
+MODCABAL_VERSION =	0.21.0.0
 MODCABAL_EXECUTABLES =	fourmolu
 
 CATEGORIES =	devel
@@ -21,7 +20,7 @@ LIB_DEPENDS =	converters/libiconv \
 CABAL_INC_HOME ?=	${WRKDIR}/.cabal-inc-home
 
 # Print the MODCABAL_MANIFEST with the devel/cabal module's cabal-bundler:
-#	cabal-bundler --openbsd fourmolu-0.20.1.0
+#	cabal-bundler --openbsd fourmolu-0.21.0.0
 cabal-inc:
 	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}
 	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}/.cabal

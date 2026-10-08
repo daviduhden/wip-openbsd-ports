@@ -11,7 +11,7 @@ HOMEPAGE=		https://www.veracrypt.fr/
 MAINTAINER=		Tietoturvamies <main@tietoturvamies.fi>
 
 # Apache2
-PERMIT_PACKAGE=	yes
+PERMIT_PACKAGE=	Yes
 
 SITES=			https://launchpad.net/veracrypt/trunk/${V}/+download/
 EXTRACT_SUFX=		.tar.bz2

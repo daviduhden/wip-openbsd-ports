@@ -1,0 +1,4 @@
+Wishlist is a directory of SSH endpoints. It reads an SSH config-style
+file and presents the configured hosts in a browsable list, then opens
+a local SSH session to the selected host. The command line client works
+without any external service.

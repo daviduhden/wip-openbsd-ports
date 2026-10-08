@@ -1,6 +1,6 @@
 COMMENT=	bidirectional mapping library
 
-MODPY_DISTV=	0.23.1
+MODPY_DISTV=	0.24.1
 DISTNAME=	bidict-${MODPY_DISTV}
 PKGNAME=	py-bidict-${MODPY_DISTV}
 

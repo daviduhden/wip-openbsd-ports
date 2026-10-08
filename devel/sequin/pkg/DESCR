@@ -1,0 +1,7 @@
+Sequin is a small utility that turns raw ANSI escape sequences into a
+human-readable description. Pipe a stream, a golden file or the output
+of another command into it to see exactly which escape sequences a
+program emits and what they mean.
+
+It is useful for debugging CLIs and TUIs, for explaining unfamiliar
+escape sequences, and for inspecting recorded terminal output.

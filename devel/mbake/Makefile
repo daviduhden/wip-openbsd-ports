@@ -6,6 +6,7 @@ GH_PROJECT =		bake
 GH_TAGNAME =		v${MODPY_DISTV}
 PKGNAME =		mbake-${MODPY_DISTV}
 CATEGORIES =		devel
+HOMEPAGE =		https://github.com/EbodShojaei/bake
 
 # MIT
 PERMIT_PACKAGE =	Yes

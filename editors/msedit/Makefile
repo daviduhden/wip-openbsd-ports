@@ -5,6 +5,7 @@ GH_PROJECT =		edit
 GH_TAGNAME =		v2.0.0
 PKGNAME =		msedit-${GH_TAGNAME:S/v//}
 CATEGORIES =		editors
+HOMEPAGE =		https://github.com/microsoft/edit
 
 # MIT
 PERMIT_PACKAGE =	Yes

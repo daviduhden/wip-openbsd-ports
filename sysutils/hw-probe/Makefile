@@ -1,5 +1,6 @@
 COMMENT =	hardware probe tool
 CATEGORIES =	sysutils
+HOMEPAGE =	https://github.com/linuxhw/hw-probe
 
 GH_ACCOUNT =	linuxhw
 GH_PROJECT =	hw-probe

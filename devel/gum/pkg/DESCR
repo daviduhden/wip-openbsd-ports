@@ -1,0 +1,4 @@
+Gum is a collection of command-line utilities that make shell scripts
+look and feel glamorous. It provides prompts, filters, input fields,
+spinners, progress bars, file pickers, styled output and more, designed
+to be composed in shell scripts.

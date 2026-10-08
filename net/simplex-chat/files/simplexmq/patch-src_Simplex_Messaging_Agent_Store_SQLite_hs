@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Serialize close and reopen with connection users and recheck closed state
 under the connection lock. Mask publication of handle changes so a closer
 cannot leave a freed handle marked open or race a second close.

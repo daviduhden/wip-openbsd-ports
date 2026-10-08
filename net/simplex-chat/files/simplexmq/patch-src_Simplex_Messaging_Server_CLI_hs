@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Make the shared X.509 configuration portable to LibreSSL too, so new callers
 of the credential-generation helper cannot accidentally restore the
 unsupported ED448 default.

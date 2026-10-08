@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Unmask owned worker bodies while keeping publication and completion callbacks masked.
 
 Preserve cancellation in catchAll and catchAll_ as in tryAllErrors.

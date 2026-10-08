@@ -1,5 +1,3 @@
-SPDX-License-Identifier: BSD-3-Clause
-
 Initialize the stateful streaming body reader for server responses too.
 A partially serialized chunk must remain visible to the managed sender,
 including encrypted XFTP downloads, until its builder is exhausted.

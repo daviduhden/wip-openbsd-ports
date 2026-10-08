@@ -1,5 +1,3 @@
-SPDX-License-Identifier: GPL-2.0-or-later
-
 Use mkstemp(3) for the print temporary file instead of tmpnam(3).
 
 Index: source/file.c

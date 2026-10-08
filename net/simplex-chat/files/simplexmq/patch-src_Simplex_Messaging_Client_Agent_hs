@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Wait for proxy-agent reconnect workers and protocol clients during shutdown,
 publish worker/client creation atomically, and reject connections completed
 after shutdown began.  Detached relay TLS sessions could otherwise survive

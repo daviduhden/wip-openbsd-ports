@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Track controller startup jobs and serialize its start/stop lifetime.
 
 Index: src/Simplex/Chat.hs

@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 This test has no generated inputs, so running it as an ioProperty repeats it
 up to 100 times while leaking every agent and SQLite connection.  Run it once
 and use the existing bracketed agent helper to close the database and worker

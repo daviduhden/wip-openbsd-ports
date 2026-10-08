@@ -1,5 +1,3 @@
-SPDX-License-Identifier: BSD-3-Clause
-
 Backport the TLS 1.3 receive-cancellation fix, including its regression test.
 Keep the pending record reader and TLS shutdown under the same read lock.
 Add the qualified exception import required by TLS 2.4.3.

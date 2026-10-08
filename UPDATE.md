@@ -33,8 +33,7 @@ stay offline and must reproduce the build from `distinfo` alone.
    `distinfo` must always change together.
 5. Refresh the patches under `patches/` and, for the cabal ports, the
    dependency patches under `files/`. Keep the repository convention:
-   one target file per patch, an `Index:` header and an
-   `SPDX-License-Identifier:` line.
+   one target file per patch and an `Index:` header.
 6. Run the full validation workflow:
 
    ```sh

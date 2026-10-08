@@ -1,5 +1,3 @@
-SPDX-License-Identifier: BSD-3-Clause
-
 Keep a streaming chunk queued while its builder continuation still has
 bytes to send. syncWithSender uses queue emptiness as its readiness signal;
 removing the chunk before serializing it can stop the sender between DATA

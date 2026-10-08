@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Replace fixed sleeps in front of asynchronous state with bounded polling and
 give the owner-signed roster and group-forwarding setup deterministic waits.
 

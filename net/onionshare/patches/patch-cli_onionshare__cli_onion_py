@@ -1,5 +1,3 @@
-SPDX-License-Identifier: GPL-3.0-or-later
-
 Omit transport configuration lines when an optional executable is absent.
 Keep UseBridges enabled when requested, so a missing transport cannot
 silently turn a bridge connection into a direct connection.

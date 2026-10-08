@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Accept a dedicated client-service credential in notification service tests.
 The server fixture is restricted to the serverAuth EKU and cannot be used as
 a TLS client certificate with tls 2.4.  Each test generates one unrestricted

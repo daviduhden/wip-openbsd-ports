@@ -1,5 +1,3 @@
-SPDX-License-Identifier: Apache-2.0
-
 Accept FFS as an explicit filesystem selection on the OpenBSD CLI.
 
 Index: Main/CommandLineInterface.cpp

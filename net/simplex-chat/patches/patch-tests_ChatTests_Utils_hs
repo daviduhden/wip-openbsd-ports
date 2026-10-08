@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 OpenBSD builders need more than the upstream 90-second per-example watchdog
 for the complete asynchronous chat integration workloads.  Keep every test
 and assertion intact while retaining a finite cleanup-safe bound.

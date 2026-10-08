@@ -1,5 +1,3 @@
-SPDX-License-Identifier: BSD-3-Clause
-
 Backport Monero c93c4fc: use std::make_unsigned instead of the Boost trait
 that Clang 21 and newer reject for enums whose valid range excludes -1.
 

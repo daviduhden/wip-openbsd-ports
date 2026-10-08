@@ -1,5 +1,3 @@
-SPDX-License-Identifier: Apache-2.0
-
 Point the desktop launcher at the executable installed under TRUEPREFIX
 rather than the upstream /usr/bin path.
 

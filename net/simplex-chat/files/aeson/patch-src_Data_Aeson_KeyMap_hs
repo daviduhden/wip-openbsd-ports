@@ -1,5 +1,3 @@
-SPDX-License-Identifier: BSD-3-Clause
-
 Add the KeyMap Unzip instance with correct instance ordering for GHC
 9.14+ compatibility. semialign 1.4 makes Unzip a superclass of
 Semialign, which requires the instance order: Unzip -> Semialign ->

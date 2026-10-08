@@ -1,5 +1,3 @@
-SPDX-License-Identifier: LGPL-2.1-or-later
-
 Do not use redundant ^| table markers that OpenBSD groff rejects.
 
 Index: doc/man/man5/UIL.5

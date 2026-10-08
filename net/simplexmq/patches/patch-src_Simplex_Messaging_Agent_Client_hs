@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Track the agent lifecycle and original background mode. Make every worker
 closer join its published action. Foreground requests retry transient
 connection errors against the network; background requests retain the

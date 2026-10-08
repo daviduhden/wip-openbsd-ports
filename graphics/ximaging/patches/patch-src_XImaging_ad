@@ -1,5 +1,3 @@
-SPDX-License-Identifier: MIT
-
 Enable the ImageMagick filter documented upstream.  This provides
 loaders for common formats which XImaging does not handle internally.
 

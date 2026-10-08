@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Cover the worker shutdown contract directly: the first cancellation waits for
 an in-progress startup to publish its action, while subsequent cancellations
 return without consuming the action TMVar again.

@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Bring PubKey and PrivKey constructors into unqualified scope so
 that their ASN1Object instances (from crypton-x509 >= 1.9) are
 visible to encodeASNObj and decodeKey when crypton-x509 >= 1.9

@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Do not let a metrics-file failure terminate the SMP server. The periodic
 savePrometheusMetrics thread races every other server thread in raceAny_;
 when opening or writing the metrics path failed (for example while a lazy

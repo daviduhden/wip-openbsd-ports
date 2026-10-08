@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Register a command's server in its transaction, including reply servers
 that do not have a send queue yet. Check that cached deliveries still
 exist before retrying them after connection deletion.

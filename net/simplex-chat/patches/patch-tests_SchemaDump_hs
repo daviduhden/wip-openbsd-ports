@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Bracket every schema-test store and give the strict-table test its own
 temporary directory. Keep the full schema comparison unchanged.
 

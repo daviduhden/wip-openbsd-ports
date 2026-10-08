@@ -56,9 +56,9 @@ and configuring doas:
 doas ./fetch-ports.ksh --no-provision
 ```
 
-Every patch has one target file, an `Index:` header and an
-`SPDX-License-Identifier:` for that component. Dependency sources requiring
-LF conversion are normalized with `dos2unix` before dependency patches.
+Every patch has one target file and an `Index:` header. Dependency
+sources requiring LF conversion are normalized with `dos2unix` before
+dependency patches.
 
 ## General Workflow
 

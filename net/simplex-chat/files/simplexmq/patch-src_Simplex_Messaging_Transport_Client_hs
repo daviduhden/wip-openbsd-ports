@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Avoid relying on Default for certificate validation errors with newer deps.
 
 Keep TLS shutdown interruptible.  tls-2.4's bye waits for a bounded TLS 1.3

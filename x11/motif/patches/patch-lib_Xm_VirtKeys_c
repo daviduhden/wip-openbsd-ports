@@ -1,5 +1,3 @@
-SPDX-License-Identifier: LGPL-2.1-or-later
-
 Check bounds before accessing the keycaps table.
 
 Index: lib/Xm/VirtKeys.c

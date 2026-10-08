@@ -1,5 +1,3 @@
-SPDX-License-Identifier: BSD-3-Clause
-
 Use the managed sender in runIO, as run already does. The IO sender requeues
 output without waiting for stream credit or body input. An empty producer
 queue or exhausted stream window can keep outputQ nonempty, spin, and leave

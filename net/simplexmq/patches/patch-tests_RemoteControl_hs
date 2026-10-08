@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Use loopback multicast for a local pairing test; a builder's LAN firewall
 must not determine whether its two local peers can discover one another.
 The multicast transport and authenticated pairing remain exercised.

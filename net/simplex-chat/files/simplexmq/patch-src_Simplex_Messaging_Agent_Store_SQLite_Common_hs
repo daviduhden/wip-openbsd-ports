@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Reject access to a closed store under its connection lock before calling
 SQLite. Use real nested savepoints to roll back partial writes before
 retrying a uniqueness conflict, preserving the outer transaction.

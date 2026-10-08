@@ -1,5 +1,3 @@
-SPDX-License-Identifier: LGPL-2.1-or-later
-
 Do not use a ^| table marker that OpenBSD groff rejects.
 
 Index: doc/man/man3/XmDisplay.3

@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Adapt to http2 5.x without returning streamed bodies from H.run's callback:
 H.run drains queued DATA when that callback returns, while SimpleX passes
 the body reader to another thread. Use the explicit stream-ownership API;

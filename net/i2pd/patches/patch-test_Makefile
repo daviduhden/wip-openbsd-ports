@@ -1,5 +1,3 @@
-SPDX-License-Identifier: BSD-3-Clause
-
 Do not link the test programs against a separate Boost.System library;
 use the header-only implementation from the packaged Boost version.
 

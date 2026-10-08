@@ -1,0 +1,21 @@
+SPDX-License-Identifier: MIT OR Apache-2.0
+
+Build diff and cmp as independent binaries instead of the single
+multicall diffutils binary.
+
+Index: Cargo.toml
+--- Cargo.toml.orig
++++ Cargo.toml
+@@ -11,7 +11,11 @@
+ path = "src/lib.rs"
+ 
+ [[bin]]
+-name = "diffutils"
++name = "diff"
++path = "src/main.rs"
++
++[[bin]]
++name = "cmp"
+ path = "src/main.rs"
+ 
+ [dependencies]

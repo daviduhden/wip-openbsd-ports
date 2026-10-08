@@ -1,1 +1,2 @@
-@bin bin/uu-diffutils
+@bin bin/uu-cmp
+@bin bin/uu-diff

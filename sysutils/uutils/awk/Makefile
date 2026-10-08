@@ -3,7 +3,7 @@ COMMENT =	alternative implementation of awk
 # awk has not cut a release yet; pin the revision this port was prepared
 # against.  Its indexmap-allocator-api git dependency is fetched from the
 # recorded commit and wired in by patches/patch-interpreter_Cargo_toml.
-AWK_COMMIT =		a0b5a8c1705e12efa0912aade1f9d0a423a9badc
+AWK_COMMIT =		5e3a13c917fb470893c6fed71dc9413e30e3b146
 INDEXMAP_COMMIT =	36852f985c01fb9f58f2d9e510655ca1dbb1f4d0
 
 # The package version is the one in awk's workspace; the distfile is the

@@ -9,7 +9,7 @@ daemon_flags="serve"
 . /etc/rc.d/rc.subr
 
 rc_bg=YES
-rc_reload=NO
+rc_reload=YES
 
 # Soft Serve resolves its data directory and listener configuration from
 # the environment.  su(1) resets the environment for the daemon user, so

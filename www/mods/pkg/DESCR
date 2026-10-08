@@ -1,0 +1,4 @@
+Mods is a command-line client for large language models. It reads input
+from files, standard input or the command line, applies a configurable
+prompt and streams the model's answer back to the terminal. Both
+OpenAI-compatible and Anthropic endpoints can be configured.

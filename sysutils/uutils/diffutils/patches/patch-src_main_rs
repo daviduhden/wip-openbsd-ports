@@ -1,0 +1,19 @@
+SPDX-License-Identifier: MIT OR Apache-2.0
+
+Dispatch on the uu- prefixed binary name used by the OpenBSD packages in
+addition to the upstream names.
+
+Index: src/main.rs
+--- src/main.rs.orig
++++ src/main.rs
+@@ -66,7 +66,9 @@
+             .cloned()
+             .unwrap_or_else(|| second_arg_error(exe_name))
+     } else {
+-        OsString::from(exe_name)
++        // OpenBSD installs the utilities with a uu- prefix.
++        let s = exe_name.to_string_lossy();
++        OsString::from(s.strip_prefix("uu-").unwrap_or_else(|| s.as_ref()))
+     };
+ 
+     match util_name.to_str() {

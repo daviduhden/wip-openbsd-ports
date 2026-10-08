@@ -1,5 +1,3 @@
-SPDX-License-Identifier: MIT
-
 Honor variables supplied by the ports framework and append to its
 CFLAGS.  Clear SYSLIBS because OpenBSD provides crypt(3) in libc, while
 xmsm uses BSD Authentication instead of crypt(3) to unlock the screen.

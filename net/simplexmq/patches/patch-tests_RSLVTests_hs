@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Close all protocol clients on success and failure, and identify the failing proxy setup stage.
 
 Index: tests/RSLVTests.hs

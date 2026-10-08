@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Preserve asynchronous cancellation during web preview rendering and stale
 file cleanup so stopChatController can join the web preview worker.
 

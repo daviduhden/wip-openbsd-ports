@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Exercise rollback of partial writes within an outer transaction. Use the
 store close operation for fixture cleanup, including already closed stores.
 

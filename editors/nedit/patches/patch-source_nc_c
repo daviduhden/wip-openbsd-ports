@@ -1,5 +1,3 @@
-SPDX-License-Identifier: GPL-2.0-or-later
-
 Rename the client program in the usage help and avoid the %n printf
 conversion.
 

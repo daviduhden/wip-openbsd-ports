@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Provide a restartable stop operation that joins the statistics finalizer
 before the store is closed. Serialize stop, resume and disposal so a second
 closer cannot return while the first is still using SQLite. Route acceptance

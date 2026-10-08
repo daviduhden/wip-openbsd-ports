@@ -1,5 +1,3 @@
-SPDX-License-Identifier: MIT
-
 Avoid using uninitialized variables: 'rv' may be read without ever
 being assigned (it is only set in the vfork(2)ed child when execvp(3)
 fails) and 'exec_str' is never assigned at all, so the error message

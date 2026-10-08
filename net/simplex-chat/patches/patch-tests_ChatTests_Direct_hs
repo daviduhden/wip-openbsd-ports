@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Check contact readiness without a settling sleep. Check the ended-call
 status, history, direction and duration against measured elapsed time,
 instead of assuming that the complete call always takes zero seconds.

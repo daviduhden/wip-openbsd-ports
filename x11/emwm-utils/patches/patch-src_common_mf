@@ -1,5 +1,3 @@
-SPDX-License-Identifier: MIT
-
 Keep the unused upstream install target consistent with this port's
 non-setuid privilege model.  The package list later applies setgid auth.
 

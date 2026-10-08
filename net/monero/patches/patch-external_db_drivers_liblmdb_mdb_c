@@ -1,5 +1,3 @@
-SPDX-License-Identifier: BSD-3-Clause
-
 Enforce MDB_WRITEMAP on OpenBSD because we lack a Unified Buffer Cache,
 so mmap and write/read are not coherent. All I/O must go through the mmap.
 

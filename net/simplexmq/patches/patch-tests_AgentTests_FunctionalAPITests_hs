@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Keep the asynchronous integration workloads meaningful on slower OpenBSD
 builders: preserve the original 50-message two-way workload after an upstream
 refactor changed its counter from total messages to messages per peer, use one

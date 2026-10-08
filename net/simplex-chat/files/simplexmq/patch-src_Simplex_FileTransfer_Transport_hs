@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Catch file IO errors without intercepting the receive deadline or thread
 cancellation. The server wraps receiveFile in timeout; catching SomeException
 inside it turned its timeout into FILE_IO and swallowed ThreadKilled too.

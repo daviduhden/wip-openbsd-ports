@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Make protocol-client shutdown synchronous.  The old close operation only sent
 ThreadKilled and returned while the TLS bracket, socket close and disconnect
 callback were still running.  Track completion of the transport action and

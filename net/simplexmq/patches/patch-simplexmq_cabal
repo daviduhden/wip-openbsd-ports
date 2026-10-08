@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Use the crypton-era ASN.1 packages, time-hourglass, ram byte arrays,
 and the tls 2.4 API targeted by the OpenBSD compatibility patches.
 Declare the existing clock dependency for the AUTH timing test's direct

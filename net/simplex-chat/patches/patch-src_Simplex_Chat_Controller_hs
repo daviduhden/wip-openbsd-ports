@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Keep ownership of controller startup jobs and joinable timed-item tasks.
 Catch only synchronous database exceptions: converting ThreadKilled or
 AsyncCancelled into a ChatError lets workers continue after cancellation

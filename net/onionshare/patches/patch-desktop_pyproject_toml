@@ -1,5 +1,3 @@
-SPDX-License-Identifier: GPL-3.0-or-later
-
 Use the separately installed onionshare_cli package rather than an
 editable source-tree dependency. Allow the Python and PySide6 versions
 supplied by ports.

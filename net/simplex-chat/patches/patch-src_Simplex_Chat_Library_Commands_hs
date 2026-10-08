@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Join startup, subscription, delivery, cleanup and timed-item tasks before
 returning from /stop. Stop the agent statistics finalizer while its store
 is still open. Publish startup ownership before allowing database access,

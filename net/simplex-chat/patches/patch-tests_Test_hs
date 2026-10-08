@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Do not let the CI environment variable decide which examples run.  The
 broadcast bot example needs an interactive stdin (the bot reads stdin in a
 loop and gets EOF in a non-interactive build), so skip it unconditionally,

@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Make the timed-message preference examples deterministic by using a ttl
 comfortably larger than the assertions (a 1s ttl is exceeded by the setup on
 a loaded builder).  Give the persistent-server retry examples more time to

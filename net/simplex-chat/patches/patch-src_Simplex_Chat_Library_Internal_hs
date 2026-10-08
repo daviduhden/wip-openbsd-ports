@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Publish joinable timed-item tasks under an exception mask. Their owner
 can now wait for cancellation before closing or replacing the chat store.
 

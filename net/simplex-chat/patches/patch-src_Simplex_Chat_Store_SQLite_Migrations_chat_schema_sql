@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Match the schema snapshot to sqlite3 3.53.2 from ports. Its --indent
 formatter removes whitespace before a closing parenthesis, including the
 newline after a comment on the last column, and sqlite_master drops the

@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Collect Haskell query counters under the connection lock even when a
 maintenance test already closed the database, then dispose the agent.
 Never query a closed C handle to collect this metadata.

@@ -1,5 +1,3 @@
-SPDX-License-Identifier: BSD-3-Clause
-
 Adapt the ChaCha20-Poly1305 setup to crypton 2.1, where
 ChaChaPoly1305.initialize takes an opaque Key built by
 ChaChaPoly1305.key instead of the raw key, and no longer

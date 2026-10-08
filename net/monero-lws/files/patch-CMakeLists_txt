@@ -1,5 +1,3 @@
-SPDX-License-Identifier: BSD-3-Clause
-
 Avoid -Ofast, set C++17 for protobuf compatibility, improve OpenBSD
 detection for EXTRA_LIBRARIES, and use the ports readline/curses
 libraries when building through the depends CMake path on OpenBSD.

@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Close the SQLCipher stores opened by the final schema-dump tests.  Open file
 descriptors do not by themselves keep the GHC runtime alive, so this is not the
 primary shutdown fix, but leaving three connections open until process exit

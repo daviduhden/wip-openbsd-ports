@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Make the chat-list preview item selection deterministic.
 
 findGroupChatPreviews_, findDirectChatPreviews_ and findLocalChatPreviews_

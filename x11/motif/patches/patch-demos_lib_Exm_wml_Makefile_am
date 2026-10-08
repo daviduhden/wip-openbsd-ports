@@ -1,5 +1,3 @@
-SPDX-License-Identifier: LGPL-2.1-or-later
-
 GNU make provides RM as a built-in variable, BSD make does not, and
 automake no longer defines it either.  Define it so the $(RM)
 recipes work with make(1).

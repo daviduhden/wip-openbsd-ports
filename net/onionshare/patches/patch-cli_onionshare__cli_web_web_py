@@ -1,5 +1,3 @@
-SPDX-License-Identifier: GPL-3.0-or-later
-
 Require the gevent SocketIO backend provided by the port rather than
 silently selecting another backend when gevent initialization fails.
 

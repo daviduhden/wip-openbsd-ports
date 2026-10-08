@@ -1,5 +1,3 @@
-SPDX-License-Identifier: BSD-3-Clause
-
 Teach the depends toolchain file to use OpenBSD's ereadline and curses paths.
 
 Index: contrib/depends/toolchain.cmake.in

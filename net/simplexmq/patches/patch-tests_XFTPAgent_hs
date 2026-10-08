@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Bound the wrong-certificate test and exercise the advertised version matrix.
 Synchronize interrupted sends with persisted encryption state and a full
 one-element event queue, keeping chunks pending for restart and AUTH cleanup.

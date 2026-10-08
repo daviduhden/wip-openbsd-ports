@@ -1,5 +1,3 @@
-SPDX-License-Identifier: AGPL-3.0-only
-
 Handle the Underlining constructor added in newer terminal library
 versions. Underlining is a text decoration, not a color layer, so
 fall back to the foreground color as a sensible default.

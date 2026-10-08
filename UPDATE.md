@@ -6,7 +6,7 @@ dependency-tracking port modules:
 | Module | Ports | Generated file |
 | --- | --- | --- |
 | `devel/cargo` | `editors/msedit`, `sysutils/uutils` | `crates.inc` |
-| `lang/go` | `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/shfmt`, `net/xd-torrent` | `modules.inc` |
+| `lang/go` | `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/shfmt`, `net/xd-torrent` and the Charm CLI/TUI ports (`devel/gum`, `devel/sequin`, `devel/soft-serve`, `net/wishlist`, `textproc/glow`, ...) | `modules.inc` |
 | `devel/cabal` | `devel/fourmolu`, `net/simplexmq`, `net/simplex-chat` | `cabal.inc` |
 
 The generated file lists every dependency the build is allowed to use.
@@ -130,6 +130,12 @@ Example: `net/xd-torrent`.
 `modules.inc` records `MODGO_MODULES` and `MODGO_MODFILES`. Bump
 `MODGO_VERSION` in the `Makefile` first. Some ports also carry the
 version in `DISTNAME`, `PKGNAME` or `MODGO_LDFLAGS`.
+
+Several Charm ports publish under the `charm.land` namespace with a
+major-version suffix. Set `MODGO_MODNAME` to the full module path
+(`charm.land/gum/v2`, `charm.land/glow/v3`) and keep `DISTNAME` on the
+upstream project name; `lang/go` derives the proxy URL and the extracted
+directory from `MODGO_MODNAME`.
 
 Regenerate the module list:
 

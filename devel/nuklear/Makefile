@@ -5,6 +5,7 @@ GH_PROJECT =		Nuklear
 GH_TAGNAME =		v4.13.3
 PKGNAME =		nuklear-${GH_TAGNAME:S/v//}
 CATEGORIES =		devel
+HOMEPAGE =		https://github.com/Immediate-Mode-UI/Nuklear
 
 # MIT or public domain; embedded ProggyClean font: MIT
 PERMIT_PACKAGE =	Yes

@@ -8,6 +8,7 @@ GH_TAGNAME =	v${MODPY_DISTV}
 PKGNAME =	py-ripe.atlas.cousteau-${MODPY_DISTV}
 
 CATEGORIES =	net
+HOMEPAGE =	https://github.com/RIPE-NCC/ripe-atlas-cousteau
 
 # GPLv3
 PERMIT_PACKAGE =	Yes

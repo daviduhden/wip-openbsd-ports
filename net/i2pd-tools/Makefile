@@ -4,6 +4,7 @@ GH_ACCOUNT =		PurpleI2P
 GH_PROJECT =		i2pd-tools
 GH_TAGNAME =		2.58.0
 CATEGORIES =		net
+HOMEPAGE =		https://github.com/PurpleI2P/i2pd-tools
 
 # BSD-3-Clause (tools and the pinned i2pd sources)
 PERMIT_PACKAGE =	Yes

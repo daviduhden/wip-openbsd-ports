@@ -1,0 +1,4 @@
+Markscribe renders markdown files from Go templates, substituting data
+pulled from GitHub (repositories, stars, sponsors, gists), RSS feeds and
+Goodreads. It is intended to keep profile READMEs and other repetitive
+markdown documents up to date.

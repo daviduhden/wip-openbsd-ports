@@ -6,9 +6,9 @@ uutests instead of resolving them from the network at build time.
 Index: Cargo.toml
 --- Cargo.toml.orig
 +++ Cargo.toml
-@@ -47,8 +47,8 @@
+@@ -43,8 +43,8 @@
+ tar = "0.4"
  tempfile = "3.10.1"
- textwrap = { version = "0.16.1", features = ["terminal_size"] }
  thiserror = "2.0.3"
 -uucore = { git = "https://github.com/uutils/coreutils" }
 -uutests = { git = "https://github.com/uutils/coreutils" }

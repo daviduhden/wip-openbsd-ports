@@ -11,4 +11,4 @@ daemon_flags="--service \
 
 . /etc/rc.d/rc.subr
 
-rc_cmd $1
+rc_cmd "$1"

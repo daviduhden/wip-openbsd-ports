@@ -1,0 +1,4 @@
+Glow renders markdown from local files, standard input and remote
+documents directly in the terminal. It can browse a directory of
+markdown files, keep a stash of documents and apply a configurable
+style, using the glamour markdown renderer.

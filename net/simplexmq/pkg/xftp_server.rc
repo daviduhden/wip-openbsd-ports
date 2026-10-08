@@ -4,10 +4,19 @@ daemon="${TRUEPREFIX}/bin/xftp-server"
 daemon_flags="start"
 daemon_user="_simplexmq"
 daemon_logger="daemon.info"
-rc_env="XFTP_SERVER_CFG_PATH=/etc/simplex/xftp-server \
-	XFTP_SERVER_LOG_PATH=/var/simplex/xftp-server"
 
 . /etc/rc.d/rc.subr
 
 rc_bg=YES
+rc_reload=NO
+
+# rc.subr(8) does not forward an rc_env variable and su(1) resets the
+# environment for the daemon user, so the configuration and log paths are
+# set in the command string instead.
+rc_start() {
+	rc_exec "XFTP_SERVER_CFG_PATH=/etc/simplex/xftp-server \
+		XFTP_SERVER_LOG_PATH=/var/simplex/xftp-server \
+		${daemon} ${daemon_flags}"
+}
+
 rc_cmd "$1"

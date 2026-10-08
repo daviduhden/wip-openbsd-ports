@@ -4,7 +4,6 @@ MODGO_MODNAME=	github.com/zyedidia/micro/v2
 MODGO_VERSION=	v2.0.15
 
 DISTNAME=	micro-${MODGO_VERSION}
-REVISION=	0
 CATEGORIES=	editors
 HOMEPAGE=	https://micro-editor.github.io/
 

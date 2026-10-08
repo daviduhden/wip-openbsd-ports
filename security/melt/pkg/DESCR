@@ -1,0 +1,4 @@
+Melt converts Ed25519 SSH keys to and from BIP-39 seed phrases. It can
+back up a private key as a human-writable mnemonic and restore the key
+from those words later, which makes it possible to keep a recoverable
+copy of an SSH identity without storing the raw key.

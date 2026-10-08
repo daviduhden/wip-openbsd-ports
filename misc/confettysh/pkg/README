@@ -1,0 +1,27 @@
++--------+
+|Confettysh|
++--------+
+
+Confettysh runs an SSH server that plays terminal visual effects for
+connecting clients.  It is a public, unauthenticated demonstration
+service: anyone who can reach the port can connect and view the
+effects.  Do not run it on an untrusted network without a packet
+filter rule.
+
+The rc.d(8) script runs the server as the _confettysh user with
+/var/db/confettysh as the working directory.  Host keys are written to
+/var/db/confettysh/.ssh and persist across restarts.
+
+	doas rcctl enable confettysh
+	doas rcctl start confettysh
+
+By default the server listens on 0.0.0.0:2222 and also exposes the
+Prometheus metrics endpoint on 0.0.0.0:9222.  Both addresses come from
+the single -listen flag.  Override the defaults in /etc/rc.conf.local,
+for example:
+
+	confettysh_flags="-listen 127.0.0.1 -port 2222 -metrics-port 9222"
+
+Connect with:
+
+	ssh -p 2222 localhost

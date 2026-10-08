@@ -1,0 +1,17 @@
+#!/bin/ksh
+
+daemon="${TRUEPREFIX}/bin/confettysh"
+daemon_user="_confettysh"
+daemon_flags="-listen 0.0.0.0 -port 2222 -metrics-port 9222"
+daemon_logger="daemon.info"
+# confettysh writes its per-endpoint host keys to .ssh/ below the
+# current directory, so run it from a persistent, service-owned
+# directory with restrictive permissions.
+daemon_execdir="/var/db/confettysh"
+
+. /etc/rc.d/rc.subr
+
+rc_bg=YES
+rc_reload=NO
+
+rc_cmd "$1"

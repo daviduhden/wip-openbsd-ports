@@ -1,0 +1,11 @@
+@newgroup _confettysh:910
+@newuser _confettysh:910:910::Confettysh account:${LOCALSTATEDIR}/confettysh:/sbin/nologin
+@rcscript ${RCDIR}/confettysh
+@bin bin/confettysh
+@owner _confettysh
+@group _confettysh
+@mode 700
+@sample ${LOCALSTATEDIR}/confettysh/
+@mode
+@owner
+@group

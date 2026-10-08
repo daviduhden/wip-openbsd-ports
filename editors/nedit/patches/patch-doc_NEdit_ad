@@ -1,8 +1,9 @@
 Enable the previously commented X resources in the installed application
 defaults, including fonts, colors, translations and menu accelerators.
 
---- doc/NEdit.ad.orig	2003-09-29 01:03:50.000000000 +1000
-+++ doc/NEdit.ad	2003-12-04 22:25:59.000000000 +1100
+Index: doc/NEdit.ad
+--- doc/NEdit.ad.orig
++++ doc/NEdit.ad
 @@ -8,188 +8,188 @@
  ! Application defaults for NEdit 5.4
  !

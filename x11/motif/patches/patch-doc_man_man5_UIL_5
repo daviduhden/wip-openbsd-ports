@@ -1,8 +1,8 @@
 Do not use redundant ^| table markers that OpenBSD groff rejects.
 
 Index: doc/man/man5/UIL.5
---- doc/man/man5/UIL.5.orig	Fri Jan  4 22:56:47 2002
-+++ doc/man/man5/UIL.5	Fri Apr 23 20:39:33 2010
+--- doc/man/man5/UIL.5.orig
++++ doc/man/man5/UIL.5
 @@ -1071,8 +1071,7 @@ allocation per use\&.
  .TS
  tab() box;

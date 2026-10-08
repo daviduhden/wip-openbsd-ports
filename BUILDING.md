@@ -92,8 +92,8 @@ dependency data next to the `Makefile`:
 - `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/gum`,
   `devel/sequin`, `devel/shfmt`, `devel/soft-serve`, `net/wishlist`,
   `net/xd-torrent` and the other Charm CLI/TUI ports under `databases`,
-  `graphics`, `mail`, `misc`, `multimedia`, `security`, `textproc` and
-  `www` use `lang/go` and `modules.inc`.
+  `graphics`, `mail`, `misc`, `multimedia`, `security` and `textproc`
+  use `lang/go` and `modules.inc`.
 - `devel/fourmolu`, `net/simplexmq` and `net/simplex-chat` use
   `devel/cabal` and `cabal.inc`.
 

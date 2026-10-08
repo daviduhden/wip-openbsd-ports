@@ -1,6 +1,6 @@
 COMMENT=	client/server implementation of Engine.IO
 
-MODPY_DISTV=	4.13.3
+MODPY_DISTV=	4.14.0
 DISTNAME=	python_engineio-${MODPY_DISTV}
 PKGNAME=	py-engineio-${MODPY_DISTV}
 

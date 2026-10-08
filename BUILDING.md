@@ -3,9 +3,9 @@
 Ports use the same `category/port` layout as the OpenBSD ports tree,
 including nested subports grouped under a shared directory
 (`category/group/port`, like `sysutils/uutils/awk`).
-The categories currently present are `devel`, `editors`, `games`,
-`graphics`, `multimedia`, `net`, `security`, `shells`, `sysutils`,
-`www` and `x11`.
+The categories currently present are `databases`, `devel`, `editors`,
+`games`, `graphics`, `mail`, `misc`, `multimedia`, `net`, `security`,
+`shells`, `sysutils`, `textproc`, `www` and `x11`.
 List the installable paths without checking out or changing anything:
 
 ```sh
@@ -89,8 +89,11 @@ dependency data next to the `Makefile`:
 - `sysutils/uutils` is a group of subports (`coreutils`, `findutils`,
   `diffutils`, `grep`, `sed`, `awk`, `tar`); each builds one project
   and keeps its own `crates.inc`.
-- `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/shfmt`
-  and `net/xd-torrent` use `lang/go` and `modules.inc`.
+- `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/gum`,
+  `devel/sequin`, `devel/shfmt`, `devel/soft-serve`, `net/wishlist`,
+  `net/xd-torrent` and the other Charm CLI/TUI ports under `databases`,
+  `graphics`, `mail`, `misc`, `multimedia`, `security`, `textproc` and
+  `www` use `lang/go` and `modules.inc`.
 - `devel/fourmolu`, `net/simplexmq` and `net/simplex-chat` use
   `devel/cabal` and `cabal.inc`.
 

@@ -1,0 +1,30 @@
+#!/bin/ksh
+
+daemon="${TRUEPREFIX}/bin/soft"
+daemon_user="_softserve"
+daemon_logger="daemon.info"
+daemon_execdir="/var/db/soft-serve"
+daemon_flags="serve"
+
+. /etc/rc.d/rc.subr
+
+rc_bg=YES
+rc_reload=NO
+
+# Soft Serve resolves its data directory and listener configuration from
+# the environment.  su(1) resets the environment for the daemon user, so
+# the variables are set as part of the command string instead.
+#
+# The unauthenticated git:// daemon and the stats endpoint are disabled
+# by default.  The HTTP interface is bound to localhost; set
+# SOFT_SERVE_HTTP_LISTEN_ADDR to expose it more widely.  Enable the git
+# daemon only on trusted networks.
+rc_start() {
+	rc_exec "SOFT_SERVE_DATA_PATH=/var/db/soft-serve \
+		SOFT_SERVE_GIT_ENABLED=false \
+		SOFT_SERVE_HTTP_LISTEN_ADDR=localhost:23232 \
+		SOFT_SERVE_STATS_ENABLED=false \
+		${daemon} ${daemon_flags}"
+}
+
+rc_cmd "$1"

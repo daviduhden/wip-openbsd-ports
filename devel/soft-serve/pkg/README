@@ -1,0 +1,39 @@
++--------+
+|Soft Serve|
++--------+
+
+Soft Serve stores all of its state below /var/db/soft-serve: the Git
+repositories, the SQLite database, the SSH host and client keys and the
+configuration file.  The rc.d(8) script starts the server as the
+_softserve user with /var/db/soft-serve as the working directory.
+
+The rc.d(8) script disables the unauthenticated git:// daemon and the
+stats endpoint and binds the HTTP interface to localhost.  The SSH
+listener remains enabled on port 23231 on all interfaces.
+
+Initial setup:
+
+	doas rcctl enable soft_serve
+	doas rcctl start soft_serve
+
+The first SSH client to connect and choose a username becomes the
+administrator:
+
+	ssh -p 23231 localhost
+
+For non-interactive provisioning, add an SSH public key to
+SOFT_SERVE_INITIAL_ADMIN_KEYS in the rc_start() environment before the
+first start, or import keys later with:
+
+	doas -u _softserve soft admin user create \
+		--username admin --admin \
+		--public-key "$(cat ~/.ssh/id_ed25519.pub)"
+
+Listener configuration is read from /var/db/soft-serve/config.yaml.
+The default configuration enables the SSH server (:23231), the git
+daemon (:9418), the HTTP server (:23232) and the stats endpoint
+(localhost:23233); the rc.d(8) environment above overrides the git,
+HTTP and stats settings.
+
+The generated configuration file is owned by _softserve and is not
+managed by the package: it is preserved across upgrades.

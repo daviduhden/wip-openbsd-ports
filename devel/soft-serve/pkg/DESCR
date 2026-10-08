@@ -1,0 +1,5 @@
+Soft Serve is a self-hostable Git server for the command line. It serves
+repositories over SSH (with an interactive terminal interface), over the
+Git protocol and over HTTP, manages public keys and collaborators, and
+supports Git LFS. Repository storage, the SQLite database, host keys and
+the configuration all live under a single data directory.

@@ -4,7 +4,7 @@ COMMENT =	alternative implementation of tar
 # against.  Its unreleased uucore and uutests come from the coreutils
 # checkout recorded in tar's Cargo.lock and wired in by
 # patches/patch-Cargo_toml.
-TAR_COMMIT =	95cc92d49fc304b3087542899b29b049fd1e3945
+TAR_COMMIT =	ad4ce760660ccbcb81b86dfc558e95fbc59c064f
 UUCORE_COMMIT =	9f29502db083d57553c65ec3c8ed94a1e29fed21
 
 # The package version is the one in tar's manifest; the distfile is the

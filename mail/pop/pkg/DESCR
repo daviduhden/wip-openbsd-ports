@@ -1,0 +1,4 @@
+Pop is a terminal email client built around the Charm TUI stack. It can
+compose and send mail through an SMTP server, through a Gmail account or
+through the Resend API, and keeps messages and attachments usable from
+the command line.

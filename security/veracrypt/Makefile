@@ -34,7 +34,7 @@ RUN_DEPENDS=		devel/desktop-file-utils \
 
 WRKDIST=		${WRKDIR}/src
 USE_GMAKE=		Yes
-ALL_TARGET=		
+ALL_TARGET=
 MAKE_FLAGS=		VERBOSE=1 \
 			NOTEST=1 \
 			CC="${CC}" \

@@ -21,6 +21,12 @@ WANTLIB +=		c pthread
 
 MODULES =		lang/go
 
+# freeze rasterises its generated SVG with rsvg-convert when it is
+# present, and only falls back to the bundled resvg WebAssembly renderer
+# otherwise. The fallback needs executable memory mappings, so pull in
+# librsvg to get the preferred SVG rasteriser.
+RUN_DEPENDS =		x11/gnome/librsvg
+
 # Upstream release binaries inject the tag version into main.Version.
 MODGO_LDFLAGS +=	-X main.Version=${MODGO_VERSION}
 

@@ -4,9 +4,40 @@
 0.160.1. Validation for this task is exclusively static: it does not establish
 that the port builds or that a real session works on OpenBSD.
 
+## Update to Codex 0.162.0
+
+The port targets tag `rust-v0.162.0`, commit
+`c1382380de69521303b416720a52f42d51af6248`. The system daemon layout,
+manifest validation, update guards, and memory settings remain unchanged.
+The daemon patches apply unchanged; upstream now also uses the managed
+daemon for eligible plain `codex remote-control` invocations.
+
+Four patches are refreshed. The apply_patch handler patch now uses upstream's
+verification APIs without an explicit line-ending mode; upstream preserves
+line endings by default. The OpenBSD exception still applies only to local
+environments with full disk read access, preserving verification contexts
+for remote environments and restricted read policies.
+
+Crossterm is supplied by openai-oss-forks at revision
+`ed1cdab335221515706178d68495bba2aed1924f`, matching Cargo.lock. Its Unix
+backend and dependencies remain applicable to OpenBSD. Registry changes
+replace age/age-core with 0.12.1/0.12.0, update their localization and macro
+dependencies, and add hpke 0.12.0. All eleven added or updated registry
+archives were verified against Cargo.lock and reviewed; none declares a
+native library through `links` or adds a build dependency. No new native
+library dependency or installed file change was identified. V8 150.4.0,
+aws-lc-sys 0.45.0, and kqueue 1.1.1 remain unchanged, with archive checksums
+verified against Cargo.lock.
+
+All 83 patches apply to clean sources without fuzz, offsets, or rejects.
+The modified Rust files pass rustfmt checks; no type check, build, or runtime
+test was performed. As in the previous update, `distinfo` and `crates.inc`
+are retained and must be regenerated using [UPDATE.md](../../UPDATE.md)
+before building on OpenBSD. Temporary sources are deleted after validation.
+
 ## Update to Codex 0.161.0
 
-The port now targets tag `rust-v0.161.0`, commit
+The 0.161.0 update targeted tag `rust-v0.161.0`, commit
 `979011409de0a60b52f179721948e65531d26144`. The analysis below records the
 original 0.160.1 integration; its system daemon layout and ownership model
 remain in place for 0.161.0. Upstream adds daemon diagnostics, preserves

@@ -4,7 +4,7 @@ the outer error alone hides the filesystem failure useful for diagnosis.
 Index: codex-rs/apply-patch/src/lib.rs
 --- codex-rs/apply-patch/src/lib.rs.orig
 +++ codex-rs/apply-patch/src/lib.rs
-@@ -438,7 +438,7 @@
+@@ -406,7 +406,7 @@
              Ok(delta)
          }
          Err(error) => {

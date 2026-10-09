@@ -1,7 +1,7 @@
 COMMENT =		coding agent with a rich terminal UI
 
 MODGO_MODNAME =		github.com/charmbracelet/crush
-MODGO_VERSION =		v0.97.1
+MODGO_VERSION =		v0.98.1
 
 DISTNAME =		crush-${MODGO_VERSION}
 WRKDIST =		${WRKDIR}/${MODGO_MODNAME}@${MODGO_VERSION}
@@ -10,7 +10,7 @@ CATEGORIES =		devel
 
 HOMEPAGE =		https://github.com/charmbracelet/crush
 
-# FSL-1.1-MIT
+# FSL-1.1 (no-compete terms), old versions become MIT after 2 years
 PERMIT_PACKAGE =	Yes
 
 WANTLIB += c pthread

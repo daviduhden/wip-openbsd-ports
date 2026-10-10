@@ -64,6 +64,26 @@ These commands are for later OpenBSD validation. Only the generated TOML
 and port changes were checked statically during this follow-up; no build
 or memory measurement was performed.
 
+## Update to Codex 0.162.1
+
+The port targets tag `rust-v0.162.1`, commit
+`092d3acd6bec3e3a14bdc7e7a2810ab628ab759d`. Compared with 0.162.0,
+Cargo.lock is unchanged, including all registry checksums and pinned Git
+dependencies. No dependency, installed file, or patch changes are needed.
+
+Upstream changes daemon compatibility checks to consider explicit CLI feature
+overrides and respect managed configuration requirements. Existing daemon
+settings remain in effect until restart. These changes retain the package-owned
+daemon resolver, lifecycle, and update guards. The system daemon layout,
+manifest version substitution, and memory settings remain unchanged.
+
+All 83 patches apply without fuzz, offsets, or rejects against the new sources
+and pinned dependencies. The three patched registry archives match their
+Cargo.lock checksums. Validation is static only; no build or runtime tests
+were performed. As requested, `distinfo` and `crates.inc` are not regenerated;
+regenerate them on OpenBSD before building. Temporary source contents are
+removed after validation, retaining the empty temporary directory.
+
 ## Update to Codex 0.162.0
 
 The port targets tag `rust-v0.162.0`, commit

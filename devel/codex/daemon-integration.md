@@ -4,6 +4,66 @@
 0.160.1. Validation for this task is exclusively static: it does not establish
 that the port builds or that a real session works on OpenBSD.
 
+## Follow-up: codex-core compiler allocation failure
+
+An OpenBSD build report for 0.162.0 shows rustc aborting with an allocation
+failure while compiling codex-core at `opt-level=2`, `codegen-units=1`, and
+without embedded bitcode. The earlier single-codegen-unit setting did not
+solve the failure. It can increase the size of the LLVM module processed
+at once; serial Cargo jobs and code generation unit size are separate concerns.
+
+The port keeps `MAKE_JOBS=1`, removes the global single-unit override, and
+sets `CARGO_PROFILE_RELEASE_LTO=off`. Cargo distinguishes `lto=false`, which
+can still enable local ThinLTO, from `lto="off"`, which disables it entirely.
+The post-configure hook appends a package-specific profile to the Cargo
+module's `${WRKDIR}/.cargo/config.toml`:
+
+```toml
+[profile.release.package.codex-core]
+opt-level = 1
+codegen-units = 16
+```
+
+This reduces optimization work for codex-core and divides it into smaller
+code generation units. Other crates retain the module's optimization and
+codegen-unit settings. The configuration and environment also apply during
+Cargo installation. Lower optimization and disabled LTO may reduce runtime
+performance; lower compiler memory usage remains to be measured on OpenBSD.
+See the [Cargo profile documentation](https://doc.rust-lang.org/cargo/reference/profiles.html).
+
+The allocation error and SIGABRT do not distinguish exhausted system memory
+from a process data limit. On OpenBSD, `RLIMIT_DATA` covers malloc and
+anonymous mmap allocations; see [getrlimit(2)](https://man.openbsd.org/getrlimit.2).
+Check limits in the actual build environment, including the build user's
+limits when using privilege separation. Do not infer them only from the
+interactive user's shell.
+
+After copying the updated port into the OpenBSD ports tree, reconfigure it
+with a clean build so the new hook runs:
+
+```sh
+cd /usr/ports/devel/codex
+make clean
+make configure
+cat "$(make show=WRKDIR)/.cargo/config.toml"
+make show=MODCARGO_ENV
+make build
+```
+
+The codex-core rustc invocation must show `-C opt-level=1`,
+`-C codegen-units=16`, and `-C lto=off`. Inspect memory and limits on the build
+machine if it still fails:
+
+```sh
+ulimit -a
+swapctl -sk
+ps -ax -o pid,rss,vsz,command | grep '[r]ustc'
+```
+
+These commands are for later OpenBSD validation. Only the generated TOML
+and port changes were checked statically during this follow-up; no build
+or memory measurement was performed.
+
 ## Update to Codex 0.162.0
 
 The port targets tag `rust-v0.162.0`, commit
@@ -56,13 +116,11 @@ registry archives were also verified against Cargo.lock and reviewed for
 Unix/OpenBSD compatibility. No new native library dependency or installed
 file change was identified.
 
-To reduce peak compiler memory usage on memory-constrained machines, the port
-sets `MAKE_JOBS=1` and `CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1`. The Cargo module
-derives `CARGO_BUILD_JOBS` from `MAKE_JOBS`, serializing Cargo jobs; the profile
-override limits each crate to one code generation unit. These settings also
-apply if Cargo rebuilds during installation. Peak memory usage still needs
-validation on OpenBSD; these settings do not guarantee a fixed memory bound.
-This replaces the previous CPU-count-based MAKE_JOBS setting described below.
+The 0.161.0 update initially set `MAKE_JOBS=1` and
+`CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1` for memory-constrained machines.
+The global single-unit setting is superseded by the allocation-failure
+follow-up above; Cargo jobs remain serialized. It replaced the earlier
+CPU-count-based MAKE_JOBS setting described below.
 
 All 83 remaining patches apply to clean sources without fuzz, offsets, or
 rejects. This update uses static analysis only. The existing `distinfo` and

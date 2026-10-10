@@ -105,3 +105,5 @@
 @bin bin/uu-who
 @bin bin/uu-whoami
 @bin bin/uu-yes
+libexec/uutils-coreutils/
+libexec/uutils-coreutils/libstdbuf.so

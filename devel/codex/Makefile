@@ -85,10 +85,10 @@ MODCARGO_ENV +=		V8_FROM_SOURCE=1 \
 			use_glib=false \
 			v8_enable_cet_ibt=true"
 
-# Serialize Cargo jobs and LLVM code generation to reduce peak memory usage
-# on memory-constrained machines. cargo.port.mk derives CARGO_BUILD_JOBS from this.
+# Serialize Cargo jobs on memory-constrained machines. Keep codex-core split
+# into smaller LLVM modules (see post-configure), and disable even local LTO.
 MAKE_JOBS =		1
-MODCARGO_ENV +=		CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1
+MODCARGO_ENV +=		CARGO_PROFILE_RELEASE_LTO=off
 
 # Makes the build look more alive while compiling v8
 MODCARGO_BUILD_ARGS +=	-vv
@@ -121,6 +121,11 @@ post-patch:
 	mkdir ${V8_DISTDIR}/third_party/icu/common
 	cp ${MODCARGO_VENDOR_DIR}/deno_core_icudata-${DENO_CORE_ICUDATA_V}/src/icudtl.dat \
 	    ${V8_DISTDIR}/third_party/icu/common/
+
+post-configure:
+	printf '%s\n' '[profile.release.package.codex-core]' \
+	    'opt-level = 1' 'codegen-units = 16' \
+	    >>${WRKDIR}/.cargo/config.toml
 
 post-build:
 	${SUBST_CMD} -c ${FILESDIR}/codex-package.json \

@@ -307,17 +307,82 @@ validate_port_path() {
 	fi
 }
 
+# Flatten a category/path into a single filename component.  Only pdksh
+# constructs are used: ${var//pat/rep} is ksh93-only and the ksh shipped with
+# the OpenBSD base system (pdksh) rejects it with "bad substitution".
+flatten_path() {
+	print -r -- "$1" | tr '/' '_'
+}
+
+# Emit the tracked files under a port, relative to its root and sorted,
+# excluding the CVS metadata directories.  Used to build the created/deleted
+# lists that drive 'cvs add' and 'cvs remove'.
+list_component_files() {
+	(
+		cd "$1" || exit 1
+		find . -type d -name CVS -prune -o -type f -print
+	) | sed -e 's|^\./||' -e '/^$/d' | LC_ALL=C sort
+}
+
+# Like list_component_files(), but directories only.  CVS has to register a
+# new directory before the files it contains, so the created-directory list is
+# kept apart from the created-file list.
+list_component_dirs() {
+	(
+		cd "$1" || exit 1
+		find . -type d -name CVS -prune -o -type d -print
+	) | sed -e 's|^\./||' -e '/^$/d' | LC_ALL=C sort
+}
+
+# Record the files that disappeared from and appeared in a replaced port.
+# The two plain-text lists live in $TARGET_TREE/.wip-changes/ and contain one
+# path per line, relative to the port root: the created list feeds 'cvs add',
+# the deleted list feeds 'cvs remove'.  This is what makes it possible to
+# build a correct 'cvs diff' after a wholesale directory replacement, since
+# the new files come from a Git checkout and have no CVS metadata of their
+# own.
+write_change_lists() {
+	typeset old=$1 new=$2 label=$3
+	typeset dir="$TARGET_TREE/.wip-changes"
+	typeset tmp
+
+	if [ -L "$dir" ]; then
+		warn "Refusing symlinked changes directory: $dir"
+		return 1
+	fi
+	mkdir -p "$dir" || return 1
+	tmp=$(mktemp -d "$dir/.$label.XXXXXXXX") || return 1
+	if ! list_component_files "$old" >"$tmp/oldfiles" ||
+		! list_component_files "$new" >"$tmp/newfiles" ||
+		! list_component_dirs "$old" >"$tmp/olddirs" ||
+		! list_component_dirs "$new" >"$tmp/newdirs" ||
+		! LC_ALL=C comm -13 "$tmp/oldfiles" "$tmp/newfiles" \
+			>"$dir/$label.created.txt" ||
+		! LC_ALL=C comm -23 "$tmp/oldfiles" "$tmp/newfiles" \
+			>"$dir/$label.deleted.txt" ||
+		! LC_ALL=C comm -13 "$tmp/olddirs" "$tmp/newdirs" \
+			>"$dir/$label.created-dirs.txt"; then
+		rm -rf "$tmp"
+		return 1
+	fi
+	rm -rf "$tmp"
+	log "Change lists: $dir/$label.created.txt" \
+		"$dir/$label.deleted.txt" \
+		"$dir/$label.created-dirs.txt"
+}
+
 # Replace only one port. Keep the old directory recoverable and preserve
 # nested CVS metadata; never remove a category or unrelated ports.  For a
 # subport nested under a group directory, also install the files the group
 # shares with its subports (for example Makefile.inc) without touching any
 # sibling port.
 copy_directory() {
-	typeset category name target stage backup="" cvs topcat group
+	typeset category name target stage backup="" cvs topcat group label
 	validate_port_path "$DIRECTORY" || return 1
 	category=${DIRECTORY%/*}
 	name=${DIRECTORY##*/}
 	topcat=${DIRECTORY%%/*}
+	label=$(flatten_path "$category")-$name
 	target="$TARGET_TREE/$DIRECTORY"
 	if [ ! -d "$TARGET_TREE/infrastructure" ] ||
 		[ ! -f "$TARGET_TREE/Makefile" ] ||
@@ -344,7 +409,10 @@ copy_directory() {
 		done
 		group=${group%/*}
 	done
-	stage=$(mktemp -d "$TARGET_TREE/.wip-port.XXXXXXXX") || return 1
+	stage=$(mktemp -d "$TARGET_TREE/.wip-port.XXXXXXXX") || {
+		error "Cannot create staging directory under $TARGET_TREE"
+		return 1
+	}
 	cp -Rp "$DIRECTORY" "$stage/port" || return 1
 	# A private Git checkout may be 0700/0600; _pbuild must read the port.
 	find "$stage/port" -type d -exec chmod a+rx,go-w {} + || return 1
@@ -356,14 +424,18 @@ copy_directory() {
 				mkdir -p "$stage/port/${cvs%/*}" || exit 1
 				cp -Rp "$target/$cvs" "$stage/port/$cvs" || exit 1
 			done || return 1
+		write_change_lists "$target" "$stage/port" "$label" || return 1
 		if [ -L "$TARGET_TREE/.wip-backups" ]; then
 			error "Refusing symlinked backup directory"
 			return 1
 		fi
 		mkdir -p "$TARGET_TREE/.wip-backups" || return 1
 		backup=$(mktemp -d \
-			"$TARGET_TREE/.wip-backups/${category//\//_}-$name.XXXXXXXX") ||
+			"$TARGET_TREE/.wip-backups/$label.XXXXXXXX") || {
+			error "Cannot create backup directory" \
+				"under $TARGET_TREE/.wip-backups"
 			return 1
+		}
 		mv "$target" "$backup/port" || return 1
 		log "Previous $DIRECTORY saved in $backup/port"
 	fi

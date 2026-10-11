@@ -39,12 +39,17 @@ Each port is copied to its existing category, never over the complete
 category directory. Replaced ports are saved under
 `TREE/.wip-backups/category-port.XXXXXXXX/port` (the category slashes are
 replaced by underscores for a nested subport); nested CVS metadata is
-preserved. Copying a nested subport also installs the files its group
-shares with the subports, for example `Makefile.inc`, without touching any
-sibling port. Stale patches are not carried into the new copy. Paths that
-name categories, traverse parents or use symlinked port roots are rejected.
-The local account entries from `user.list` are merged as well. Files become
-readable by the ports build user even when the Git checkout is private.
+preserved. Before the swap the script records the files that are about to
+be removed and added in `TREE/.wip-changes/category-port.created.txt` and
+`TREE/.wip-changes/category-port.deleted.txt` (one path per line, relative
+to the port root, CVS metadata excluded), so `cvs add`, `cvs remove` and a
+later `cvs diff` can be driven from them. Copying a nested subport also
+installs the files its group shares with the subports, for example
+`Makefile.inc`, without touching any sibling port. Stale patches are not
+carried into the new copy. Paths that name categories, traverse parents or
+use symlinked port roots are rejected. The local account entries from
+`user.list` are merged as well. Files become readable by the ports build
+user even when the Git checkout is private.
 
 Without arguments the script retains its interactive OpenBSD bootstrap
 workflow, which replaces the ports checkout and configures the host.

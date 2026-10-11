@@ -1,0 +1,15 @@
+Keep the optional Xet accelerator off the OpenBSD dependency list.
+The upstream client already falls back to ordinary HTTP downloads.
+
+Index: setup.py
+--- setup.py.orig
++++ setup.py
+@@ -18,7 +18,7 @@
+     "click>=8.4.2,<9.0.0",  # 8.4.0/8.4.1 shipped a broken fish completion script
+     "filelock>=3.10.0",
+     "fsspec>=2023.5.0",
+-    f"{HF_XET_VERSION}; platform_machine=='x86_64' or platform_machine=='amd64' or platform_machine=='AMD64' or platform_machine=='arm64' or platform_machine=='aarch64'",
++    f"{HF_XET_VERSION}; platform_system!='OpenBSD' and (platform_machine=='x86_64' or platform_machine=='amd64' or platform_machine=='AMD64' or platform_machine=='arm64' or platform_machine=='aarch64')",
+     "httpx>=0.23.0, <1",
+     "packaging>=20.9",
+     "pyyaml>=5.1",

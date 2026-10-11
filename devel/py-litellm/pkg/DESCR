@@ -1,0 +1,5 @@
+LiteLLM is an AI Gateway that gives you a single unified interface
+to call 100+ LLM providers using the OpenAI format.
+
+This package provides the Python SDK and its native Rust bridge. The
+optional proxy and command-line extras are not included.

@@ -1,0 +1,18 @@
+Package the SDK and native bridge used by Swival. Proxy/CLI extras are
+a separate dependency set and conflict with Swival's required Rich version.
+
+Index: pyproject.toml
+--- pyproject.toml.orig
++++ pyproject.toml
+@@ -186,11 +186,6 @@
+     "detect-secrets>=1.5.0,<2.0",
+ ]
+ 
+-[project.scripts]
+-litellm = "litellm:run_server"
+-lite = "litellm.proxy.client.cli:cli"
+-litellm-proxy = "litellm.proxy.client.cli:litellm_proxy_cli"
+-
+ [dependency-groups]
+ dev = [
+     "numpy>=1.26.0,<3.0",

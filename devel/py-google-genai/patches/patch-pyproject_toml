@@ -1,0 +1,13 @@
+Twine and pkginfo publish releases; neither is used by the setuptools
+build backend. Do not require publishing tools for an offline port build.
+
+Index: pyproject.toml
+--- pyproject.toml.orig
++++ pyproject.toml
+@@ -1,5 +1,5 @@
+ [build-system]
+-requires = ["setuptools", "wheel", "twine>=6.1.0", "packaging>=24.2", "pkginfo>=1.12.0"]
++requires = ["setuptools", "wheel", "packaging>=24.2"]
+ 
+ [project]
+ name = "google-genai"

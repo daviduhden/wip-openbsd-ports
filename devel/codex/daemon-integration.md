@@ -6,6 +6,83 @@ that the port builds or that a real session works on OpenBSD.
 
 ## Follow-up: codex-core compiler allocation failure
 
+### OpenBSD 0.162.1 build diagnosis
+
+A remote investigation on OpenBSD 8.0-current (amd64, Rust 1.98.1,
+LLVM 22.1.8) found that the repository checkout was current but the
+Makefile copied into `/usr/ports/devel/codex` lacked both the memory
+environment settings and the post-configure package profile below.
+The generated Cargo configuration therefore selected `opt-level=2` and
+`codegen-units=4`, as shown in the failing command.
+
+The build ran as root with `PORTS_PRIVSEP=No`, inheriting soft and hard
+data limits of 4 GiB from the login session. The host had approximately
+32 GiB of RAM and 19 GiB of unused swap. Repeating the original Cargo
+build with one job reproduced `rustc-LLVM ERROR: out of memory` in 209
+seconds; `/usr/bin/time -l` reported a maximum RSS of 4,461,460 KiB.
+RSS includes mappings outside the data limit, so it need not equal
+`RLIMIT_DATA`. System memory remained available and swap was unused.
+
+A second run changed only the inherited data limit to 16 GiB, retaining
+`opt-level=2`, `codegen-units=4`, and the original Cargo environment.
+codex-core completed successfully and produced a 136 MiB rlib; Cargo then
+proceeded to other crates. Maximum sampled rustc RSS was 5,060,104 KiB
+(about 4.83 GiB). The diagnostic build was stopped after codex-core
+completed: this verifies the data-limit fix, not a complete package build
+or the memory consumption of the reduced-optimization profile. Diagnostic
+logs and configuration backups are retained on the host under
+`/root/codex-build-diagnostics/`.
+
+Always compare the installed port Makefile with the checkout before
+rebuilding. Copying a new Makefile also does not rerun post-configure
+when `.configure_done` already exists. Use the clean reconfiguration
+workflow below for a normal rebuild.
+
+For a diagnostic retry on a host with sufficient memory, raise the
+data limit in the build shell before invoking make. Root can raise the
+hard limit; an unprivileged account must have a suitable login class.
+For example, these values permit 16 GiB of data allocations per process:
+
+```sh
+ulimit -Hd 16777216
+ulimit -Sd 16777216
+ulimit -a
+cd /usr/ports/devel/codex
+make build
+```
+
+This does not reserve RAM or reduce compiler memory usage, and is not
+a replacement for the port's memory settings on memory-constrained
+machines. With privilege separation, check the build user's actual
+limits instead of assuming it inherits this shell's settings.
+
+For persistent interactive root builds on this host, a dedicated login
+class was added to `/etc/login.conf`, leaving `daemon` unchanged:
+
+```text
+ports-root:\
+    :datasize-cur=16G:\
+    :datasize-max=16G:\
+    :tc=daemon:
+```
+
+The account was assigned with `usermod -L ports-root root`, and the
+capability database was regenerated with `cap_mkdb /etc/login.conf`.
+A new SSH session verified both data limits as 16,777,216 KiB. Existing
+sessions retain their previous limits; reconnect or adjust their limits
+explicitly. This changes the root account's login class, so future root
+logins use these limits; services that explicitly select `daemon` keep
+that class's limits. The remote port Makefile was synchronized from
+the checkout and its existing Cargo configuration was updated by running
+`make post-configure` once, without removing the existing build artifacts.
+
+On other systems, choose limits that fit the available memory and the
+actual build account. For unprivileged builds, assign a dedicated class
+inheriting the account's existing class rather than copying this root
+configuration. For ports privilege separation, inspect `_pbuild` and
+its `pbuild` class; changing the invoking user's class alone may not
+affect the compiler. Adding swap cannot bypass `RLIMIT_DATA`.
+
 An OpenBSD build report for 0.162.0 shows rustc aborting with an allocation
 failure while compiling codex-core at `opt-level=2`, `codegen-units=1`, and
 without embedded bitcode. The earlier single-codegen-unit setting did not

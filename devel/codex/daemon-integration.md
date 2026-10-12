@@ -4,6 +4,56 @@
 0.160.1. Validation for this task is exclusively static: it does not establish
 that the port builds or that a real session works on OpenBSD.
 
+## Follow-up: codex-tui compiler allocation failure
+
+The 0.162.1 TUI failure occurs inside rustc/LLVM, before linking the CLI.
+The unused `TwentyFourHour` warning is unrelated. The failing command has
+LTO disabled but still uses optimization level 2 and four codegen units;
+the existing package override covered only codex-core.
+
+The port now applies optimization level 1 and 16 codegen units to both
+codex-core and codex-tui, serializes Cargo jobs, and disables LTO. This
+reduces LLVM optimization work while retaining the rest of the release
+profile. Runtime performance may change. The repository Makefile was
+also missing the previous memory settings described below; they are
+restored as part of this change.
+
+A baseline retry with the original TUI flags and the new session limits
+continued for more than five minutes without an allocation failure; sampled
+RSS reached 6,038,220 KiB (about 5.76 GiB), with swap unused. This run was
+interrupted before completion to test the reduced-optimization profile.
+It supports a process-limit diagnosis but does not establish the original
+failed process's exact inherited limit.
+
+The reduced-profile retry completed codex-tui successfully and produced
+`libcodex_tui-5c9a2672f9d08a59.rlib` (247 MiB). The actual rustc command
+selected `opt-level=1`, `codegen-units=16`, and `lto=off`. Maximum RSS
+sampled every two seconds was 4,975,692 KiB (about 4.75 GiB); swap remained
+unused. This is a sampled peak, not an exact resource-accounting maximum.
+The diagnostic Cargo invocation was stopped after the TUI completed; a
+complete CLI/package build and runtime behavior were not validated. Only
+the known unused ClockFormat variant warning was reported for the TUI.
+Temporary diagnostic files were removed, leaving their directory empty.
+The installed port Makefile and generated Cargo configuration now contain
+both package overrides for subsequent builds.
+
+A fresh SSH session on the diagnostic host has soft and hard data limits
+of 16 GiB, with approximately 32 GiB of RAM and 19 GiB of unused swap.
+The reported failure left a roughly 3.9 GiB rustc core file, consistent
+with an old session retaining a 4 GiB limit, but the core size alone does
+not prove the failed process's limit. New login-class settings do not
+change existing shells, tmux servers, or their child processes. Check
+`ulimit -Sd` and `ulimit -Hd` in the shell that actually launches the build.
+Reconnect or restart an old tmux server, or adjust that shell's limits.
+
+After updating the installed port, run `make clean configure` and inspect
+`${WRKDIR}/.cargo/config.toml` before rebuilding. Both package sections
+must appear. Avoid manually appending them repeatedly: duplicate TOML
+tables are invalid. On memory-constrained hosts, choose a login-class
+limit appropriate to available RAM and swap; a higher limit permits
+allocations but does not lower their cost. With privilege separation,
+check the build account's effective limits as well.
+
 ## Follow-up: codex-core compiler allocation failure
 
 ### OpenBSD 0.162.1 build diagnosis

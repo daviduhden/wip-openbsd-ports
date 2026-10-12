@@ -21,14 +21,14 @@ PKGNAME =		codex-${V}
 # only build the Rust workspace (the repo also contains JS tooling).
 WRKSRC =		${WRKDIST}/codex-rs
 
-DIST_TUPLE += github openai-oss-forks crossterm ed1cdab335221515706178d68495bba2aed1924f ./crossterm
-DIST_TUPLE += github openai-oss-forks tokio-tungstenite 0e5b2d73aa18dd9f0a50ee9ff199d5aef7594186 ./tokio-tungstenite
-DIST_TUPLE += github openai-oss-forks tungstenite-rs 4fffad30fe373adbdcffab9545e9e9bf4f2fc19f ./tungstenite
-DIST_TUPLE += github helix-editor nucleo 4253de9faabb4e5c6d81d946a5e35a90f87347ee ./nucleo
-DIST_TUPLE += github dzbarsky rules_rust b56cbaa8465e74127f1ea216f813cd377295ad81 ./runfiles
-DIST_TUPLE += github microsoft mxc 6cd3d58f05d3447e67109cfb75e042803b843ca4 ./mxc
-DIST_TUPLE += github hyperium h3 e07e69412876f7e26f026bd75a48b2704d8c8283 ./h3
-DIST_TUPLE += github modelcontextprotocol rust-sdk 3e636cab26c013eca5131103c03d20237f12c4df ./rust-sdk
+DIST_TUPLE +=		github openai-oss-forks crossterm ed1cdab335221515706178d68495bba2aed1924f ./crossterm
+DIST_TUPLE +=		github openai-oss-forks tokio-tungstenite 0e5b2d73aa18dd9f0a50ee9ff199d5aef7594186 ./tokio-tungstenite
+DIST_TUPLE +=		github openai-oss-forks tungstenite-rs 4fffad30fe373adbdcffab9545e9e9bf4f2fc19f ./tungstenite
+DIST_TUPLE +=		github helix-editor nucleo 4253de9faabb4e5c6d81d946a5e35a90f87347ee ./nucleo
+DIST_TUPLE +=		github dzbarsky rules_rust b56cbaa8465e74127f1ea216f813cd377295ad81 ./runfiles
+DIST_TUPLE +=		github microsoft mxc 6cd3d58f05d3447e67109cfb75e042803b843ca4 ./mxc
+DIST_TUPLE +=		github hyperium h3 e07e69412876f7e26f026bd75a48b2704d8c8283 ./h3
+DIST_TUPLE +=		github modelcontextprotocol rust-sdk 3e636cab26c013eca5131103c03d20237f12c4df ./rust-sdk
 
 MAINTAINER =		Kirill A. Korinsky <kirill@korins.ky>
 
@@ -39,8 +39,8 @@ HOMEPAGE =		https://github.com/openai/codex
 # Apache 2.0
 PERMIT_PACKAGE =	Yes
 
-WANTLIB += ${MODCARGO_WANTLIB} bz2 crypto dbus-1 execinfo lzma
-WANTLIB += m onig ssl util
+WANTLIB +=		${MODCARGO_WANTLIB} bz2 crypto dbus-1 execinfo lzma
+WANTLIB +=		m onig ssl util
 
 BUILD_DEPENDS =		devel/cmake/core \
 			devel/git \
@@ -57,7 +57,7 @@ RUN_DEPENDS =		lang/python/3 \
 
 MODULES =		devel/cargo
 
-CONFIGURE_STYLE = 	cargo
+CONFIGURE_STYLE =	cargo
 
 COMPILER =		base-clang
 
@@ -85,10 +85,14 @@ MODCARGO_ENV +=		V8_FROM_SOURCE=1 \
 			use_glib=false \
 			v8_enable_cet_ibt=true"
 
+# Keep large Rust crates buildable on memory-constrained hosts.
+MAKE_JOBS =		1
+MODCARGO_ENV +=		CARGO_PROFILE_RELEASE_LTO=off
+
 # Makes the build look more alive while compiling v8
 MODCARGO_BUILD_ARGS +=	-vv
 
-MODCARGO_INSTALL_TARGET_PATHS = cli code-mode-host
+MODCARGO_INSTALL_TARGET_PATHS =	cli code-mode-host
 
 MODCARGO_BUILD_ARGS +=	-p codex-cli \
 			-p codex-code-mode-host \
@@ -115,11 +119,19 @@ V8_DISTDIR =		${MODCARGO_VENDOR_DIR}/v8-${V8_CARGO_V}
 post-patch:
 	mkdir ${V8_DISTDIR}/third_party/icu/common
 	cp ${MODCARGO_VENDOR_DIR}/deno_core_icudata-${DENO_CORE_ICUDATA_V}/src/icudtl.dat \
-	    ${V8_DISTDIR}/third_party/icu/common/
+		${V8_DISTDIR}/third_party/icu/common/
+
+# Split the largest crates into smaller LLVM modules with less optimization.
+post-configure:
+.for crate in codex-core codex-tui
+	printf '%s\n' '[profile.release.package.${crate}]' \
+		'opt-level = 1' 'codegen-units = 16' \
+		>>${WRKDIR}/.cargo/config.toml
+.endfor
 
 post-build:
 	${SUBST_CMD} -c ${FILESDIR}/codex-package.json \
-	    ${WRKBUILD}/codex-package.json
+		${WRKBUILD}/codex-package.json
 .for s in bash fish zsh
 	cd ${WRKBUILD}/target/release && \
 		./codex completion $s > codex.$s
@@ -131,9 +143,9 @@ post-install:
 	mv ${PREFIX}/bin/codex-code-mode-host ${PREFIX}/libexec/codex/bin/
 	ln -s ../libexec/codex/bin/codex ${PREFIX}/bin/codex
 	ln -s ../libexec/codex/bin/codex-code-mode-host \
-	    ${PREFIX}/bin/codex-code-mode-host
+		${PREFIX}/bin/codex-code-mode-host
 	${INSTALL_DATA} ${WRKBUILD}/codex-package.json \
-	    ${PREFIX}/libexec/codex/
+		${PREFIX}/libexec/codex/
 	mv ${PREFIX}/bin/logs_client ${PREFIX}/bin/codex-logs-client
 	${INSTALL_DATA_DIR} ${PREFIX}/share/bash-completion/completions \
 		${PREFIX}/share/fish/vendor_completions.d \

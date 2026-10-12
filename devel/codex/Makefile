@@ -130,7 +130,7 @@ post-configure:
 .endfor
 
 post-build:
-	${SUBST_CMD} -c ${FILESDIR}/codex-package.json \
+	${SUBST_CMD} -m 644 -c ${FILESDIR}/codex-package.json \
 		${WRKBUILD}/codex-package.json
 .for s in bash fish zsh
 	cd ${WRKBUILD}/target/release && \

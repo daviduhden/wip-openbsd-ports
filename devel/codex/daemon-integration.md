@@ -1,8 +1,154 @@
 # Codex daemon provided by the OpenBSD package
 
-**ENABLED_WITH_SMALL_UPSTREAM_PATCH** — design implemented for Codex
-0.160.1. Validation for this task is exclusively static: it does not establish
-that the port builds or that a real session works on OpenBSD.
+**ENABLED_WITH_SMALL_UPSTREAM_PATCH** — system-provided daemon integration
+originally implemented for Codex 0.160.1. The original implementation was
+validated statically. On October 13, 2026, an installed Codex 0.162.1 package
+subsequently passed real daemon lifecycle and Unix-socket WebSocket/JSON-RPC
+tests on OpenBSD 8.0 (amd64). This does not establish a full port build,
+interactive TUI operation, or model inference; see the runtime validation below.
+
+## Runtime validation: Codex 0.162.1 on OpenBSD (October 13, 2026)
+
+### Result and scope
+
+The **installed** `codex-0.162.1` package passed the tested execution and daemon
+management paths on OpenBSD 8.0 `GENERIC.MP#92` (amd64), running as root. The
+tests covered start, reuse, version reporting, WebSocket/JSON-RPC over a Unix
+socket, restart, rejection of in-application updates, and stop. No port defect
+was observed in these tests. The result validates these paths on amd64 only;
+it is **not** certification of all Codex functionality.
+
+This is a **runtime follow-up** to the earlier static-only patch assessments
+and the partial compiler-build diagnostics documented below. It does not
+retroactively turn those checks into a complete build or test-suite run.
+
+### Installed package and source checkout
+
+- `codex --version` returned `codex-cli 0.162.1`, and `pkg_info -a` showed
+  `codex-0.162.1` installed.
+- `/usr/local/bin/codex` links to `../libexec/codex/bin/codex`.
+- `/usr/local/libexec/codex/bin/` contains both `codex` and
+  `codex-code-mode-host`.
+- `/usr/local/libexec/codex/codex-package.json` declares `layoutVersion: 1`,
+  `version: 0.162.1`, `target: x86_64-unknown-openbsd`, `variant: codex`,
+  and `entrypoint: bin/codex`.
+- The examined port checkout was `/root/wip-openbsd-ports/devel/codex`,
+  with `V=0.162.1`, commit `ec8b4e9eafea647f2a8382527678ed2aac8cf4b7`,
+  and no local changes.
+
+The installed package was **not rebuilt or reinstalled** during these tests.
+Matching version and layout values alone do not establish the precise
+provenance of the installed executable relative to that checkout.
+
+### Isolated test environment
+
+An initial check used
+`CODEX_HOME=/tmp/codex-daemon-check.tvCCK2Qp`, and that test daemon was
+stopped. Codex warned that it does not create auxiliary aliases under `/tmp`;
+startup and `version` still worked. Subsequent tests used an independent
+home outside `/tmp`:
+
+```text
+/root/codex-build-diagnostics/daemon-0.162.1/home
+```
+
+No credentials or ordinary user configuration were copied into this home.
+The original session's daemon was not stopped. **Both** test daemons were
+stopped when testing ended; diagnostic artifacts were retained for review.
+
+### Observed tests
+
+All lifecycle commands in the following table used the isolated
+`CODEX_HOME`.
+
+| Test | Observed result |
+| --- | --- |
+| `codex app-server daemon start` | Exit 0, `status: started`, PID backend; the final run started PID `10323`. Diagnostics reported successful `process_spawn`, `process_identity`, `pid_write`, and `pid_publish`. |
+| Second `start` | Exit 0, `status: alreadyRunning`; the existing daemon was reused. |
+| `codex app-server daemon version` | Exit 0, `status: running`; `cliVersion`, `managedCodexVersion`, and `appServerVersion` were all `0.162.1`. `managedCodexPath` resolved to the system binary under `libexec`. |
+| Unix socket | The rendezvous entry under `app-server-control` pointed to a Unix socket; the initial test observed a directory with mode `0700` and a target under `/tmp/codex-daemon-0`. |
+| WebSocket handshake over the Unix socket | Returned `HTTP/1.1 101 Switching Protocols`. |
+| JSON-RPC `initialize`, then `initialized` | Valid response with `userAgent: openbsd_port_check/0.162.1`, `platformFamily: unix`, `platformOs: openbsd`, and the isolated `codexHome`. |
+| JSON-RPC `thread/list` with `limit=10` | Successful response: `data=[]`, `nextCursor=null`, `backwardsCursor=null`. |
+| `codex app-server daemon update` | Exit 0, `status: unsupported`, both installed and running versions `0.162.1`, with guidance to use `pkg_add -u`. |
+| `codex app-server daemon update --from-cli --yes` | Exit 1 and a package-manager-specific rejection. The daemon PID did not change after either attempted update. |
+| `codex app-server daemon restart` | Exit 0, `status: restarted`; PID changed from `10323` to `47667`. |
+| JSON-RPC after restart | A new WebSocket connection and `initialize`/`initialized`/`thread/list` sequence succeeded again. |
+| `version` after restart | Reported `running` and version `0.162.1` throughout. |
+| `codex app-server daemon stop` | Exit 0, `status: stopped`. |
+| `version` after stop | Exit 1 because the socket no longer existed, confirming the server was not reachable. |
+| Package copies in the test home | Neither `packages/app-server-daemon` nor `packages/standalone` existed after testing. |
+| `ldd` on `codex` and `codex-code-mode-host` | All listed shared libraries resolved; none was reported missing. |
+| `codex-code-mode-host --help` | Exit 0 with valid help output; only executable launch and argument parsing were tested. |
+| `codex completion bash`, `fish`, and `zsh` | Each exited 0 with nonempty output, matching the shells used by the port's post-build step. |
+
+The final test script reported:
+
+```text
+PASS: lifecycle, versions, WebSocket initialize/thread/list, update guards, no managed package copies
+```
+
+These observations confirm that the installed CLI resolved and reused the
+system-managed daemon without creating a second managed package under the
+isolated home directory. They also confirm the tested update guards did not
+replace or interrupt the running daemon.
+
+### Test-harness adjustments and incidental diagnostics
+
+The initial attempt with a nonexistent diagnostic home failed as expected;
+the directory was created before rerunning the tests. The script's first
+expectation for `restart` was `started`, but the CLI actually returns
+`restarted`. Its first expectation for `version` after `stop` was success,
+but Codex 0.162.1 exits with status 1 when the socket is missing. Both
+expectations were corrected.
+
+`codex completion sh` was rejected because `sh` is not an accepted completion
+target; `bash`, `fish`, and `zsh` were tested instead. `pkg_info -e codex`
+did not accept that package pattern on this host, so `pkg_info -a` was used
+to identify the installation.
+
+The isolated daemon log warned that `/root` was not marked as a trusted
+project and therefore disabled that project's local configuration, hooks,
+and policies. This did not prevent the daemon lifecycle or RPC tests; trust
+settings were not changed to suppress the warning. These adjustments
+concern the test procedure, not defects found in the port.
+
+### Evidence and reproduction
+
+The retained diagnostic directory is:
+
+```text
+/root/codex-build-diagnostics/daemon-0.162.1/
+```
+
+It contains `check.py`, `results.json` (commands, stdout, stderr, exit codes,
+and RPC responses), `additional.json`, `ldd-codex.txt`,
+`ldd-code-mode-host.txt`, and `daemon.stderr.log`. On the examined host,
+the original test can be rerun with:
+
+```sh
+python3 /root/codex-build-diagnostics/daemon-0.162.1/check.py
+```
+
+The script uses its adjacent `home` directory as `CODEX_HOME` and stops
+the test daemon on completion. A copy of the script under `/tmp` requires
+the `home` directory to be created first and can trigger the `/tmp` alias
+warning. Its WebSocket client implements only the functionality needed for
+these small responses; it is not a general-purpose protocol library.
+
+### What remains unverified
+
+The tests did **not** cover an interactive TUI session or TUI-triggered
+daemon auto-start, authentication, model requests, model-mediated tool
+execution, JavaScript/V8 code-mode execution, remote control, SSH bootstrap,
+a real `pkg_add` upgrade, incompatible-manifest rejection, crash recovery,
+long-duration operation, memory usage, an unprivileged user, or aarch64.
+There was no full test-suite run or compilation, and no inference requests
+were sent.
+
+The next coverage steps are an authenticated TUI session using a test
+home and a small tool-executing task, followed by daemon reuse checks;
+then validation on aarch64 and an actual package upgrade.
 
 ## Follow-up: codex-tui compiler allocation failure
 
@@ -747,6 +893,7 @@ codex app-server daemon version
 
 If a binary or the manifest is missing, preserve the full message and log:
 the expected repair is to reinstall the package, not install a daemon in
-the home directory. The interactive test and the historical `can't start`
+the home directory. The interactive TUI test and the historical `can't start`
 error still require real-world verification and, for the latter, the original
-log.
+log. The 0.162.1 lifecycle and socket tests reported above do not reproduce
+that historical error.

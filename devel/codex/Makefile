@@ -8,7 +8,7 @@ USE_NOEXECONLY =	Yes
 
 COMMENT =		OpenAI terminal-based coding agent
 
-DPB_PROPERTIES =	lonesome
+DPB_PROPERTIES =	parallel
 
 USE_WXNEEDED =		Yes
 
@@ -85,10 +85,6 @@ MODCARGO_ENV +=		V8_FROM_SOURCE=1 \
 			use_glib=false \
 			v8_enable_cet_ibt=true"
 
-# Keep large Rust crates buildable on memory-constrained hosts.
-MAKE_JOBS =		1
-MODCARGO_ENV +=		CARGO_PROFILE_RELEASE_LTO=off
-
 # Makes the build look more alive while compiling v8
 MODCARGO_BUILD_ARGS +=	-vv
 
@@ -120,14 +116,6 @@ post-patch:
 	mkdir ${V8_DISTDIR}/third_party/icu/common
 	cp ${MODCARGO_VENDOR_DIR}/deno_core_icudata-${DENO_CORE_ICUDATA_V}/src/icudtl.dat \
 		${V8_DISTDIR}/third_party/icu/common/
-
-# Split the largest crates into smaller LLVM modules with less optimization.
-post-configure:
-.for crate in codex-core codex-tui
-	printf '%s\n' '[profile.release.package.${crate}]' \
-		'opt-level = 1' 'codegen-units = 16' \
-		>>${WRKDIR}/.cargo/config.toml
-.endfor
 
 post-build:
 	${SUBST_CMD} -m 644 -c ${FILESDIR}/codex-package.json \

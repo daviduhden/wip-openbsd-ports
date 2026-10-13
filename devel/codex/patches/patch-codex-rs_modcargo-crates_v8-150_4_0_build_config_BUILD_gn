@@ -4,7 +4,7 @@ The former iterator-debugging hunk is redundant with is_linux on OpenBSD.
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/BUILD.gn
 --- codex-rs/modcargo-crates/v8-150.4.0/build/config/BUILD.gn.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/config/BUILD.gn
-@@ -209,6 +209,10 @@
+@@ -209,6 +209,10 @@ config("default_libs") {
      # Targets should choose to explicitly link frameworks they require. Since
      # linking can have run-time side effects, nothing should be listed here.
      libs = []

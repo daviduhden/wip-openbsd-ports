@@ -13,13 +13,13 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/third_party/libunwind/src/src/Address
  
  #include "libunwind.h"
  #include "config.h"
-@@ -157,6 +158,62 @@
+@@ -157,7 +158,63 @@ struct UnwindInfoSections {
  #endif
  };
  
 +class UnwindInfoSectionsCache {
 +public:
-+
+ 
 +  struct CacheItem {
 +    CacheItem(UnwindInfoSections &uis, uintptr_t pc)
 +      : m_uis(uis), m_pc(pc) {
@@ -73,10 +73,11 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/third_party/libunwind/src/src/Address
 +  RB_HEAD(CacheTree, CacheItem) m_head;
 +  RB_GENERATE(CacheTree, CacheItem, entry, CacheCmp);
 +};
- 
++
  /// LocalAddressSpace is used as a template parameter to UnwindCursor when
  /// unwinding a thread in the same process.  The wrappers compile away,
-@@ -283,6 +340,10 @@
+ /// making local unwinds fast.
+@@ -283,6 +340,10 @@ LocalAddressSpace::getEncodedP(pint_t &addr, pint_t en
    pint_t startAddr = addr;
    const uint8_t *p = (uint8_t *)addr;
    pint_t result;

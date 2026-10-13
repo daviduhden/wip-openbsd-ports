@@ -4,7 +4,7 @@ Correct the openbds typo in the Chromium ports reference; keep the default off.
 Index: codex-rs/modcargo-crates/v8-150.4.0/v8/gni/v8.gni
 --- codex-rs/modcargo-crates/v8-150.4.0/v8/gni/v8.gni.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/v8/gni/v8.gni
-@@ -351,7 +351,7 @@
+@@ -351,7 +351,7 @@ is_drumbrake_supported =
      (v8_current_cpu == "x64" || v8_current_cpu == "arm64" ||
       v8_current_cpu == "riscv64") &&
      (target_os == "win" || target_os == "linux" || target_os == "mac" ||

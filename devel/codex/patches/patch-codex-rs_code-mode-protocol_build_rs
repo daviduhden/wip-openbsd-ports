@@ -4,7 +4,7 @@ protoc binary, which has no OpenBSD release.
 Index: codex-rs/code-mode-protocol/build.rs
 --- codex-rs/code-mode-protocol/build.rs.orig
 +++ codex-rs/code-mode-protocol/build.rs
-@@ -5,7 +5,6 @@
+@@ -5,7 +5,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
      println!("cargo:rerun-if-changed=src/grpc");
  
      let mut config = tonic_prost_build::Config::new();

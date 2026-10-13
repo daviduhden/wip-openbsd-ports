@@ -4,7 +4,7 @@ Git fetch.
 Index: codex-rs/tcp-tunnel/Cargo.toml
 --- codex-rs/tcp-tunnel/Cargo.toml.orig
 +++ codex-rs/tcp-tunnel/Cargo.toml
-@@ -11,8 +11,8 @@
+@@ -11,8 +11,8 @@ doctest = false
  anyhow = { workspace = true }
  bytes = { workspace = true }
  clap = { workspace = true, features = ["derive"] }

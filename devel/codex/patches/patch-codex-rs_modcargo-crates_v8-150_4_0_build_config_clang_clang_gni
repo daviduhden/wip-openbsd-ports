@@ -3,7 +3,7 @@ Exclude BSD from Linux Clang module support, as in Chromium ports.
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/clang/clang.gni
 --- codex-rs/modcargo-crates/v8-150.4.0/build/config/clang/clang.gni.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/config/clang/clang.gni
-@@ -40,6 +40,7 @@
+@@ -40,6 +40,7 @@ android_supported_cpus = [
    "x86",
  ]
  clang_modules_platform_supported =

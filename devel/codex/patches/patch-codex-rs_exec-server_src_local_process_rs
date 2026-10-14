@@ -1,0 +1,13 @@
+Report OpenBsdPledgeUnveil for locally started processes.
+
+Index: codex-rs/exec-server/src/local_process.rs
+--- codex-rs/exec-server/src/local_process.rs.orig
++++ codex-rs/exec-server/src/local_process.rs
+@@ -390,6 +390,7 @@
+             SandboxType::None => Some(ProcessSandboxType::None),
+             SandboxType::MacosSeatbelt => Some(ProcessSandboxType::MacosSeatbelt),
+             SandboxType::LinuxSeccomp => Some(ProcessSandboxType::LinuxSeccomp),
++            SandboxType::OpenBsdPledgeUnveil => Some(ProcessSandboxType::OpenBsdPledgeUnveil),
+             SandboxType::WindowsRestrictedToken => Some(ProcessSandboxType::WindowsRestrictedToken),
+             SandboxType::WindowsMxc => Some(ProcessSandboxType::WindowsMxc),
+         };

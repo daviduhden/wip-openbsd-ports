@@ -1,0 +1,25 @@
+Record the rust-openbsd path dependency in the lockfile.
+
+Index: codex-rs/Cargo.lock
+--- codex-rs/Cargo.lock.orig
++++ codex-rs/Cargo.lock
+@@ -4528,6 +4528,8 @@
+  "libc",
+  "pretty_assertions",
+  "regex-lite",
++ "rust-openbsd",
++ "serde",
+  "serde_json",
+  "tempfile",
+  "tokio",
+@@ -13486,6 +13488,10 @@
+ ]
+ 
+ [[package]]
++name = "rust-openbsd"
++version = "0.1.0"
++
++[[package]]
+ name = "rust-stemmers"
+ version = "1.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -1,0 +1,23 @@
+Depend on rust-openbsd, for OpenBSD only.
+
+Index: codex-rs/sandboxing/Cargo.toml
+--- codex-rs/sandboxing/Cargo.toml.orig
++++ codex-rs/sandboxing/Cargo.toml
+@@ -24,6 +24,7 @@
+ codex-windows-sandbox = { workspace = true }
+ dunce = { workspace = true }
+ libc = { workspace = true }
++serde = { workspace = true, features = ["derive"] }
+ serde_json = { workspace = true }
+ regex-lite = { workspace = true }
+ tokio = { workspace = true, features = ["rt", "sync"] }
+@@ -35,6 +36,9 @@
+ codex-otel = { workspace = true }
+ codex-utils-home-dir = { workspace = true }
+ 
++[target.'cfg(target_os = "openbsd")'.dependencies]
++rust-openbsd = { workspace = true }
++
+ [dev-dependencies]
+ anyhow = { workspace = true }
+ codex-utils-cargo-bin = { workspace = true }

@@ -1,0 +1,13 @@
+Map the exec-server protocol sandbox type back to OpenBsdPledgeUnveil.
+
+Index: codex-rs/exec-server/src/process.rs
+--- codex-rs/exec-server/src/process.rs.orig
++++ codex-rs/exec-server/src/process.rs
+@@ -32,6 +32,7 @@
+         Some(ProcessSandboxType::None) => Some(SandboxType::None),
+         Some(ProcessSandboxType::MacosSeatbelt) => Some(SandboxType::MacosSeatbelt),
+         Some(ProcessSandboxType::LinuxSeccomp) => Some(SandboxType::LinuxSeccomp),
++        Some(ProcessSandboxType::OpenBsdPledgeUnveil) => Some(SandboxType::OpenBsdPledgeUnveil),
+         Some(ProcessSandboxType::WindowsRestrictedToken) => {
+             Some(SandboxType::WindowsRestrictedToken)
+         }

@@ -1,0 +1,296 @@
+New file: OpenBSD helper that applies pledge(2)/unveil(2) and execs the target.
+
+Index: codex-rs/sandboxing/src/openbsd.rs
+--- /dev/null
++++ codex-rs/sandboxing/src/openbsd.rs
+@@ -0,0 +1,290 @@
++//! OpenBSD sandbox backend: `pledge(2)` promises and `unveil(2)` rules.
++//!
++//! # Architecture
++//!
++//! Codex never restricts the controller process. Instead, an OpenBSD sandboxed
++//! command is launched through a dedicated helper that is the *same* Codex
++//! executable re-invoked through the `arg0` alias `codex-openbsd-sandbox` (see
++//! `codex-arg0`). The trusted controller serializes a validated
++//! [`OpenBsdSandboxPolicy`] onto the helper's command line; the helper applies
++//! it to itself and then `execve(2)`s the target program.
++//!
++//! This boundary is a fresh, single-threaded process, which matters:
++//!
++//! * The helper is created by `execve(2)` from the (possibly multithreaded)
++//!   controller, so it never performs nontrivial Rust work in a `fork(2)` child.
++//! * `pledge(2)` reductions are applied to a process that has exactly one
++//!   thread, avoiding the kernel's sibling-thread unwind during unveil cleanup.
++//!
++//! # Order of operations
++//!
++//! 1. Validate the policy and the execution arguments.
++//! 2. `chdir(2)` into the command working directory (before any restriction).
++//! 3. Install every `unveil(2)` rule.
++//! 4. Lock the unveil configuration with `unveil(NULL, NULL)`.
++//! 5. Set the current and execution promise sets with a single
++//!    `pledge(promises, execpromises)` call.
++//! 6. `execve(2)` the target program.
++//!
++//! Step 5 is where execution promises matter: the promises that restrict the
++//! *target* are the second `pledge(2)` argument. A successful `pledge(2)` in
++//! the helper does not by itself restrict the executed program, so the helper
++//! always sets `execpromises` explicitly.
++//!
++//! The helper's own current promises include `exec`, which is a path promise;
++//! this keeps the kernel from discarding the unveil state while the helper
++//! transitions. Its promises are deliberately not taken from the policy, so a
++//! malformed policy cannot widen the helper itself.
++
++use std::os::unix::process::CommandExt;
++use std::path::Path;
++use std::path::PathBuf;
++
++use codex_protocol::models::PermissionProfile;
++use rust_openbsd::Permission;
++use rust_openbsd::Permissions;
++use rust_openbsd::Promise;
++use rust_openbsd::Promises;
++
++use crate::openbsd_policy::OpenBsdPermissions;
++use crate::openbsd_policy::OpenBsdPolicyError;
++use crate::openbsd_policy::OpenBsdSandboxPolicy;
++use crate::openbsd_policy::translate_permission_profile;
++use crate::openbsd_policy::validate_policy;
++
++/// Basename under which the Codex executable re-invokes itself as the OpenBSD
++/// sandbox helper.
++///
++/// This mirrors `CODEX_LINUX_SANDBOX_ARG0`: the CLI materializes it as a
++/// symlink in a private directory on `PATH` and also passes it as `argv[0]`.
++pub const CODEX_OPENBSD_SANDBOX_ARG0: &str = "codex-openbsd-sandbox";
++
++/// Exit status used when the helper cannot set up or perform the execution.
++///
++/// `126` mirrors the shell convention for "found but not executable"; it is
++/// distinct from a program's own exit status and from a sandbox denial.
++pub const CODEX_OPENBSD_SANDBOX_SETUP_FAILURE: i32 = 126;
++
++/// Builds the argument vector for a sandboxed OpenBSD command.
++///
++/// The returned vector is appended after the helper executable path. It carries
++/// the validated policy as JSON between the helper and the target command,
++/// separated by `--` so that command arguments cannot be mistaken for helper
++/// options. The policy is produced and serialized by the trusted controller and
++/// is re-validated by the helper before it is applied.
++///
++/// # Errors
++///
++/// Returns an [`OpenBsdPolicyError`] when the profile cannot be enforced, when
++/// the command directory is not representable, or when the policy cannot be
++/// serialized. Callers must treat this as fatal for the command: the sandbox
++/// never degrades to running the command without restrictions.
++pub fn create_openbsd_sandbox_command_args(
++    command: Vec<String>,
++    command_cwd: &Path,
++    sandbox_policy_cwd: &Path,
++    permission_profile: &PermissionProfile,
++    enforce_managed_network: bool,
++) -> Result<Vec<String>, OpenBsdPolicyError> {
++    let policy = translate_permission_profile(
++        permission_profile,
++        sandbox_policy_cwd,
++        enforce_managed_network,
++    )?;
++    let policy_json = serde_json::to_string(&policy).map_err(|err| {
++        OpenBsdPolicyError::Serialization(format!("failed to serialize openbsd policy: {err}"))
++    })?;
++    let command_cwd = command_cwd.to_str().ok_or_else(|| {
++        OpenBsdPolicyError::Invalid("command working directory is not valid UTF-8".to_string())
++    })?;
++
++    let mut args = Vec::with_capacity(4 + command.len());
++    args.push("--command-cwd".to_string());
++    args.push(command_cwd.to_string());
++    args.push("--openbsd-policy".to_string());
++    args.push(policy_json);
++    args.push("--".to_string());
++    args.extend(command);
++    Ok(args)
++}
++
++/// Entry point of the `codex-openbsd-sandbox` helper. Never returns.
++///
++/// The helper is dispatched by `codex-arg0` from `argv[0]`, so it receives the
++/// target command and the serialized policy directly on its command line.
++pub fn run_openbsd_sandbox_main() -> ! {
++    let message = match run_sandbox_helper() {
++        Ok(()) => {
++            // `execve(2)` replaces the process image and never returns on
++            // success, so reaching this point would be a logic error.
++            "sandbox helper returned without executing the command".to_string()
++        }
++        Err(message) => message,
++    };
++    eprintln!("{CODEX_OPENBSD_SANDBOX_ARG0}: {message}");
++    std::process::exit(CODEX_OPENBSD_SANDBOX_SETUP_FAILURE);
++}
++
++/// Applies the policy and replaces the process image.
++///
++/// Returns the error message on any failure; on success it does not return.
++fn run_sandbox_helper() -> Result<(), String> {
++    let arguments = parse_arguments()?;
++    validate_policy(&arguments.policy).map_err(|err| err.to_string())?;
++
++    let program = arguments
++        .command
++        .first()
++        .ok_or_else(|| "no command to execute".to_string())?
++        .clone();
++
++    std::env::set_current_dir(&arguments.command_cwd)
++        .map_err(|err| format!("chdir({}): {err}", arguments.command_cwd.display()))?;
++
++    if arguments.policy.restrict_filesystem {
++        apply_unveil_rules(&arguments.policy)?;
++    }
++
++    // The current promise set must include a path promise (`exec`) so that the
++    // kernel does not tear down the unveil configuration as the helper
++    // transitions, and the execution promise set carries the restrictions that
++    // apply once the target image is loaded.
++    let helper_promises = Promises::new([Promise::Stdio, Promise::Rpath, Promise::Exec]);
++    let exec_promises = exec_promises(&arguments.policy);
++    pledge_both_with_context(&helper_promises, &exec_promises)?;
++
++    let mut command = std::process::Command::new(&program);
++    command.args(&arguments.command[1..]);
++    // `exec` only returns on failure.
++    let error = command.exec();
++    Err(format!("exec({program}): {error}"))
++}
++
++/// Parsed helper command line.
++struct HelperArguments {
++    /// Directory to enter before applying the sandbox.
++    command_cwd: PathBuf,
++    /// Validated policy to apply.
++    policy: OpenBsdSandboxPolicy,
++    /// Program and arguments to execute.
++    command: Vec<String>,
++}
++
++/// Parses the helper command line.
++///
++/// The grammar is intentionally small and hand-written: the helper is on the
++/// trusted side of the boundary and must not pull a full argument parser (or
++/// any other machinery) into its single-threaded startup.
++fn parse_arguments() -> Result<HelperArguments, String> {
++    let mut args = std::env::args().skip(1);
++    let mut command_cwd: Option<String> = None;
++    let mut policy_json: Option<String> = None;
++    let mut command: Vec<String> = Vec::new();
++
++    while let Some(arg) = args.next() {
++        match arg.as_str() {
++            "--command-cwd" => {
++                command_cwd = Some(next_value(&mut args, "--command-cwd")?);
++            }
++            "--openbsd-policy" => {
++                policy_json = Some(next_value(&mut args, "--openbsd-policy")?);
++            }
++            "--" => {
++                command.extend(args);
++                break;
++            }
++            other => return Err(format!("unexpected helper argument `{other}`")),
++        }
++    }
++
++    let command_cwd = command_cwd.ok_or_else(|| "missing --command-cwd".to_string())?;
++    let policy_json = policy_json.ok_or_else(|| "missing --openbsd-policy".to_string())?;
++    let policy: OpenBsdSandboxPolicy = serde_json::from_str(&policy_json)
++        .map_err(|err| format!("invalid --openbsd-policy: {err}"))?;
++
++    Ok(HelperArguments {
++        command_cwd: PathBuf::from(command_cwd),
++        policy,
++        command,
++    })
++}
++
++/// Returns the value that follows a helper option.
++fn next_value(args: &mut impl Iterator<Item = String>, option: &str) -> Result<String, String> {
++    args.next()
++        .ok_or_else(|| format!("missing value for {option}"))
++}
++
++/// Installs and locks the unveil rules.
++fn apply_unveil_rules(policy: &OpenBsdSandboxPolicy) -> Result<(), String> {
++    for rule in &policy.rules {
++        let permissions = permissions_from_bits(rule.permissions);
++        rust_openbsd::unveil(rule.path.as_path(), permissions)
++            .map_err(|err| format!("unveil({}): {err}", rule.path.display()))?;
++    }
++    // Locking is irreversible; after this the filesystem view is fixed.
++    rust_openbsd::lock_unveil().map_err(|err| format!("unveil(NULL, NULL): {err}"))?;
++    Ok(())
++}
++
++/// Converts the serialized permission bits into the bindings' permission set.
++fn permissions_from_bits(bits: OpenBsdPermissions) -> Permissions {
++    let mut permissions = Permissions::NONE;
++    if bits.read {
++        permissions = permissions.enable(Permission::Read);
++    }
++    if bits.write {
++        permissions = permissions.enable(Permission::Write);
++    }
++    if bits.execute {
++        permissions = permissions.enable(Permission::Execute);
++    }
++    if bits.create {
++        permissions = permissions.enable(Permission::Create);
++    }
++    permissions
++}
++
++/// Builds the execution promise set for the target program.
++///
++/// The set is deliberately explicit and auditable rather than derived from
++/// [`Promise::ALL`]. Promises that are not granted here fail closed: the
++/// kernel aborts the process (or returns `ENOSYS` for the few calls the
++/// `error` promise covers, which is never granted).
++///
++/// * `stdio` — descriptors, memory, timers and process attributes, which every
++///   dynamically linked program and its loader need.
++/// * `rpath` — reading files, and resolving the dynamic loader's libraries.
++/// * `prot_exec` — the loader maps shared objects executable.
++/// * `exec`, `proc` — shells, `make`, `cargo`, `rustc` and `clang` fork and
++///   execute subprocesses and signal them.
++/// * `tty` — interactive shells use terminal ioctls.
++/// * `wpath`, `cpath`, `flock` — only when the policy grants writes; `flock`
++///   is required by build tools such as `cargo` for their lock files.
++/// * `inet`, `dns` — only when the policy enables the network.
++///
++/// Notably absent: `unix`, `fattr`, `chown`, `dpath`, `getpw`, `settime`,
++/// `audio`, `video`, `vmm`, and every other promise. Operations that need them
++/// are denied instead of being silently permitted.
++fn exec_promises(policy: &OpenBsdSandboxPolicy) -> Promises {
++    let mut promises = vec![
++        Promise::Stdio,
++        Promise::Rpath,
++        Promise::ProtExec,
++        Promise::Exec,
++        Promise::Proc,
++        Promise::Tty,
++    ];
++    if policy.writable {
++        promises.extend([Promise::Wpath, Promise::Cpath, Promise::Flock]);
++    }
++    if policy.network {
++        promises.extend([Promise::Inet, Promise::Dns]);
++    }
++    Promises::new(promises)
++}
++
++/// Sets the current and execution promise sets in one `pledge(2)` call.
++fn pledge_both_with_context(current: &Promises, exec: &Promises) -> Result<(), String> {
++    rust_openbsd::pledge_both(current, exec).map_err(|err| format!("pledge(2): {err}"))
++}

@@ -1,0 +1,37 @@
+Register the OpenBSD backend modules and surface its transform errors.
+
+Index: codex-rs/sandboxing/src/lib.rs
+--- codex-rs/sandboxing/src/lib.rs.orig
++++ codex-rs/sandboxing/src/lib.rs
+@@ -4,6 +4,10 @@
+ pub mod landlock;
+ mod linux_pid_namespace;
+ mod manager;
++#[cfg(target_os = "openbsd")]
++pub mod openbsd;
++#[cfg(any(target_os = "openbsd", test))]
++mod openbsd_policy;
+ pub mod policy_transforms;
+ #[cfg(target_os = "macos")]
+ pub mod seatbelt;
+@@ -76,6 +80,20 @@
+             SandboxTransformError::MissingLinuxSandboxExecutable => {
+                 CodexErr::LandlockSandboxExecutableNotProvided
+             }
++            #[cfg(target_os = "openbsd")]
++            SandboxTransformError::MissingOpenBsdSandboxExecutable => {
++                CodexErr::UnsupportedOperation(
++                    "missing codex-openbsd-sandbox helper executable path".to_string(),
++                )
++            }
++            #[cfg(target_os = "openbsd")]
++            SandboxTransformError::OpenBsdPreparation(message) => {
++                CodexErr::UnsupportedOperation(message)
++            }
++            #[cfg(not(target_os = "openbsd"))]
++            SandboxTransformError::OpenBsdUnavailable => CodexErr::UnsupportedOperation(
++                "openbsd pledge/unveil sandbox is only available on OpenBSD".to_string(),
++            ),
+             SandboxTransformError::EnvironmentNetworkProxy(message) => {
+                 CodexErr::UnsupportedOperation(message)
+             }

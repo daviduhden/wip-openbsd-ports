@@ -1,0 +1,15 @@
+Handle the OpenBSD sandbox type in a Windows-only test assertion.
+
+Index: codex-rs/exec-server/tests/exec_process.rs
+--- codex-rs/exec-server/tests/exec_process.rs.orig
++++ codex-rs/exec-server/tests/exec_process.rs
+@@ -1388,7 +1388,8 @@
+         }
+         codex_sandboxing::SandboxType::None
+         | codex_sandboxing::SandboxType::MacosSeatbelt
+-        | codex_sandboxing::SandboxType::LinuxSeccomp => {
++        | codex_sandboxing::SandboxType::LinuxSeccomp
++        | codex_sandboxing::SandboxType::OpenBsdPledgeUnveil => {
+             anyhow::bail!("expected a Windows sandbox type")
+         }
+     }

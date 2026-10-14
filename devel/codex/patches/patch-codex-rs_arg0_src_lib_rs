@@ -1,0 +1,37 @@
+Dispatch the codex-openbsd-sandbox arg0 alias to the OpenBSD sandbox
+helper and materialize the alias on PATH.
+
+Index: codex-rs/arg0/src/lib.rs
+--- codex-rs/arg0/src/lib.rs.orig
++++ codex-rs/arg0/src/lib.rs
+@@ -11,6 +11,8 @@
+ use codex_exec_server::CODEX_FS_HELPER_ARG1;
+ use codex_install_context::InstallContext;
+ use codex_sandboxing::landlock::CODEX_LINUX_SANDBOX_ARG0;
++#[cfg(target_os = "openbsd")]
++use codex_sandboxing::openbsd::CODEX_OPENBSD_SANDBOX_ARG0;
+ use codex_utils_home_dir::find_codex_home;
+ #[cfg(target_os = "windows")]
+ use codex_windows_sandbox::CODEX_WINDOWS_SANDBOX_ARG1;
+@@ -100,6 +102,12 @@
+     } else if exe_name == APPLY_PATCH_ARG0 || exe_name == MISSPELLED_APPLY_PATCH_ARG0 {
+         codex_apply_patch::main();
+     }
++    #[cfg(target_os = "openbsd")]
++    if exe_name == CODEX_OPENBSD_SANDBOX_ARG0 {
++        // The OpenBSD helper applies pledge(2)/unveil(2) to itself and then
++        // execs the target; it never returns.
++        codex_sandboxing::openbsd::run_openbsd_sandbox_main();
++    }
+ 
+     let argv1 = args.next().unwrap_or_default();
+     if argv1 == codex_sandboxing::CODEX_WINDOWS_MXC_ARG1 {
+@@ -389,6 +397,8 @@
+         MISSPELLED_APPLY_PATCH_ARG0,
+         #[cfg(target_os = "linux")]
+         CODEX_LINUX_SANDBOX_ARG0,
++        #[cfg(target_os = "openbsd")]
++        CODEX_OPENBSD_SANDBOX_ARG0,
+         #[cfg(unix)]
+         EXECVE_WRAPPER_ARG0,
+     ] {

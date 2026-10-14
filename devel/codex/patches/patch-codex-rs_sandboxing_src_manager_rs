@@ -1,0 +1,102 @@
+Select and transform the OpenBSD backend, launching sandboxed commands
+through the codex-openbsd-sandbox helper.
+
+Index: codex-rs/sandboxing/src/manager.rs
+--- codex-rs/sandboxing/src/manager.rs.orig
++++ codex-rs/sandboxing/src/manager.rs
+@@ -51,6 +51,8 @@
+         Some(SandboxType::MacosSeatbelt)
+     } else if cfg!(target_os = "linux") {
+         Some(SandboxType::LinuxSeccomp)
++    } else if cfg!(target_os = "openbsd") {
++        Some(SandboxType::OpenBsdPledgeUnveil)
+     } else if cfg!(target_os = "windows") {
+         if windows_sandbox_enabled {
+             Some(SandboxType::WindowsRestrictedToken)
+@@ -195,6 +197,12 @@
+         source: io::Error,
+     },
+     MissingLinuxSandboxExecutable,
++    #[cfg(target_os = "openbsd")]
++    MissingOpenBsdSandboxExecutable,
++    #[cfg(target_os = "openbsd")]
++    OpenBsdPreparation(String),
++    #[cfg(not(target_os = "openbsd"))]
++    OpenBsdUnavailable,
+     WindowsMxcPreparation(String),
+     EnvironmentNetworkProxy(String),
+     #[cfg(target_os = "macos")]
+@@ -223,6 +231,21 @@
+             Self::MissingLinuxSandboxExecutable => {
+                 write!(f, "missing codex-linux-sandbox executable path")
+             }
++            #[cfg(target_os = "openbsd")]
++            Self::MissingOpenBsdSandboxExecutable => {
++                write!(f, "missing codex-openbsd-sandbox helper executable path")
++            }
++            #[cfg(target_os = "openbsd")]
++            Self::OpenBsdPreparation(err) => {
++                write!(f, "failed to prepare OpenBSD pledge/unveil sandbox: {err}")
++            }
++            #[cfg(not(target_os = "openbsd"))]
++            Self::OpenBsdUnavailable => {
++                write!(
++                    f,
++                    "openbsd pledge/unveil sandbox is only available on OpenBSD"
++                )
++            }
+             Self::WindowsMxcPreparation(err) => {
+                 write!(f, "failed to prepare MXC sandbox: {err}")
+             }
+@@ -251,6 +274,12 @@
+             Self::InvalidCommandCwd { source, .. }
+             | Self::InvalidSandboxPolicyCwd { source, .. } => Some(source),
+             Self::MissingLinuxSandboxExecutable => None,
++            #[cfg(target_os = "openbsd")]
++            Self::MissingOpenBsdSandboxExecutable => None,
++            #[cfg(target_os = "openbsd")]
++            Self::OpenBsdPreparation(_) => None,
++            #[cfg(not(target_os = "openbsd"))]
++            Self::OpenBsdUnavailable => None,
+             Self::WindowsMxcPreparation(_) => None,
+             Self::EnvironmentNetworkProxy(_) => None,
+             #[cfg(target_os = "macos")]
+@@ -471,6 +500,38 @@
+             }
+             #[cfg(not(target_os = "macos"))]
+             SandboxType::MacosSeatbelt => return Err(SandboxTransformError::SeatbeltUnavailable),
++            #[cfg(target_os = "openbsd")]
++            SandboxType::OpenBsdPledgeUnveil => {
++                let pending = pending_sandboxed_request?;
++                // The helper is the Codex executable itself, re-invoked through
++                // the `codex-openbsd-sandbox` arg0 alias. Prefer the helper path
++                // supplied by the caller and fall back to the running
++                // executable.
++                let exe = sandbox_exe
++                    .map(Path::to_path_buf)
++                    .or_else(|| std::env::current_exe().ok())
++                    .ok_or(SandboxTransformError::MissingOpenBsdSandboxExecutable)?;
++                let args = crate::openbsd::create_openbsd_sandbox_command_args(
++                    argv,
++                    pending.native_command_cwd.as_path(),
++                    pending.native_sandbox_policy_cwd.as_path(),
++                    &pending.effective_permission_profile,
++                    enforce_managed_network,
++                )
++                .map_err(|err| SandboxTransformError::OpenBsdPreparation(err.to_string()))?;
++                let mut full_command = Vec::with_capacity(1 + args.len());
++                full_command.push(os_string_to_command_component(exe.into_os_string()));
++                full_command.append(&mut args);
++                (
++                    full_command,
++                    Some(crate::openbsd::CODEX_OPENBSD_SANDBOX_ARG0.to_string()),
++                    Some(pending),
++                )
++            }
++            #[cfg(not(target_os = "openbsd"))]
++            SandboxType::OpenBsdPledgeUnveil => {
++                return Err(SandboxTransformError::OpenBsdUnavailable);
++            }
+             SandboxType::LinuxSeccomp => {
+                 let pending = pending_sandboxed_request?;
+                 let exe =

@@ -76,7 +76,7 @@ Index: codex-rs/sandboxing/src/manager.rs
 +                    .map(Path::to_path_buf)
 +                    .or_else(|| std::env::current_exe().ok())
 +                    .ok_or(SandboxTransformError::MissingOpenBsdSandboxExecutable)?;
-+                let args = crate::openbsd::create_openbsd_sandbox_command_args(
++                let mut args = crate::openbsd::create_openbsd_sandbox_command_args(
 +                    argv,
 +                    pending.native_command_cwd.as_path(),
 +                    pending.native_sandbox_policy_cwd.as_path(),

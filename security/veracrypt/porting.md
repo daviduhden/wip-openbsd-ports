@@ -1,229 +1,252 @@
-VeraCrypt 1.26.29: validacion OpenBSD amd64
+VeraCrypt 1.26.29: OpenBSD amd64 validation
 
-NOTAS PARA REDACTAR LA PROPUESTA DE ACTUALIZACION DE VERACRYPT
-Fecha: 14 de octubre de 2026
+NOTES FOR DRAFTING THE VERACRYPT UPDATE PROPOSAL
+Date: October 14, 2026
 
-OBJETIVO Y ESTADO
+GOAL AND STATUS
 
-Proponer security/veracrypt de 1.25.9p1 (base CVS del arbol local) a 1.26.29,
-con soporte de elevacion mediante doas y creacion de FFS en OpenBSD.
-La actualizacion esta compilada, empaquetada e instalada en OpenBSD 8.0 amd64.
-Los cambios estan sincronizados con /root/wip-openbsd-ports/security/veracrypt.
-No se ha hecho commit, enviado correo ni integrado el cambio en CVS oficial.
+Propose updating security/veracrypt from 1.25.9p1 (CVS base of the local
+tree) to 1.26.29, with support for privilege elevation via doas and FFS
+creation on OpenBSD. The update is compiled, packaged and installed on
+OpenBSD 8.0 amd64. The changes are synchronized with
+/root/wip-openbsd-ports/security/veracrypt. No commit has been made, no
+mail has been sent, and the change has not been integrated into the
+official CVS.
 
-Hay un solo port existente. No hay ports nuevos que entregar en tar.gz.
-Los archivos nuevos de este port se incluyen en el diff como adiciones desde
-/dev/null, aunque aun no esten dados de alta en CVS. El diff no contiene
-lineas de diagnostico que empiecen por '? '. Los nombres usan un solo guion.
+There is a single existing port. There are no new ports to deliver as a
+tar.gz. The new files of this port are included in the diff as additions
+from /dev/null, even though they are not yet registered in CVS. The diff
+does not contain diagnostic lines starting with '? '. Names use a single
+hyphen.
 
-FUENTES Y DEPENDENCIAS
+SOURCES AND DEPENDENCIES
 
-Fuente usada:
+Source used:
 https://launchpad.net/veracrypt/trunk/1.26.29/+download/VeraCrypt_1.26.29_Source.tar.bz2
 
-Version concreta propuesta: 1.26.29. No afirmar que sea la ultima version
-al enviar el correo sin comprobarlo de nuevo.
-Se regeneraron distinfo y PLIST. No se cambio el maintainer del port.
+Specific version proposed: 1.26.29. Do not claim it is the latest
+version when sending the mail without checking again. distinfo and PLIST
+were regenerated. The port maintainer was not changed.
 
-Dependencias instaladas con pkg_add:
-- wxWidgets-gtk3 3.2.12 y sus bibliotecas graficas transitivas.
+Dependencies installed with pkg_add:
+- wxWidgets-gtk3 3.2.12 and its transitive graphics libraries.
 - pcsc-lite 2.5.0.
 - yasm 1.3.0p1.
 - desktop-file-utils 0.28p0.
-- gmake 4.4.1p0 y los prerrequisitos disponibles en el sistema.
+- gmake 4.4.1p0 and the prerequisites available on the system.
 
-Se retiro security/sudo de RUN_DEPENDS: doas forma parte del sistema base.
-Se anadio pcsc-lite para las cabeceras y el soporte de tokens de la version
-nueva. No se iniciaron servicios de smartcard ni se probaron dispositivos.
-Se retiro la dependencia de coreutils. El helper de fecha reproducible se
-adapto al awk del sistema base. Se mantiene la compilacion con C++14 y las
-bibliotecas wxWidgets/FUSE del sistema.
+security/sudo was removed from RUN_DEPENDS: doas is part of the base
+system. pcsc-lite was added for the headers and the token support of the
+new version. No smartcard services were started and no devices were
+tested. The coreutils dependency was removed. The reproducible-date
+helper was adapted to the base system's awk. The build keeps using C++14
+and the system's wxWidgets/FUSE libraries.
 
-CAMBIOS DEL PORT
+PORT CHANGES
 
-1. Actualizacion general
-- Version 1.26.29; desaparece la revision de la version anterior.
-- Parches de Makefile actualizados, sin optimizacion -O2 impuesta por upstream;
-  se inyectan CFLAGS/CXXFLAGS del framework de ports y se conserva LFLAGS.
-- Se corrige TC_STR_RELEASE_DATE a June 9, 2026 para concordar con los campos
-  numericos de la fuente. El helper source_date_epoch comprueba esa igualdad.
-- Se anaden continuaciones explicitas a la expresion ternaria de mes del
-  helper source_date_epoch.sh para que funcione con awk de OpenBSD.
-- El lanzador desktop usa TRUEPREFIX/bin/veracrypt.
-- El icono instalado pasa de XPM a PNG, correspondiente a la fuente nueva.
-- Se anade pkg/README con configuracion de doas y uso de FFS.
-- Se retira el parche que eliminaba vnconfig -c: upstream ya lo incorpora.
-- Se elimina NO_TEST y se implementa do-test mediante veracrypt --text --test.
-- Ningun parche incluye SPDX-License-Identifier.
+1. General update
+- Version 1.26.29; the previous version's revision disappears.
+- Makefile patches updated, without the -O2 optimization imposed by
+  upstream; CFLAGS/CXXFLAGS from the ports framework are injected and
+  LFLAGS is preserved.
+- TC_STR_RELEASE_DATE is corrected to June 9, 2026 to match the numeric
+  fields of the source. The source_date_epoch helper checks that equality.
+- Explicit continuations are added to the month ternary expression in the
+  source_date_epoch.sh helper so it works with OpenBSD's awk.
+- The desktop launcher uses TRUEPREFIX/bin/veracrypt.
+- The installed icon changes from XPM to PNG, matching the new source.
+- pkg/README is added with doas configuration and FFS usage.
+- The patch that removed vnconfig -c is dropped: upstream already
+  includes it.
+- NO_TEST is removed and do-test is implemented via
+  veracrypt --text --test.
+- No patch includes an SPDX-License-Identifier.
 
-2. Elevacion mediante doas
-- En OpenBSD el servicio usa doas en lugar de sudo.
-- Se elimina para OpenBSD el preflight heredado 'sudo/doas -n true'. Una regla
-  restringida a veracrypt --core-service no tiene por que permitir true.
-- Primero se intenta elevar el servicio real con doas -n. Si hace falta
-  contrasena, la interfaz solicita la de la cuenta que ejecuta VeraCrypt.
-- Para autenticar se crea una pseudoterminal privada y se establece como
-  terminal de control. Los canales stdin/stdout del protocolo se conservan.
-- El slave se mantiene en stderr durante doas: doas hace closefrom(3) antes
-  de autenticar, y cerrar el ultimo descriptor del slave hacia perder /dev/tty.
-- Se desactiva el eco y se espera al prompt de readpassphrase antes de enviar
-  una unica respuesta. No se usa un retardo fijo como sincronizacion.
-- Se distinguen los mensajes de la terminal y las excepciones serializadas
-  del servicio. La contrasena no pasa por argv ni por el entorno y se borra
-  de los buffers temporales.
-- Tras autenticarse, el worker elevado se separa de la sesion de la terminal
-  antes de liberar stderr; evita que la liberacion de la terminal lo termine.
-- El fallo de autenticacion devuelve el control al frontend para reintentar,
-  sin dejar a doas esperando otra respuesta en una terminal privada.
-- Los errores de elevacion de OpenBSD hacen referencia a doas y doas.conf.
+2. Elevation via doas
+- On OpenBSD the service uses doas instead of sudo.
+- The inherited preflight 'sudo/doas -n true' is removed for OpenBSD. A
+  rule restricted to veracrypt --core-service does not have to allow
+  true.
+- The real service is first attempted for elevation with doas -n. If a
+  password is needed, the interface prompts for the password of the
+  account running VeraCrypt.
+- For authentication, a private pseudoterminal is created and set as the
+  controlling terminal. The protocol's stdin/stdout channels are
+  preserved.
+- The slave is kept on stderr during doas: doas calls closefrom(3)
+  before authenticating, and closing the slave's last descriptor would
+  lose /dev/tty.
+- Echo is disabled and the readpassphrase prompt is awaited before
+  sending a single response. No fixed delay is used for synchronization.
+- Terminal messages and the service's serialized exceptions are
+  distinguished. The password does not pass through argv or the
+  environment and is wiped from temporary buffers.
+- After authenticating, the elevated worker detaches from the terminal
+  session before releasing stderr; this prevents the terminal release
+  from terminating it.
+- Authentication failure returns control to the frontend to retry,
+  without leaving doas waiting for another response on a private
+  terminal.
+- OpenBSD elevation errors reference doas and doas.conf.
 
-Regla recomendada en el README (ejecucion normal como usuario):
+Rule recommended in the README (normal execution as a user):
     permit :wheel cmd /usr/local/bin/veracrypt args --core-service
 
-La regla autoriza el servicio privilegiado de VeraCrypt. No hace falta permitir
-true ni elevar la invocacion normal de la CLI. La variante nopass se probo
-solo como regla temporal del banco de pruebas; no se deja instalada.
+The rule authorizes VeraCrypt's privileged service. There is no need to
+permit true or to elevate the normal CLI invocation. The nopass variant
+was tested only as a temporary test-bench rule; it is not left
+installed.
 
 3. FFS
-- Se anade FFS al enum de filesystems, como tipo nativo en OpenBSD, al parser
-  de --filesystem y a los selectores de CLI/GUI.
-- La creacion no interactiva sigue eligiendo FAT por defecto. FFS se solicita
-  expresamente con --filesystem=FFS.
-- Se anade una peticion serializada especifica al servicio privilegiado para
-  ejecutar /sbin/newfs sobre el dispositivo raw correspondiente al volumen.
-- El servicio valida /dev/vnd[0-3]c y que corresponda a un volumen VeraCrypt
-  sin filesystem montado antes de convertirlo a /dev/rvndNc. No se anade una
-  interfaz generica para ejecutar comandos ni se aceptan discos arbitrarios.
-- CLI y GUI usan la misma peticion de formateo. No se cede temporalmente la
-  propiedad del dispositivo al usuario: eso no basta para los ioctls de newfs.
+- FFS is added to the filesystem enum, as a native type on OpenBSD, to
+  the --filesystem parser and to the CLI/GUI selectors.
+- Non-interactive creation still chooses FAT by default. FFS is
+  explicitly requested with --filesystem=FFS.
+- A specific serialized request is added to the privileged service to
+  run /sbin/newfs on the raw device corresponding to the volume.
+- The service validates /dev/vnd[0-3]c and that it corresponds to a
+  VeraCrypt volume with no mounted filesystem before converting it to
+  /dev/rvndNc. No generic command-execution interface is added, and
+  arbitrary disks are not accepted.
+- CLI and GUI use the same formatting request. Ownership of the device
+  is not temporarily handed to the user: that is not enough for newfs's
+  ioctls.
 
-FALLOS DETECTADOS Y CORREGIDOS DURANTE LA VALIDACION
+FAILURES DETECTED AND FIXED DURING VALIDATION
 
-El WIP inicial compilaba, pero la comprobacion doas true impedia usar una
-regla limitada al servicio. La primera prueba FFS con usuario normal fallo
-con 'newfs: ioctl (GDINFO): Operation not permitted': habia que formatear en
-el servicio elevado, no solo cambiar el propietario del dispositivo raw.
-La primera prueba con contrasena fallo con 'doas: a tty is required': habia
-que mantener el slave en un descriptor que sobreviviera al closefrom de doas.
-Estos casos se corrigieron y se repitieron con exito en el binario final.
+The initial WIP compiled, but the doas true check prevented using a rule
+limited to the service. The first FFS test as a normal user failed with
+'newfs: ioctl (GDINFO): Operation not permitted': formatting had to
+happen in the elevated service, not just by changing the owner of the raw
+device. The first password test failed with 'doas: a tty is required':
+the slave had to be kept on a descriptor that survived doas's closefrom.
+These cases were fixed and repeated successfully on the final binary.
 
-VALIDACION QUE PUEDE CITAR EL CORREO
+VALIDATION THE MAIL CAN CITE
 
-- Compilacion, checksum y comprobacion de bibliotecas compartidas: correctos.
-- Autotests de todos los algoritmos: correctos, tambien como usuario normal.
-- doas denegado, nopass restringido, autenticacion con contrasena y reintento
-  tras contrasena incorrecta: comportamiento esperado.
-- FFS: crear, montar, escribir/leer como usuario, desmontar y remontar con
-  SHA256 identico. fsck_ffs -fn sin errores.
-- FAT batch sigue funcionando sin elevacion para crear y se monta como msdos.
-- Cuenta temporal eliminada, doas.conf restaurado y todos los vnd libres.
+- Compilation, checksum and shared-library check: correct.
+- Self-tests of all algorithms: correct, also as a normal user.
+- doas denied, restricted nopass, password authentication and retry
+  after an incorrect password: expected behavior.
+- FFS: create, mount, write/read as a user, unmount and remount with
+  identical SHA256. fsck_ffs -fn with no errors.
+- FAT batch still works without elevation for creation and mounts as
+  msdos.
+- Temporary account removed, doas.conf restored and all vnd free.
 
-No convertir esto en una afirmacion de soporte probado en todas las
-arquitecturas o de la GUI. No se probaron discos fisicos, volumenes ocultos
-ni smartcards. No hay recuento numerico de tests criptograficos: upstream
-informa 'Self-tests of all algorithms passed'. Hay avisos de compilacion
-y el aviso esperado de --quick, que se uso solo en imagenes de prueba.
+Do not turn this into a claim of support proven on all architectures or
+of the GUI. Physical disks, hidden volumes and smartcards were not
+tested. There is no numeric count of cryptographic tests: upstream
+reports 'Self-tests of all algorithms passed'. There are compilation
+warnings and the expected --quick warning, which was used only on test
+images.
 
-ENTREGA Y EVIDENCIA
+DELIVERY AND EVIDENCE
 
 /root/veracrypt-results/por-port/diffs/security-veracrypt.diff
 /root/veracrypt-results/por-port/RESULTADOS-PRUEBAS.txt
 /root/veracrypt-results/por-port/CAMBIOS-PARA-PROPUESTA.txt
 /root/veracrypt-results/por-port/SHA256
 
-Paquete listo para instalar/probar:
+Package ready to install/test:
 /usr/packages/amd64/all/veracrypt-1.26.29.tgz
-Su tamano y SHA256 constan en /root/veracrypt-results/package.json.
+Its size and SHA256 are recorded in
+/root/veracrypt-results/package.json.
 
-Logs y evidencia JSON en /root/veracrypt-results:
-- logs/build-doas-tty-final.log, package-tty-final.log, install-tty-final.log.
-- logs/crypto-selftest-final.log y crypto-selftest-unprivileged.log.
-- logs/ffs-*.log, ffs-payload.sha256 y fat-*.log.
-- logs/doas-password-auth.log y doas-password-retry-auth.log.
-- logs/doas-evidence.log, checks-final.log y patch-clean.log.
+Logs and JSON evidence in /root/veracrypt-results:
+- logs/build-doas-tty-final.log, package-tty-final.log,
+  install-tty-final.log.
+- logs/crypto-selftest-final.log and crypto-selftest-unprivileged.log.
+- logs/ffs-*.log, ffs-payload.sha256 and fat-*.log.
+- logs/doas-password-auth.log and doas-password-retry-auth.log.
+- logs/doas-evidence.log, checks-final.log and patch-clean.log.
 - cli-results.json, doas-password-result.json,
   doas-password-retry-result.json, extra-cli-results.json.
-- test-account-cleanup.json y logs/vnd-final.log.
+- test-account-cleanup.json and logs/vnd-final.log.
 
-El diff se ha comprobado con git apply --numstat y los parches se aplicaron
-sobre una extraccion limpia. No confundirlo con un commit o con una prueba
-de aplicacion sobre un checkout CVS independiente.
+The diff has been checked with git apply --numstat and the patches were
+applied to a clean extraction. Do not confuse it with a commit or with an
+application test on an independent CVS checkout.
 
-ORIENTACION PARA REDACTAR
+GUIDANCE FOR DRAFTING
 
-Presentar una propuesta de actualizacion a 1.26.29 que anade la integracion
-doas/FFS descrita, con validacion CLI en OpenBSD 8.0 amd64. Destacar que las
-pruebas con usuario normal descubrieron fallos que no aparecian como root.
-Pedir revision de los cambios de elevacion y pruebas en otras arquitecturas.
-No inventar destinatario, firma, URL publica de adjuntos, resultados de GUI
-o aceptacion del cambio. No enviar el correo sin una instruccion expresa.
+Present an update proposal to 1.26.29 that adds the described doas/FFS
+integration, with CLI validation on OpenBSD 8.0 amd64. Emphasize that
+tests as a normal user uncovered failures that did not appear as root.
+Request review of the elevation changes and testing on other
+architectures. Do not invent a recipient, signature, public attachment
+URL, GUI results or acceptance of the change. Do not send the mail
+without an explicit instruction.
 
-RESULTADOS DE VALIDACION DE VERACRYPT
-OpenBSD 8.0 amd64, 14 de octubre de 2026
-Version instalada: VeraCrypt 1.26.29
+VERACRYPT VALIDATION RESULTS
+OpenBSD 8.0 amd64, October 14, 2026
+Installed version: VeraCrypt 1.26.29
 
-COMPILACION Y PAQUETE
-- Compilacion del port con clang/C++14 y wxWidgets: correcta.
-- distinfo y PLIST generados a partir de las fuentes y del fake real.
-- make checksum y make port-lib-depends-check: correctos.
-- Paquete veracrypt-1.26.29.tgz generado e instalado.
-- Todos los parches se aplican sobre una extraccion limpia. Las fuentes
-  parcheadas coinciden con las usadas para construir el binario (salvo la
-  sustitucion posterior de TRUEPREFIX en el lanzador desktop).
+BUILD AND PACKAGE
+- Port build with clang/C++14 and wxWidgets: correct.
+- distinfo and PLIST generated from the sources and the real fake.
+- make checksum and make port-lib-depends-check: correct.
+- Package veracrypt-1.26.29.tgz generated and installed.
+- All patches apply to a clean extraction. The patched sources match
+  those used to build the binary (except for the later TRUEPREFIX
+  substitution in the desktop launcher).
 
-PRUEBAS CRIPTOGRAFICAS
-- Target do-test del port: Self-tests of all algorithms passed.
-- Binario instalado ejecutado como usuario temporal sin privilegios:
-  Self-tests of all algorithms passed.
+CRYPTOGRAPHIC TESTS
+- Port do-test target: Self-tests of all algorithms passed.
+- Installed binary run as a temporary unprivileged user: Self-tests of
+  all algorithms passed.
 - veracrypt --text --version: VeraCrypt 1.26.29.
 
 DOAS
-- Cuenta temporal vctest, uid 1001, sin pertenencia a wheel.
-- Regla de denegacion: la operacion privilegiada falla con exit 1, como se
-  esperaba; no se configura ningun vnd ni queda un montaje.
-- Regla nopass limitada a /usr/local/bin/veracrypt args --core-service:
-  creacion FFS, montaje, listado y desmontaje sin terminal interactiva: OK.
-- La misma regla sin nopass: montaje FFS desde la CLI con una sola peticion
-  de la contrasena de la cuenta: OK.
-- Contrasena incorrecta seguida de la correcta: dos peticiones, error de
-  autenticacion esperado y recuperacion sin bloqueo; montaje final: OK.
-- El registro de doas confirma que vctest ejecuto --core-service como root.
-- La contrasena de administracion se transmite por una terminal privada;
-  no se pasa como argumento del programa ni como variable de entorno.
+- Temporary account vctest, uid 1001, no wheel membership.
+- Denial rule: the privileged operation fails with exit 1, as expected;
+  no vnd is configured and no mount remains.
+- nopass rule limited to /usr/local/bin/veracrypt args --core-service:
+  FFS creation, mounting, listing and unmounting without an interactive
+  terminal: OK.
+- The same rule without nopass: FFS mount from the CLI with a single
+  prompt for the account password: OK.
+- Incorrect password followed by the correct one: two prompts, expected
+  authentication error and recovery without a lockout; final mount: OK.
+- The doas log confirms that vctest ran --core-service as root.
+- The administrator password is transmitted over a private terminal; it
+  is not passed as a program argument or as an environment variable.
 
 FFS
-- Contenedor normal de archivo, 64 MiB, AES, SHA-512 y PIM 0.
-- Creacion con --filesystem=FFS como usuario sin privilegios: OK.
-- newfs ejecutado como root sobre /dev/rvndNc mediante el servicio elevado.
-- Montaje explicito con --filesystem=ffs: tipo ffs confirmado por mount.
-- Escritura y lectura de un payload de 1.048.621 bytes como usuario normal.
-- Desmontaje y remontaje automatico sin especificar el tipo: OK.
-- Hash SHA256 del payload identico tras remontar.
-- Montaje posterior con autenticacion doas y punto personalizado: datos intactos.
-- Apertura sin montar filesystem y fsck_ffs -fn: exit 0; filesystem limpio,
-  fases 1 a 5 completadas sin reparaciones.
+- Normal file container, 64 MiB, AES, SHA-512 and PIM 0.
+- Creation with --filesystem=FFS as an unprivileged user: OK.
+- newfs run as root on /dev/rvndNc via the elevated service.
+- Explicit mount with --filesystem=ffs: ffs type confirmed by mount.
+- Write and read of a 1,048,621-byte payload as a normal user.
+- Unmount and automatic remount without specifying the type: OK.
+- Payload SHA256 hash identical after remounting.
+- Subsequent mount with doas authentication and a custom mount point:
+  data intact.
+- Opening without mounting a filesystem and fsck_ffs -fn: exit 0; clean
+  filesystem, phases 1 to 5 completed without repairs.
 
-REGRESION FAT
-- Creacion no interactiva sin --filesystem, con doas denegado: OK.
-- Montaje automatico posterior: tipo msdos confirmado.
-- Desmontaje: OK. Se conserva FAT como valor por defecto de la creacion batch.
+FAT REGRESSION
+- Non-interactive creation without --filesystem, with doas denied: OK.
+- Subsequent automatic mount: msdos type confirmed.
+- Unmount: OK. FAT is preserved as the default for batch creation.
 
-LIMPIEZA
-- Todos los volumenes de prueba desmontados; vnd0, vnd1, vnd2 y vnd3 libres.
-- Cuenta temporal y su directorio con las imagenes eliminados.
-- /etc/doas.conf restaurado exactamente a sus bytes originales.
-- Sin credenciales temporales persistentes en los archivos de entrega.
+CLEANUP
+- All test volumes unmounted; vnd0, vnd1, vnd2 and vnd3 free.
+- Temporary account and its directory with the images removed.
+- /etc/doas.conf restored exactly to its original bytes.
+- No persistent temporary credentials in the delivery files.
 
-ALCANCE
-Se probaron contenedores normales de archivo y la CLI en amd64. La GUI
-compila y comparte el camino de formateo, pero no se probaron sus dialogos.
-No se probaron otras arquitecturas, dispositivos fisicos, volumenes ocultos,
-smartcards, autenticacion doas distinta de contrasena ni compatibilidad FFS
-con otros sistemas operativos. Las pruebas no equivalen a una auditoria
-completa del protocolo privilegiado o de criptografia.
+SCOPE
+Normal file containers and the CLI were tested on amd64. The GUI
+compiles and shares the formatting path, but its dialogs were not
+tested. Other architectures, physical devices, hidden volumes,
+smartcards, doas authentication other than password, and FFS
+compatibility with other operating systems were not tested. The tests
+are not equivalent to a complete audit of the privileged protocol or of
+cryptography.
 
-Hay avisos de compilacion de upstream y el aviso esperado de --quick en
-los contenedores desechables. La prueba de denegacion y la primera contrasena
-incorrecta son casos negativos intencionales, no fallos pendientes.
-Los logs historicos de los fallos corregidos se conservan para diagnostico;
-los resultados anteriores corresponden al binario final.
+There are upstream compilation warnings and the expected --quick warning
+on the disposable containers. The denial test and the first incorrect
+password are intentional negative cases, not pending failures. The
+historical logs of the fixed failures are kept for diagnostics; the
+results above correspond to the final binary.

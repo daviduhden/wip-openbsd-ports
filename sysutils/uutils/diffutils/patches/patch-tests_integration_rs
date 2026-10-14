@@ -1,0 +1,25 @@
+Use FFS-compatible sparse files on OpenBSD without weakening the cmp fast-path test.
+
+Index: tests/integration.rs
+--- tests/integration.rs.orig
++++ tests/integration.rs
+@@ -809,11 +809,17 @@
+         // validating the /dev/null optimization.
+         let a_path = tmp_dir.path().join("a");
+         let a = File::create(&a_path).unwrap();
+-        a.set_len(14 * 1024 * 1024 * 1024 * 1024).unwrap();
++        // FFS cannot represent 14 TiB; retain sizes above 32-bit offsets.
++        let unit = if cfg!(target_os = "openbsd") {
++            1024_u64.pow(3)
++        } else {
++            1024_u64.pow(4)
++        };
++        a.set_len(14 * unit).unwrap();
+ 
+         let b_path = tmp_dir.path().join("b");
+         let b = File::create(&b_path).unwrap();
+-        b.set_len(15 * 1024 * 1024 * 1024 * 1024).unwrap();
++        b.set_len(15 * unit).unwrap();
+ 
+         let dev_null = OpenOptions::new().write(true).open("/dev/null").unwrap();
+ 

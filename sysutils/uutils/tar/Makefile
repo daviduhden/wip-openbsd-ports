@@ -12,6 +12,7 @@ UUCORE_COMMIT =	9f29502db083d57553c65ec3c8ed94a1e29fed21
 V =		0.0.1
 DISTNAME =	uutils-tar-${V}
 PKGNAME =	uutils-tar-${V}
+WRKDIST =	${WRKDIR}/tar-${TAR_COMMIT}
 
 DIST_TUPLE +=	github uutils tar ${TAR_COMMIT} .
 DIST_TUPLE +=	github uutils coreutils ${UUCORE_COMMIT} ../coreutils-uucore

@@ -11,6 +11,7 @@ INDEXMAP_COMMIT =	36852f985c01fb9f58f2d9e510655ca1dbb1f4d0
 V =		0.1.0
 DISTNAME =	uutils-awk-${V}
 PKGNAME =	uutils-awk-${V}
+WRKDIST =	${WRKDIR}/awk-${AWK_COMMIT}
 
 DIST_TUPLE +=	github uutils awk ${AWK_COMMIT} .
 DIST_TUPLE +=	github Hans-Halverson indexmap-allocator-api \

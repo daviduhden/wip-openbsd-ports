@@ -1,14 +1,16 @@
-Build diff and cmp as independent binaries instead of the single
-multicall diffutils binary.
+Build diff and cmp as independent binaries while retaining the multicall
+binary required by upstream tests. Only diff and cmp are installed.
 
 Index: Cargo.toml
 --- Cargo.toml.orig
 +++ Cargo.toml
-@@ -11,7 +11,11 @@
- path = "src/lib.rs"
+@@ -12,6 +12,14 @@
  
  [[bin]]
--name = "diffutils"
+ name = "diffutils"
++path = "src/main.rs"
++
++[[bin]]
 +name = "diff"
 +path = "src/main.rs"
 +

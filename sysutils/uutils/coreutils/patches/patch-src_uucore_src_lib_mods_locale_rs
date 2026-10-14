@@ -1,0 +1,22 @@
+Find the packaged Fluent catalogs while preserving their upstream layout.
+
+Index: src/uucore/src/lib/mods/locale.rs
+--- src/uucore/src/lib/mods/locale.rs.orig
++++ src/uucore/src/lib/mods/locale.rs
+@@ -675,6 +675,16 @@
+ 
+     // 2. <prefix>/share/locales/<prog>
+     if let Some(prefix) = exe_dir.parent() {
++        let packaged = prefix.join("share/uutils-coreutils/src");
++        let packaged = if p == "uucore" {
++            packaged.join(p)
++        } else {
++            packaged.join("uu").join(p)
++        }
++        .join("locales");
++        if packaged.is_dir() {
++            return Some(packaged);
++        }
+         let fhs = prefix.join("share").join("locales").join(p);
+         if fhs.is_dir() {
+             return Some(fhs);

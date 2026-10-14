@@ -2,6 +2,7 @@ COMMENT =	alternative implementation of GNU coreutils
 
 GH_PROJECT =	coreutils
 GH_TAGNAME =	0.12.0
+REVISION =	0
 
 WANTLIB += ${MODCARGO_WANTLIB} m
 
@@ -37,6 +38,13 @@ MODCARGO_BUILD_ARGS +=	-p uu_${utility}
 MODCARGO_BUILD_ARGS +=	--features uu_stdbuf/feat_external_libstdbuf
 MODCARGO_ENV +=		LIBSTDBUF_DIR=${PREFIX}/libexec/uutils-coreutils
 
+pre-test:
+	${INSTALL_DATA_DIR} ${MODCARGO_TARGET_DIR}/release/locales
+	ln -fs ${WRKSRC}/src/uucore/locales ${MODCARGO_TARGET_DIR}/release/locales/uucore
+	for d in ${WRKSRC}/src/uu/*/locales; do \
+		ln -fs $$d ${MODCARGO_TARGET_DIR}/release/locales/$$(basename $$(dirname $$d)); \
+	done
+
 do-install:
 .for utility in ${COREUTILS}
 	${INSTALL_PROGRAM} ${MODCARGO_TARGET_DIR}/release/${utility} \
@@ -46,6 +54,11 @@ do-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/libexec/uutils-coreutils
 	${INSTALL_DATA} ${MODCARGO_TARGET_DIR}/release/deps/libstdbuf.so \
 	    ${PREFIX}/libexec/uutils-coreutils/
+
+	cd ${WRKSRC} && find src -path '*/locales/*.ftl' -type f | while read f; do \
+		${INSTALL_DATA_DIR} ${PREFIX}/share/uutils-coreutils/$$(dirname $$f); \
+		${INSTALL_DATA} $$f ${PREFIX}/share/uutils-coreutils/$$f; \
+	done
 
 .include "crates.inc"
 

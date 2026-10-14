@@ -201,9 +201,10 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +            permissions: OpenBsdPermissions::READ_WRITE_CREATE_EXECUTE,
 +        }];
 +        append_deny_rules(&file_system, sandbox_policy_cwd, &mut rules)?;
++        let writable = rules.iter().any(|rule| rule.permissions.is_writable());
 +        return Ok(OpenBsdSandboxPolicy {
 +            restrict_filesystem: true,
-+            writable: true,
++            writable,
 +            network,
 +            rules,
 +        });
@@ -224,9 +225,7 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +        path: PathBuf::from("/"),
 +        permissions: OpenBsdPermissions::READ_EXECUTE,
 +    }];
-+    let mut writable = false;
 +    for root in file_system.get_writable_roots_with_cwd(sandbox_policy_cwd) {
-+        writable = true;
 +        push_rule(
 +            &mut rules,
 +            root.root.to_path_buf(),
@@ -250,6 +249,7 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +
 +    append_deny_rules(&file_system, sandbox_policy_cwd, &mut rules)?;
 +
++    let writable = rules.iter().any(|rule| rule.permissions.is_writable());
 +    Ok(OpenBsdSandboxPolicy {
 +        restrict_filesystem: true,
 +        writable,

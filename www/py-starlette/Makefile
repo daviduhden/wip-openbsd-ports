@@ -27,4 +27,8 @@ TEST_DEPENDS =		devel/py-trio \
 
 RUN_DEPENDS =	net/py-anyio>=4.0.0,<5
 
+TEST_DEPENDS += devel/py-blockbuster
+# The optional OpenTelemetry SDK is not ported.
+MODPY_PYTEST_ARGS = --ignore=tests/middleware/test_opentelemetry.py
+
 .include <bsd.port.mk>

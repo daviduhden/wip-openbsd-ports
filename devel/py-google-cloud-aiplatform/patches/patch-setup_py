@@ -1,0 +1,12 @@
+Use native namespace packages; legacy .pth files mask other google packages.
+
+--- setup.py.orig
++++ setup.py
+@@ -310,7 +310,6 @@
+             "tb-gcp-uploader=google.cloud.aiplatform.tensorboard.uploader_main:run_main"
+         ],
+     },
+-    namespace_packages=("google", "google.cloud"),
+     author="Google LLC",
+     author_email="googleapis-packages@google.com",
+     license="Apache 2.0",

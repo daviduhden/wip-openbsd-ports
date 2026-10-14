@@ -1,0 +1,21 @@
+Make the optional tracing test dependency lazy.
+
+--- tests/server/conftest.py.orig
++++ tests/server/conftest.py
+@@ -1,10 +1,14 @@
+ """Shared fixtures for server-side tests."""
+ 
++from __future__ import annotations
++
+ from collections.abc import Iterator
++from typing import TYPE_CHECKING
+ 
+ import pytest
+-from logfire.testing import CaptureLogfire, TestExporter
+-from opentelemetry.sdk.trace import ReadableSpan
++if TYPE_CHECKING:
++    from logfire.testing import CaptureLogfire, TestExporter
++    from opentelemetry.sdk.trace import ReadableSpan
+ 
+ 
+ class SpanCapture:

@@ -15,15 +15,13 @@ MODPY_PYBUILD =	maturin
 
 MODCARGO_CARGOTOML =	${WRKSRC}/crates/html-to-markdown-py/Cargo.toml
 MODCARGO_CARGOLOCK =	${WRKSRC}/Cargo.lock
-WANTLIB +=	${MODCARGO_WANTLIB} m
+WANTLIB +=	${MODCARGO_WANTLIB:Npthread}
 MAKE_JOBS =	1
 MODCARGO_ENV +=	CARGO_PROFILE_RELEASE_LTO=off
 
 .include "crates.inc"
 
-# The sdist ships a registry-crate lock in a workspace member directory.
-# Use the lock resolved for the actual Python extension workspace.
-post-extract:
-	${INSTALL_DATA} ${FILESDIR}/Cargo.lock ${WRKSRC}/Cargo.lock
+# No Python tests in the PyPI sdist.
+NO_TEST =	Yes
 
 .include <bsd.port.mk>

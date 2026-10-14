@@ -17,4 +17,6 @@ RUN_DEPENDS =	devel/py-protobuf>=6.33.5,<8.0.0 \
 		net/py-googleapis-common-protos>=1.69.2,<2.0.0 \
 		net/py-grpcio>=1.59.0,<2.0.0
 
+MODPY_PYTEST_ARGS =	tests/unit
+
 .include <bsd.port.mk>

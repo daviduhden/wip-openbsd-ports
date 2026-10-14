@@ -1,4 +1,5 @@
 lib/python${MODPY_VERSION}/site-packages/proto/
+lib/python${MODPY_VERSION}/site-packages/proto/__init__.py
 lib/python${MODPY_VERSION}/site-packages/proto/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/proto/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/proto/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -22,13 +23,13 @@ lib/python${MODPY_VERSION}/site-packages/proto/${MODPY_PYCACHE}utils.${MODPY_PYC
 lib/python${MODPY_VERSION}/site-packages/proto/${MODPY_PYCACHE}utils.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/proto/${MODPY_PYCACHE}version.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/proto/${MODPY_PYCACHE}version.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/proto/__init__.py
 lib/python${MODPY_VERSION}/site-packages/proto/_file_info.py
 lib/python${MODPY_VERSION}/site-packages/proto/_package_info.py
 lib/python${MODPY_VERSION}/site-packages/proto/datetime_helpers.py
 lib/python${MODPY_VERSION}/site-packages/proto/enums.py
 lib/python${MODPY_VERSION}/site-packages/proto/fields.py
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/
+lib/python${MODPY_VERSION}/site-packages/proto/marshal/__init__.py
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -36,8 +37,8 @@ lib/python${MODPY_VERSION}/site-packages/proto/marshal/${MODPY_PYCACHE}compat.${
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/${MODPY_PYCACHE}compat.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/${MODPY_PYCACHE}marshal.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/${MODPY_PYCACHE}marshal.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/proto/marshal/__init__.py
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/collections/
+lib/python${MODPY_VERSION}/site-packages/proto/marshal/collections/__init__.py
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/collections/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/collections/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/collections/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -45,12 +46,12 @@ lib/python${MODPY_VERSION}/site-packages/proto/marshal/collections/${MODPY_PYCAC
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/collections/${MODPY_PYCACHE}maps.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/collections/${MODPY_PYCACHE}repeated.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/collections/${MODPY_PYCACHE}repeated.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/proto/marshal/collections/__init__.py
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/collections/maps.py
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/collections/repeated.py
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/compat.py
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/marshal.py
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/rules/
+lib/python${MODPY_VERSION}/site-packages/proto/marshal/rules/__init__.py
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/rules/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/rules/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/rules/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -70,7 +71,6 @@ lib/python${MODPY_VERSION}/site-packages/proto/marshal/rules/${MODPY_PYCACHE}str
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/rules/${MODPY_PYCACHE}struct.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/rules/${MODPY_PYCACHE}wrappers.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/rules/${MODPY_PYCACHE}wrappers.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/proto/marshal/rules/__init__.py
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/rules/bytes.py
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/rules/dates.py
 lib/python${MODPY_VERSION}/site-packages/proto/marshal/rules/enums.py

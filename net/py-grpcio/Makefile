@@ -92,4 +92,7 @@ post-extract:
 
 RUN_DEPENDS =	devel/py-typing-extensions>=4.12,<5
 
+# The PyPI sdist does not include grpcio_tests.
+NO_TEST =	Yes
+
 .include <bsd.port.mk>

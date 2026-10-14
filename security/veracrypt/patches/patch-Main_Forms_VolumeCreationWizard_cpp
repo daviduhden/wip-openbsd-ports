@@ -1,20 +1,32 @@
-Pass the raw /dev/rvnd device to OpenBSD newfs during GUI formatting
-rather than the corresponding block /dev/vnd device.
+Run OpenBSD FFS formatting through the elevated core service.
 
-Index: Main/Forms/VolumeCreationWizard.cpp
 --- Main/Forms/VolumeCreationWizard.cpp.orig
 +++ Main/Forms/VolumeCreationWizard.cpp
-@@ -870,6 +870,13 @@
+@@ -17,6 +17,9 @@
+ #include <unistd.h>
+ #include <sys/statvfs.h> // header for statvfs
+ #include "Platform/Unix/Process.h"
++#endif
++#ifdef TC_OPENBSD
++#include "Core/Unix/CoreService.h"
+ #endif
+ #include "Core/RandomNumberGenerator.h"
+ #include "Core/VolumeCreator.h"
+@@ -869,7 +872,7 @@
+ 					bool useElevatedAPFSFormatter = UseElevatedMacOSXAPFSFormatter (fsFormatter);
  					if (!useElevatedAPFSFormatter)
  						PrepareMacOSXFormatterDevice (virtualDevice, changedDeviceOwners);
- #else
-+#ifdef TC_OPENBSD
-+					// newfs(8) requires the raw character device; the block
-+					// device exposed by the loop device driver cannot be used.
-+					string virtualDeviceStr = virtualDevice;
-+					if (virtualDeviceStr.find ("/dev/vnd") == 0)
-+						virtualDevice = "/dev/r" + virtualDeviceStr.substr (5);
-+#endif
+-#else
++#elif !defined(TC_OPENBSD)
  					UserId origDeviceOwner ((uid_t) -1);
  
  					try
+@@ -926,6 +929,8 @@
+ 					SetCreationProgressText (StringFormatter (LangString["FORMAT_STAGE_CREATING_FILESYSTEM"], fsFormatter));
+ #ifdef TC_MACOSX
+ 					ExecuteMacOSXFilesystemFormatter (fsFormatter, args);
++#elif defined(TC_OPENBSD)
++					CoreService::RequestExecuteOpenBSDFFSFormatter (virtualDevice);
+ #else
+ 					Process::Execute (fsFormatter, args);
+ #endif

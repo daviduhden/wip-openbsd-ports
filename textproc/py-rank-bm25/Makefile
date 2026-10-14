@@ -18,4 +18,7 @@ MODPY_PYBUILD =	setuptools
 
 RUN_DEPENDS =	math/py-numpy
 
+# No tests in the PyPI sdist.
+NO_TEST =	Yes
+
 .include <bsd.port.mk>

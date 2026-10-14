@@ -30,8 +30,13 @@ RUN_DEPENDS =		converters/py-html-to-markdown>=3.17.2,<4 \
 			www/py-uvicorn>=0.54.0
 
 MODPY_PYTEST_ARGS =	-m 'not stress'
+TEST_ENV +=		LITELLM_LOCAL_MODEL_COST_MAP=True
 
 # Optional metaskills need starlark-go, which requires Go's c-shared mode
 # (not implemented on OpenBSD; golang/go#33896).
+
+# The website builder shadows the Python build frontend.
+post-extract:
+	mv ${WRKSRC}/build.py ${WRKSRC}/build-website.py
 
 .include <bsd.port.mk>

@@ -24,7 +24,6 @@ MODPY_PYBUILD =	setuptools
 # No tests in sources on PyPi
 NO_TEST=		Yes
 
-WANTLIB +=	m pthread
 # Google Cloud AI Platform and grpcio-status require protobuf <7.
 PORTROACH =	limit:^6\.
 

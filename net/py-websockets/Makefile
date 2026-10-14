@@ -13,7 +13,6 @@ HOMEPAGE=	https://websockets.readthedocs.io/en/stable/
 # BSD
 PERMIT_PACKAGE=	Yes
 
-WANTLIB=	pthread
 
 MODULES=	lang/python
 MODPY_PYBUILD =	setuptools
@@ -25,7 +24,10 @@ TEST_DEPENDS=	security/mitmproxy \
 # needs unported https://pypi.org/project/python-socks/
 MODPY_PYTEST_ARGS=	-k 'not SocksProxyClientTests'
 
-MODPY_PI =	Yes
+DIST_SUBDIR = websockets-github
+GH_ACCOUNT = python-websockets
+GH_PROJECT = websockets
+GH_TAGNAME = ${MODPY_DISTV}
 
 # Google GenAI requires websockets <17.
 PORTROACH =	limit:^16\.

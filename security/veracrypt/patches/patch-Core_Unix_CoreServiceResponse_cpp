@@ -1,0 +1,32 @@
+Run OpenBSD FFS formatting through the elevated core service.
+
+--- Core/Unix/CoreServiceResponse.cpp.orig
++++ Core/Unix/CoreServiceResponse.cpp
+@@ -100,6 +100,17 @@
+ 	}
+ #endif
+ 
++#ifdef TC_OPENBSD
++	void ExecuteOpenBSDFFSFormatterResponse::Deserialize (shared_ptr <Stream> stream)
++	{
++	}
++
++	void ExecuteOpenBSDFFSFormatterResponse::Serialize (shared_ptr <Stream> stream) const
++	{
++		Serializable::Serialize (stream);
++	}
++#endif
++
+ 	// MountVolumeResponse
+ 	void MountVolumeResponse::Deserialize (shared_ptr <Stream> stream)
+ 	{
+@@ -133,6 +144,9 @@
+ #ifdef TC_MACOSX
+ 	TC_SERIALIZER_FACTORY_ADD_CLASS (ExecuteMacOSXAPFSFormatterResponse);
+ #endif
++#ifdef TC_OPENBSD
++	TC_SERIALIZER_FACTORY_ADD_CLASS (ExecuteOpenBSDFFSFormatterResponse);
++#endif
+ 	TC_SERIALIZER_FACTORY_ADD_CLASS (MountVolumeResponse);
+ 	TC_SERIALIZER_FACTORY_ADD_CLASS (SetFileOwnerResponse);
+ }

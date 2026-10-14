@@ -8,12 +8,12 @@ Privilege elevation
 VeraCrypt runs its privileged core service through doas(1).  Add a rule to
 /etc/doas.conf before mounting, creating or formatting volumes:
 
-    permit :wheel cmd ${TRUEPREFIX}/bin/veracrypt
+    permit :wheel cmd ${TRUEPREFIX}/bin/veracrypt args --core-service
 
-The rule can be restricted further with the "args" option, but it must cover
-both the normal invocation and the "--core-service" mode used internally by
-VeraCrypt.  Do not use "permit nopass" unless you accept passwordless
-elevation for every user allowed by the rule.
+This rule permits only the privileged core service used internally by
+VeraCrypt. Run the normal CLI or GUI as your own user. Do not use
+"permit nopass" unless you accept passwordless elevation for every user
+allowed by the rule.
 
 The core service is used for operations that require root privileges, such as
 configuring vnd(4) loop devices, mounting and unmounting filesystems,
@@ -26,4 +26,10 @@ Filesystem creation
 OpenBSD FFS filesystems can be created inside a new volume by selecting the
 "FFS" filesystem in the volume creation wizard or by passing
 "--filesystem=FFS" on the command line.  The filesystem is created with
-newfs(8) on the raw vnd(4) character device.
+newfs(8) on the raw vnd(4) character device through the elevated core
+service. Changing device ownership alone is insufficient: reading the disk
+label requires privileged ioctls on OpenBSD.
+
+Noninteractive creation retains FAT as its default. Request FFS explicitly
+with --filesystem=FFS. Without a passwordless doas rule, use interactive mode
+so VeraCrypt can request your account password.

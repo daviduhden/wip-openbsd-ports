@@ -1,6 +1,6 @@
-lib/python${MODPY_VERSION}/site-packages/google/
 lib/python${MODPY_VERSION}/site-packages/google/iam/
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/
+lib/python${MODPY_VERSION}/site-packages/google/iam/v1/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -18,18 +18,17 @@ lib/python${MODPY_VERSION}/site-packages/google/iam/v1/${MODPY_PYCACHE}policy_pb
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/${MODPY_PYCACHE}policy_pb2_grpc.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/${MODPY_PYCACHE}resource_policy_member_pb2.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/${MODPY_PYCACHE}resource_policy_member_pb2.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/iam/v1/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/iam_policy.proto
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/iam_policy_pb2.py
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/iam_policy_pb2.pyi
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/iam_policy_pb2_grpc.py
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/logging/
+lib/python${MODPY_VERSION}/site-packages/google/iam/v1/logging/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/logging/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/logging/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/logging/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/logging/${MODPY_PYCACHE}audit_data_pb2.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/logging/${MODPY_PYCACHE}audit_data_pb2.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/iam/v1/logging/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/logging/audit_data_pb2.py
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/options.proto
 lib/python${MODPY_VERSION}/site-packages/google/iam/v1/options_pb2.py

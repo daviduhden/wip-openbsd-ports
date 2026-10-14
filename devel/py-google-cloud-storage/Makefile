@@ -20,4 +20,6 @@ RUN_DEPENDS =	devel/py-google-api-core>=2.27.0,<3.0.0 \
 		security/py-google-auth>=2.26.1,<3.0.0 \
 		www/py-requests>=2.22.0,<3.0.0
 
+MODPY_PYTEST_ARGS =	tests/unit
+
 .include <bsd.port.mk>

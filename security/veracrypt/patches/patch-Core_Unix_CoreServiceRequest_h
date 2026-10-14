@@ -1,0 +1,22 @@
+Run OpenBSD FFS formatting through the elevated core service.
+
+--- Core/Unix/CoreServiceRequest.h.orig
++++ Core/Unix/CoreServiceRequest.h
+@@ -142,6 +142,17 @@
+ 	};
+ #endif
+ 
++#ifdef TC_OPENBSD
++	struct ExecuteOpenBSDFFSFormatterRequest : CoreServiceRequest
++	{
++		ExecuteOpenBSDFFSFormatterRequest () { }
++		ExecuteOpenBSDFFSFormatterRequest (const DevicePath &devicePath) : Device (devicePath) { }
++		TC_SERIALIZABLE (ExecuteOpenBSDFFSFormatterRequest);
++		virtual bool RequiresElevation () const;
++		DevicePath Device;
++	};
++#endif
++
+ 	struct MountVolumeRequest : CoreServiceRequest
+ 	{
+ 		MountVolumeRequest () { }

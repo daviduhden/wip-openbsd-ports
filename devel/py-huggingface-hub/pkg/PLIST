@@ -1,6 +1,7 @@
 bin/hf
 bin/huggingface-cli
 bin/tiny-agents
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub-${MODPY_DISTV}.dist-info/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub-${MODPY_DISTV}.dist-info/METADATA
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub-${MODPY_DISTV}.dist-info/RECORD
@@ -9,7 +10,7 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub-${MODPY_DISTV}.dist-inf
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub-${MODPY_DISTV}.dist-info/licenses/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub-${MODPY_DISTV}.dist-info/licenses/LICENSE
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub-${MODPY_DISTV}.dist-info/top_level.txt
-lib/python${MODPY_VERSION}/site-packages/huggingface_hub/
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -81,13 +82,13 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}repocar
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}repocard.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}repocard_data.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}repocard_data.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/huggingface_hub/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_buckets.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_commit_api.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_commit_scheduler.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_dataset_viewer.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_eval_results.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_hot_reload/
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_hot_reload/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_hot_reload/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_hot_reload/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_hot_reload/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -97,7 +98,6 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_hot_reload/${MODPY_PYC
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_hot_reload/${MODPY_PYCACHE}sse_client.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_hot_reload/${MODPY_PYCACHE}types.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_hot_reload/${MODPY_PYCACHE}types.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_hot_reload/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_hot_reload/client.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_hot_reload/sse_client.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_hot_reload/types.py
@@ -119,6 +119,7 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_upload_pipeline.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_webhooks_payload.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_webhooks_server.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -192,7 +193,6 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}upl
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}upload_large_folder.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}webhooks.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}webhooks.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/_city_game.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/_cli_utils.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/_completion.py
@@ -238,6 +238,7 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/hf_api.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/hf_file_system.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/hub_mixin.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -245,18 +246,18 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/${MODPY_PYCAC
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/${MODPY_PYCACHE}_client.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/${MODPY_PYCACHE}_common.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/${MODPY_PYCACHE}_common.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_client.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_common.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/${MODPY_PYCACHE}_async_client.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/${MODPY_PYCACHE}_async_client.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/_async_client.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -330,7 +331,6 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/ty
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/${MODPY_PYCACHE}zero_shot_image_classification.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/${MODPY_PYCACHE}zero_shot_object_detection.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/${MODPY_PYCACHE}zero_shot_object_detection.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/audio_classification.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/audio_to_audio.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/automatic_speech_recognition.py
@@ -367,6 +367,7 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/ty
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/zero_shot_image_classification.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_generated/types/zero_shot_object_detection.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -384,7 +385,6 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/${MODPY_
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/${MODPY_PYCACHE}types.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/${MODPY_PYCACHE}utils.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/${MODPY_PYCACHE}utils.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/_cli_hacks.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/agent.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/cli.py
@@ -393,6 +393,7 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/mcp_clie
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/types.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_mcp/utils.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_providers/
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_providers/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_providers/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_providers/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_providers/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -436,7 +437,6 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_providers/${
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_providers/${MODPY_PYCACHE}wavespeed.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_providers/${MODPY_PYCACHE}zai_org.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_providers/${MODPY_PYCACHE}zai_org.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_providers/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_providers/_common.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_providers/baseten.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/inference/_providers/cerebras.py
@@ -462,6 +462,7 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/py.typed
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/repocard.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/repocard_data.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/serialization/
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/serialization/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/serialization/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/serialization/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/serialization/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -471,7 +472,6 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/serialization/${MODPY_P
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/serialization/${MODPY_PYCACHE}_dduf.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/serialization/${MODPY_PYCACHE}_torch.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/serialization/${MODPY_PYCACHE}_torch.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/huggingface_hub/serialization/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/serialization/_base.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/serialization/_dduf.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/serialization/_torch.py
@@ -479,6 +479,7 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/templates/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/templates/datasetcard_template.md
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/templates/modelcard_template.md
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/utils/
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/utils/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/utils/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/utils/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/utils/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -552,7 +553,6 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/utils/${MODPY_PYCACHE}s
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/utils/${MODPY_PYCACHE}sha.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/utils/${MODPY_PYCACHE}tqdm.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/utils/${MODPY_PYCACHE}tqdm.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/huggingface_hub/utils/__init__.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/utils/_auth.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/utils/_cache_assets.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/utils/_cache_manager.py

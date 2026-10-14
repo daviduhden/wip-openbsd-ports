@@ -1,5 +1,6 @@
 lib/python${MODPY_VERSION}/site-packages/google/
 lib/python${MODPY_VERSION}/site-packages/google/auth/
+lib/python${MODPY_VERSION}/site-packages/google/auth/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/auth/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/auth/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -63,7 +64,6 @@ lib/python${MODPY_VERSION}/site-packages/google/auth/${MODPY_PYCACHE}pluggable.$
 lib/python${MODPY_VERSION}/site-packages/google/auth/${MODPY_PYCACHE}pluggable.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/auth/${MODPY_PYCACHE}version.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/auth/${MODPY_PYCACHE}version.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/auth/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/_agent_identity_utils.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/_cache.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/_cloud_sdk.py
@@ -79,6 +79,7 @@ lib/python${MODPY_VERSION}/site-packages/google/auth/_refresh_worker.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/_regional_access_boundary_utils.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/_service_account_info.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/
+lib/python${MODPY_VERSION}/site-packages/google/auth/aio/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -86,10 +87,10 @@ lib/python${MODPY_VERSION}/site-packages/google/auth/aio/${MODPY_PYCACHE}_helper
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/${MODPY_PYCACHE}_helpers.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/${MODPY_PYCACHE}credentials.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/${MODPY_PYCACHE}credentials.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/auth/aio/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/_helpers.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/credentials.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/transport/
+lib/python${MODPY_VERSION}/site-packages/google/auth/aio/transport/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/transport/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/transport/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/transport/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -99,7 +100,6 @@ lib/python${MODPY_VERSION}/site-packages/google/auth/aio/transport/${MODPY_PYCAC
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/transport/${MODPY_PYCACHE}mtls.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/transport/${MODPY_PYCACHE}sessions.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/transport/${MODPY_PYCACHE}sessions.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/auth/aio/transport/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/transport/aiohttp.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/transport/mtls.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/aio/transport/sessions.py
@@ -107,6 +107,7 @@ lib/python${MODPY_VERSION}/site-packages/google/auth/api_key.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/app_engine.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/aws.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/compute_engine/
+lib/python${MODPY_VERSION}/site-packages/google/auth/compute_engine/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/compute_engine/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/auth/compute_engine/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/auth/compute_engine/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -116,12 +117,12 @@ lib/python${MODPY_VERSION}/site-packages/google/auth/compute_engine/${MODPY_PYCA
 lib/python${MODPY_VERSION}/site-packages/google/auth/compute_engine/${MODPY_PYCACHE}_mtls.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/auth/compute_engine/${MODPY_PYCACHE}credentials.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/auth/compute_engine/${MODPY_PYCACHE}credentials.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/auth/compute_engine/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/compute_engine/_metadata.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/compute_engine/_mtls.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/compute_engine/credentials.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/credentials.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/crypt/
+lib/python${MODPY_VERSION}/site-packages/google/auth/crypt/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/crypt/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/auth/crypt/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/auth/crypt/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -139,7 +140,6 @@ lib/python${MODPY_VERSION}/site-packages/google/auth/crypt/${MODPY_PYCACHE}es256
 lib/python${MODPY_VERSION}/site-packages/google/auth/crypt/${MODPY_PYCACHE}es256.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/auth/crypt/${MODPY_PYCACHE}rsa.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/auth/crypt/${MODPY_PYCACHE}rsa.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/auth/crypt/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/crypt/_cryptography_rsa.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/crypt/_helpers.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/crypt/_python_rsa.py
@@ -160,6 +160,7 @@ lib/python${MODPY_VERSION}/site-packages/google/auth/metrics.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/pluggable.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/py.typed
 lib/python${MODPY_VERSION}/site-packages/google/auth/transport/
+lib/python${MODPY_VERSION}/site-packages/google/auth/transport/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/transport/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/auth/transport/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/auth/transport/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -181,7 +182,6 @@ lib/python${MODPY_VERSION}/site-packages/google/auth/transport/${MODPY_PYCACHE}r
 lib/python${MODPY_VERSION}/site-packages/google/auth/transport/${MODPY_PYCACHE}requests.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/auth/transport/${MODPY_PYCACHE}urllib3.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/auth/transport/${MODPY_PYCACHE}urllib3.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/auth/transport/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/transport/_aiohttp_requests.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/transport/_custom_tls_signer.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/transport/_http_client.py
@@ -193,6 +193,7 @@ lib/python${MODPY_VERSION}/site-packages/google/auth/transport/requests.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/transport/urllib3.py
 lib/python${MODPY_VERSION}/site-packages/google/auth/version.py
 lib/python${MODPY_VERSION}/site-packages/google/oauth2/
+lib/python${MODPY_VERSION}/site-packages/google/oauth2/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/oauth2/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/oauth2/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/oauth2/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -230,7 +231,6 @@ lib/python${MODPY_VERSION}/site-packages/google/oauth2/${MODPY_PYCACHE}webauthn_
 lib/python${MODPY_VERSION}/site-packages/google/oauth2/${MODPY_PYCACHE}webauthn_handler_factory.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/oauth2/${MODPY_PYCACHE}webauthn_types.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/oauth2/${MODPY_PYCACHE}webauthn_types.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/oauth2/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/oauth2/_client.py
 lib/python${MODPY_VERSION}/site-packages/google/oauth2/_client_async.py
 lib/python${MODPY_VERSION}/site-packages/google/oauth2/_credentials_async.py

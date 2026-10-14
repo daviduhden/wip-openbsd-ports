@@ -1,0 +1,42 @@
+Run OpenBSD FFS formatting through the elevated core service.
+
+--- Core/Unix/CoreServiceRequest.cpp.orig
++++ Core/Unix/CoreServiceRequest.cpp
+@@ -245,6 +245,27 @@
+ 	}
+ #endif
+ 
++#ifdef TC_OPENBSD
++	void ExecuteOpenBSDFFSFormatterRequest::Deserialize (shared_ptr <Stream> stream)
++	{
++		CoreServiceRequest::Deserialize (stream);
++		Serializer sr (stream);
++		Device = sr.DeserializeWString ("Device");
++	}
++
++	bool ExecuteOpenBSDFFSFormatterRequest::RequiresElevation () const
++	{
++		return !Core->HasAdminPrivileges();
++	}
++
++	void ExecuteOpenBSDFFSFormatterRequest::Serialize (shared_ptr <Stream> stream) const
++	{
++		CoreServiceRequest::Serialize (stream);
++		Serializer sr (stream);
++		sr.Serialize ("Device", wstring (Device));
++	}
++#endif
++
+ 	// MountVolumeRequest
+ 	void MountVolumeRequest::Deserialize (shared_ptr <Stream> stream)
+ 	{
+@@ -326,6 +347,9 @@
+ 	TC_SERIALIZER_FACTORY_ADD_CLASS (GetDeviceSectorSizeRequest);
+ 	TC_SERIALIZER_FACTORY_ADD_CLASS (GetDeviceSizeRequest);
+ 	TC_SERIALIZER_FACTORY_ADD_CLASS (GetHostDevicesRequest);
++#ifdef TC_OPENBSD
++	TC_SERIALIZER_FACTORY_ADD_CLASS (ExecuteOpenBSDFFSFormatterRequest);
++#endif
+ 	TC_SERIALIZER_FACTORY_ADD_CLASS (MountVolumeRequest);
+ 	TC_SERIALIZER_FACTORY_ADD_CLASS (SetFileOwnerRequest);
+ }

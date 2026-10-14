@@ -35,6 +35,7 @@ RUN_DEPENDS =	devel/py-click>=8.0.0,<9.0 \
 		textproc/py-yaml>=6.0.3,<7.0 \
 		www/py-aiohttp>=3.14.2,<4.0 \
 		www/py-httpx>=0.28.0,<1.0 \
+		www/py-h2 \
 		www/py-jinja2>=3.1.6,<4.0
 
 MODCARGO_CARGOTOML =	${WRKSRC}/litellm-rust/crates/python-bridge/Cargo.toml
@@ -59,8 +60,7 @@ USE_NOEXECONLY =	Yes
 
 .include "crates.inc"
 
-# Install the normalized workspace lock without running a network resolver.
-post-extract:
-	${INSTALL_DATA} ${FILESDIR}/Cargo.lock ${WRKSRC}/litellm-rust/Cargo.lock
+# The PyPI sdist does not include the upstream test suite.
+NO_TEST =	Yes
 
 .include <bsd.port.mk>

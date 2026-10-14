@@ -1,0 +1,2 @@
+Programmatically send lifespan events to ASGI applications, allowing tests
+to run application startup and shutdown without starting an ASGI server.

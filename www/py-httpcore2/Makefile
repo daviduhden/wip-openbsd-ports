@@ -21,4 +21,7 @@ BUILD_DEPENDS +=	devel/py-uv-dynamic-versioning>=0.14.1 \
 
 MAKE_ENV +=	UV_DYNAMIC_VERSIONING_BYPASS=2.13.1
 
+# No tests in the PyPI sdist.
+NO_TEST =	Yes
+
 .include <bsd.port.mk>

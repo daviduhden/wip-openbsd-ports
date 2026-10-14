@@ -42,7 +42,6 @@ MAKE_FLAGS=		VERBOSE=1 \
 			PORT_CFLAGS="${CFLAGS}" \
 			PORT_CXXFLAGS="${CXXFLAGS}"
 
-NO_TEST=		Yes
 
 .if ${MACHINE_ARCH:Mi386}
 MAKE_ENV+=		LFLAGS=-Wl,-z,notext
@@ -50,6 +49,9 @@ MAKE_ENV+=		LFLAGS=-Wl,-z,notext
 
 pre-configure:
 	${SUBST_CMD} ${WRKSRC}/Setup/FreeBSD/veracrypt.desktop
+
+do-test:
+	${WRKSRC}/Main/veracrypt --text --test
 
 do-install:
 	${INSTALL_PROGRAM} ${WRKSRC}/Main/veracrypt ${PREFIX}/bin

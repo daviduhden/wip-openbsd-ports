@@ -1,5 +1,5 @@
-lib/python${MODPY_VERSION}/site-packages/google/
 lib/python${MODPY_VERSION}/site-packages/google/api_core/
+lib/python${MODPY_VERSION}/site-packages/google/api_core/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/api_core/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -67,7 +67,6 @@ lib/python${MODPY_VERSION}/site-packages/google/api_core/${MODPY_PYCACHE}version
 lib/python${MODPY_VERSION}/site-packages/google/api_core/${MODPY_PYCACHE}version.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/api_core/${MODPY_PYCACHE}version_header.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/${MODPY_PYCACHE}version_header.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/api_core/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/_feature_gating_helpers.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/_observability.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/_python_package_support.py
@@ -83,6 +82,7 @@ lib/python${MODPY_VERSION}/site-packages/google/api_core/datetime_helpers.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/exceptions.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/extended_operation.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/future/
+lib/python${MODPY_VERSION}/site-packages/google/api_core/future/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/future/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/api_core/future/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/future/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -94,12 +94,12 @@ lib/python${MODPY_VERSION}/site-packages/google/api_core/future/${MODPY_PYCACHE}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/future/${MODPY_PYCACHE}base.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/api_core/future/${MODPY_PYCACHE}polling.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/future/${MODPY_PYCACHE}polling.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/api_core/future/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/future/_helpers.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/future/async_future.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/future/base.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/future/polling.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/gapic_v1/
+lib/python${MODPY_VERSION}/site-packages/google/api_core/gapic_v1/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/gapic_v1/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/api_core/gapic_v1/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/gapic_v1/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -117,7 +117,6 @@ lib/python${MODPY_VERSION}/site-packages/google/api_core/gapic_v1/${MODPY_PYCACH
 lib/python${MODPY_VERSION}/site-packages/google/api_core/gapic_v1/${MODPY_PYCACHE}requests.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/api_core/gapic_v1/${MODPY_PYCACHE}routing_header.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/gapic_v1/${MODPY_PYCACHE}routing_header.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/api_core/gapic_v1/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/gapic_v1/client_info.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/gapic_v1/config.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/gapic_v1/config_async.py
@@ -132,6 +131,7 @@ lib/python${MODPY_VERSION}/site-packages/google/api_core/iam.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operation.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operation_async.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/
+lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -153,7 +153,6 @@ lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/${MODPY_P
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/${MODPY_PYCACHE}pagers_async.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/${MODPY_PYCACHE}pagers_base.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/${MODPY_PYCACHE}pagers_base.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/abstract_operations_base_client.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/abstract_operations_client.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/operations_async_client.py
@@ -164,6 +163,7 @@ lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/pagers.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/pagers_async.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/pagers_base.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/transports/
+lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/transports/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/transports/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/transports/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/transports/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -173,7 +173,6 @@ lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/transport
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/transports/${MODPY_PYCACHE}rest.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/transports/${MODPY_PYCACHE}rest_asyncio.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/transports/${MODPY_PYCACHE}rest_asyncio.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/transports/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/transports/base.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/transports/rest.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/operations_v1/transports/rest_asyncio.py
@@ -186,6 +185,7 @@ lib/python${MODPY_VERSION}/site-packages/google/api_core/rest_helpers.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/rest_streaming.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/rest_streaming_async.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/
+lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -197,12 +197,12 @@ lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/${MO
 lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/${MODPY_PYCACHE}upload_async.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/${MODPY_PYCACHE}upload_state.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/${MODPY_PYCACHE}upload_state.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/common.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/upload.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/upload_async.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/resumable_transfer/upload_state.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/retry/
+lib/python${MODPY_VERSION}/site-packages/google/api_core/retry/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/retry/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/api_core/retry/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/retry/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -216,7 +216,6 @@ lib/python${MODPY_VERSION}/site-packages/google/api_core/retry/${MODPY_PYCACHE}r
 lib/python${MODPY_VERSION}/site-packages/google/api_core/retry/${MODPY_PYCACHE}retry_unary.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/api_core/retry/${MODPY_PYCACHE}retry_unary_async.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/api_core/retry/${MODPY_PYCACHE}retry_unary_async.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/api_core/retry/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/retry/retry_base.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/retry/retry_streaming.py
 lib/python${MODPY_VERSION}/site-packages/google/api_core/retry/retry_streaming_async.py

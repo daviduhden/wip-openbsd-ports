@@ -43,4 +43,10 @@ MAKE_ENV +=	UV_DYNAMIC_VERSIONING_BYPASS=2.3.0
 # The installed mcp entry point imports its CLI dependencies.
 RUN_DEPENDS +=	devel/py-typer>=0.16.0 sysutils/py-dotenv>=1.0.0
 
+TEST_DEPENDS += devel/py-blockbuster
+# Tracing tests require the unported logfire and OpenTelemetry SDK.
+MODPY_PYTEST_ARGS += --ignore=tests/shared/test_otel.py \
+	--ignore=tests/docs_src/test_opentelemetry.py \
+	--ignore=tests/docs --ignore=tests/examples --ignore=tests/test_examples.py
+
 .include <bsd.port.mk>

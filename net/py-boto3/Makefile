@@ -22,4 +22,7 @@ RUN_DEPENDS =	devel/py-jmespath>=0.7.1,<2.0.0 \
 		net/py-botocore>=1.43.111,<1.44.0 \
 		net/py-s3transfer>=0.19.0,<0.20.0
 
+# No tests in the PyPI sdist.
+NO_TEST =	Yes
+
 .include <bsd.port.mk>

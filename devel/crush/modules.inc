@@ -832,4 +832,3 @@ MODGO_MODFILES =	\
 	howett.net/plist									 v1.0.0 \
 	modernc.org/sqlite									 v1.57.0 \
 	mvdan.cc/sh/v3										 v3.11.0
-

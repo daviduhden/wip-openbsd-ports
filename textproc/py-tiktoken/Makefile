@@ -14,17 +14,17 @@ MODULES =		lang/python
 MODPY_PI =		Yes
 
 MODPY_PYBUILD =	setuptools-rust
-MODPY_TEST_DIR =	${WRKINST}${MODPY_SITEPKG}
 
 .include "crates.inc"
 RUN_DEPENDS =	devel/py-regex \
 		www/py-requests
 
-WANTLIB +=	${MODCARGO_WANTLIB} m
+WANTLIB +=	${MODCARGO_WANTLIB:Npthread}
 MAKE_JOBS =	1
 MODCARGO_ENV +=	CARGO_PROFILE_RELEASE_LTO=off
 
-post-extract:
-	${INSTALL_DATA} ${FILESDIR}/Cargo.lock ${WRKSRC}/Cargo.lock
+MODPY_PYTEST_ARGS =	tests
 
+MODPY_TEST_LINK_SO = Yes
+TEST_DEPENDS = devel/py-hypothesis
 .include <bsd.port.mk>

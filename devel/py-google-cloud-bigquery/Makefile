@@ -21,4 +21,9 @@ RUN_DEPENDS =	devel/py-dateutil>=2.8.2,<3.0.0 \
 		sysutils/py-packaging>=24.2.0 \
 		www/py-requests>=2.21.0,<3.0.0
 
+MODPY_PYTEST_ARGS =	tests/unit
+
+# The sdist omits the test_utils helper needed by these modules.
+MODPY_PYTEST_ARGS += --ignore=tests/unit/test_client.py \
+	--ignore=tests/unit/test_magics.py --ignore=tests/unit/test_table.py
 .include <bsd.port.mk>

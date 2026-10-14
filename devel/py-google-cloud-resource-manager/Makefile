@@ -24,4 +24,6 @@ RUN_DEPENDS =	devel/py-google-api-core>=2.28.0,<3.0.0 \
 # avoid these versions through the reviewed minimum release):
 # google-auth!=2.24.0,!=2.25.0,<3.0.0,>=2.14.1
 
+MODPY_PYTEST_ARGS =	tests/unit
+
 .include <bsd.port.mk>

@@ -7,12 +7,10 @@ CATEGORIES=	devel
 # MIT OR Apache-2.0
 PERMIT_PACKAGE=	Yes
 
-WANTLIB +=	${MODCARGO_WANTLIB} crypto lzma m ssl
+WANTLIB +=	${MODCARGO_WANTLIB} crypto m ssl
 
 DISTNAME =	maturin-1.15.0
 SITES =		https://files.pythonhosted.org/packages/source/m/maturin/
-
-LIB_DEPENDS =	archivers/xz
 
 MODULES=	devel/cargo
 
@@ -25,5 +23,8 @@ MODCARGO_FEATURES=	cli-completion native-tls scaffolding upload
 MODCARGO_CRATES_KEEP=	zstd-sys
 
 .include "crates.inc"
+
+# The PyPI sdist excludes tests, test-data and test-crates fixtures.
+NO_TEST =	Yes
 
 .include <bsd.port.mk>

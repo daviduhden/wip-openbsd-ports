@@ -26,4 +26,6 @@ RUN_DEPENDS =	devel/py-pydantic>=2.12.5,<3.0.0 \
 
 BUILD_DEPENDS +=	sysutils/py-packaging>=24.2
 
+# API replay recordings and tokenizer models are absent from the sdist.
+MODPY_PYTEST_ARGS = google/genai/tests/common google/genai/tests/errors
 .include <bsd.port.mk>

@@ -1,4 +1,5 @@
 bin/httpx2
+lib/python${MODPY_VERSION}/site-packages/httpx2/
 lib/python${MODPY_VERSION}/site-packages/httpx2-${MODPY_DISTV}.dist-info/
 lib/python${MODPY_VERSION}/site-packages/httpx2-${MODPY_DISTV}.dist-info/METADATA
 lib/python${MODPY_VERSION}/site-packages/httpx2-${MODPY_DISTV}.dist-info/RECORD
@@ -6,7 +7,7 @@ lib/python${MODPY_VERSION}/site-packages/httpx2-${MODPY_DISTV}.dist-info/WHEEL
 lib/python${MODPY_VERSION}/site-packages/httpx2-${MODPY_DISTV}.dist-info/entry_points.txt
 lib/python${MODPY_VERSION}/site-packages/httpx2-${MODPY_DISTV}.dist-info/licenses/
 lib/python${MODPY_VERSION}/site-packages/httpx2-${MODPY_DISTV}.dist-info/licenses/LICENSE.md
-lib/python${MODPY_VERSION}/site-packages/httpx2/
+lib/python${MODPY_VERSION}/site-packages/httpx2/__init__.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/httpx2/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/httpx2/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -46,7 +47,6 @@ lib/python${MODPY_VERSION}/site-packages/httpx2/${MODPY_PYCACHE}_urls.${MODPY_PY
 lib/python${MODPY_VERSION}/site-packages/httpx2/${MODPY_PYCACHE}_urls.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/httpx2/${MODPY_PYCACHE}_utils.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/httpx2/${MODPY_PYCACHE}_utils.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/httpx2/__init__.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/__version__.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/_alias.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/_api.py
@@ -62,6 +62,7 @@ lib/python${MODPY_VERSION}/site-packages/httpx2/_multipart.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/_sse.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/_status_codes.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/_transports/
+lib/python${MODPY_VERSION}/site-packages/httpx2/_transports/__init__.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/_transports/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/httpx2/_transports/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/httpx2/_transports/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -75,7 +76,6 @@ lib/python${MODPY_VERSION}/site-packages/httpx2/_transports/${MODPY_PYCACHE}mock
 lib/python${MODPY_VERSION}/site-packages/httpx2/_transports/${MODPY_PYCACHE}mock.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/httpx2/_transports/${MODPY_PYCACHE}wsgi.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/httpx2/_transports/${MODPY_PYCACHE}wsgi.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/httpx2/_transports/__init__.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/_transports/asgi.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/_transports/base.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/_transports/default.py
@@ -87,6 +87,7 @@ lib/python${MODPY_VERSION}/site-packages/httpx2/_urls.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/_utils.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/py.typed
 lib/python${MODPY_VERSION}/site-packages/httpx2/websockets/
+lib/python${MODPY_VERSION}/site-packages/httpx2/websockets/__init__.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/websockets/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/httpx2/websockets/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/httpx2/websockets/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
@@ -98,7 +99,6 @@ lib/python${MODPY_VERSION}/site-packages/httpx2/websockets/${MODPY_PYCACHE}_ping
 lib/python${MODPY_VERSION}/site-packages/httpx2/websockets/${MODPY_PYCACHE}_ping.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/httpx2/websockets/${MODPY_PYCACHE}_transport.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/httpx2/websockets/${MODPY_PYCACHE}_transport.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/httpx2/websockets/__init__.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/websockets/_api.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/websockets/_exceptions.py
 lib/python${MODPY_VERSION}/site-packages/httpx2/websockets/_ping.py

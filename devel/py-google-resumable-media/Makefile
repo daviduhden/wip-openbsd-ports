@@ -15,4 +15,6 @@ MODPY_PYBUILD =	setuptools
 
 RUN_DEPENDS =	devel/py-google-crc32c>=1.0.0,<2.0.0
 
+MODPY_PYTEST_ARGS =	tests/unit
+
 .include <bsd.port.mk>

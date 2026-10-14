@@ -1,0 +1,16 @@
+Provide the certificate file mocked by the generated mTLS tests.
+
+--- /dev/null
++++ tests/unit/gapic/conftest.py
+@@ -0,0 +1,11 @@
++from pathlib import Path
++
++import pytest
++
++
++@pytest.fixture(scope="session", autouse=True)
++def certificate_config_file():
++    # The generated mTLS tests mock open(); google-auth also checks existence.
++    config = Path("mock_certificate_config.json")
++    config.write_text("{}")
++    return config

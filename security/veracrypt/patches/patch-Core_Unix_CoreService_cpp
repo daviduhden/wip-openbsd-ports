@@ -1,17 +1,17 @@
-Elevate the OpenBSD core service with doas rather than sudo. Forward
-interactive authentication through a private controlling pseudoterminal,
-use doas -n for fast elevation, and keep the terminal master open for
-the service lifetime. Report doas-specific failures and configuration.
+Use doas with rules restricted to --core-service and a private authentication
+terminal. Keep its slave on stderr across doas closefrom(), forward one
+password response, and detach the elevated worker before releasing the tty.
+Format OpenBSD FFS through a restricted privileged service request.
 
-Index: Core/Unix/CoreService.cpp
 --- Core/Unix/CoreService.cpp.orig
 +++ Core/Unix/CoreService.cpp
-@@ -14,6 +14,14 @@
+@@ -14,6 +14,15 @@
  #include <fcntl.h>
  #include <sys/wait.h>
  #include <stdio.h>
 +#ifdef TC_OPENBSD
 +#include <errno.h>
++#include <signal.h>
 +#include <stdlib.h>
 +#include <string.h>
 +#include <sys/ioctl.h>
@@ -21,7 +21,7 @@ Index: Core/Unix/CoreService.cpp
  #include "Platform/FileStream.h"
  #include "Platform/MemoryStream.h"
  #include "Platform/Serializable.h"
-@@ -28,6 +36,24 @@
+@@ -28,6 +37,24 @@
  
  namespace VeraCrypt
  {
@@ -46,7 +46,18 @@ Index: Core/Unix/CoreService.cpp
  #ifdef TC_MACOSX
  	static bool IsMacOSXDevicePathWithPrefix (const string &path, const string &prefix)
  	{
-@@ -149,6 +175,10 @@
+@@ -111,6 +138,10 @@
+ 		{
+ 			try
+ 			{
++#ifdef TC_OPENBSD
++				// Detach the elevated worker before releasing its auth terminal.
++				throw_sys_if (setsid () == -1);
++#endif
+ 				int f = open ("/dev/null", 0);
+ 				throw_sys_sub_if (f == -1, "/dev/null");
+ 				throw_sys_if (dup2 (f, STDERR_FILENO) == -1);
+@@ -149,6 +180,10 @@
  
  	void CoreService::ProcessRequests (int inputFD, int outputFD)
  	{
@@ -57,19 +68,75 @@ Index: Core/Unix/CoreService.cpp
  		try
  		{
  			Core = move_ptr(CoreDirect);
-@@ -415,7 +445,11 @@
- 					// This approach also works on newer macOS versions (12.0 and later).
- 					std::string errorMsg;
+@@ -273,6 +308,34 @@
+ 					}
+ #endif
  
 +#ifdef TC_OPENBSD
-+					string sudoAbsolutePath = Process::FindSystemBinary("doas", errorMsg);
-+#else
- 					string sudoAbsolutePath = Process::FindSystemBinary("sudo", errorMsg);
++					ExecuteOpenBSDFFSFormatterRequest *formatRequest = dynamic_cast <ExecuteOpenBSDFFSFormatterRequest*> (request.get());
++					if (formatRequest)
++					{
++						string device = formatRequest->Device;
++						if (device.size() != 10 || device.compare (0, 8, "/dev/vnd") != 0
++							|| device[8] < '0' || device[8] > '3' || device[9] != 'c')
++							throw ParameterIncorrect (SRC_POS);
++
++						// Format only a VeraCrypt virtual device without a mounted
++						// filesystem, never an arbitrary host disk or active filesystem.
++						bool mountedVolumeFound = false;
++						foreach (shared_ptr <VolumeInfo> volume, Core->GetMountedVolumes())
++						{
++							if (volume->VirtualDevice == formatRequest->Device && volume->MountPoint.IsEmpty())
++								mountedVolumeFound = true;
++						}
++						if (!mountedVolumeFound)
++							throw ParameterIncorrect (SRC_POS);
++
++						list <string> arguments;
++						arguments.push_back ("/dev/r" + device.substr (5));
++						Process::Execute ("/sbin/newfs", arguments);
++						ExecuteOpenBSDFFSFormatterResponse().Serialize (outputStream);
++						continue;
++					}
 +#endif
- 					if (sudoAbsolutePath.empty())
- 						throw SystemException(SRC_POS, errorMsg);
++
+ 					// MountVolumeRequest
+ 					MountVolumeRequest *mountRequest = dynamic_cast <MountVolumeRequest*> (request.get());
+ 					if (mountRequest)
+@@ -372,6 +435,14 @@
+ 	{
+ 		ExecuteMacOSXAPFSFormatterRequest request (devicePath, userId, groupId);
+ 		SendRequest <ExecuteMacOSXAPFSFormatterResponse> (request);
++	}
++#endif
++
++#ifdef TC_OPENBSD
++	void CoreService::RequestExecuteOpenBSDFFSFormatter (const DevicePath &devicePath)
++	{
++		ExecuteOpenBSDFFSFormatterRequest request (devicePath);
++		SendRequest <ExecuteOpenBSDFFSFormatterResponse> (request);
+ 	}
+ #endif
  
-@@ -507,6 +541,36 @@
+@@ -408,6 +479,7 @@
+ 			{
+ 				//	Test if the user has an active "sudo" session.
+ 				bool authCheckDone = false;
++#ifndef TC_OPENBSD
+ 				if (!Core->GetUseDummySudoPassword ())
+ 				{	
+ 					// We are using -n to avoid prompting the user for a password.
+@@ -452,6 +524,9 @@
+ 						request.FastElevation = false;
+ 					}
+ 				}
++#endif
++				// On OpenBSD, test the actual service with doas -n. A rule
++				// restricted to --core-service need not allow /usr/bin/true.
+ 			
+ 				try
+ 				{
+@@ -507,6 +582,36 @@
  
  	void CoreService::StartElevated (const CoreServiceRequest &request)
  	{
@@ -106,7 +173,7 @@ Index: Core/Unix/CoreService.cpp
  		unique_ptr <Pipe> inPipe (new Pipe());
  		unique_ptr <Pipe> outPipe (new Pipe());
  		Pipe errPipe;
-@@ -522,7 +586,11 @@
+@@ -522,7 +627,11 @@
  				{
  					// Throw exception if sudo is not found in secure locations
  					std::string errorMsg;
@@ -118,7 +185,7 @@ Index: Core/Unix/CoreService.cpp
  					if (sudoPath.empty())
  						throw SystemException(SRC_POS, errorMsg);
  
-@@ -551,7 +619,51 @@
+@@ -551,7 +660,54 @@
  					throw_sys_if (dup2 (outPipe->GetWriteFD(), STDOUT_FILENO) == -1);
  					throw_sys_if (dup2 (errPipe.GetWriteFD(), STDERR_FILENO) == -1);
  
@@ -134,13 +201,13 @@ Index: Core/Unix/CoreService.cpp
 +
 +						// Keep the admin password out of the terminal echo.
 +						struct termios tios;
-+						if (tcgetattr (authFd, &tios) == 0)
++						throw_sys_if (tcgetattr (authFd, &tios) == -1);
 +						{
 +							tios.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ISIG | IEXTEN);
 +							tios.c_iflag &= ~(BRKINT | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
 +							tios.c_cc[VMIN] = 1;
 +							tios.c_cc[VTIME] = 0;
-+							tcsetattr (authFd, TCSANOW, &tios);
++							throw_sys_if (tcsetattr (authFd, TCSANOW, &tios) == -1);
 +						}
 +
 +						if (ioctl (authFd, TIOCSCTTY, 0) == -1 && errno != EINVAL)
@@ -149,6 +216,9 @@ Index: Core/Unix/CoreService.cpp
 +							throw SystemException (SRC_POS, "TIOCSCTTY");
 +						}
 +
++						// doas closes descriptors above stderr before authentication.
++						// Keep the slave on stderr so /dev/tty remains available.
++						throw_sys_if (dup2 (authFd, STDERR_FILENO) == -1);
 +						close (authFd);
 +
 +						args[0] = sudoPath.c_str();
@@ -170,25 +240,101 @@ Index: Core/Unix/CoreService.cpp
  					execvp (args[0], ((char* const*) args));
  					throw SystemException (SRC_POS, args[0]);
  				}
-@@ -601,7 +713,17 @@
+@@ -601,9 +757,13 @@
  #if defined(TC_LINUX )
  		Thread::Sleep (1000); // wait 1 second for the forked sudo to start
  #endif
++#ifndef TC_OPENBSD
+ 		if (write (inPipe->GetWriteFD(), &adminPassword.front(), adminPassword.size())) { } // Errors ignored
+-
+-		burn (&adminPassword.front(), adminPassword.size());
++#endif
++		finally_do_arg (vector <char> *, &adminPassword,
++		{
++			burn (&finally_arg->front(), finally_arg->size());
++		});
+ 
+ 		throw_sys_if (fcntl (outPipe->GetReadFD(), F_SETFL, O_NONBLOCK) == -1);
+ 		throw_sys_if (fcntl (errPipe.GetReadFD(), F_SETFL, O_NONBLOCK) == -1);
+@@ -611,11 +771,77 @@
+ 		char buffer[4096];
+ 		vector <char> errOutput;
+ 		errOutput.reserve (4096);
++#ifdef TC_OPENBSD
++		vector <char> authOutput;
++#endif
+ 
+ 		Poller poller (outPipe->GetReadFD(), errPipe.GetReadFD());
+ 		int status, waitRes;
+ 		int exitCode = 1;
+ 
 +#ifdef TC_OPENBSD
 +		if (authTerminalFd != -1)
 +		{
-+			// Give doas(1) time to open its authentication terminal, then
-+			// forward the admin password obtained by the user interface.
-+			Thread::Sleep (1000);
-+			if (write (authTerminalFd, &adminPassword.front(), adminPassword.size())) { } // Errors ignored
++			throw_sys_if (fcntl (authTerminalFd, F_SETFL, O_NONBLOCK) == -1);
++			Poller authPoller (outPipe->GetReadFD(), errPipe.GetReadFD(), authTerminalFd);
++			bool passwordSent = false;
++
++			while ((waitRes = waitpid (forkedPid, &status, WNOHANG)) == 0)
++			{
++				list <int> ready;
++				try
++				{
++					ready = authPoller.WaitForData (timeout);
++				}
++				catch (TimeOut&)
++				{
++					kill (forkedPid, SIGTERM);
++					close (authTerminalFd);
++					authTerminalFd = -1;
++					waitpid (forkedPid, &status, 0);
++					throw ElevationFailed (SRC_POS, "doas", 1, "Authentication timed out");
++				}
++
++				foreach (int fd, ready)
++				{
++					ssize_t bytesRead = read (fd, buffer, sizeof (buffer));
++					if (bytesRead <= 0)
++						continue;
++
++					if (fd == errPipe.GetReadFD())
++						errOutput.insert (errOutput.end(), buffer, buffer + bytesRead);
++
++					if (fd == authTerminalFd)
++					{
++						authOutput.insert (authOutput.end(), buffer, buffer + bytesRead);
++						if (!passwordSent)
++						{
++							// readpassphrase has opened the terminal and printed its prompt.
++							size_t sent = 0;
++							while (sent < adminPassword.size())
++							{
++								ssize_t n = write (authTerminalFd, &adminPassword[sent], adminPassword.size() - sent);
++								if (n < 0 && errno == EINTR)
++									continue;
++								throw_sys_if (n <= 0);
++								sent += n;
++							}
++							burn (&adminPassword.front(), adminPassword.size());
++							passwordSent = true;
++						}
++						else if (string (authOutput.begin(), authOutput.end()).find ("Authentication failed") != string::npos)
++						{
++							// Let the frontend request a new password, rather than leaving
++							// doas waiting for another response on its private terminal.
++							kill (forkedPid, SIGTERM);
++						}
++					}
++				}
++			}
 +		}
-+#else
- 		if (write (inPipe->GetWriteFD(), &adminPassword.front(), adminPassword.size())) { } // Errors ignored
++		else
 +#endif
- 
- 		burn (&adminPassword.front(), adminPassword.size());
- 
-@@ -667,7 +789,11 @@
++		{
+ 		try
+ 		{
+ 			do
+@@ -667,11 +893,17 @@
  					Thread thread;
  					thread.Start (new WaitFunctor (forkedPid));
  
@@ -200,11 +346,18 @@ Index: Core/Unix/CoreService.cpp
  				}
  
  				waitRes = waitpid (forkedPid, &status, 0);
-@@ -700,11 +826,18 @@
+ 			}
++		}
++
+ 		}
+ 
+ 		if (!errOutput.empty())
+@@ -700,11 +932,19 @@
  			if (!errOutput.empty())
  				strErrOutput.insert (strErrOutput.begin(), errOutput.begin(), errOutput.end());
  
 +#ifdef TC_OPENBSD
++			strErrOutput.insert (strErrOutput.end(), authOutput.begin(), authOutput.end());
 +			if (strErrOutput.find (" tty") != string::npos)
 +				strErrOutput += "\nTo allow VeraCrypt to elevate privileges, add an appropriate rule for it to '/etc/doas.conf'.";
 +
@@ -219,7 +372,7 @@ Index: Core/Unix/CoreService.cpp
  		}
  
  		throw_sys_if (fcntl (outPipe->GetReadFD(), F_SETFL, 0) == -1);
-@@ -718,6 +851,17 @@
+@@ -718,6 +958,17 @@
  
  		AdminInputPipe = move_ptr(inPipe);
  		AdminOutputPipe = move_ptr(outPipe);

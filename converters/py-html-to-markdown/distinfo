@@ -128,7 +128,7 @@ SHA256 (cargo/zlib-rs-0.6.8.tar.gz) = smjljnxpPXwnH5P/xLo7OAQSVUIxyFv2HKevkQQqQR
 SHA256 (cargo/zmij-1.0.23.tar.gz) = KWZtCrv60ePcTc9hRHMN06OrIlu72sgzGTRbG0TM/Bs=
 SHA256 (cargo/zune-core-0.5.3.tar.gz) = 1WN3/UY2iYShcLxarFVn5Syl2odMqmC+o5/Lynj7ZYs=
 SHA256 (cargo/zune-jpeg-0.5.15.tar.gz) = J7ydW4FbwQPxQqoFT1YdkYfRkWkux8LR4rRzf429cpY=
-SHA256 (pypi/html_to_markdown-3.17.2.tar.gz) = ++hZ7kXF6otETOPeoLw7z3ZBVh5kowrUhSRPPo2Zx28=
+SHA256 (html_to_markdown-3.17.2.tar.gz) = ++hZ7kXF6otETOPeoLw7z3ZBVh5kowrUhSRPPo2Zx28=
 SIZE (cargo/adler2-2.0.1.tar.gz) = 13366
 SIZE (cargo/ahash-0.8.12.tar.gz) = 43413
 SIZE (cargo/aho-corasick-1.1.5.tar.gz) = 184315
@@ -259,4 +259,4 @@ SIZE (cargo/zlib-rs-0.6.8.tar.gz) = 215857
 SIZE (cargo/zmij-1.0.23.tar.gz) = 28612
 SIZE (cargo/zune-core-0.5.3.tar.gz) = 30419
 SIZE (cargo/zune-jpeg-0.5.15.tar.gz) = 88879
-SIZE (pypi/html_to_markdown-3.17.2.tar.gz) = 5709190
+SIZE (html_to_markdown-3.17.2.tar.gz) = 5709190

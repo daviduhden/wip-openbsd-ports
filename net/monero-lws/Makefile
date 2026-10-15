@@ -8,11 +8,11 @@ VERSION = 0.18.5.3
 DISTNAME = ${GH_PROJECT}-${GH_TAGNAME:S/^v//}
 PKGNAME = monero-lws-${VERSION}
 
-DISTFILES = ${GH_DISTFILE} \
-		${MONERO_DIST}
+DISTFILES = ${GH_DISTFILE}
 MONERO_DIST = monero-source-v${VERSION}.tar.bz2
+DISTFILES.monero = ${MONERO_DIST}
 SITES = ${SITES_GITHUB}
-SITES.${MONERO_DIST} = https://downloads.getmonero.org/cli/
+SITES.monero = https://downloads.getmonero.org/cli/
 
 WRKDIST = ${WRKDIR}/${DISTNAME}
 MONERO_WRKSRC = ${WRKDIR}/monero-source-v${VERSION}

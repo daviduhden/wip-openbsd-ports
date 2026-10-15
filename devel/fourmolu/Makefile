@@ -13,9 +13,18 @@ PERMIT_PACKAGE =	Yes
 
 WANTLIB +=	c ffi gmp iconv m pthread util
 
-LIB_DEPENDS =	converters/libiconv \
+LIB_DEPENDS =	archivers/zstd \
+		converters/libiconv \
 		devel/gmp \
 		devel/libffi
+
+BUILD_DEPENDS =	devel/cabal-bundler \
+		devel/cabal-install>=3.12.0.0 \
+		lang/ghc>=9.8.3
+
+# ghc and cabal-install also come from devel/cabal, with the same version
+# constraints; cabal-bundler generates the dependency manifest from the build
+# plan in the cabal-inc target.
 
 CABAL_INC_HOME ?=	${WRKDIR}/.cabal-inc-home
 

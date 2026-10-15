@@ -9,10 +9,14 @@ conversion error.
 
 Independent member connections have no defined completion order. Assert both.
 
+The (<??) operator consumes up to N optional asynchronous lines and fails on
+any other output, so the examples below can account for the member-connected
+group items without weakening their assertions.
+
 Index: tests/ChatTests/Utils.hs
 --- tests/ChatTests/Utils.hs.orig
 +++ tests/ChatTests/Utils.hs
-@@ -95,7 +95,7 @@
+@@ -95,7 +95,7 @@ it :: HasCallStack => String -> (ps -> E
  it name test =
    Hspec.it name $ \tmp -> timeout t (test tmp) >>= maybe (error "test timed out") pure
    where
@@ -21,7 +25,35 @@ Index: tests/ChatTests/Utils.hs
  
  xit' :: HasCallStack => String -> (ps -> Expectation) -> SpecWith (Arg (ps -> Expectation))
  xit' = if os == "linux" then xit else it
-@@ -677,10 +677,23 @@
+@@ -475,6 +475,27 @@ getInAnyOrder f cc ls = do
+ (<##?) :: HasCallStack => TestCC -> [ConsoleResponse] -> Expectation
+ (<##?) = getInAnyOrder dropTime
+ 
++-- Consume up to as many optional lines as suffixes are given.
++--
++-- A line that arrives within the short window must end with one of the given
++-- suffixes; when no such line arrives the queue is left untouched.  Used for
++-- the member-connected group items that memberConnectedChatItem creates on the
++-- host: they are chat items printed when a member's group connection is
++-- established, so their position relative to the member relation vector the
++-- callers poll is not fixed, while the examples read the host's output next.
++-- Any other output is a genuine failure.
++(<??) :: HasCallStack => TestCC -> [String] -> Expectation
++cc <?? suffixes = go (length suffixes)
++  where
++    go 0 = pure ()
++    go n = do
++      ml <- timeout 500000 (dropTime <$> getTermLine cc)
++      case ml of
++        Nothing -> pure ()
++        Just l
++          | any (`isSuffixOf` l) suffixes -> go (n - 1)
++          | otherwise -> expectationFailure $ "unexpected output: " <> show l
++
+ (<#) :: HasCallStack => TestCC -> String -> Expectation
+ cc <# line = (dropTime <$> getTermLine' (Just line) cc) `shouldReturn` line
+ 
+@@ -677,10 +698,23 @@ createCCNoteFolder cc =
        runExceptT (createNoteFolder db user) >>= either (fail . show) pure
  
  getProfilePictureByName :: TestCC -> String -> IO (Maybe String)
@@ -49,7 +81,7 @@ Index: tests/ChatTests/Utils.hs
  
  pqSndForContact :: TestCC -> ContactId -> IO PQEncryption
  pqSndForContact = pqForContact_ pqSndEnabled PQEncOff
-@@ -810,8 +823,10 @@
+@@ -810,8 +844,10 @@ createGroup4 gName cc1 (cc2, role2) (cc3
      [ cc1 <## "#team: dan joined the group",
        do
          cc4 <## ("#" <> gName <> ": you joined the group")

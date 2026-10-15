@@ -152,16 +152,24 @@ post-patch:
 	patch -d ${WRKDIR}/simplex-wai/warp -p0 < ${FILESDIR}/warp/${_p}
 .endfor
 .for _p in ${TLS_PATCHES}
-	patch -d ${WRKDIR}/tls-${TLS_V} -p0 < ${FILESDIR}/tls/${_p}
+	if [ -d ${WRKDIR}/tls-${TLS_V} ]; then \
+		patch -d ${WRKDIR}/tls-${TLS_V} -p0 \
+			< ${FILESDIR}/tls/${_p}; \
+	fi
 .endfor
 .for _p in ${HTTP2_PATCHES}
-	patch -d ${WRKDIR}/http2-${HTTP2_V} -p0 < ${FILESDIR}/http2/${_p}
+	if [ -d ${WRKDIR}/http2-${HTTP2_V} ]; then \
+		patch -d ${WRKDIR}/http2-${HTTP2_V} -p0 \
+			< ${FILESDIR}/http2/${_p}; \
+	fi
 .endfor
-	patch -d ${WRKDIR}/network-${NETWORK_V} -p0 \
-		< ${FILESDIR}/network/patch-network_cabal
-	${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include
-	${INSTALL_DATA} ${FILESDIR}/network/HsNetworkConfig.h \
-		${WRKDIR}/network-${NETWORK_V}/include/HsNetworkConfig.h
+	if [ -f ${WRKDIR}/network-${NETWORK_V}/network.cabal ]; then \
+		patch -d ${WRKDIR}/network-${NETWORK_V} -p0 \
+			< ${FILESDIR}/network/patch-network_cabal; \
+		${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include; \
+		${INSTALL_DATA} ${FILESDIR}/network/HsNetworkConfig.h \
+			${WRKDIR}/network-${NETWORK_V}/include/HsNetworkConfig.h; \
+	fi
 	if [ -f ${WRKDIR}/unix-time-${UNIX_TIME_V}/unix-time.cabal ]; then \
 		patch -d ${WRKDIR}/unix-time-${UNIX_TIME_V} -p0 \
 			< ${FILESDIR}/unix-time/patch-unix-time_cabal; \

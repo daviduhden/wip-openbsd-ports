@@ -1,41 +1,42 @@
-BROKEN-sparc64=	relocation truncated to fit: R_SPARC_GOT13
+BROKEN-sparc64 =	relocation truncated to fit: R_SPARC_GOT13
 
-COMMENT=		free open source disk encryption software
+COMMENT =		free open source disk encryption software
 
-V=			1.26.29
-DISTNAME=		VeraCrypt_${V}_Source
-PKGNAME=		veracrypt-${V}
-CATEGORIES=		security
-HOMEPAGE=		https://www.veracrypt.fr/
+V =			1.26.29
+DISTNAME =		VeraCrypt_${V}_Source
+PKGNAME =		veracrypt-${V}
+REVISION =       0
+CATEGORIES =		security
+HOMEPAGE =		https://www.veracrypt.fr/
 
-MAINTAINER=		Tietoturvamies <main@tietoturvamies.fi>
+MAINTAINER =		Tietoturvamies <main@tietoturvamies.fi>
 
 # Apache2
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
-SITES=			https://launchpad.net/veracrypt/trunk/${V}/+download/
-EXTRACT_SUFX=		.tar.bz2
-FIX_EXTRACT_PERMISSIONS=Yes
+SITES =			https://launchpad.net/veracrypt/trunk/${V}/+download/
+EXTRACT_SUFX =		.tar.bz2
+FIX_EXTRACT_PERMISSIONS = Yes
 
 # C++14
-COMPILER=		base-clang ports-gcc
+COMPILER =		base-clang ports-gcc
 
 CXXFLAGS_base-clang =	-std=c++14
 
 WANTLIB += ${COMPILER_LIBCXX} c m fuse wx_baseu-3.2 wx_gtk3u_core-3.2
 
-BUILD_DEPENDS=		devel/yasm \
+BUILD_DEPENDS =		devel/yasm \
 			security/pcsc-lite
 
-LIB_DEPENDS=		x11/wxWidgets
+LIB_DEPENDS =		x11/wxWidgets
 
-RUN_DEPENDS=		devel/desktop-file-utils \
+RUN_DEPENDS =		devel/desktop-file-utils \
 			security/pcsc-lite
 
-WRKDIST=		${WRKDIR}/src
-USE_GMAKE=		Yes
-ALL_TARGET=
-MAKE_FLAGS=		VERBOSE=1 \
+WRKDIST =		${WRKDIR}/src
+USE_GMAKE =		Yes
+ALL_TARGET =
+MAKE_FLAGS =		VERBOSE=1 \
 			NOTEST=1 \
 			CC="${CC}" \
 			CXX="${CXX}" \
@@ -44,7 +45,7 @@ MAKE_FLAGS=		VERBOSE=1 \
 
 
 .if ${MACHINE_ARCH:Mi386}
-MAKE_ENV+=		LFLAGS=-Wl,-z,notext
+MAKE_ENV +=		LFLAGS=-Wl,-z,notext
 .endif
 
 pre-configure:

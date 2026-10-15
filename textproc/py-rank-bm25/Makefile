@@ -1,19 +1,20 @@
-COMMENT=	BM25 ranking algorithms for information retrieval
+COMMENT =	BM25 ranking algorithms for information retrieval
 
 MODPY_DISTV =	0.2.2
 DISTNAME =	rank_bm25-${MODPY_DISTV}
-PKGNAME=	py-${DISTNAME:S/_/-/}
+PKGNAME =	py-${DISTNAME:S/_/-/}
+REVISION =       0
 
-CATEGORIES=	textproc
+CATEGORIES =	textproc
 
-HOMEPAGE=	https://github.com/dorianbrown/rank_bm25
+HOMEPAGE =	https://github.com/dorianbrown/rank_bm25
 
 # Apache 2.0
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
-MODULES=	lang/python
+MODULES =	lang/python
 
-MODPY_PI=	Yes
+MODPY_PI =	Yes
 MODPY_PYBUILD =	setuptools
 
 RUN_DEPENDS =	math/py-numpy

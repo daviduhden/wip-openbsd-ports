@@ -4,6 +4,7 @@ MODPY_DISTV =	1.7.0
 
 DISTNAME =	starlette-${MODPY_DISTV}
 PKGNAME =		py-${DISTNAME}
+REVISION =       0
 
 CATEGORIES =		www
 

@@ -1,46 +1,46 @@
-COMMENT=	compact file manager for Unix/X11 Motif
+COMMENT =	compact file manager for Unix/X11 Motif
 
-DISTNAME=	xfile-src-1.2.1
-PKGNAME=	xfile-1.2.1
+DISTNAME =	xfile-src-1.2.1
+PKGNAME =	xfile-1.2.1
 
-CATEGORIES=	x11
-HOMEPAGE=	https://fastestcode.org/xfile.html
+CATEGORIES =	x11
+HOMEPAGE =	https://fastestcode.org/xfile.html
 
-SITES=		https://fastestcode.org/dl/
-DIST_SUBDIR=	xfile
-DISTFILES=	xfile-src-1.2.1.tar.xz \
+SITES =		https://fastestcode.org/dl/
+DIST_SUBDIR =	xfile
+DISTFILES =	xfile-src-1.2.1.tar.xz \
 		xfile-addon-20260806{xfile-addon}.tar.xz \
 		xfile-slanted-icons-20241226{xfile-slanted-icons}.tar.xz \
 		xfile-xdgsvc-src-20241226{xfile-xdgsvc-src}.tar.xz \
 		xfind-src-20260804{xfind-src}.tar.xz
-EXTRACT_SUFX=	.tar.xz
+EXTRACT_SUFX =	.tar.xz
 
 # MIT (xfind and the data addons carry permissive terms from the same
 # author, see pkg/DESCR)
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
 WANTLIB += X11 Xinerama Xpm Xt Xm c dbus-1 m
 
-LIB_DEPENDS=	x11/dbus x11/motif
+LIB_DEPENDS =	x11/dbus x11/motif
 
-WRKDIST=	${WRKDIR}/xfile-src-1.2.1
+WRKDIST =	${WRKDIR}/xfile-src-1.2.1
 
-MAKE_ENV=	CC='${CC}' \
+MAKE_ENV =	CC='${CC}' \
 		CFLAGS='${CFLAGS}' \
 		LDFLAGS='${LDFLAGS}'
 
-MAKE_FLAGS=	PREFIX='${PREFIX}' \
+MAKE_FLAGS =	PREFIX='${PREFIX}' \
 		MANDIR='${PREFIX}/man' \
 		SHAREDIR='${PREFIX}/share/xfile' \
 		APPLRESDIR='${PREFIX}/lib/X11/app-defaults' \
 		INCDIRS='-I${X11BASE}/include -I${LOCALBASE}/include' \
 		LIBDIRS='-L${X11BASE}/lib -L${LOCALBASE}/lib'
 
-XFIND_FLAGS=	CC='${CC}' \
+XFIND_FLAGS =	CC='${CC}' \
 		CFLAGS='${CFLAGS} -I${X11BASE}/include -I${LOCALBASE}/include' \
 		LIBDIRS='-L${X11BASE}/lib -L${LOCALBASE}/lib'
 
-XDGSVC_FLAGS=	CC='${CC}' \
+XDGSVC_FLAGS =	CC='${CC}' \
 		CFLAGS='${CFLAGS} -I${LOCALBASE}/include/dbus-1.0 -I${LOCALBASE}/lib/dbus-1.0/include' \
 		LIBDIRS='-L${LOCALBASE}/lib'
 
@@ -121,6 +121,6 @@ do-install:
 		${INSTALL_DATA} $$f ${PREFIX}/share/examples/xfile/slanted-icons/; \
 	done
 
-NO_TEST=	Yes
+NO_TEST =	Yes
 
 .include <bsd.port.mk>

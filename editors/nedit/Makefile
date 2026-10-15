@@ -1,36 +1,37 @@
-COMMENT=		fast, compact Motif/X11 plain text editor (classic fork)
+COMMENT =		fast, compact Motif/X11 plain text editor (classic fork)
 
-COMMIT_ID=	dd408440cb392db2258edfef753c57e134cfbbd8
-DISTNAME=	nedit-classic-5.7.20260411
-PKGNAME=	nedit-5.7.20260411
+COMMIT_ID =	dd408440cb392db2258edfef753c57e134cfbbd8
+DISTNAME =	nedit-classic-5.7.20260411
+PKGNAME =	nedit-5.7.20260411
+REVISION =       0
 
-CATEGORIES=	editors x11
-HOMEPAGE=	https://github.com/alx210/nedit-classic
-MAINTAINER=	Alessandro De Laurenzis <just22@atlantide.mooo.com>
+CATEGORIES =	editors x11
+HOMEPAGE =	https://github.com/alx210/nedit-classic
+MAINTAINER =	Alessandro De Laurenzis <just22@atlantide.mooo.com>
 
-SITES=		https://github.com/alx210/nedit-classic/archive/
-DISTFILES=	${COMMIT_ID}.tar.gz
+SITES =		https://github.com/alx210/nedit-classic/archive/
+DISTFILES =	${COMMIT_ID}.tar.gz
 
-WRKDIST=	${WRKDIR}/nedit-classic-${COMMIT_ID}
+WRKDIST =	${WRKDIR}/nedit-classic-${COMMIT_ID}
 
 # GPLv2
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
 WANTLIB += ICE SM X11 Xau Xdmcp Xext Xft Xmu Xpm Xrender Xt
 WANTLIB += c expat fontconfig freetype iconv m z Xm
 
-LIB_DEPENDS+=	converters/libiconv \
+LIB_DEPENDS +=	converters/libiconv \
 		x11/motif
 
-ALL_TARGET=	openbsd
+ALL_TARGET =	openbsd
 
 post-build:
 	/usr/bin/pod2man --section=1 ${WRKSRC}/doc/nedit.pod ${WRKSRC}/doc/nedit.man
 	/usr/bin/pod2man --section=1 ${WRKSRC}/doc/nc.pod ${WRKSRC}/doc/nc.man
 
-NO_TEST=	Yes
+NO_TEST =	Yes
 
-MAKE_ENV+=	MOTIFLIB='-L${LOCALBASE}/lib -lXm' \
+MAKE_ENV +=	MOTIFLIB='-L${LOCALBASE}/lib -lXm' \
 		LOCALBASE='${LOCALBASE}' \
 		X11BASE='${X11BASE}'
 

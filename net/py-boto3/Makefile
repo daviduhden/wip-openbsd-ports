@@ -1,21 +1,22 @@
-COMMENT=		AWS SDK for Python
+COMMENT =		AWS SDK for Python
 
 MODPY_DISTV =	1.43.111
 DISTNAME =	boto3-${MODPY_DISTV}
-PKGNAME=		py-${DISTNAME}
+PKGNAME =		py-${DISTNAME}
+REVISION =       0
 
-CATEGORIES=		net devel
+CATEGORIES =		net devel
 
-HOMEPAGE=		https://github.com/boto/boto3
+HOMEPAGE =		https://github.com/boto/boto3
 
-MAINTAINER=		Antoine Jacoutot <ajacoutot@openbsd.org>
+MAINTAINER =		Antoine Jacoutot <ajacoutot@openbsd.org>
 
 # Apache 2.0
-PERMIT_PACKAGE=		Yes
+PERMIT_PACKAGE =		Yes
 
-MODULES=		lang/python
+MODULES =		lang/python
 
-MODPY_PI=		Yes
+MODPY_PI =		Yes
 MODPY_PYBUILD =	setuptools
 
 RUN_DEPENDS =	devel/py-jmespath>=0.7.1,<2.0.0 \

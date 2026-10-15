@@ -1,19 +1,19 @@
-COMMENT=	uniform API for multiple LLM providers
+COMMENT =	uniform API for multiple LLM providers
 
 MODPY_DISTV =	1.105.0
 DISTNAME =	litellm-${MODPY_DISTV}
-PKGNAME=	py-${DISTNAME}
+PKGNAME =	py-${DISTNAME}
 
-CATEGORIES=	devel
+CATEGORIES =	devel
 
-HOMEPAGE=	https://litellm.ai/
+HOMEPAGE =	https://litellm.ai/
 
 # MIT
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
-MODULES=	lang/python
+MODULES =	lang/python
 
-MODPY_PI=	Yes
+MODPY_PI =	Yes
 MODPY_PYBUILD =	maturin
 
 TEST_DEPENDS =	www/py-fastapi

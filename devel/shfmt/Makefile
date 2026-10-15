@@ -4,6 +4,7 @@ MODGO_MODNAME =	mvdan.cc/sh/v3
 MODGO_VERSION =	v3.14.1
 
 DISTNAME =	shfmt-${MODGO_VERSION}
+REVISION =       0
 
 CATEGORIES =	devel
 

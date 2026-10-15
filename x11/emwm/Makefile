@@ -1,29 +1,30 @@
-COMMENT=	enhanced motif window manager (MWM fork)
+COMMENT =	enhanced motif window manager (MWM fork)
 
-V=		2.1
-DISTNAME=	emwm-src-${V}
-PKGNAME=	emwm-${V}
+V =		2.1
+DISTNAME =	emwm-src-${V}
+PKGNAME =	emwm-${V}
+REVISION =       0
 
-CATEGORIES=	x11
-HOMEPAGE=	https://fastestcode.org/emwm.html
+CATEGORIES =	x11
+HOMEPAGE =	https://fastestcode.org/emwm.html
 
-SITES=		https://fastestcode.org/dl/
-EXTRACT_SUFX=	.tar.xz
+SITES =		https://fastestcode.org/dl/
+EXTRACT_SUFX =	.tar.xz
 
 # LGPL v2.1
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
 WANTLIB += X11 Xext Xinerama Xm Xrandr Xt c m
 
-LIB_DEPENDS=	x11/motif
+LIB_DEPENDS =	x11/motif
 
-WRKDIST=	${WRKDIR}/emwm-src-${V}
+WRKDIST =	${WRKDIR}/emwm-src-${V}
 
-MAKE_ENV=	CC='${CC}' \
+MAKE_ENV =	CC='${CC}' \
 		CFLAGS='${CFLAGS}' \
 		LDFLAGS='${LDFLAGS}'
 
-MAKE_FLAGS=	PREFIX='${PREFIX}' \
+MAKE_FLAGS =	PREFIX='${PREFIX}' \
 		MANDIR='${PREFIX}/man' \
 		RCDIR='${PREFIX}/lib/X11' \
 		APPLRESDIR='${PREFIX}/lib/X11/app-defaults' \
@@ -43,6 +44,6 @@ do-install:
 	${INSTALL_DATA} ${WRKSRC}/src/system.emwmrc \
 		${PREFIX}/lib/X11/system.emwmrc
 
-NO_TEST=	Yes
+NO_TEST =	Yes
 
 .include <bsd.port.mk>

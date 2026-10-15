@@ -1,24 +1,25 @@
-COMMENT=	utilities for Enhanced Motif Window Manager
+COMMENT =	utilities for Enhanced Motif Window Manager
 
-DISTNAME=	emwm-utils-src-2.0
-PKGNAME=	emwm-utils-2.0
+DISTNAME =	emwm-utils-src-2.0
+PKGNAME =	emwm-utils-2.0
+REVISION =       0
 
-CATEGORIES=	x11
-HOMEPAGE=	https://fastestcode.org/emwm.html
+CATEGORIES =	x11
+HOMEPAGE =	https://fastestcode.org/emwm.html
 
-SITES=		https://fastestcode.org/dl/
-SITES.misc=	https://fastestcode.org/misc/
+SITES =		https://fastestcode.org/dl/
+SITES.misc =	https://fastestcode.org/misc/
 
-DISTFILES=	${DISTNAME}${EXTRACT_SUFX} \
+DISTFILES =	${DISTNAME}${EXTRACT_SUFX} \
 		tellmwm-src-20260721{tellmwm-src}.tar.xz \
 		app-icons-20250710{app-icons}.tar.xz \
 		xc-core-hr-20241226{xc-core-hr}.tar.xz \
 		xmdlgicons-20250717{xmdlgicons}.tar.xz \
 		gtk-configs.tar.xz
-DISTFILES.misc=	Xresources-sample
-DIST_SUBDIR=	emwm-utils
-EXTRACT_SUFX=	.tar.xz
-EXTRACT_ONLY=	emwm-utils-src-2.0.tar.xz \
+DISTFILES.misc =	Xresources-sample
+DIST_SUBDIR =	emwm-utils
+EXTRACT_SUFX =	.tar.xz
+EXTRACT_ONLY =	emwm-utils-src-2.0.tar.xz \
 		tellmwm-src-20260721.tar.xz \
 		app-icons-20250710.tar.xz \
 		xc-core-hr-20241226.tar.xz \
@@ -27,25 +28,25 @@ EXTRACT_ONLY=	emwm-utils-src-2.0.tar.xz \
 
 # emwm-utils: MIT; tellmwm: permissive; artwork: CC BY-SA 3.0;
 # gtk-configs and Xresources-sample: public domain.
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
 WANTLIB += X11 Xinerama Xrandr Xss Xt Xm c
 
-LIB_DEPENDS=	x11/motif
-BUILD_DEPENDS=	x11/xcursorgen
-RUN_DEPENDS=	x11/emwm>=2.0
+LIB_DEPENDS =	x11/motif
+BUILD_DEPENDS =	x11/xcursorgen
+RUN_DEPENDS =	x11/emwm>=2.0
 
-WRKDIST=	${WRKDIR}/emwm-utils-src-2.0
+WRKDIST =	${WRKDIR}/emwm-utils-src-2.0
 
 # run shutdown(8)/zzz(8) with the invoking user's privileges; bsd.port.mk
 # also appends its own CFLAGS to MAKE_ENV, so putting the define in MAKE_ENV
 # would be overridden
 CFLAGS +=	-DUNPRIVILEGED_SHUTDOWN
 
-MAKE_ENV=	CC='${CC}' \
+MAKE_ENV =	CC='${CC}' \
 		LDFLAGS='${LDFLAGS}'
 
-MAKE_FLAGS=	PREFIX='${PREFIX}' \
+MAKE_FLAGS =	PREFIX='${PREFIX}' \
 		MANDIR='${PREFIX}/man' \
 		RCDIR='${PREFIX}/lib/X11' \
 		APPLRESDIR='${PREFIX}/lib/X11/app-defaults' \
@@ -120,6 +121,6 @@ do-install:
 	${INSTALL_DATA} ${WRKDIR}/xc-core-hr/README \
 		${PREFIX}/share/doc/emwm-utils/README.xc-core-hr
 
-NO_TEST=	Yes
+NO_TEST =	Yes
 
 .include <bsd.port.mk>

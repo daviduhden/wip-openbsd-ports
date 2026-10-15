@@ -3,6 +3,7 @@ COMMENT =	fast BPE tokenizer for OpenAI models
 MODPY_DISTV =	0.14.0
 DISTNAME =	tiktoken-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME}
+REVISION =       0
 
 CATEGORIES =	textproc
 

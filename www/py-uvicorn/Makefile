@@ -1,22 +1,23 @@
-COMMENT=	ASGI web server for Python
+COMMENT =	ASGI web server for Python
 
 MODPY_DISTV =	0.54.0
 DISTNAME =	uvicorn-${MODPY_DISTV}
-PKGNAME=	py-${DISTNAME}
+PKGNAME =	py-${DISTNAME}
+REVISION =       0
 
-CATEGORIES=	www
+CATEGORIES =	www
 
 # https://github.com/Kludex/uvicorn
-HOMEPAGE=	https://uvicorn.dev/
+HOMEPAGE =	https://uvicorn.dev/
 
 # BSD
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
-MODULES=	lang/python
+MODULES =	lang/python
 MODPY_PYBUILD =	hatchling
-MODPY_PI=	Yes
+MODPY_PI =	Yes
 
-TEST_DEPENDS=	devel/py-test-codspeed \
+TEST_DEPENDS =	devel/py-test-codspeed \
 		devel/py-test-mock \
 		devel/py-test-xdist \
 		net/py-websockets \

@@ -5,6 +5,7 @@ HOMEPAGE =	https://github.com/linuxhw/hw-probe
 GH_ACCOUNT =	linuxhw
 GH_PROJECT =	hw-probe
 GH_TAGNAME =	1.6.6
+REVISION =       0
 
 MAINTAINER =	David Uhden Collado <daviduhden@gmail.com>
 

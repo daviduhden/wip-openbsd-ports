@@ -2,7 +2,7 @@ COMMENT =	alternative implementation of GNU coreutils
 
 GH_PROJECT =	coreutils
 GH_TAGNAME =	0.12.0
-REVISION =	0
+REVISION =       0
 
 WANTLIB += ${MODCARGO_WANTLIB} m
 

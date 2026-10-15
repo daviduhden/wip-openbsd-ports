@@ -1,42 +1,43 @@
-COMMENT=	multiple virtual desktop window manager
+COMMENT =	multiple virtual desktop window manager
 
-VERSION=	1.1.5
-DISTNAME=	fvwm3-${VERSION}
+VERSION =	1.1.5
+DISTNAME =	fvwm3-${VERSION}
+REVISION =       0
 
-CATEGORIES=     x11
+CATEGORIES =     x11
 
-HOMEPAGE=	https://www.fvwm.org/
+HOMEPAGE =	https://www.fvwm.org/
 
-MAINTAINER=	Michael <michi+openbsd@dataswamp.org>
+MAINTAINER =	Michael <michi+openbsd@dataswamp.org>
 
 # Mostly GPLv2, main module has some code under MIT
 # See COPYING and https://github.com/fvwmorg/fvwm/commit/cadd6ed0d5
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
 WANTLIB += ICE SM X11 Xcursor Xext Xfixes Xft Xrandr Xpm Xrender
 WANTLIB += c cairo fontconfig gobject-2.0 iconv intl m png
 WANTLIB += rsvg-2 event_core
 
-SITES=		https://github.com/fvwmorg/fvwm3/releases/download/${VERSION}/
+SITES =		https://github.com/fvwmorg/fvwm3/releases/download/${VERSION}/
 
-BUILD_DEPENDS+=	textproc/asciidoctor \
+BUILD_DEPENDS +=	textproc/asciidoctor \
 		devel/gettext,-tools
 
-LIB_DEPENDS+=	graphics/png \
+LIB_DEPENDS +=	graphics/png \
 		x11/gnome/librsvg \
 		devel/libevent2
 
-SUBST_VARS=	VERSION
+SUBST_VARS =	VERSION
 
-CONFIGURE_STYLE=	meson
+CONFIGURE_STYLE =	meson
 MODULES +=		devel/meson
 
-CONFIGURE_ARGS+=	-Dmandoc=true \
+CONFIGURE_ARGS +=	-Dmandoc=true \
 			-Dbidi=disabled \
 			-Dgolang=disabled \
 			-Dlocaledir=${TRUEPREFIX}/share/fvwm3/locale
 
-CONFIGURE_ENV+=		CPPFLAGS="${CPPFLAGS} -I${LOCALBASE}/include" \
+CONFIGURE_ENV +=		CPPFLAGS="${CPPFLAGS} -I${LOCALBASE}/include" \
 			LDFLAGS="${LDFLAGS} -L${LOCALBASE}/lib"
 
 DEBUG_PACKAGES =       ${BUILD_PACKAGES}
@@ -61,5 +62,5 @@ post-install:
 .include <bsd.port.mk>
 
 .if ${CHOSEN_COMPILER} == "base-clang"
-CFLAGS+=		-Wno-error=int-conversion
+CFLAGS +=		-Wno-error=int-conversion
 .endif

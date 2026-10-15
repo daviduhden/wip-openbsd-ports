@@ -6,6 +6,7 @@ MODGO_VERSION =	v${V}
 
 DISTNAME =	cli-${MODGO_VERSION}
 PKGNAME =	github-cli-${V}
+REVISION =       0
 
 # replace "survey" module with a patched version that uses ioctl
 # instead of unnecessary direct syscall() calls

@@ -1,19 +1,20 @@
-COMMENT=	format-preserving encryption in pure Python
+COMMENT =	format-preserving encryption in pure Python
 
 MODPY_DISTV =	0.2.2
 DISTNAME =	fast_cipher-${MODPY_DISTV}
-PKGNAME=	py-${DISTNAME:S/_/-/}
+PKGNAME =	py-${DISTNAME:S/_/-/}
+REVISION =       0
 
-CATEGORIES=	security
+CATEGORIES =	security
 
-HOMEPAGE=	https://pypi.org/project/fast-cipher/
+HOMEPAGE =	https://pypi.org/project/fast-cipher/
 
 # BSD
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
-MODULES=	lang/python
+MODULES =	lang/python
 
-MODPY_PI=	Yes
+MODPY_PI =	Yes
 MODPY_PYBUILD =	setuptools
 
 .include <bsd.port.mk>

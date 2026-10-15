@@ -1,40 +1,41 @@
-COMMENT=	Motif toolkit
+COMMENT =	Motif toolkit
 
-GH_ACCOUNT=	thentenaar
-GH_PROJECT=	motif
-GH_TAGNAME=	v2.5.2
+GH_ACCOUNT =	thentenaar
+GH_PROJECT =	motif
+GH_TAGNAME =	v2.5.2
+REVISION =       0
 
 SHARED_LIBS +=  Xm                   6.3      # 5.1
 SHARED_LIBS +=  Mrm                  4.3      # 5.1
 SHARED_LIBS +=  Uil                  5.2      # 5.1
 
-CATEGORIES=	x11
-HOMEPAGE=	https://github.com/thentenaar/motif
+CATEGORIES =	x11
+HOMEPAGE =	https://github.com/thentenaar/motif
 
 # LGPLv2.1
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
-WANTLIB=  ICE SM X11 Xfixes Xcursor Xext Xft Xmu Xpm Xrandr Xrender Xt c expat
-WANTLIB+= fontconfig freetype iconv jpeg m png pthread xcb z
+WANTLIB =  ICE SM X11 Xfixes Xcursor Xext Xft Xmu Xpm Xrandr Xrender Xt c expat
+WANTLIB += fontconfig freetype iconv jpeg m png pthread xcb z
 
-LIB_DEPENDS=	converters/libiconv \
+LIB_DEPENDS =	converters/libiconv \
 		graphics/jpeg \
 		graphics/png
 
 # autoreconf runs autopoint even though the tree does not use gettext
-BUILD_DEPENDS=	devel/gettext,-tools
+BUILD_DEPENDS =	devel/gettext,-tools
 
-USE_GROFF=	Yes
+USE_GROFF =	Yes
 
-CONFIGURE_STYLE=autoreconf
-AUTORECONF=	./autogen.sh
-AUTOCONF_VERSION=	2.73
-AUTOMAKE_VERSION=	1.16
-CONFIGURE_ARGS=	--with-xft \
+CONFIGURE_STYLE = autoreconf
+AUTORECONF =	./autogen.sh
+AUTOCONF_VERSION =	2.73
+AUTOMAKE_VERSION =	1.16
+CONFIGURE_ARGS =	--with-xft \
 		--with-jpeg \
 		--with-png \
 		--enable-demos
-CONFIGURE_ENV=	CPPFLAGS='-I${X11BASE}/include -I${LOCALBASE}/include' \
+CONFIGURE_ENV =	CPPFLAGS='-I${X11BASE}/include -I${LOCALBASE}/include' \
 		LDFLAGS='-L${LOCALBASE}/lib'
 
 post-install:

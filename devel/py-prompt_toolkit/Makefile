@@ -1,24 +1,25 @@
-COMMENT=	Python library for building powerful interactive CLI
+COMMENT =	Python library for building powerful interactive CLI
 
 # check ipython requirements; as of 2024/06, wants <3.1
 MODPY_DISTV =	3.0.53
 DISTNAME =	prompt_toolkit-${MODPY_DISTV}
-PKGNAME=	py-${DISTNAME}
+PKGNAME =	py-${DISTNAME}
+REVISION =       0
 
-CATEGORIES=	devel
+CATEGORIES =	devel
 
-HOMEPAGE=	https://github.com/prompt-toolkit/python-prompt-toolkit
+HOMEPAGE =	https://github.com/prompt-toolkit/python-prompt-toolkit
 
-EPOCH=		1
+EPOCH =		1
 
 # BSD
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
-MODULES=	lang/python
+MODULES =	lang/python
 MODPY_PYBUILD =	setuptools
-MODPY_PI=	Yes
+MODPY_PI =	Yes
 
-PORTHOME=	${WRKDIR}
+PORTHOME =	${WRKDIR}
 
 RUN_DEPENDS =	devel/py-wcwidth>=0.1.4
 

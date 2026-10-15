@@ -1,21 +1,22 @@
-COMMENT=	client/server implementation of Engine.IO
+COMMENT =	client/server implementation of Engine.IO
 
-MODPY_DISTV=	4.14.0
-DISTNAME=	python_engineio-${MODPY_DISTV}
-PKGNAME=	py-engineio-${MODPY_DISTV}
+MODPY_DISTV =	4.14.0
+DISTNAME =	python_engineio-${MODPY_DISTV}
+PKGNAME =	py-engineio-${MODPY_DISTV}
+REVISION =       0
 
-CATEGORIES=	net
-HOMEPAGE=	https://python-engineio.readthedocs.io/en/latest/
+CATEGORIES =	net
+HOMEPAGE =	https://python-engineio.readthedocs.io/en/latest/
 
 # MIT
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
-MODULES=	lang/python
-MODPY_PYBUILD=	setuptools
-MODPY_PI=	Yes
-NO_TEST=	Yes
+MODULES =	lang/python
+MODPY_PYBUILD =	setuptools
+MODPY_PI =	Yes
+NO_TEST =	Yes
 
-RUN_DEPENDS=	net/py-websocket-client \
+RUN_DEPENDS =	net/py-websocket-client \
 		www/py-requests \
 		www/py-simple-websocket>=0.10
 

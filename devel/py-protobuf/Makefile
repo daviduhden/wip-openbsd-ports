@@ -1,28 +1,29 @@
-COMMENT=		Google data interchange format (protocol buffers)
+COMMENT =		Google data interchange format (protocol buffers)
 
 MODPY_DISTV =	6.33.6
 
 DISTNAME =	protobuf-${MODPY_DISTV}
-PKGNAME=		py-protobuf-${MODPY_DISTV}
+PKGNAME =		py-protobuf-${MODPY_DISTV}
+REVISION =       0
 
 # C11
-COMPILER=		base-clang ports-gcc
-COMPILER_LANGS=		c
+COMPILER =		base-clang ports-gcc
+COMPILER_LANGS =		c
 
-FIX_EXTRACT_PERMISSIONS= Yes
+FIX_EXTRACT_PERMISSIONS = Yes
 
-CATEGORIES=		devel
+CATEGORIES =		devel
 
 # BSD
-PERMIT_PACKAGE=		Yes
+PERMIT_PACKAGE =		Yes
 
-MODULES=		lang/python
+MODULES =		lang/python
 
-MODPY_PI=		Yes
+MODPY_PI =		Yes
 MODPY_PYBUILD =	setuptools
 
 # No tests in sources on PyPi
-NO_TEST=		Yes
+NO_TEST =		Yes
 
 # Google Cloud AI Platform and grpcio-status require protobuf <7.
 PORTROACH =	limit:^6\.

@@ -1,22 +1,22 @@
-COMMENT=	model context protocol SDK
+COMMENT =	model context protocol SDK
 
 MODPY_DISTV =	2.3.0
 DISTNAME =	mcp-${MODPY_DISTV}
-PKGNAME=	py-${DISTNAME}
+PKGNAME =	py-${DISTNAME}
 
-CATEGORIES=	devel
+CATEGORIES =	devel
 
-HOMEPAGE=	https://modelcontextprotocol.io/
+HOMEPAGE =	https://modelcontextprotocol.io/
 
 # MIT
-PERMIT_PACKAGE=	Yes
+PERMIT_PACKAGE =	Yes
 
-MODULES=	lang/python
+MODULES =	lang/python
 
-MODPY_PI=	Yes
+MODPY_PI =	Yes
 MODPY_PYBUILD =	hatchling
 
-BUILD_DEPENDS=	devel/py-uv-dynamic-versioning
+BUILD_DEPENDS =	devel/py-uv-dynamic-versioning
 
 TEST_DEPENDS =	devel/py-dirty-equals \
 		devel/py-inline-snapshot \

@@ -1,7 +1,7 @@
 COMMENT =		remove metadata from media files
 
 MODPY_DISTV =		0.15.0
-REVISION =		0
+REVISION =       0
 GH_ACCOUNT =		jvoisin
 GH_PROJECT =		mat2
 GH_TAGNAME =		${MODPY_DISTV}

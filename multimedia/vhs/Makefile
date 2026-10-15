@@ -18,6 +18,8 @@ WANTLIB +=		c pthread
 
 MODULES =		lang/go
 
+TEST_TARGET =		./...
+
 # Recording a tape needs the ttyd terminal server, ffmpeg for encoding,
 # bash as the default recording shell, and a Chromium-based browser. The
 # go-rod launcher finds /usr/local/bin/chrome from www/chromium, so no

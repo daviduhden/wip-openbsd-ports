@@ -1,0 +1,35 @@
+Wait for the PTY reader before consuming output; fast commands otherwise
+race with io.Copy and can incorrectly report empty output on OpenBSD.
+
+--- pty.go.orig
++++ pty.go
+@@ -40,14 +40,25 @@
+ 	}
+ 
+ 	var out bytes.Buffer
+-	var errorOut bytes.Buffer
++	done := make(chan struct{})
+ 	go func() {
+ 		_, _ = io.Copy(&out, pty)
+-		errorOut.Write(out.Bytes())
++		close(done)
+ 	}()
+ 
+-	if err := xpty.WaitProcess(ctx, cmd); err != nil {
+-		return errorOut.String(), fmt.Errorf("could not execute: %w", err)
++	err = xpty.WaitProcess(ctx, cmd)
++	// Release the parent's slave descriptor so the reader can reach EOF.
++	if unixPty, ok := pty.(*xpty.UnixPty); ok {
++		_ = unixPty.Slave().Close()
++	}
++	select {
++	case <-done:
++	case <-ctx.Done():
++		_ = pty.Close()
++		<-done
++	}
++	if err != nil {
++		return out.String(), fmt.Errorf("could not execute: %w", err)
+ 	}
+ 	return out.String(), nil
+ }

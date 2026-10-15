@@ -1,6 +1,4 @@
 bin/mat2
-lib/python${MODPY_VERSION}/site-packages/doc/
-lib/python${MODPY_VERSION}/site-packages/doc/mat2.1
 lib/python${MODPY_VERSION}/site-packages/libmat2/
 lib/python${MODPY_VERSION}/site-packages/libmat2/__init__.py
 lib/python${MODPY_VERSION}/site-packages/libmat2/${MODPY_PYCACHE}/
@@ -52,6 +50,4 @@ lib/python${MODPY_VERSION}/site-packages/mat2-${MODPY_DISTV}.dist-info/WHEEL
 lib/python${MODPY_VERSION}/site-packages/mat2-${MODPY_DISTV}.dist-info/licenses/
 lib/python${MODPY_VERSION}/site-packages/mat2-${MODPY_DISTV}.dist-info/licenses/LICENSE
 lib/python${MODPY_VERSION}/site-packages/mat2-${MODPY_DISTV}.dist-info/top_level.txt
-@mandir share/man/
-share/man/man1/
-@man share/man/man1/mat2.1
+@man man/man1/mat2.1

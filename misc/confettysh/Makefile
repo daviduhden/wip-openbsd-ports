@@ -4,6 +4,7 @@ MODGO_MODNAME =		github.com/charmbracelet/confettysh
 MODGO_VERSION =		v1.1.2
 
 DISTNAME =		confettysh-${MODGO_VERSION}
+WRKDIST =		${WRKDIR}/${MODGO_MODNAME}@${MODGO_VERSION}
 
 CATEGORIES =		misc
 
@@ -17,6 +18,8 @@ PERMIT_PACKAGE =	Yes
 WANTLIB +=		c pthread
 
 MODULES =		lang/go
+
+TEST_TARGET =		./...
 
 .include "modules.inc"
 

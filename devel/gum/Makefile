@@ -18,6 +18,8 @@ WANTLIB +=		c pthread
 
 MODULES =		lang/go
 
+TEST_TARGET =		./...
+
 # Upstream release binaries inject the tag version into main.Version.
 MODGO_LDFLAGS +=	-X main.Version=${MODGO_VERSION}
 

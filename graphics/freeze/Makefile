@@ -4,6 +4,7 @@ MODGO_MODNAME =		github.com/charmbracelet/freeze
 MODGO_VERSION =		v0.2.2
 
 DISTNAME =		freeze-${MODGO_VERSION}
+WRKDIST =		${WRKDIR}/${MODGO_MODNAME}@${MODGO_VERSION}
 # archivers/freeze owns bin/freeze as well, so give this package a
 # distinct name and declare the conflict below.
 PKGNAME =		charm-freeze-${MODGO_VERSION:S/v//}
@@ -20,6 +21,8 @@ PERMIT_PACKAGE =	Yes
 WANTLIB +=		c pthread
 
 MODULES =		lang/go
+
+TEST_TARGET =		./...
 
 # freeze rasterises its generated SVG with rsvg-convert when it is
 # present, and only falls back to the bundled resvg WebAssembly renderer

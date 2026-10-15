@@ -18,6 +18,12 @@ WANTLIB +=		c pthread
 
 MODULES =		lang/go
 
+TEST_TARGET =		./...
+
+# Go does not support the race detector on OpenBSD.
+TEST_ENV +=		SOFT_SERVE_DISABLE_RACE_CHECKS=1
+TEST_DEPENDS =		devel/git-lfs
+
 # Repository access is delegated to the system git executable.
 RUN_DEPENDS =		devel/git
 

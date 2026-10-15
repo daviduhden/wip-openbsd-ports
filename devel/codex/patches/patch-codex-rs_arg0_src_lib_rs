@@ -4,7 +4,7 @@ helper and materialize the alias on PATH.
 Index: codex-rs/arg0/src/lib.rs
 --- codex-rs/arg0/src/lib.rs.orig
 +++ codex-rs/arg0/src/lib.rs
-@@ -11,6 +11,8 @@
+@@ -11,6 +11,8 @@ use codex_exec_server::CODEX_ARG0_EXEC_HELPER_ARG1;
  use codex_exec_server::CODEX_FS_HELPER_ARG1;
  use codex_install_context::InstallContext;
  use codex_sandboxing::landlock::CODEX_LINUX_SANDBOX_ARG0;
@@ -13,7 +13,7 @@ Index: codex-rs/arg0/src/lib.rs
  use codex_utils_home_dir::find_codex_home;
  #[cfg(target_os = "windows")]
  use codex_windows_sandbox::CODEX_WINDOWS_SANDBOX_ARG1;
-@@ -100,6 +102,12 @@
+@@ -100,6 +102,12 @@ pub fn arg0_dispatch() -> Option<Arg0PathEntryGuard> {
      } else if exe_name == APPLY_PATCH_ARG0 || exe_name == MISSPELLED_APPLY_PATCH_ARG0 {
          codex_apply_patch::main();
      }
@@ -26,7 +26,7 @@ Index: codex-rs/arg0/src/lib.rs
  
      let argv1 = args.next().unwrap_or_default();
      if argv1 == codex_sandboxing::CODEX_WINDOWS_MXC_ARG1 {
-@@ -389,6 +397,8 @@
+@@ -389,6 +397,8 @@ fn prepare_path_entry_for_codex_aliases(
          MISSPELLED_APPLY_PATCH_ARG0,
          #[cfg(target_os = "linux")]
          CODEX_LINUX_SANDBOX_ARG0,

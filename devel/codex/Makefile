@@ -29,7 +29,10 @@ DIST_TUPLE +=		github dzbarsky rules_rust b56cbaa8465e74127f1ea216f813cd377295ad
 DIST_TUPLE +=		github microsoft mxc 6cd3d58f05d3447e67109cfb75e042803b843ca4 ./mxc
 DIST_TUPLE +=		github hyperium h3 e07e69412876f7e26f026bd75a48b2704d8c8283 ./h3
 DIST_TUPLE +=		github modelcontextprotocol rust-sdk 3e636cab26c013eca5131103c03d20237f12c4df ./rust-sdk
-DIST_TUPLE +=		github daviduhden rust-openbsd e6eb66e21db5ace4fd62c612067acdd0baee7de3 ./rust-openbsd
+# OpenBSD pledge(2)/unveil(2) bindings for the sandbox backend, pinned to the
+# revision the port is validated against. The backend enables the crate's
+# `openbsd-8-0` feature (getexecpath(3)), so the port requires OpenBSD 8.0.
+DIST_TUPLE +=		github daviduhden rust-openbsd a5b56618990df375d6b02ff32014a0779586d211 ./rust-openbsd
 
 MAINTAINER =		Kirill A. Korinsky <kirill@korins.ky>
 

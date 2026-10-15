@@ -1,10 +1,13 @@
 Select and transform the OpenBSD backend, launching sandboxed commands
 through the codex-openbsd-sandbox helper.
 
+The helper path is resolved with getexecpath(3) (OpenBSD 8.0) instead of
+std::env::current_exe(), which is best-effort on OpenBSD and reports argv[0].
+
 Index: codex-rs/sandboxing/src/manager.rs
 --- codex-rs/sandboxing/src/manager.rs.orig
 +++ codex-rs/sandboxing/src/manager.rs
-@@ -51,6 +51,8 @@
+@@ -51,6 +51,8 @@ pub fn get_platform_sandbox(windows_sandbox_enabled: b
          Some(SandboxType::MacosSeatbelt)
      } else if cfg!(target_os = "linux") {
          Some(SandboxType::LinuxSeccomp)
@@ -13,7 +16,7 @@ Index: codex-rs/sandboxing/src/manager.rs
      } else if cfg!(target_os = "windows") {
          if windows_sandbox_enabled {
              Some(SandboxType::WindowsRestrictedToken)
-@@ -195,6 +197,12 @@
+@@ -195,6 +197,12 @@ pub enum SandboxTransformError {
          source: io::Error,
      },
      MissingLinuxSandboxExecutable,
@@ -26,7 +29,7 @@ Index: codex-rs/sandboxing/src/manager.rs
      WindowsMxcPreparation(String),
      EnvironmentNetworkProxy(String),
      #[cfg(target_os = "macos")]
-@@ -223,6 +231,21 @@
+@@ -223,6 +231,21 @@ impl std::fmt::Display for SandboxTransformError {
              Self::MissingLinuxSandboxExecutable => {
                  write!(f, "missing codex-linux-sandbox executable path")
              }
@@ -48,7 +51,7 @@ Index: codex-rs/sandboxing/src/manager.rs
              Self::WindowsMxcPreparation(err) => {
                  write!(f, "failed to prepare MXC sandbox: {err}")
              }
-@@ -251,6 +274,12 @@
+@@ -251,6 +274,12 @@ impl std::error::Error for SandboxTransformError {
              Self::InvalidCommandCwd { source, .. }
              | Self::InvalidSandboxPolicyCwd { source, .. } => Some(source),
              Self::MissingLinuxSandboxExecutable => None,
@@ -61,7 +64,7 @@ Index: codex-rs/sandboxing/src/manager.rs
              Self::WindowsMxcPreparation(_) => None,
              Self::EnvironmentNetworkProxy(_) => None,
              #[cfg(target_os = "macos")]
-@@ -471,6 +500,38 @@
+@@ -471,6 +500,43 @@ impl SandboxManager {
              }
              #[cfg(not(target_os = "macos"))]
              SandboxType::MacosSeatbelt => return Err(SandboxTransformError::SeatbeltUnavailable),
@@ -70,12 +73,17 @@ Index: codex-rs/sandboxing/src/manager.rs
 +                let pending = pending_sandboxed_request?;
 +                // The helper is the Codex executable itself, re-invoked through
 +                // the `codex-openbsd-sandbox` arg0 alias. Prefer the helper path
-+                // supplied by the caller and fall back to the running
-+                // executable.
-+                let exe = sandbox_exe
-+                    .map(Path::to_path_buf)
-+                    .or_else(|| std::env::current_exe().ok())
-+                    .ok_or(SandboxTransformError::MissingOpenBsdSandboxExecutable)?;
++                // supplied by the caller; otherwise this process *is* the
++                // helper, so its own executable path is the helper path.
++                let exe = match sandbox_exe {
++                    Some(path) => path.to_path_buf(),
++                    // getexecpath(3), added in OpenBSD 8.0, reports the canonical
++                    // pathname directly. std::env::current_exe() is documented as
++                    // best-effort on OpenBSD: it reports argv[0], which is a bare
++                    // program name when Codex itself was found through PATH.
++                    None => rust_openbsd::execpath()
++                        .map_err(|_| SandboxTransformError::MissingOpenBsdSandboxExecutable)?,
++                };
 +                let mut args = crate::openbsd::create_openbsd_sandbox_command_args(
 +                    argv,
 +                    pending.native_command_cwd.as_path(),

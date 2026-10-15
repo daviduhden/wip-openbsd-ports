@@ -3,7 +3,7 @@ Report the OpenBSD backend when classifying sandbox denials.
 Index: codex-rs/sandboxing/src/violation.rs
 --- codex-rs/sandboxing/src/violation.rs.orig
 +++ codex-rs/sandboxing/src/violation.rs
-@@ -48,6 +48,7 @@
+@@ -48,6 +48,7 @@ pub enum SandboxViolationEvent {
  pub enum SandboxViolationBackend {
      LinuxSandbox,
      ManagedNetworkProxy,
@@ -11,7 +11,7 @@ Index: codex-rs/sandboxing/src/violation.rs
      Seatbelt,
      WindowsSandbox,
      WindowsMxc,
-@@ -58,6 +59,7 @@
+@@ -58,6 +59,7 @@ impl SandboxViolationBackend {
          match self {
              Self::LinuxSandbox => "linux_sandbox",
              Self::ManagedNetworkProxy => "managed_network_proxy",
@@ -19,7 +19,7 @@ Index: codex-rs/sandboxing/src/violation.rs
              Self::Seatbelt => "seatbelt",
              Self::WindowsSandbox => "windows_sandbox",
              Self::WindowsMxc => "windows_mxc",
-@@ -144,6 +146,7 @@
+@@ -144,6 +146,7 @@ fn classify_filesystem_sandbox_violation(
          SandboxType::None => return None,
          SandboxType::MacosSeatbelt => SandboxViolationBackend::Seatbelt,
          SandboxType::LinuxSeccomp => SandboxViolationBackend::LinuxSandbox,

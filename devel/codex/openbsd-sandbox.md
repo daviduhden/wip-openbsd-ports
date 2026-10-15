@@ -14,7 +14,7 @@ build and kernel tests). Nothing here should be presented as runtime-verified.
 The backend binds the OpenBSD kernel interfaces through the `rust-openbsd`
 crate (import name `rust_openbsd`), pinned in the port to the immutable commit
 
-    rust-openbsd e6eb66e21db5ace4fd62c612067acdd0baee7de3
+    rust-openbsd a5b56618990df375d6b02ff32014a0779586d211 (0.2.0)
 
 fetched with `DIST_TUPLE` into `${WRKDIST}/rust-openbsd` and consumed as a path
 dependency (`rust-openbsd = { path = "../rust-openbsd" }`). It is declared only
@@ -22,10 +22,15 @@ for `cfg(target_os = "openbsd")` in `codex-rs/sandboxing/Cargo.toml`, so no
 other platform gains the dependency. The crate has no dependencies of its own,
 so `crates.inc` is unchanged.
 
+The backend enables the crate's `openbsd-8-0` feature, which adds
+`getexecpath(3)`; the symbol first appeared in OpenBSD 8.0, so **the port
+requires OpenBSD 8.0 or later**. That is what the port targets: the patches are
+written for the `-current` tree that 8.0 is cut from.
+
 Only the public API of `rust-openbsd` is used: `pledge_both`, `unveil`,
-`lock_unveil`, `Promises`, `Promise`, `Permissions`, `Permission`, and `Errno`.
-There are no duplicated FFI declarations and no direct `libc` use for pledge or
-unveil in the backend.
+`lock_unveil`, `Promises`, `Promise`, `Permissions`, `Permission`, `execpath`,
+and `Errno`. There are no duplicated FFI declarations and no direct `libc` use
+for pledge or unveil in the backend.
 
 ## 2. Where the code lives
 
@@ -57,6 +62,13 @@ alias `codex-openbsd-sandbox`:
 * `SandboxManager::transform` rewrites the command to
   `argv = [codex, --command-cwd <cwd>, --openbsd-policy <json>, --, <command...>]`
   and sets `arg0 = Some("codex-openbsd-sandbox")`.
+* The helper executable path is the path of the running Codex binary. The
+  controller resolves it with `getexecpath(3)` (via the bindings' `execpath`),
+  which returns the canonical, absolute pathname of the executable.
+  `std::env::current_exe()` is *not* used: Rust documents it as best-effort on
+  OpenBSD, where it reports `argv[0]` and returns a bare program name when Codex
+  was found through `PATH`. An unresolved name would let the spawn layer search
+  `PATH` for the helper, so a failure to resolve the path is fatal instead.
 * The spawn layer applies `arg0` as `argv[0]`, so `codex-arg0` dispatches to
   `codex_sandboxing::openbsd::run_openbsd_sandbox_main()`.
 * The helper applies the policy to itself and `execve(2)`s the target.
@@ -223,30 +235,40 @@ kernel evidence.
 
 Static/analytical validation that has actually been executed:
 
-* `cargo check -p codex-sandboxing` — succeeded (Linux host, OpenBSD-gated code
-  excluded).
-* `cargo check -p codex-sandboxing --tests` — succeeded, which compiles
-  `openbsd_policy.rs` and its tests.
-* `cargo check -p codex-arg0 -p codex-exec-server` — succeeded.
-* `cargo check -p codex-exec-server --tests` — succeeded.
-* `cargo test -p codex-sandboxing openbsd` — **13/13 unit tests passed**. The
-  policy translation, validation, and helper argument construction are pure
-  logic and were executed for real.
-* `rustfmt --check` on every changed Rust file — clean.
-* All 15 new patches apply cleanly on top of the existing port patches and
-  reproduce the intended source tree byte for byte (no rejects).
+* Every port patch applies with `patch -p0 -F0`, without fuzz and without
+  offset, both individually and as a complete set. The `modcargo-crates` patches
+  need the cargo module's vendored tree and are outside this check.
+* The OpenBSD-gated Rust code is type-checked on a Linux host with a
+  `RUSTC_WRAPPER` that adds `--cfg target_os="openbsd"` to `rust_openbsd` and to
+  the Codex crates that contain OpenBSD arms (`codex-sandboxing`, `codex-arg0`,
+  `codex-exec-server`); every other crate keeps the host target, so crates such
+  as `mio` still compile against the host's libc layout:
+  * `cargo check -p codex-sandboxing --tests` — succeeded, which compiles
+    `openbsd.rs`, `openbsd_policy.rs` and the `manager.rs` arm that calls
+    `getexecpath(3)` through the bindings;
+  * `cargo check -p codex-arg0 -p codex-exec-server` — succeeded;
+  * `cargo check -p codex-exec-server --tests` — succeeded.
+  Negative control: with the `openbsd-8-0` feature disabled, the same check
+  fails with `cannot find function execpath in crate rust_openbsd`, which shows
+  that the backend arm under test is really being compiled.
+* `cargo test -p codex-sandboxing openbsd` — 13/13 unit tests passed. The policy
+  translation, validation, and helper argument construction are pure logic and
+  were executed for real; `openbsd_policy.rs` is unchanged since that run.
+* The regenerated `manager.rs` patch is rustfmt-clean (formatted with the
+  workspace's `rustfmt.toml`).
 * `distinfo` entries for the new `DIST_TUPLE` were derived from the archive
-  GitHub serves and cross-checked against the hash of an existing entry.
+  GitHub serves; the method reproduces the previous entry's hash and size
+  exactly.
 
 Not executed (and therefore unverified): anything that needs the OpenBSD
-kernel, and compilation of the `#[cfg(target_os = "openbsd")]` code, which no
-available toolchain can type-check.
+kernel, and any build with the real OpenBSD target, including the libc symbols
+the bindings link against.
 
 ## 13. Remaining work
 
-1. Build the port on OpenBSD 7.9/current for `x86_64` and `aarch64`; the
-   OpenBSD-gated code (`openbsd.rs`, the `arg0` dispatch, and the transform
-   arm) has not been compiled anywhere yet.
+1. Build the port on OpenBSD 8.0/current for `x86_64` and `aarch64`; the
+   OpenBSD-gated code has only been type-checked on a Linux host, never
+   compiled or linked with the real target.
 2. Run the unit tests in `openbsd_policy.rs` on the target.
 3. Kernel tests: execute a sandboxed command under each supported policy and
    confirm the intended writes succeed, the unintended writes fail, the

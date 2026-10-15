@@ -3,7 +3,7 @@ Record the rust-openbsd path dependency in the lockfile.
 Index: codex-rs/Cargo.lock
 --- codex-rs/Cargo.lock.orig
 +++ codex-rs/Cargo.lock
-@@ -4528,6 +4528,8 @@
+@@ -4528,6 +4528,8 @@ dependencies = [
   "libc",
   "pretty_assertions",
   "regex-lite",
@@ -12,12 +12,12 @@ Index: codex-rs/Cargo.lock
   "serde_json",
   "tempfile",
   "tokio",
-@@ -13486,6 +13488,10 @@
+@@ -13486,6 +13488,10 @@ dependencies = [
  ]
  
  [[package]]
 +name = "rust-openbsd"
-+version = "0.1.0"
++version = "0.2.0"
 +
 +[[package]]
  name = "rust-stemmers"

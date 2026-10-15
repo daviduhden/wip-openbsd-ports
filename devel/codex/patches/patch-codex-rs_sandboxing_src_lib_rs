@@ -3,7 +3,7 @@ Register the OpenBSD backend modules and surface its transform errors.
 Index: codex-rs/sandboxing/src/lib.rs
 --- codex-rs/sandboxing/src/lib.rs.orig
 +++ codex-rs/sandboxing/src/lib.rs
-@@ -4,6 +4,10 @@
+@@ -4,6 +4,10 @@ mod denial;
  pub mod landlock;
  mod linux_pid_namespace;
  mod manager;
@@ -14,7 +14,7 @@ Index: codex-rs/sandboxing/src/lib.rs
  pub mod policy_transforms;
  #[cfg(target_os = "macos")]
  pub mod seatbelt;
-@@ -76,6 +80,20 @@
+@@ -76,6 +80,20 @@ impl From<SandboxTransformError> for CodexErr {
              SandboxTransformError::MissingLinuxSandboxExecutable => {
                  CodexErr::LandlockSandboxExecutableNotProvided
              }

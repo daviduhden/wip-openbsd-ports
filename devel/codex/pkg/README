@@ -2,6 +2,22 @@
 | Running ${PKGSTEM} on OpenBSD
 +-----------------------------------------------------------------------
 
+Codex restricts the commands it runs with pledge(2) and unveil(2): a sandboxed
+command is started through the same executable, re-invoked as
+"codex-openbsd-sandbox", which installs the unveiled paths, applies the promise
+set and then execs the target. The backend is selected automatically for the
+workspace-write and read-only profiles; the danger-full-access profile still
+runs commands without a sandbox. The helper resolves its own executable with
+getexecpath(3), so this package requires OpenBSD 8.0 or later.
+
+The installed executables carry the WXNEEDED flag, because V8 compiles with
+W^X, so the filesystem holding ${LOCALBASE} must be mounted with the wxallowed
+option. Check it with
+
+	mount | grep wxallowed
+
+and, if it is missing, add wxallowed to the /usr/local line in /etc/fstab.
+
 You may use OpenAI commercial services or misc/llama.cpp, for the last
 one you should add into ~/.codex/config.toml:
 

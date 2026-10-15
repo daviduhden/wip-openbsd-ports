@@ -14,7 +14,7 @@ build and kernel tests). Nothing here should be presented as runtime-verified.
 The backend binds the OpenBSD kernel interfaces through the `rust-openbsd`
 crate (import name `rust_openbsd`), pinned in the port to the immutable commit
 
-    rust-openbsd a5b56618990df375d6b02ff32014a0779586d211 (0.2.0)
+    rust-openbsd 24f45496473ddbde171f1ba97897c2470ac26fed (0.2.0)
 
 fetched with `DIST_TUPLE` into `${WRKDIST}/rust-openbsd` and consumed as a path
 dependency (`rust-openbsd = { path = "../rust-openbsd" }`). It is declared only
@@ -28,8 +28,8 @@ requires OpenBSD 8.0 or later**. That is what the port targets: the patches are
 written for the `-current` tree that 8.0 is cut from.
 
 Only the public API of `rust-openbsd` is used: `pledge_both`, `unveil`,
-`lock_unveil`, `Promises`, `Promise`, `Permissions`, `Permission`, `execpath`,
-and `Errno`. There are no duplicated FFI declarations and no direct `libc` use
+`lock_unveil`, `Promises`, `Promise`, `Permissions`, `Permission`, and
+`execpath`. There are no duplicated FFI declarations and no direct `libc` use
 for pledge or unveil in the backend.
 
 ## 2. Where the code lives
@@ -279,3 +279,32 @@ the bindings link against.
 6. Only after the above pass should the backend be enabled by default (it is
    currently selected whenever OpenBSD builds select a platform sandbox, which
    is the same condition as the other platforms).
+
+## 14. Divergences from the port in `-current`
+
+This port carries changes that `-current`'s `devel/codex` does not, and omits
+some of its patches. The reasons, so that a future sync does not lose them:
+
+* `DIST_TUPLE` names the rust-sdk checkout `./rust-sdk` (upstream's own
+  `Cargo.toml` refers to `../../rust-sdk/crates/rmcp`) where `-current` uses
+  `./rmcp`, and fetches crossterm from `openai-oss-forks` where `-current` uses
+  `nornagon`. Both are the same commits (`3e636cab…`, `ed1cdab3…`) and the port
+  is internally consistent: the Makefile, `distinfo` and
+  `patch-codex-rs_Cargo_toml` all use the same names.
+* `patch-codex-rs_Cargo_toml` also adds the `rust-openbsd` workspace dependency,
+  so `codex-rs/Cargo.toml` has a single patch (update-patches keys patches by
+  the file they modify; two patches for one file collide).
+* The v8/aws-lc patch set differs: this port configures partition_alloc through
+  `PA_BUILDFLAG(IS_BSD)` plus its own libunwind/gn patches, while `-current`
+  patches `partition_alloc_forward.h` and `spinning_mutex.cc` for an
+  `OS_OPENBSD` futex. Both target the same subsystem without overlapping files;
+  the two `-current` patches were not adopted because this port's v8 patches
+  already select the BSD platform configuration.
+* `-current`'s `patch-codex-rs_features_src_lib_rs` sets
+  `default_enabled: false` for the `daemon_auto_start` feature. **Do not adopt
+  it here:** this port's daemon integration relies on that feature being
+  enabled (`pkg/README`, `daemon-integration.md`).
+* `-current`'s `patch-codex-rs_chatgpt_src_lib_rs` adds a second
+  `#![recursion_limit]` attribute; it applies cleanly here but is not needed,
+  because it works around an interaction that this port's patch set does not
+  have.

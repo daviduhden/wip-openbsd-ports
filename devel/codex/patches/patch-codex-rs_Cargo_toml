@@ -1,5 +1,10 @@
 Resolve pinned Git dependencies from DIST_TUPLE sources, rather than fetching
-Git repositories during the Cargo build.
+Git repositories during the Cargo build, and declare the OpenBSD-only
+pledge(2)/unveil(2) bindings as a workspace dependency.  The crate is fetched
+by the port through DIST_TUPLE and consumed as a path dependency; it is only
+used by the OpenBSD target and has no dependencies of its own.  Both changes
+live in this single patch because update-patches keys patches by the file they
+modify.
 
 Index: codex-rs/Cargo.toml
 --- codex-rs/Cargo.toml.orig
@@ -29,7 +34,7 @@ Index: codex-rs/Cargo.toml
  once_cell = "1.20.2"
  openssl-sys = "*"
  opentelemetry = "0.31.0"
-@@ -449,8 +449,8 @@ regex-lite = "0.1.8"
+@@ -449,9 +449,13 @@ regex-lite = "0.1.8"
  regex-syntax = "0.8.8"
  reqwest = { version = "0.12", features = ["cookies"] }
  # rmcp-v3.3.0 includes enterprise authorization helpers (rust-sdk#1234).
@@ -38,9 +43,14 @@ Index: codex-rs/Cargo.toml
 +rmcp = { path = "../rust-sdk/crates/rmcp", version = "=3.3.0", default-features = false }
 +runfiles = { path = "../runfiles/rust/runfiles" }
  rustix = { version = "1.1.4", features = ["net"] }
++# OpenBSD-only sandbox bindings for pledge(2)/unveil(2). Fetched by the port
++# through DIST_TUPLE and consumed as a path dependency; it has no dependencies
++# of its own.
++rust-openbsd = { path = "../rust-openbsd" }
  rustls = { version = "0.23.45", default-features = false, features = [
      "aws_lc_rs",
-@@ -643,12 +643,6 @@ opt-level = 0
+     "std",
+@@ -643,12 +647,6 @@ opt-level = 0
  [patch.crates-io]
  # Uncomment to debug local changes.
  # ratatui = { path = "../../ratatui" }

@@ -3,7 +3,7 @@ Report OpenBsdPledgeUnveil for locally started processes.
 Index: codex-rs/exec-server/src/local_process.rs
 --- codex-rs/exec-server/src/local_process.rs.orig
 +++ codex-rs/exec-server/src/local_process.rs
-@@ -390,6 +390,7 @@ impl LocalProcess {
+@@ -391,6 +391,7 @@ impl LocalProcess {
              SandboxType::None => Some(ProcessSandboxType::None),
              SandboxType::MacosSeatbelt => Some(ProcessSandboxType::MacosSeatbelt),
              SandboxType::LinuxSeccomp => Some(ProcessSandboxType::LinuxSeccomp),

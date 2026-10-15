@@ -3,7 +3,7 @@ Record the rust-openbsd path dependency in the lockfile.
 Index: codex-rs/Cargo.lock
 --- codex-rs/Cargo.lock.orig
 +++ codex-rs/Cargo.lock
-@@ -4528,6 +4528,8 @@ dependencies = [
+@@ -4539,6 +4539,8 @@ dependencies = [
   "libc",
   "pretty_assertions",
   "regex-lite",
@@ -12,7 +12,7 @@ Index: codex-rs/Cargo.lock
   "serde_json",
   "tempfile",
   "tokio",
-@@ -13486,6 +13488,10 @@ dependencies = [
+@@ -13496,6 +13498,10 @@ dependencies = [
  ]
  
  [[package]]

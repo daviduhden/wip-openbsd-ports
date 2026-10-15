@@ -3,7 +3,7 @@ Add the OpenBsdPledgeUnveil sandbox type and its metric tag.
 Index: codex-rs/protocol/src/sandbox.rs
 --- codex-rs/protocol/src/sandbox.rs.orig
 +++ codex-rs/protocol/src/sandbox.rs
-@@ -11,6 +11,7 @@ pub enum SandboxType {
+@@ -30,6 +30,7 @@ pub enum SandboxType {
      None,
      MacosSeatbelt,
      LinuxSeccomp,
@@ -11,7 +11,7 @@ Index: codex-rs/protocol/src/sandbox.rs
      WindowsRestrictedToken,
      WindowsMxc,
  }
-@@ -21,6 +22,7 @@ impl SandboxType {
+@@ -40,6 +41,7 @@ impl SandboxType {
              Self::None => "none",
              Self::MacosSeatbelt => "seatbelt",
              Self::LinuxSeccomp => "seccomp",

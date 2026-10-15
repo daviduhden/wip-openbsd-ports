@@ -7,7 +7,7 @@ std::env::current_exe(), which is best-effort on OpenBSD and reports argv[0].
 Index: codex-rs/sandboxing/src/manager.rs
 --- codex-rs/sandboxing/src/manager.rs.orig
 +++ codex-rs/sandboxing/src/manager.rs
-@@ -51,6 +51,8 @@ pub fn get_platform_sandbox(windows_sandbox_enabled: b
+@@ -52,6 +52,8 @@ pub fn get_platform_sandbox(windows_sandbox_enabled: b
          Some(SandboxType::MacosSeatbelt)
      } else if cfg!(target_os = "linux") {
          Some(SandboxType::LinuxSeccomp)
@@ -16,7 +16,7 @@ Index: codex-rs/sandboxing/src/manager.rs
      } else if cfg!(target_os = "windows") {
          if windows_sandbox_enabled {
              Some(SandboxType::WindowsRestrictedToken)
-@@ -195,6 +197,12 @@ pub enum SandboxTransformError {
+@@ -198,6 +200,12 @@ pub enum SandboxTransformError {
          source: io::Error,
      },
      MissingLinuxSandboxExecutable,
@@ -29,7 +29,7 @@ Index: codex-rs/sandboxing/src/manager.rs
      WindowsMxcPreparation(String),
      EnvironmentNetworkProxy(String),
      #[cfg(target_os = "macos")]
-@@ -223,6 +231,21 @@ impl std::fmt::Display for SandboxTransformError {
+@@ -226,6 +234,21 @@ impl std::fmt::Display for SandboxTransformError {
              Self::MissingLinuxSandboxExecutable => {
                  write!(f, "missing codex-linux-sandbox executable path")
              }
@@ -51,7 +51,7 @@ Index: codex-rs/sandboxing/src/manager.rs
              Self::WindowsMxcPreparation(err) => {
                  write!(f, "failed to prepare MXC sandbox: {err}")
              }
-@@ -251,6 +274,12 @@ impl std::error::Error for SandboxTransformError {
+@@ -254,6 +277,12 @@ impl std::error::Error for SandboxTransformError {
              Self::InvalidCommandCwd { source, .. }
              | Self::InvalidSandboxPolicyCwd { source, .. } => Some(source),
              Self::MissingLinuxSandboxExecutable => None,
@@ -64,7 +64,7 @@ Index: codex-rs/sandboxing/src/manager.rs
              Self::WindowsMxcPreparation(_) => None,
              Self::EnvironmentNetworkProxy(_) => None,
              #[cfg(target_os = "macos")]
-@@ -471,6 +500,43 @@ impl SandboxManager {
+@@ -474,6 +503,43 @@ impl SandboxManager {
              }
              #[cfg(not(target_os = "macos"))]
              SandboxType::MacosSeatbelt => return Err(SandboxTransformError::SeatbeltUnavailable),

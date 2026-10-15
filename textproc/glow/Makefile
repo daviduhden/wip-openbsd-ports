@@ -20,8 +20,10 @@ MODULES =		lang/go
 
 TEST_TARGET =		./...
 
-# Upstream release binaries inject the tag version into main.Version.
-MODGO_LDFLAGS +=	-X main.Version=${MODGO_VERSION}
+# glow's release build takes main.Version from charmbracelet/meta's
+# goreleaser-glow.yaml, which uses {{ .Version }} (the tag without its leading
+# "v"), so the published binaries report "3.0.0".  Pass the numeric form.
+MODGO_LDFLAGS +=	-X main.Version=${MODGO_VERSION:S/^v//}
 
 .include "modules.inc"
 

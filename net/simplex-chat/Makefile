@@ -166,7 +166,13 @@ LIB_DEPENDS = archivers/zstd \
 			devel/gmp \
 			devel/libffi
 
-BUILD_DEPENDS = converters/dos2unix
+# ghc and cabal-install also come from devel/cabal, with the same version
+# constraints; cabal-bundler generates the dependency manifest from the
+# build plan in the cabal-inc target.
+BUILD_DEPENDS = converters/dos2unix \
+		devel/cabal-bundler \
+		devel/cabal-install>=3.12.0.0 \
+		lang/ghc>=9.8.3
 TEST_DEPENDS = databases/sqlite3
 
 # Hspec selection and diagnostic options for targeted ports test runs.

@@ -24,7 +24,4 @@ RUN_DEPENDS =		audio/py-mutagen \
 			print/poppler \
 			x11/gnome/librsvg
 
-# Test files aren't available in PyPI
-NO_TEST =		Yes
-
 .include <bsd.port.mk>

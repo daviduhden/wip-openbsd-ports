@@ -1,12 +1,11 @@
 COMMENT =		Bourne-compatible shell written in Rust
 
 V =			0.4.0
-PTYPROCESS_V =		0.5.0
 # zhiburt/ptyprocess has no OpenBSD support yet: it has no ptsname_r and has to
-# call TIOCSCTTY on the pty slave, like FreeBSD and macOS.  The crate source is
-# fetched as its own distfile, pinned to the 0.5.0 release commit, and patched
-# below, so the OpenBSD fix applies to a fixed, checksummed source tree instead
-# of the crate tarball unpacked into the cargo vendor directory.
+# call TIOCSCTTY on the pty slave, like FreeBSD and macOS.  Fetch the crate
+# source with DIST_TUPLE, pinned to the 0.5.0 release commit, and consume it as
+# a path dependency (patches/patch-Cargo_toml), so the OpenBSD fix in
+# patches/patch-ptyprocess_src_lib_rs applies to a fixed, checksummed tree.
 PTYPROCESS_COMMIT =	fe9e796035fc63c99136b706aa86354fab73d4bc
 DISTNAME =		brush-${V}
 GH_ACCOUNT =		reubeno
@@ -33,18 +32,6 @@ SEPARATE_BUILD =	Yes
 # only affects testing; the package itself does not provide bash.
 TEST_DEPENDS =		shells/bash
 MAKE_ENV +=		BASH_PATH=${LOCALBASE}/bin/bash
-
-post-patch:
-	# patches/patch-ptyprocess_src_lib_rs is applied by the framework to the
-	# tree fetched with DIST_TUPLE; vendor the patched result and generate its
-	# cargo metadata, so the recorded checksums describe the patched files.
-	mkdir -p ${MODCARGO_VENDOR_DIR}
-	rm -rf ${MODCARGO_VENDOR_DIR}/ptyprocess-${PTYPROCESS_V}
-	cp -R ${WRKDIST}/ptyprocess \
-		${MODCARGO_VENDOR_DIR}/ptyprocess-${PTYPROCESS_V}
-	${LOCALBASE}/bin/cargo-generate-vendor \
-		${DISTDIR}/cargo/ptyprocess-${PTYPROCESS_V}.tar.gz \
-		${MODCARGO_VENDOR_DIR}/ptyprocess-${PTYPROCESS_V}
 
 # brush-shell is the workspace's default member and the package upstream
 # recommends installing; the "brush" facade crate only forwards the same

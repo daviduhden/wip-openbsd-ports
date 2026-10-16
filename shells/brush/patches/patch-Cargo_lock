@@ -1,0 +1,15 @@
+Record ptyprocess as a patched dependency: with the path override in Cargo.toml
+it is no longer resolved from the registry, so it has no source or checksum.
+
+Index: Cargo.lock
+--- Cargo.lock.orig
++++ Cargo.lock
+@@ -3514,8 +3514,6 @@ dependencies = [
+ [[package]]
+ name = "ptyprocess"
+ version = "0.5.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "101be273c0b1680d7056afddbaa88f02b6e9f2dc161165c30bee9914b6025a79"
+ dependencies = [
+  "nix 0.26.4",
+ ]

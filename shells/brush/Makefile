@@ -13,7 +13,7 @@ GH_ACCOUNT =		reubeno
 GH_PROJECT =		brush
 GH_TAGNAME =		brush-shell-v${V}
 
-DIST_TUPLE +=		github zhiburt ptyprocess ${PTYPROCESS_COMMIT} ./ptyprocess
+DIST_TUPLE +=		github zhiburt ptyprocess ${PTYPROCESS_COMMIT} ptyprocess
 CATEGORIES =		shells
 
 HOMEPAGE =		https://github.com/reubeno/brush/
@@ -38,11 +38,11 @@ post-extract:
 	# Patch the DIST_TUPLE'd ptyprocess tree before the cargo vendor metadata
 	# is generated from it, so the recorded checksums describe the patched
 	# files, and install the patched tree as the vendored crate.
-	patch -F 0 -d ${WRKDIR}/ptyprocess -p0 \
+	patch -F 0 -d ${WRKDIST}/ptyprocess -p0 \
 		< ${FILESDIR}/patch-ptyprocess_openbsd
 	mkdir -p ${MODCARGO_VENDOR_DIR}
 	rm -rf ${MODCARGO_VENDOR_DIR}/ptyprocess-${PTYPROCESS_V}
-	cp -R ${WRKDIR}/ptyprocess \
+	cp -R ${WRKDIST}/ptyprocess \
 		${MODCARGO_VENDOR_DIR}/ptyprocess-${PTYPROCESS_V}
 	${LOCALBASE}/bin/cargo-generate-vendor \
 		${DISTDIR}/cargo/ptyprocess-${PTYPROCESS_V}.tar.gz \

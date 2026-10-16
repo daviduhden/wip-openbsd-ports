@@ -2,7 +2,10 @@ The command echo, the receive progress lines and the transient
 SERcvFileNotFoundXFTP store error of the cancelled first attempt are
 produced by independent parts of the client, so the order in which they
 reach the terminal is not fixed: accept them in any order instead of
-requiring the command echo first.  No assertion is dropped.
+requiring the command echo first.  These are console lines and carry no
+timestamp, so <### (which compares the lines as printed) is the operator
+that matches them; <##? strips a timestamp and errors on the first line
+that has none.  No assertion is dropped.
 
 Index: tests/ChatTests/Files.hs
 --- tests/ChatTests/Files.hs.orig
@@ -21,7 +24,7 @@ Index: tests/ChatTests/Files.hs
 -               "started receiving file 1 (testfile) from alice",
 -               StartsWith "chat db error: SERcvFileNotFoundXFTP"
 -             ]
-+        <##? [ "/fr 1 ./tests/tmp",
++        <### [ "/fr 1 ./tests/tmp",
 +                "saving file 1 from alice to ./tests/tmp/testfile_1",
 +                "started receiving file 1 (testfile) from alice",
 +                StartsWith "chat db error: SERcvFileNotFoundXFTP"

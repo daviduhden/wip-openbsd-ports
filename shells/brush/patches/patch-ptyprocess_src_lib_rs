@@ -6,7 +6,7 @@ OpenBSD to the TIOCSCTTY branch of make_controlling_tty.
 Index: ptyprocess/src/lib.rs
 --- ptyprocess/src/lib.rs.orig
 +++ ptyprocess/src/lib.rs
-@@ -46,7 +46,7 @@
+@@ -46,7 +46,7 @@ use nix::fcntl::{fcntl, open, FcntlArg, FdFlag, OFlag}
  use nix::fcntl::{fcntl, open, FcntlArg, FdFlag, OFlag};
  use nix::libc::{self, winsize, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO};
  use nix::pty::PtyMaster;

@@ -28,7 +28,7 @@ either instead of asserting the one OpenBSD happened to report.
 Index: tests/ChatTests/Direct.hs
 --- tests/ChatTests/Direct.hs.orig
 +++ tests/ChatTests/Direct.hs
-@@ -15,18 +15,23 @@ import ChatClient
+@@ -15,18 +15,23 @@ import ChatTests.DBUtils
  import ChatTests.DBUtils
  import ChatTests.Utils
  import Control.Concurrent (threadDelay)

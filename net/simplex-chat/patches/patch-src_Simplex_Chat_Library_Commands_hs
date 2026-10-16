@@ -6,7 +6,7 @@ and unmask worker bodies independently of their callers.
 Index: src/Simplex/Chat/Library/Commands.hs
 --- src/Simplex/Chat/Library/Commands.hs.orig
 +++ src/Simplex/Chat/Library/Commands.hs
-@@ -95,6 +95,7 @@
+@@ -95,6 +95,7 @@ import Simplex.Chat.Web (webPreviewWorker)
  import Simplex.Chat.Web (webPreviewWorker)
  import Simplex.FileTransfer.Description (FileDescriptionURI (..), maxFileSizeHard)
  import Simplex.Messaging.Agent

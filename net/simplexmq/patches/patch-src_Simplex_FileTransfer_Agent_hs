@@ -9,7 +9,7 @@ Publish SFDONE only after source cleanup and the completion transaction.
 Index: src/Simplex/FileTransfer/Agent.hs
 --- src/Simplex/FileTransfer/Agent.hs.orig
 +++ src/Simplex/FileTransfer/Agent.hs
-@@ -108,6 +108,9 @@ startXFTPWorkers_ allWorkers c workDir =
+@@ -108,6 +108,9 @@ startXFTPWorkers_ allWorkers c workDir = do
        lift $ resumeXFTPRcvWork c Nothing
      startSndFiles :: AgentConfig -> AM ()
      startSndFiles AgentConfig {sndFilesTTL} = do

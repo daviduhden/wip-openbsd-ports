@@ -3,7 +3,7 @@ Register the OpenBSD backend modules and surface its transform errors.
 Index: codex-rs/sandboxing/src/lib.rs
 --- codex-rs/sandboxing/src/lib.rs.orig
 +++ codex-rs/sandboxing/src/lib.rs
-@@ -4,6 +4,10 @@ mod denial;
+@@ -4,6 +4,10 @@ pub mod landlock;
  pub mod landlock;
  mod linux_pid_namespace;
  mod manager;

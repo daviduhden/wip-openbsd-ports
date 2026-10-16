@@ -3,7 +3,7 @@ Use OpenBSD-style default configuration and log directories for xftp-server.
 Index: apps/xftp-server/Main.hs
 --- apps/xftp-server/Main.hs.orig
 +++ apps/xftp-server/Main.hs
-@@ -7,10 +7,10 @@ import Simplex.Messaging.Server.Web (ser
+@@ -7,10 +7,10 @@ import XFTPWeb (xftpGenerateSite)
  import XFTPWeb (xftpGenerateSite)
  
  defaultCfgPath :: FilePath

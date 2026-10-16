@@ -5,7 +5,7 @@ for remote environments and restricted read policies.
 Index: codex-rs/core/src/tools/handlers/apply_patch.rs
 --- codex-rs/core/src/tools/handlers/apply_patch.rs.orig
 +++ codex-rs/core/src/tools/handlers/apply_patch.rs
-@@ -45,6 +45,7 @@ use codex_apply_patch::ApplyPatchFileChange;
+@@ -45,6 +45,7 @@ use codex_apply_patch::Hunk;
  use codex_apply_patch::Hunk;
  use codex_apply_patch::StreamingPatchParser;
  use codex_exec_server::ExecutorFileSystem;

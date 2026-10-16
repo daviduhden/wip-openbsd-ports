@@ -4,7 +4,7 @@ failure. Close their HTTP/2 threads before shutting down the fixture server.
 Index: tests/XFTPClient.hs
 --- tests/XFTPClient.hs.orig
 +++ tests/XFTPClient.hs
-@@ -9,6 +9,7 @@
+@@ -9,6 +9,7 @@ module XFTPClient where
  module XFTPClient where
  
  import Control.Concurrent (ThreadId, threadDelay)

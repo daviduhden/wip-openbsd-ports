@@ -10,7 +10,7 @@ the stricter upload query that only selects committed preparation.
 Index: tests/AgentTests/SQLiteTests.hs
 --- tests/AgentTests/SQLiteTests.hs.orig
 +++ tests/AgentTests/SQLiteTests.hs
-@@ -20,6 +20,7 @@
+@@ -20,6 +20,7 @@ import Control.Concurrent.MVar
  import Control.Concurrent.MVar
  import Control.Concurrent.STM
  import Control.Exception (SomeException)

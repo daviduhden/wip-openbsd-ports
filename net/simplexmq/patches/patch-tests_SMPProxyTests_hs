@@ -13,7 +13,7 @@ the symmetric test traffic previously hid an ACK sent on the opposite peer.
 Index: tests/SMPProxyTests.hs
 --- tests/SMPProxyTests.hs.orig
 +++ tests/SMPProxyTests.hs
-@@ -170,63 +170,63 @@ smpProxyTests = do
+@@ -170,63 +170,63 @@ deliverMessageViaProxy :: (C.AlgorithmI a, C.AuthAlgor
  deliverMessageViaProxy :: (C.AlgorithmI a, C.AuthAlgorithm a) => SMPServer -> SMPServer -> C.SAlgorithm a -> ByteString -> ByteString -> IO ()
  deliverMessageViaProxy proxyServ relayServ alg msg msg' = deliverMessagesViaProxy proxyServ relayServ alg [msg] [msg']
  

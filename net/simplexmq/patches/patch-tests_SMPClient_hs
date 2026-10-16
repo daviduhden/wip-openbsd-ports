@@ -16,7 +16,7 @@ Keep the shutdown watchdog effective, including the synchronous killThread call.
 Index: tests/SMPClient.hs
 --- tests/SMPClient.hs.orig
 +++ tests/SMPClient.hs
-@@ -16,6 +16,7 @@
+@@ -16,6 +16,7 @@ module SMPClient where
  module SMPClient where
  
  import Control.Monad

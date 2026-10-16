@@ -5,7 +5,7 @@ Check that catchAll_ handles ordinary failures and rethrows cancellation.
 Index: tests/CoreTests/UtilTests.hs
 --- tests/CoreTests/UtilTests.hs.orig
 +++ tests/CoreTests/UtilTests.hs
-@@ -3,17 +3,48 @@
+@@ -3,17 +3,48 @@ module CoreTests.UtilTests where
  module CoreTests.UtilTests where
 
  import AgentTests.FunctionalAPITests ()

@@ -6,7 +6,7 @@ is always 32 bytes, so building the key cannot fail.
 Index: src/Simplex/Messaging/Crypto/Lazy.hs
 --- src/Simplex/Messaging/Crypto/Lazy.hs.orig
 +++ src/Simplex/Messaging/Crypto/Lazy.hs
-@@ -208,7 +208,7 @@
+@@ -208,7 +208,7 @@ kcbInit (KEMHybridSecret k) (CbNonce nonce) = sbInit_
  {-# INLINE kcbInit #-}
  
  sbInit_ :: ByteArrayAccess key => key -> ByteString -> Either CryptoError SbState

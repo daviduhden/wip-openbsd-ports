@@ -10,7 +10,7 @@ the tests do not require root solely for low-port binding.
 Index: tests/CLITests.hs
 --- tests/CLITests.hs.orig
 +++ tests/CLITests.hs
-@@ -76,6 +76,14 @@ fileCfgPath = "tests/tmp/cli/etc/opt/sim
+@@ -76,6 +76,14 @@ fileLogPath :: FilePath
  fileLogPath :: FilePath
  fileLogPath = "tests/tmp/cli/etc/var/simplex-files"
  

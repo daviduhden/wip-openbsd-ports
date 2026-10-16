@@ -5,7 +5,7 @@ conversion for stopped-child polling.
 Index: brush-core/src/sys/unix/signal.rs
 --- brush-core/src/sys/unix/signal.rs.orig
 +++ brush-core/src/sys/unix/signal.rs
-@@ -92,7 +92,7 @@ pub(crate) fn poll_for_stopped_children() -> Result<bool, error::Error> {
+@@ -92,7 +92,7 @@ pub(crate) fn poll_for_stopped_children() -> Result<bo
      Ok(found_stopped)
  }
  

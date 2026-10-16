@@ -8,7 +8,7 @@ assertions are unchanged.
 Index: src/Simplex/Chat/Store/SQLite/Migrations/chat_schema.sql
 --- src/Simplex/Chat/Store/SQLite/Migrations/chat_schema.sql.orig
 +++ src/Simplex/Chat/Store/SQLite/Migrations/chat_schema.sql
-@@ -552,7 +552,7 @@
+@@ -552,7 +552,7 @@ CREATE TABLE settings(
    created_at TEXT NOT NULL DEFAULT(datetime('now')),
    updated_at TEXT NOT NULL DEFAULT(datetime('now'))
  ) STRICT;

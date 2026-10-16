@@ -10,7 +10,7 @@ cancels this thread normally.
 Index: src/Simplex/Messaging/Server.hs
 --- src/Simplex/Messaging/Server.hs.orig
 +++ src/Simplex/Messaging/Server.hs
-@@ -688,7 +688,12 @@ smpServer started cfg@ServerConfig {tran
+@@ -688,7 +688,12 @@ smpServer started cfg@ServerConfig {transports, transp
          ts <- getCurrentTime
          sm <- getServerMetrics st ss rtsOpts
          rtm <- getRealTimeMetrics env

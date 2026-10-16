@@ -3,7 +3,7 @@ Avoid ambiguous ByteArray conversions in XFTP web tests with GHC 9.10.
 Index: tests/XFTPWebTests.hs
 --- tests/XFTPWebTests.hs.orig
 +++ tests/XFTPWebTests.hs
-@@ -54,6 +54,9 @@ import SMPAgentClient (agentCfg, initAge
+@@ -54,6 +54,9 @@ import XFTPCLI (recipientFiles, senderFiles, testBrack
  import XFTPCLI (recipientFiles, senderFiles, testBracket)
  import qualified Simplex.Messaging.Crypto.File as CF
  

@@ -11,7 +11,7 @@ Use loopback for this local pairing too, retaining TLS and encrypted packets.
 Index: tests/RemoteControl.hs
 --- tests/RemoteControl.hs.orig
 +++ tests/RemoteControl.hs
-@@ -8,7 +8,8 @@
+@@ -8,7 +8,8 @@ module RemoteControl where
  module RemoteControl where
  
  import AgentTests.FunctionalAPITests (runRight)

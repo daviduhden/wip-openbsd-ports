@@ -12,7 +12,7 @@ Use base bracket for network cleanup: UnliftIO.bracket disables TLS.bye's intern
 Index: src/Simplex/Messaging/Transport/Client.hs
 --- src/Simplex/Messaging/Transport/Client.hs.orig
 +++ src/Simplex/Messaging/Transport/Client.hs
-@@ -64,6 +64,7 @@ import Simplex.Messaging.Util (bshow, ca
+@@ -64,6 +64,7 @@ import System.IO.Error
  import System.IO.Error
  import Text.Read (readMaybe)
  import UnliftIO.Exception (IOException)

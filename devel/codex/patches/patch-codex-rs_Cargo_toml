@@ -9,7 +9,7 @@ modify.
 Index: codex-rs/Cargo.toml
 --- codex-rs/Cargo.toml.orig
 +++ codex-rs/Cargo.toml
-@@ -320,12 +320,12 @@ codex-windows-sandbox-test-support = { path = "windows
+@@ -320,12 +320,12 @@ core_test_support = { path = "core/tests/common" }
  core_test_support = { path = "core/tests/common" }
  
  # External

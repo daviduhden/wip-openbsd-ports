@@ -3,7 +3,7 @@ Pattern match the optional password hash instead of using list unzip on Maybe.
 Index: src/Simplex/Chat/Store/Profiles.hs
 --- src/Simplex/Chat/Store/Profiles.hs.orig
 +++ src/Simplex/Chat/Store/Profiles.hs
-@@ -294,7 +294,9 @@ updateUserPrivacy db User {userId, showN
+@@ -294,7 +294,9 @@ updateUserPrivacy db User {userId, showNtfs, viewPwdHa
      |]
      (hashSalt viewPwdHash :. (BI showNtfs, userId))
    where

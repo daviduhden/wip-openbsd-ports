@@ -13,7 +13,7 @@ chat_item_id tie-break as the rest of the store.
 Index: src/Simplex/Chat/Store/Messages.hs
 --- src/Simplex/Chat/Store/Messages.hs.orig
 +++ src/Simplex/Chat/Store/Messages.hs
-@@ -806,7 +806,7 @@
+@@ -806,7 +806,7 @@ findDirectChatPreviews_ db User {userId} pagination cl
              SELECT chat_item_id
              FROM chat_items ci
              WHERE ci.user_id = ? AND ci.contact_id = ct.contact_id

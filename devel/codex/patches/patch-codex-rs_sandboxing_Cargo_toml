@@ -6,7 +6,7 @@ executable with getexecpath(3), which first appeared in OpenBSD 8.0.
 Index: codex-rs/sandboxing/Cargo.toml
 --- codex-rs/sandboxing/Cargo.toml.orig
 +++ codex-rs/sandboxing/Cargo.toml
-@@ -24,6 +24,7 @@ codex-utils-pty = { workspace = true }
+@@ -24,6 +24,7 @@ codex-windows-sandbox = { workspace = true }
  codex-windows-sandbox = { workspace = true }
  dunce = { workspace = true }
  libc = { workspace = true }

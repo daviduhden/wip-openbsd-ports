@@ -31,7 +31,7 @@ exception terminates the server and makes the client fail with TLS EOF.
 Index: tests/ServerTests.hs
 --- tests/ServerTests.hs.orig
 +++ tests/ServerTests.hs
-@@ -33,12 +33,14 @@ import Data.Foldable (foldrM)
+@@ -33,12 +33,14 @@ import Data.Hashable (hash)
  import Data.Hashable (hash)
  import qualified Data.IntSet as IS
  import Data.List.NonEmpty (NonEmpty)

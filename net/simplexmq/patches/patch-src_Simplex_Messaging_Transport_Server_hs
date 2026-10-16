@@ -17,7 +17,7 @@ Unmask handler bodies and keep TLS/socket cleanup interruptible.
 Index: src/Simplex/Messaging/Transport/Server.hs
 --- src/Simplex/Messaging/Transport/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/Server.hs
-@@ -32,6 +32,8 @@ module Simplex.Messaging.Transport.Serve
+@@ -32,6 +32,8 @@ where
  where
  
  import Control.Applicative ((<|>))

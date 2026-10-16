@@ -17,7 +17,7 @@ interactive request mode when creating a contact-link reply queue.
 Index: src/Simplex/Messaging/Agent.hs
 --- src/Simplex/Messaging/Agent.hs.orig
 +++ src/Simplex/Messaging/Agent.hs
-@@ -41,6 +41,7 @@
+@@ -41,6 +41,7 @@ module Simplex.Messaging.Agent
      getSMPAgentClient,
      getSMPAgentClient_,
      disconnectAgentClient,

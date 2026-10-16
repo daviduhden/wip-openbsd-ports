@@ -9,7 +9,7 @@ Unmask the transport thread while retaining synchronous cancellation and complet
 Index: src/Simplex/Messaging/Client.hs
 --- src/Simplex/Messaging/Client.hs.orig
 +++ src/Simplex/Messaging/Client.hs
-@@ -129,7 +129,7 @@ module Simplex.Messaging.Client
+@@ -129,7 +129,7 @@ where
  where
  
  import Control.Applicative ((<|>))

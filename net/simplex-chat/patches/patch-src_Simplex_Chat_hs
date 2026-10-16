@@ -3,7 +3,7 @@ Track controller startup jobs and serialize its start/stop lifetime.
 Index: src/Simplex/Chat.hs
 --- src/Simplex/Chat.hs.orig
 +++ src/Simplex/Chat.hs
-@@ -179,6 +179,8 @@
+@@ -179,6 +179,8 @@ newChatController
          inputQ <- newTBQueueIO tbqSize
          outputQ <- newTBQueueIO tbqSize
          subscriptionMode <- newTVarIO SMSubscribe

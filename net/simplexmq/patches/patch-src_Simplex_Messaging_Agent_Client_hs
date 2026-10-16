@@ -10,7 +10,7 @@ local XFTP completion worker in worker diagnostics.
 Index: src/Simplex/Messaging/Agent/Client.hs
 --- src/Simplex/Messaging/Agent/Client.hs.orig
 +++ src/Simplex/Messaging/Agent/Client.hs
-@@ -195,7 +195,7 @@ where
+@@ -195,7 +195,7 @@ import Control.Applicative ((<|>))
  import Control.Applicative ((<|>))
  import Control.Concurrent (ThreadId, killThread)
  import Control.Concurrent.Async (Async, uninterruptibleCancel)

@@ -24,7 +24,7 @@ baseline cannot discard command echoes or subscription events.
 Index: tests/ChatClient.hs
 --- tests/ChatClient.hs.orig
 +++ tests/ChatClient.hs
-@@ -84,7 +84,8 @@
+@@ -84,7 +84,8 @@ import Data.ByteArray (ScrubbedBytes)
  import Data.ByteArray (ScrubbedBytes)
  import qualified Data.Map.Strict as M
  import Simplex.Messaging.Agent.Client (agentClientStore)

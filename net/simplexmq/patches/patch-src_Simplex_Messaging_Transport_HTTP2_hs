@@ -5,7 +5,7 @@ with qualified field selectors.
 Index: src/Simplex/Messaging/Transport/HTTP2.hs
 --- src/Simplex/Messaging/Transport/HTTP2.hs.orig
 +++ src/Simplex/Messaging/Transport/HTTP2.hs
-@@ -19,7 +19,7 @@ import Data.Default (def)
+@@ -19,7 +19,7 @@ import Data.Maybe (fromMaybe)
  import Data.Maybe (fromMaybe)
  import Foreign (mallocBytes)
  import Network.HPACK (BufferSize)

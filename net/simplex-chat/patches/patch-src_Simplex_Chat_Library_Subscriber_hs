@@ -11,7 +11,7 @@ and group members, so readers observing completion see completed history.
 Index: src/Simplex/Chat/Library/Subscriber.hs
 --- src/Simplex/Chat/Library/Subscriber.hs.orig
 +++ src/Simplex/Chat/Library/Subscriber.hs
-@@ -624,7 +624,6 @@
+@@ -624,7 +624,6 @@ processAgentMessageConn cxt user@User {userId} corrId
                ct' = ct {activeConn = Just conn'} :: Contact
            -- [incognito] print incognito profile used for this contact
            incognitoProfile <- forM customUserProfileId $ \profileId -> withStore (\db -> getProfileById db userId profileId)

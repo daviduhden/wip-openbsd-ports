@@ -5,7 +5,7 @@ not wait for finalizers to finish.
 Index: tests/Bots/DirectoryTests.hs
 --- tests/Bots/DirectoryTests.hs.orig
 +++ tests/Bots/DirectoryTests.hs
-@@ -10,8 +10,9 @@
+@@ -10,8 +10,9 @@ import ChatTests.DBUtils
  import ChatTests.DBUtils
  import ChatTests.Groups (memberJoinChannel, prepareChannel1Relay)
  import ChatTests.Utils

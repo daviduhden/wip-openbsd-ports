@@ -4,7 +4,7 @@ can now wait for cancellation before closing or replacing the chat store.
 Index: src/Simplex/Chat/Library/Internal.hs
 --- src/Simplex/Chat/Library/Internal.hs.orig
 +++ src/Simplex/Chat/Library/Internal.hs
-@@ -107,7 +107,8 @@
+@@ -107,7 +107,8 @@ import Simplex.Messaging.Version
  import Simplex.Messaging.Version
  import System.FilePath (takeFileName, (</>))
  import System.IO (Handle, IOMode (..), hFlush)

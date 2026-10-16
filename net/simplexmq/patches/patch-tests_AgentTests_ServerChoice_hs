@@ -6,7 +6,7 @@ threads.
 Index: tests/AgentTests/ServerChoice.hs
 --- tests/AgentTests/ServerChoice.hs.orig
 +++ tests/AgentTests/ServerChoice.hs
-@@ -16,14 +16,13 @@ import Simplex.Messaging.Agent.Env.SQLit
+@@ -16,14 +16,13 @@ import Simplex.Messaging.Client (defaultNetworkConfig)
  import Simplex.Messaging.Client (defaultNetworkConfig)
  import Simplex.Messaging.Protocol
  import Test.Hspec hiding (fit, it)

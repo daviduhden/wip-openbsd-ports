@@ -3,7 +3,7 @@ Replace random's removed genByteString helper with a small local equivalent.
 Index: src/Simplex/Messaging/Server/MsgStore/Journal.hs
 --- src/Simplex/Messaging/Server/MsgStore/Journal.hs.orig
 +++ src/Simplex/Messaging/Server/MsgStore/Journal.hs
-@@ -57,6 +57,7 @@ import Control.Logger.Simple
+@@ -57,6 +57,7 @@ import Control.Monad
  import Control.Monad
  import Control.Monad.Trans.Except
  import qualified Data.Attoparsec.ByteString.Char8 as A

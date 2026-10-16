@@ -5,7 +5,7 @@ report setsockopt failures with their actual errno.
 Index: src/Simplex/RemoteControl/Discovery/Multicast.hsc
 --- src/Simplex/RemoteControl/Discovery/Multicast.hsc.orig
 +++ src/Simplex/RemoteControl/Discovery/Multicast.hsc
-@@ -1,8 +1,10 @@
+@@ -1,8 +1,10 @@ module Simplex.RemoteControl.Discovery.Multicast
  module Simplex.RemoteControl.Discovery.Multicast
 -  ( setMembership
 +  ( setMembership,

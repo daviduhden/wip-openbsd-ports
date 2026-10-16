@@ -4,7 +4,7 @@ turning exact 10ms bucket assertions into runtime failures.
 Index: tests/CoreTests/RetryIntervalTests.hs
 --- tests/CoreTests/RetryIntervalTests.hs.orig
 +++ tests/CoreTests/RetryIntervalTests.hs
-@@ -11,6 +11,15 @@ import Simplex.Messaging.Agent.RetryInte
+@@ -11,6 +11,15 @@ import Test.Hspec hiding (fit, it)
  import Test.Hspec hiding (fit, it)
  import Util
  

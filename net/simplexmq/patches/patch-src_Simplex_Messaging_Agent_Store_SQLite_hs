@@ -5,7 +5,7 @@ cannot leave a freed handle marked open or race a second close.
 Index: src/Simplex/Messaging/Agent/Store/SQLite.hs
 --- src/Simplex/Messaging/Agent/Store/SQLite.hs.orig
 +++ src/Simplex/Messaging/Agent/Store/SQLite.hs
-@@ -44,7 +44,7 @@
+@@ -44,7 +44,7 @@ where
 
  import Control.Concurrent.MVar
  import Control.Concurrent.STM

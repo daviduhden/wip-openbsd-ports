@@ -5,7 +5,7 @@ over user-managed packages; it never opts into the internal release updater.
 Index: codex-rs/app-server-daemon/src/managed_install.rs
 --- codex-rs/app-server-daemon/src/managed_install.rs.orig
 +++ codex-rs/app-server-daemon/src/managed_install.rs
-@@ -14,6 +14,14 @@ use tokio::fs;
+@@ -14,6 +14,14 @@ use tokio::process::Command;
  use tokio::process::Command;
  use tokio::time::timeout;
  

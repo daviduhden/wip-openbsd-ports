@@ -4,7 +4,7 @@ Keep upstream sucmd configuration and its save/truncate call sites intact.
 Index: internal/config/settings.go
 --- internal/config/settings.go.orig
 +++ internal/config/settings.go
-@@ -128,7 +128,7 @@
+@@ -128,7 +128,7 @@ var DefaultGlobalOnlySettings = map[string]any{
  	"pluginrepos":    []string{},
  	"savehistory":    true,
  	"scrollbarchar":  "|",

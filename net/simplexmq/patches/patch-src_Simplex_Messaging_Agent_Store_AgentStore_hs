@@ -8,7 +8,7 @@ after restart. Only select chunks for upload after preparation is committed.
 Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
 --- src/Simplex/Messaging/Agent/Store/AgentStore.hs.orig
 +++ src/Simplex/Messaging/Agent/Store/AgentStore.hs
-@@ -132,6 +132,7 @@ module Simplex.Messaging.Agent.Store.Age
+@@ -132,6 +132,7 @@ module Simplex.Messaging.Agent.Store.AgentStore
      getSndMsgViaRcpt,
      updateSndMsgRcpt,
      getPendingQueueMsg,

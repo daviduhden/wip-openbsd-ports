@@ -3,7 +3,7 @@ Report the OpenBSD backend when classifying sandbox denials.
 Index: codex-rs/sandboxing/src/violation.rs
 --- codex-rs/sandboxing/src/violation.rs.orig
 +++ codex-rs/sandboxing/src/violation.rs
-@@ -48,6 +48,7 @@ pub enum SandboxViolationEvent {
+@@ -48,6 +48,7 @@ pub enum SandboxViolationBackend {
  pub enum SandboxViolationBackend {
      LinuxSandbox,
      ManagedNetworkProxy,

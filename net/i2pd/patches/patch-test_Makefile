@@ -4,7 +4,7 @@ use the header-only implementation from the packaged Boost version.
 Index: tests/Makefile
 --- tests/Makefile.orig
 +++ tests/Makefile
-@@ -18,7 +18,6 @@ ifneq (, $(findstring mingw, $(SYS))$(findstring windo
+@@ -18,7 +18,6 @@ endif
  endif
  
  LDLIBS = \

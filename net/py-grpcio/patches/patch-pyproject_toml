@@ -3,7 +3,7 @@ relax cython version spec
 Index: pyproject.toml
 --- pyproject.toml.orig
 +++ pyproject.toml
-@@ -16,7 +16,7 @@
+@@ -16,7 +16,7 @@ requires = [
  requires = [
      "setuptools>=77.0.1",
      "wheel",

@@ -4,7 +4,7 @@ The upstream client already falls back to ordinary HTTP downloads.
 Index: setup.py
 --- setup.py.orig
 +++ setup.py
-@@ -18,7 +18,7 @@
+@@ -18,7 +18,7 @@ install_requires = [
      "click>=8.4.2,<9.0.0",  # 8.4.0/8.4.1 shipped a broken fish completion script
      "filelock>=3.10.0",
      "fsspec>=2023.5.0",

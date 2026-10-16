@@ -4,7 +4,7 @@ selection when displaying existing creation options.
 Index: Main/Forms/VolumeFormatOptionsWizardPage.cpp
 --- Main/Forms/VolumeFormatOptionsWizardPage.cpp.orig
 +++ Main/Forms/VolumeFormatOptionsWizardPage.cpp
-@@ -52,6 +52,8 @@
+@@ -52,6 +52,8 @@ namespace VeraCrypt
  			FilesystemTypeChoice->Append (L"APFS",			(void *) VolumeCreationOptions::FilesystemType::APFS);
  #elif defined (TC_FREEBSD) || defined (TC_SOLARIS)
  		FilesystemTypeChoice->Append (L"UFS",				(void *) VolumeCreationOptions::FilesystemType::UFS);

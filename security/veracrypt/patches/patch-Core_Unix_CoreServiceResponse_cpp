@@ -2,7 +2,7 @@ Run OpenBSD FFS formatting through the elevated core service.
 
 --- Core/Unix/CoreServiceResponse.cpp.orig
 +++ Core/Unix/CoreServiceResponse.cpp
-@@ -100,6 +100,17 @@
+@@ -100,6 +100,17 @@ namespace VeraCrypt
  	}
  #endif
  

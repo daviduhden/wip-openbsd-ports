@@ -4,7 +4,7 @@ PAM_DATA_SILENT fallback used on FreeBSD.
 Index: src/pam/mod.rs
 --- src/pam/mod.rs.orig
 +++ src/pam/mod.rs
-@@ -22,13 +22,14 @@
+@@ -22,13 +22,14 @@ mod securemem;
  
  #[cfg_attr(target_os = "linux", path = "sys_linuxpam.rs")]
  #[cfg_attr(target_os = "freebsd", path = "sys_openpam.rs")]

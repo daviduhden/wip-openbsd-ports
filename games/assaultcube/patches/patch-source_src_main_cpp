@@ -7,7 +7,7 @@ CRC helper, allowing the game to link against the system ENet library.
 Index: source/src/main.cpp
 --- source/src/main.cpp.orig
 +++ source/src/main.cpp
-@@ -247,9 +247,9 @@
+@@ -247,9 +247,9 @@ void writepngchunk(stream *f, const char *type, const
      if(data) f->write(data, len);
  
      uint crc = crc32(0, Z_NULL, 0);

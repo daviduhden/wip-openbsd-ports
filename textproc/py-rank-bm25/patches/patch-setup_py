@@ -1,7 +1,7 @@
 Index: setup.py
 --- setup.py.orig
 +++ setup.py
-@@ -2,7 +2,7 @@ from setuptools import setup
+@@ -2,7 +2,7 @@ import io
  import io
  import os
  

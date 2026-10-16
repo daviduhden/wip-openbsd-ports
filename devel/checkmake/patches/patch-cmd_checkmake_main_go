@@ -4,7 +4,7 @@ goversion linker value.
 Index: cmd/checkmake/main.go
 --- cmd/checkmake/main.go.orig
 +++ cmd/checkmake/main.go
-@@ -7,6 +7,7 @@
+@@ -7,6 +7,7 @@ import (
  	"log"
  	"os"
  	"path/filepath"

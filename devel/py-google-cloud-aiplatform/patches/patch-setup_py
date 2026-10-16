@@ -2,7 +2,7 @@ Use native namespace packages; legacy .pth files mask other google packages.
 
 --- setup.py.orig
 +++ setup.py
-@@ -310,7 +310,6 @@
+@@ -310,7 +310,6 @@ setuptools.setup(
              "tb-gcp-uploader=google.cloud.aiplatform.tensorboard.uploader_main:run_main"
          ],
      },

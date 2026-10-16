@@ -5,7 +5,7 @@ self-updates to pkg_add instead of replacing the installed Python package.
 Index: mbake/cli.py
 --- mbake/cli.py.orig
 +++ mbake/cli.py
-@@ -5,6 +5,7 @@
+@@ -5,6 +5,7 @@ import os
  import os
  import re
  import subprocess

@@ -5,7 +5,7 @@ recipes work with make(1).
 Index: demos/lib/Exm/wml/Makefile.am
 --- demos/lib/Exm/wml/Makefile.am.orig
 +++ demos/lib/Exm/wml/Makefile.am
-@@ -1,4 +1,7 @@
+@@ -1,4 +1,7 @@ MAINTAINERCLEANFILES = Makefile.in
  MAINTAINERCLEANFILES = Makefile.in
 +
 +# GNU make defines RM; BSD make does not.

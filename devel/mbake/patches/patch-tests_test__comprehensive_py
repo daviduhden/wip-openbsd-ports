@@ -4,7 +4,7 @@ including gmake on OpenBSD.
 Index: tests/test_comprehensive.py
 --- tests/test_comprehensive.py.orig
 +++ tests/test_comprehensive.py
-@@ -6,6 +6,7 @@
+@@ -6,6 +6,7 @@ import time
  import time
  from pathlib import Path
  

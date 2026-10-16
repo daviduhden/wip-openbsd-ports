@@ -2,7 +2,7 @@ Use the Python mock implementation without deprecated asyncio calls.
 
 --- tests/unit/test_bucket.py.orig
 +++ tests/unit/test_bucket.py
-@@ -15,7 +15,7 @@
+@@ -15,7 +15,7 @@ import datetime
  import datetime
  import unittest
  

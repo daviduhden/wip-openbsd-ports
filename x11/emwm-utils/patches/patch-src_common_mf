@@ -4,7 +4,7 @@ non-setuid privilege model.  The package list later applies setgid auth.
 Index: src/common.mf
 --- src/common.mf.orig
 +++ src/common.mf
-@@ -35,7 +35,7 @@ XmToolbox.ad: XmToolbox.ad.src
+@@ -35,7 +35,7 @@ common_install:
  common_install:
  	install -m755 xmsession $(PREFIX)/bin/xmsession
  	install -m755 xmtoolbox $(PREFIX)/bin/xmtoolbox

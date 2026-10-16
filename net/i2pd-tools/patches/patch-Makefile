@@ -5,7 +5,7 @@ OpenBSD while retaining it for other platforms.
 Index: Makefile
 --- Makefile.orig
 +++ Makefile
-@@ -21,6 +21,8 @@
+@@ -21,6 +21,8 @@ else ifeq ($(UNAME),Darwin)
  	CXXFLAGS += -g
  else ifeq ($(UNAME),FreeBSD)
  	CXXFLAGS += -g

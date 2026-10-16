@@ -4,7 +4,7 @@ rather than the upstream /usr/bin path.
 Index: Setup/FreeBSD/veracrypt.desktop
 --- Setup/FreeBSD/veracrypt.desktop.orig
 +++ Setup/FreeBSD/veracrypt.desktop
-@@ -4,7 +4,7 @@
+@@ -4,7 +4,7 @@ GenericName=VeraCrypt volume manager
  GenericName=VeraCrypt volume manager
  Comment=Create and mount VeraCrypt encrypted volumes
  Icon=veracrypt

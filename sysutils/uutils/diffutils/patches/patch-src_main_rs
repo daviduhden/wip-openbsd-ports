@@ -4,7 +4,7 @@ addition to the upstream names.
 Index: src/main.rs
 --- src/main.rs.orig
 +++ src/main.rs
-@@ -66,7 +66,9 @@
+@@ -66,7 +66,9 @@ fn main() -> ExitCode {
              .cloned()
              .unwrap_or_else(|| second_arg_error(exe_name))
      } else {

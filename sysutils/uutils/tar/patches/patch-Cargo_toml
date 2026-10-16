@@ -4,7 +4,7 @@ uutests instead of resolving them from the network at build time.
 Index: Cargo.toml
 --- Cargo.toml.orig
 +++ Cargo.toml
-@@ -43,8 +43,8 @@
+@@ -43,8 +43,8 @@ tar = "0.4"
  tar = "0.4"
  tempfile = "3.10.1"
  thiserror = "2.0.3"

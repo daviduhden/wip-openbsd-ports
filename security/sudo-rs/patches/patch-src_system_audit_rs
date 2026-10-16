@@ -5,7 +5,7 @@ the faccessat implementation for other production targets.
 Index: src/system/audit.rs
 --- src/system/audit.rs.orig
 +++ src/system/audit.rs
-@@ -347,6 +347,7 @@
+@@ -347,6 +347,7 @@ fn open_at(parent: BorrowedFd, file_name: &CStr, creat
      }
  }
  

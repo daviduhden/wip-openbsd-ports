@@ -4,7 +4,7 @@ launcher, retaining sudo diagnostics on other platforms.
 Index: Main/UserInterface.cpp
 --- Main/UserInterface.cpp.orig
 +++ Main/UserInterface.cpp
-@@ -40,7 +40,11 @@
+@@ -40,7 +40,11 @@ namespace VeraCrypt
  		public:
  		virtual void operator() (string &str)
  		{

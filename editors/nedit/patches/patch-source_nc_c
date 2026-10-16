@@ -4,7 +4,7 @@ conversion.
 Index: source/nc.c
 --- source/nc.c.orig
 +++ source/nc.c
-@@ -110,15 +110,15 @@
+@@ -110,15 +110,15 @@ static const char cmdLineHelp[] =
  #ifdef VMS
  "[Sorry, no on-line help available.]\n"; /* Why is that ? */
  #else

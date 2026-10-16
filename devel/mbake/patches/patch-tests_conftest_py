@@ -4,7 +4,7 @@ so OpenBSD tests do not invoke base BSD make with GNU options.
 Index: tests/conftest.py
 --- tests/conftest.py.orig
 +++ tests/conftest.py
-@@ -5,6 +5,7 @@
+@@ -5,6 +5,7 @@ from pathlib import Path
  from pathlib import Path
  
  import pytest

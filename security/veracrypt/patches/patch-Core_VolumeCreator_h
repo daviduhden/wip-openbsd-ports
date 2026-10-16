@@ -4,7 +4,7 @@ for its formatter.
 Index: Core/VolumeCreator.h
 --- Core/VolumeCreator.h.orig
 +++ Core/VolumeCreator.h
-@@ -55,7 +55,8 @@
+@@ -55,7 +55,8 @@ namespace VeraCrypt
  				Btrfs,
  				MacOsExt,
  				APFS,

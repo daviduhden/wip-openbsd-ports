@@ -2,7 +2,7 @@ Use current Starlette, HTTPX and Trio APIs in tests.
 
 --- tests/test_manager.py.orig
 +++ tests/test_manager.py
-@@ -14,6 +14,14 @@
+@@ -14,6 +14,14 @@ from asgi_lifespan._types import ASGIApp, Message, Rec
  
  from . import concurrency
  from .compat import ExceptionGroup

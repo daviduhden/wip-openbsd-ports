@@ -4,7 +4,7 @@ silently selecting another backend when gevent initialization fails.
 Index: cli/onionshare_cli/web/web.py
 --- cli/onionshare_cli/web/web.py.orig
 +++ cli/onionshare_cli/web/web.py
-@@ -167,17 +167,11 @@
+@@ -167,17 +167,11 @@ class Web:
              self.website_mode = WebsiteModeWeb(self.common, self)
          elif self.mode == "chat":
              if self.common.verbose:

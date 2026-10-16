@@ -5,7 +5,7 @@ run as the invoking user.
 Index: src/xmsm.1
 --- src/xmsm.1.orig
 +++ src/xmsm.1
-@@ -133,9 +133,9 @@ and black bits in a darker shade of that color.
+@@ -133,9 +133,9 @@ xmsm responds to SIGUSR1 by engaging screen lock.
  xmsm responds to SIGUSR1 by engaging screen lock.
  xmsm responds to SIGUSR2 by displaying logout/shutdown options.
  .SH CAVEATS

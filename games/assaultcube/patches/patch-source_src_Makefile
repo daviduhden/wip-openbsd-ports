@@ -8,7 +8,7 @@ selects USE_SYSTEM_ENET.
 Index: source/src/Makefile
 --- source/src/Makefile.orig
 +++ source/src/Makefile
-@@ -33,7 +33,9 @@
+@@ -33,7 +33,9 @@ ifeq ($(ACDEBUG),yes)
  	override CXXFLAGS+= -g -D_DEBUG
  endif
  

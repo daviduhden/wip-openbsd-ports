@@ -5,7 +5,7 @@ supplied by ports.
 Index: desktop/pyproject.toml
 --- desktop/pyproject.toml.orig
 +++ desktop/pyproject.toml
-@@ -6,9 +6,9 @@
+@@ -6,9 +6,9 @@ license = "GPLv3+"
  license = "GPLv3+"
  
  [tool.poetry.dependencies]

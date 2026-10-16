@@ -4,7 +4,7 @@ loaders for common formats which XImaging does not handle internally.
 Index: src/XImaging.ad
 --- src/XImaging.ad.orig
 +++ src/XImaging.ad
-@@ -26,6 +26,10 @@ XImaging*tileSizeList: 80,120,160
+@@ -26,6 +26,10 @@ XImaging*tileAspectRatio: 4:3
  XImaging*tileAspectRatio: 4:3
  
  

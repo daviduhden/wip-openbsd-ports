@@ -3,7 +3,7 @@ Find the packaged Fluent catalogs while preserving their upstream layout.
 Index: src/uucore/src/lib/mods/locale.rs
 --- src/uucore/src/lib/mods/locale.rs.orig
 +++ src/uucore/src/lib/mods/locale.rs
-@@ -675,6 +675,16 @@
+@@ -675,6 +675,16 @@ fn resolve_locales_dir_from_exe_dir(exe_dir: &Path, p:
  
      // 2. <prefix>/share/locales/<prog>
      if let Some(prefix) = exe_dir.parent() {

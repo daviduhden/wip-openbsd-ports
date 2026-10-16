@@ -3,7 +3,7 @@ Check bounds before accessing the keycaps table.
 Index: lib/Xm/VirtKeys.c
 --- lib/Xm/VirtKeys.c.orig
 +++ lib/Xm/VirtKeys.c
-@@ -514,10 +514,16 @@
+@@ -514,10 +514,16 @@ FindVirtKey(Display *dpy,
    XmDisplay     xmDisplay = (XmDisplay) XmGetXmDisplay( dpy);
    XmVKeyBinding keyBindings = xmDisplay->display.bindings;
    KeyCode       min_kcode;

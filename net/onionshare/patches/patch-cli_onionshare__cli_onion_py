@@ -5,7 +5,7 @@ silently turn a bridge connection into a direct connection.
 Index: cli/onionshare_cli/onion.py
 --- cli/onionshare_cli/onion.py.orig
 +++ cli/onionshare_cli/onion.py
-@@ -310,6 +310,18 @@
+@@ -310,6 +310,18 @@ class Onion(object):
              torrc_template = torrc_template.replace(
                  "{{socks_port}}", str(self.tor_socks_port)
              )

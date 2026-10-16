@@ -8,7 +8,7 @@ changes; the dependency set is unchanged.
 Index: go.mod
 --- go.mod.orig
 +++ go.mod
-@@ -1,6 +1,6 @@
+@@ -1,6 +1,6 @@ module github.com/charmbracelet/confettysh
  module github.com/charmbracelet/confettysh
  
 -go 1.18

@@ -3,7 +3,7 @@ Avoid overflowing the OpenBSD thread stack on deeply nested bridge JSON.
 Index: swival/python_bridge.py
 --- swival/python_bridge.py.orig
 +++ swival/python_bridge.py
-@@ -29,6 +29,7 @@
+@@ -29,6 +29,7 @@ ENV_VAR = "SWIVAL_PYTHON_BRIDGE"
  
  MAX_CALLS = 500
  MAX_REQUEST_BYTES = 1 << 20

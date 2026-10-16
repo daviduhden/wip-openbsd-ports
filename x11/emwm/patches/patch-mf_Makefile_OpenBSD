@@ -4,7 +4,7 @@ the platform definitions twice; common.mf already appends them.
 Index: mf/Makefile.OpenBSD
 --- mf/Makefile.OpenBSD.orig
 +++ mf/Makefile.OpenBSD
-@@ -8,10 +8,10 @@ APPLRESDIR = /usr/X11R6/lib/X11/app-defaults
+@@ -8,10 +8,10 @@ INCDIRS = -I/usr/X11R6/include -I/usr/local/include
  INCDIRS = -I/usr/X11R6/include -I/usr/local/include
  LIBDIRS = -L/usr/X11R6/lib -L/usr/local/lib
  

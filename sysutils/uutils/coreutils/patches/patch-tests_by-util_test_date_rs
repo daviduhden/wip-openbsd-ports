@@ -12,7 +12,7 @@ in case the suite is run as root.
 Index: tests/by-util/test_date.rs
 --- tests/by-util/test_date.rs.orig
 +++ tests/by-util/test_date.rs
-@@ -511,10 +511,19 @@
+@@ -511,10 +511,19 @@ fn test_date_format_literal() {
      new_ucmd!().arg("+%%N").succeeds().stdout_is("%N\n");
  }
  

@@ -5,7 +5,7 @@ flags, and remove the Linux/FreeBSD-only compilation guard.
 Index: src/system/mod.rs
 --- src/system/mod.rs.orig
 +++ src/system/mod.rs
-@@ -16,7 +16,9 @@
+@@ -16,7 +16,9 @@ use crate::{
  };
  use interface::{DeviceId, GroupId, ProcessId, UserId};
  pub use libc::PATH_MAX;

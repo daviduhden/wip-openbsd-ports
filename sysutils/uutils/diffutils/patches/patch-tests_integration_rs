@@ -3,7 +3,7 @@ Use FFS-compatible sparse files on OpenBSD without weakening the cmp fast-path t
 Index: tests/integration.rs
 --- tests/integration.rs.orig
 +++ tests/integration.rs
-@@ -809,11 +809,17 @@
+@@ -809,11 +809,17 @@ mod cmp {
          // validating the /dev/null optimization.
          let a_path = tmp_dir.path().join("a");
          let a = File::create(&a_path).unwrap();

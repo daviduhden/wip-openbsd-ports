@@ -3,7 +3,7 @@ race with io.Copy and can incorrectly report empty output on OpenBSD.
 
 --- pty.go.orig
 +++ pty.go
-@@ -40,14 +40,25 @@
+@@ -40,14 +40,25 @@ func executeCommand(config Config) (string, error) {
  	}
  
  	var out bytes.Buffer

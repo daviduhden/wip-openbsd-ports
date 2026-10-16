@@ -7,7 +7,7 @@ naming worker threads; retain pthread_setname_np elsewhere.
 Index: source/src/tools.cpp
 --- source/src/tools.cpp.orig
 +++ source/src/tools.cpp
-@@ -715,6 +715,9 @@
+@@ -715,6 +715,9 @@ bool glmatrixf::invert(const glmatrixf &m, float minde
      #include "SDL_thread.h"      // also fetches SDL_mutex.h
  #else
      #include <pthread.h>

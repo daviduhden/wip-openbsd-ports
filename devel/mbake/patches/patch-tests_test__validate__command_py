@@ -4,7 +4,7 @@ rather than requiring the literal executable name make.
 Index: tests/test_validate_command.py
 --- tests/test_validate_command.py.orig
 +++ tests/test_validate_command.py
-@@ -7,7 +7,7 @@
+@@ -7,7 +7,7 @@ import pytest
  import pytest
  from typer.testing import CliRunner
  

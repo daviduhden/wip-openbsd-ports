@@ -34,12 +34,10 @@ SEPARATE_BUILD =	Yes
 TEST_DEPENDS =		shells/bash
 MAKE_ENV +=		BASH_PATH=${LOCALBASE}/bin/bash
 
-post-extract:
-	# Patch the DIST_TUPLE'd ptyprocess tree before the cargo vendor metadata
-	# is generated from it, so the recorded checksums describe the patched
-	# files, and install the patched tree as the vendored crate.
-	patch -F 0 -d ${WRKDIST}/ptyprocess -p0 \
-		< ${FILESDIR}/patch-ptyprocess_openbsd
+post-patch:
+	# patches/patch-ptyprocess_src_lib_rs is applied by the framework to the
+	# tree fetched with DIST_TUPLE; vendor the patched result and generate its
+	# cargo metadata, so the recorded checksums describe the patched files.
 	mkdir -p ${MODCARGO_VENDOR_DIR}
 	rm -rf ${MODCARGO_VENDOR_DIR}/ptyprocess-${PTYPROCESS_V}
 	cp -R ${WRKDIST}/ptyprocess \

@@ -3,9 +3,9 @@ by opening the pty slave: like FreeBSD/macOS it has to call TIOCSCTTY (see
 login_tty(3)).  Add an OpenBSD get_slave_name based on ptsname(3) and route
 OpenBSD to the TIOCSCTTY branch of make_controlling_tty.
 
-Index: src/lib.rs
---- src/lib.rs.orig
-+++ src/lib.rs
+Index: ptyprocess/src/lib.rs
+--- ptyprocess/src/lib.rs.orig
++++ ptyprocess/src/lib.rs
 @@ -46,7 +46,7 @@
  use nix::fcntl::{fcntl, open, FcntlArg, FdFlag, OFlag};
  use nix::libc::{self, winsize, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO};

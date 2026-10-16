@@ -1,6 +1,6 @@
 COMMENT =	client library for models and datasets on Hugging Face
 
-MODPY_DISTV =	1.33.0
+MODPY_DISTV =	2.2.0
 DISTNAME =	huggingface_hub-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 

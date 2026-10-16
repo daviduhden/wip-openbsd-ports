@@ -1,6 +1,6 @@
 COMMENT =		lightweight ASGI library
 
-MODPY_DISTV =	1.7.0
+MODPY_DISTV =	1.8.0
 
 DISTNAME =	starlette-${MODPY_DISTV}
 PKGNAME =		py-${DISTNAME}

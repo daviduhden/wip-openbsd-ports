@@ -6184,10 +6184,10 @@ lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/__next.
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/__next._tree.txt
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/
-lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/AweViutHv6YjdT1kQNGNK/
-lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/AweViutHv6YjdT1kQNGNK/_buildManifest.js
-lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/AweViutHv6YjdT1kQNGNK/_clientMiddlewareManifest.js
-lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/AweViutHv6YjdT1kQNGNK/_ssgManifest.js
+lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/r6CCRnfRG8Km6eyz1MhIZ/
+lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/r6CCRnfRG8Km6eyz1MhIZ/_buildManifest.js
+lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/r6CCRnfRG8Km6eyz1MhIZ/_clientMiddlewareManifest.js
+lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/r6CCRnfRG8Km6eyz1MhIZ/_ssgManifest.js
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/chunks/
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/chunks/001c4i4-gztis.js
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/chunks/02erlqrgtvdvz.js

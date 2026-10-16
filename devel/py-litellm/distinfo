@@ -577,7 +577,7 @@ SHA256 (cargo/zerovec-0.11.6.tar.gz) = kPkRy8NZq2rxc3fSQiJfTXURmuyH6nEaiAmHsYzXs
 SHA256 (cargo/zerovec-derive-0.11.3.tar.gz) = Yl3EJcqw3KbcPDMZUG5lk9ywip84fqOyhNvVKpLEBVU=
 SHA256 (cargo/zlib-rs-0.6.7.tar.gz) = NLMdGI2daFpPnHtG1uNmMbBwWNLP4ZAmetzlTcIwvxI=
 SHA256 (cargo/zmij-1.0.23.tar.gz) = KWZtCrv60ePcTc9hRHMN06OrIlu72sgzGTRbG0TM/Bs=
-SHA256 (litellm-1.105.0.tar.gz) = 9K9nXkgLp88fQ8K/XkgFZLVH4OWNMeiPck2qCglnsGU=
+SHA256 (litellm-1.105.1.tar.gz) = 8aJ02wsrzHjDTtNMBt8sHc0NwDhGkZNoSSf2uyyrLZc=
 SIZE (cargo/adler2-2.0.1.tar.gz) = 13366
 SIZE (cargo/ahash-0.8.12.tar.gz) = 43413
 SIZE (cargo/aho-corasick-1.1.5.tar.gz) = 184315
@@ -1157,4 +1157,4 @@ SIZE (cargo/zerovec-0.11.6.tar.gz) = 128583
 SIZE (cargo/zerovec-derive-0.11.3.tar.gz) = 22115
 SIZE (cargo/zlib-rs-0.6.7.tar.gz) = 215740
 SIZE (cargo/zmij-1.0.23.tar.gz) = 28612
-SIZE (litellm-1.105.0.tar.gz) = 20320691
+SIZE (litellm-1.105.1.tar.gz) = 20321773

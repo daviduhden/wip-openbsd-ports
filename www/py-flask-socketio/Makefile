@@ -1,6 +1,6 @@
 COMMENT =	Socket.IO integration for Flask
 
-MODPY_DISTV =	5.7.1
+MODPY_DISTV =	5.7.0
 DISTNAME =	flask_socketio-${MODPY_DISTV}
 PKGNAME =	py-flask-socketio-${MODPY_DISTV}
 

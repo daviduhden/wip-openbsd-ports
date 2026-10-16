@@ -3,6 +3,8 @@ lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/__init__.py
 lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
+lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/${MODPY_PYCACHE}_arrow_query.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
+lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/${MODPY_PYCACHE}_arrow_query.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/${MODPY_PYCACHE}_helpers.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/${MODPY_PYCACHE}_helpers.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/${MODPY_PYCACHE}_http.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
@@ -51,6 +53,7 @@ lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/${MODPY_PYCACHE}t
 lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/${MODPY_PYCACHE}table.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/${MODPY_PYCACHE}version.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/${MODPY_PYCACHE}version.${MODPY_PYC_MAGIC_TAG}pyc
+lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/_arrow_query.py
 lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/_helpers.py
 lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/_http.py
 lib/python${MODPY_VERSION}/site-packages/google/cloud/bigquery/_job_helpers.py

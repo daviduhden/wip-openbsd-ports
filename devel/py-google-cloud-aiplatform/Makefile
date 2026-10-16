@@ -1,6 +1,6 @@
 COMMENT =	Vertex AI API client library
 
-MODPY_DISTV =	2.4.0
+MODPY_DISTV =	2.5.0
 DISTNAME =	google_cloud_aiplatform-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 

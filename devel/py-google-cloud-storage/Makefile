@@ -1,6 +1,6 @@
 COMMENT =	Google Cloud Storage API client library
 
-MODPY_DISTV =	3.17.0
+MODPY_DISTV =	3.17.1
 DISTNAME =	google_cloud_storage-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 

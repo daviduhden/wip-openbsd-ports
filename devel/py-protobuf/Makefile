@@ -1,6 +1,6 @@
 COMMENT =		Google data interchange format (protocol buffers)
 
-MODPY_DISTV =	6.33.6
+MODPY_DISTV =	7.36.2
 
 DISTNAME =	protobuf-${MODPY_DISTV}
 PKGNAME =		py-protobuf-${MODPY_DISTV}

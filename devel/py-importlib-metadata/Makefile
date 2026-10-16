@@ -1,6 +1,6 @@
 COMMENT =		library providing an API for accessing packages metadata
 
-MODPY_DISTV =	8.9.0
+MODPY_DISTV =	9.0.1
 DISTNAME =	importlib_metadata-${MODPY_DISTV}
 PKGNAME =		py-${DISTNAME}
 REVISION =       0

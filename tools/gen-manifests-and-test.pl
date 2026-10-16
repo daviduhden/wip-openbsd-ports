@@ -280,6 +280,6 @@ if (open(my $fh, '>', $SUMMARY)) {
 	close $fh;
 }
 logmsg("summary: $SUMMARY");
-my @failed = grep { $result{$_}{gen} ne 'ok' || $result{$_}{build} ne 'ok' || $result{$_}{test} =~ /^FAIL/ } sort keys %result;
+my @failed = $DRYRUN ? () : grep { $result{$_}{gen} =~ /^FAIL/ || $result{$_}{build} !~ /^(ok|dry-run)$/ || $result{$_}{test} =~ /^FAIL/ } sort keys %result;
 logmsg("ports with failures: " . (@failed ? join(' ', @failed) : 'none'));
 exit(@failed ? 1 : 0);

@@ -5,7 +5,7 @@ libraries when building through the depends CMake path on OpenBSD.
 Index: CMakeLists.txt
 --- CMakeLists.txt.orig
 +++ CMakeLists.txt
-@@ -96,7 +96,7 @@ enable_language(C ASM)
+@@ -96,7 +96,7 @@ set(CMAKE_C_STANDARD 11)
  set(CMAKE_C_STANDARD 11)
  set(CMAKE_C_STANDARD_REQUIRED ON)
  set(CMAKE_C_EXTENSIONS OFF)

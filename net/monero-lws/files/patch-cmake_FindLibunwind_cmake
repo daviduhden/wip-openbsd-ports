@@ -3,7 +3,7 @@ Do not add liblzma to libunwind on OpenBSD; base libunwind does not need it.
 Index: cmake/FindLibunwind.cmake
 --- cmake/FindLibunwind.cmake.orig
 +++ cmake/FindLibunwind.cmake
-@@ -23,6 +23,7 @@ if(NOT LIBUNWIND_LIBRARIES STREQUAL "LIB
+@@ -23,6 +23,7 @@ if(NOT LIBUNWIND_LIBRARIES STREQUAL "LIBUNWIND_LIBRARI
    endif()
  endif()
  

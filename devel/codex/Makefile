@@ -44,6 +44,7 @@ HOMEPAGE =		https://github.com/openai/codex
 # Apache 2.0
 PERMIT_PACKAGE =	Yes
 
+# uses pledge() and unveil()
 WANTLIB +=		${MODCARGO_WANTLIB} bz2 crypto dbus-1 execinfo lzma
 WANTLIB +=		m onig ssl util
 

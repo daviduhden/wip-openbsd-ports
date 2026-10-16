@@ -33,7 +33,7 @@ PORTHOME =	${WRKDIR}
 
 pre-build:
 	cd ${WRKSRC}; ${MODGO_CMD} mod edit -replace \
-	    github.com/AlecAivazis/survey/v2=${WRKDIR}/survey
+		github.com/AlecAivazis/survey/v2=${WRKDIR}/survey
 
 post-install:
 	${WRKDIR}/go/bin/gen-docs --doc-path ${PREFIX}/man/man1 --man-page

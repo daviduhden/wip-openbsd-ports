@@ -144,7 +144,7 @@ post-install:
 		mv ${PREFIX}/bin/codex ${PREFIX}/libexec/codex/bin/; \
 	fi
 	@if [ -f ${PREFIX}/bin/codex-code-mode-host ] && \
-	    [ ! -L ${PREFIX}/bin/codex-code-mode-host ]; then \
+		[ ! -L ${PREFIX}/bin/codex-code-mode-host ]; then \
 		mv ${PREFIX}/bin/codex-code-mode-host ${PREFIX}/libexec/codex/bin/; \
 	fi
 	ln -sf ../libexec/codex/bin/codex ${PREFIX}/bin/codex

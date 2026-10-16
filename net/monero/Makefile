@@ -53,13 +53,13 @@ WANTLIB += absl_vlog_config_internal
 COMPILER = base-clang
 MODULES = devel/cmake
 BUILD_DEPENDS = devel/ninja \
-		  devel/re2c
+		devel/re2c
 
 CONFIGURE_ARGS += -GNinja \
-		  -Wno-dev \
-		  -DDEPENDS=ON \
-		  -DMANUAL_SUBMODULES=ON \
-		  -DBUILD_DOCUMENTATION=OFF
+		-Wno-dev \
+		-DDEPENDS=ON \
+		-DMANUAL_SUBMODULES=ON \
+		-DBUILD_DOCUMENTATION=OFF
 
 LIB_DEPENDS = devel/abseil-cpp \
 		devel/boost \

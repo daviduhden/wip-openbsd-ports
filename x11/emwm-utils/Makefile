@@ -87,10 +87,10 @@ do-install:
 	for f in ${WRKDIR}/xc-core-hr/core-hr/cursors/*; do \
 		if test -L $$f; then \
 			ln -s $$(readlink $$f) \
-			    ${PREFIX}/share/icons/core-hr/cursors/$${f##*/}; \
+				${PREFIX}/share/icons/core-hr/cursors/$${f##*/}; \
 		else \
 			${INSTALL_DATA} $$f \
-			    ${PREFIX}/share/icons/core-hr/cursors/; \
+				${PREFIX}/share/icons/core-hr/cursors/; \
 		fi; \
 	done
 	${INSTALL_DATA_DIR} ${PREFIX}/share/examples/emwm/xmdlgicons/32px

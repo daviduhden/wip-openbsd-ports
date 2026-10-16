@@ -68,19 +68,19 @@ post-patch:
 
 do-configure:
 	cd ${MONERO_WRKSRC} && cmake -S ${MONERO_WRKSRC} -B ${MONERO_WRKBUILD} \
-	    -GNinja \
-	    -DCMAKE_BUILD_TYPE=Release \
-	    -Wno-dev \
-	    -DDEPENDS=ON \
-	    -DMANUAL_SUBMODULES=ON \
-	    -DBUILD_DOCUMENTATION=OFF
+		-GNinja \
+		-DCMAKE_BUILD_TYPE=Release \
+		-Wno-dev \
+		-DDEPENDS=ON \
+		-DMANUAL_SUBMODULES=ON \
+		-DBUILD_DOCUMENTATION=OFF
 
 do-build:
 	cmake --build ${MONERO_WRKBUILD}
 	cd ${WRKSRC} && cmake -S ${WRKSRC} -B ${LWS_WRKBUILD} \
-	    -DCMAKE_BUILD_TYPE=Release \
-	    -DMONERO_SOURCE_DIR=${MONERO_WRKSRC} \
-	    -DMONERO_BUILD_DIR=${MONERO_WRKBUILD}
+		-DCMAKE_BUILD_TYPE=Release \
+		-DMONERO_SOURCE_DIR=${MONERO_WRKSRC} \
+		-DMONERO_BUILD_DIR=${MONERO_WRKBUILD}
 	cmake --build ${LWS_WRKBUILD}
 
 do-install:

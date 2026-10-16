@@ -48,12 +48,12 @@ pre-test:
 do-install:
 .for utility in ${COREUTILS}
 	${INSTALL_PROGRAM} ${MODCARGO_TARGET_DIR}/release/${utility} \
-	    ${PREFIX}/bin/uu-${utility}
+		${PREFIX}/bin/uu-${utility}
 .endfor
 	${INSTALL_PROGRAM} ${MODCARGO_TARGET_DIR}/release/test ${PREFIX}/bin/'uu-['
 	${INSTALL_DATA_DIR} ${PREFIX}/libexec/uutils-coreutils
 	${INSTALL_DATA} ${MODCARGO_TARGET_DIR}/release/deps/libstdbuf.so \
-	    ${PREFIX}/libexec/uutils-coreutils/
+		${PREFIX}/libexec/uutils-coreutils/
 
 	cd ${WRKSRC} && find src -path '*/locales/*.ftl' -type f | while read f; do \
 		${INSTALL_DATA_DIR} ${PREFIX}/share/uutils-coreutils/$$(dirname $$f); \

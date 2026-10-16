@@ -1,6 +1,6 @@
 COMMENT =	tokenizers with a focus on performance
 
-MODPY_DISTV =	0.23.1
+MODPY_DISTV =	0.23.3
 REVISION =       0
 DISTNAME =	tokenizers-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME}
@@ -22,7 +22,7 @@ MODPY_PYBUILD =	maturin
 
 LIB_DEPENDS =	textproc/oniguruma
 WANTLIB +=	${COMPILER_LIBCXX} c m onig
-RUN_DEPENDS =	devel/py-huggingface-hub>=0.16.4,<2.0
+RUN_DEPENDS =	devel/py-huggingface-hub>=0.16.4,<3.0
 
 # Let Maturin read the Python metadata outside the Rust workspace.
 do-build:

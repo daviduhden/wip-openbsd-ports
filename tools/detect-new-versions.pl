@@ -5,10 +5,16 @@
 #
 # The upstream version is taken from the registry that matches how the port
 # fetches its source:
-#   * Go modules  -> https://proxy.golang.org/<module>/@latest
+#   * Go modules  -> https://proxy.golang.org/<module>/@v/list
 #   * PyPI        -> https://pypi.org/pypi/<project>/json
 #   * GitHub      -> https://api.github.com/repos/<owner>/<repo>/tags
 # Ports that fetch from anywhere else are reported as "manual".
+#
+# A port that carries "PORTROACH = limit:<regex>" only tracks the versions
+# matching the regular expression (a major release its dependents pin, e.g.
+# "LiteLLM requires filelock <4"): such a port is reported as "pinned" when
+# upstream only offers a newer out-of-limit release, and as "OUTDATED" when a
+# newer in-limit release exists.
 #
 # Nothing is downloaded or built: only the registry metadata is queried.  The
 # report is written both to stdout and to $LOGDIR/report.txt.
@@ -49,11 +55,15 @@ sub usage {
 	print <<"USAGE";
 detect-new-versions.pl - report ports whose upstream release is newer
 
-  --wip DIR      wip ports collection (default: parent of this script's dir)
-  --logdir DIR   log directory (default: /tmp/wip-newversions-<timestamp>)
+  --wip DIR        wip ports collection (default: parent of this script's dir)
+  --logdir DIR     log directory (default: /tmp/wip-newversions-<timestamp>)
   --only CAT/PORT  check only this port
-  --dry-run      do not query the registries
-  --help         this message
+  --dry-run        do not query the registries
+  --help           this message
+
+Ports with "PORTROACH = limit:<regex>" are checked against the versions that
+match the limit; a newer upstream release outside the limit is reported as
+"pinned" instead of "OUTDATED".
 USAGE
 	exit 0;
 }
@@ -65,7 +75,7 @@ sub out {
 }
 
 # fetch a URL, preferring HTTP::Tiny and falling back to OpenBSD ftp(1) (which
-# handles https without IO::Socket::SSL)
+# handles https without IO::Socket::SSL); curl is accepted as a last resort
 sub fetch {
 	my ($url) = @_;
 	return undef if $DRYRUN;
@@ -131,35 +141,70 @@ sub vcmp {
 	return 0;
 }
 
-sub go_latest {
-	my ($mod) = @_;
+sub vmax {
+	my (@v) = @_;
+	return undef unless @v;
+	my @s = sort { vcmp($a, $b) } @v;
+	return $s[-1];
+}
+
+# PORTROACH limits: "limit:<regex>", possibly repeated, ":"-separated
+sub limits_from {
+	my ($portroach) = @_;
+	return () unless defined $portroach;
+	return ($portroach =~ /(?:^|:)limit:([^:]+)/g);
+}
+
+sub in_limits {
+	my ($v, @lims) = @_;
+	return 1 unless @lims;
+	for my $l (@lims) { return 1 if $v =~ /$l/; }
+	return 0;
+}
+
+# each fetcher returns ($latest_within_limits, $overall_latest)
+
+sub go_versions {
+	my ($mod, @lims) = @_;
 	my $j = jget('https://proxy.golang.org/' . esc_mod($mod) . '/@latest');
-	return $j && $j->{Version} ? $j->{Version} : undef;
+	my $overall = $j && $j->{Version} ? $j->{Version} : undef;
+	my $latest = $overall;
+	if (@lims) {
+		my $body = fetch('https://proxy.golang.org/' . esc_mod($mod) . '/@v/list');
+		my @v = defined $body ? grep { /^v?\d+(?:\.\d+)*$/ } split /\s+/, $body : ();
+		$latest = vmax(grep { in_limits($_, @lims) } @v) // $overall;
+	}
+	return ($latest, $overall);
 }
 
-sub pypi_latest {
-	my ($name) = @_;
+sub pypi_versions {
+	my ($name, @lims) = @_;
 	my $j = jget("https://pypi.org/pypi/$name/json");
-	return $j && $j->{info} ? $j->{info}{version} : undef;
+	return (undef, undef) unless $j && $j->{info};
+	my $overall = $j->{info}{version};
+	my @v = grep { /^v?\d+(?:\.\d+)*$/ } keys %{ $j->{releases} || {} };
+	my $latest = @lims ? vmax(grep { in_limits($_, @lims) } @v) : $overall;
+	$latest //= $overall;
+	return ($latest, $overall);
 }
 
-sub gh_latest {
-	my ($acc, $proj, $tagpat) = @_;
+sub gh_versions {
+	my ($acc, $proj, $tagpat, @lims) = @_;
 	my $j = jget("https://api.github.com/repos/$acc/$proj/tags?per_page=100");
-	return undef unless ref $j eq 'ARRAY';
+	return (undef, undef) unless ref $j eq 'ARRAY';
 	my $prefix = '';
 	if (defined $tagpat) { ($prefix) = $tagpat =~ /^([^0-9]*)/; }
 	$prefix = '' unless defined $prefix;
-	my @cand;
+	my @v;
 	for my $t (map { $_->{name} } @$j) {
 		next if length $prefix && index($t, $prefix) != 0;
 		(my $rest = $t) =~ s/^\Q$prefix\E//;
 		next unless $rest =~ /^v?\d+(?:\.\d+)*$/;
-		push @cand, $t;
+		push @v, $t;
 	}
-	return undef unless @cand;
-	my @sorted = sort { vcmp($a, $b) } @cand;
-	return $sorted[-1];
+	my $overall = vmax(@v);
+	my $latest = @lims ? vmax(grep { in_limits($_, @lims) } @v) : $overall;
+	return ($latest, $overall);
 }
 
 sub find_ports {
@@ -193,7 +238,7 @@ out("# new versions report - " . strftime('%Y-%m-%d %H:%M:%S', localtime));
 out("# collection: $WIP");
 out("");
 
-my @outdated;
+my (@outdated, @pinned, @unknown);
 for my $p (@ports) {
 	my $mk = File::Spec->catfile($WIP, split(m{/}, $p), 'Makefile');
 	open(my $fh, '<', $mk) or next;
@@ -203,16 +248,17 @@ for my $p (@ports) {
 	my %vals;
 	$vals{$_} = pvar($text, $_) for qw(V VERSION MODGO_MODNAME MODGO_VERSION MODPY_DISTV GH_ACCOUNT GH_PROJECT GH_TAGNAME);
 	$vals{$_} = expand($vals{$_}, \%vals) for keys %vals;
+	my @lims = limits_from(pvar($text, 'PORTROACH'));
 
-	my ($kind, $cur, $latest);
+	my ($kind, $cur, $latest, $overall);
 	if (defined $vals{MODGO_MODNAME} && length $vals{MODGO_MODNAME}) {
 		$kind = 'go';
 		$cur  = $vals{MODGO_VERSION};
-		$latest = go_latest($vals{MODGO_MODNAME});
+		($latest, $overall) = go_versions($vals{MODGO_MODNAME}, @lims);
 	} elsif (defined $vals{GH_ACCOUNT} && defined $vals{GH_PROJECT}) {
 		$kind = 'gh';
 		$cur  = $vals{GH_TAGNAME};
-		$latest = gh_latest($vals{GH_ACCOUNT}, $vals{GH_PROJECT}, $vals{GH_TAGNAME});
+		($latest, $overall) = gh_versions($vals{GH_ACCOUNT}, $vals{GH_PROJECT}, $vals{GH_TAGNAME}, @lims);
 	} elsif (defined $vals{MODPY_DISTV} && length $vals{MODPY_DISTV}) {
 		$kind = 'pypi';
 		$cur  = $vals{MODPY_DISTV};
@@ -221,7 +267,7 @@ for my $p (@ports) {
 		$name = $vals{GH_PROJECT} // basename($p) unless defined $name;
 		$name =~ s/[-_.]+/-/g;
 		$name = lc $name;
-		$latest = pypi_latest($name);
+		($latest, $overall) = pypi_versions($name, @lims);
 	} else {
 		$kind = 'manual';
 		$cur  = $vals{V} // $vals{VERSION};
@@ -234,19 +280,24 @@ for my $p (@ports) {
 		$c =~ s/^[A-Za-z-]*v//;
 		$l =~ s/^[A-Za-z-]*v//;
 		if ($c eq $l) {
-			$status = 'ok';
+			my $o = defined $overall ? vnorm($overall) : undef;
+			$o =~ s/^[A-Za-z-]*v// if defined $o;
+			if (defined $o && vcmp($o, $c) > 0) { $status = 'pinned'; push @pinned, $p; }
+			else { $status = 'ok'; }
 		} elsif (vcmp($l, $c) > 0) {
 			$status = 'OUTDATED';
 			push @outdated, [$p, $kind, $cur, $latest];
 		} else {
 			$status = 'AHEAD';
 		}
+	} elsif ($kind eq 'manual') {
+		push @unknown, $p;
 	}
 	out(sprintf("%-9s %-6s %-42s %-18s -> %s",
 		$status, $kind, $p, (defined $cur ? $cur : '-'), (defined $latest ? $latest : '-')));
 }
 
 out("");
-out("outdated: " . (@outdated ? scalar(@outdated) : 0));
+out("outdated: " . scalar(@outdated) . "   pinned: " . scalar(@pinned) . "   manual: " . scalar(@unknown));
 out("report: $REPORT");
 exit(@outdated ? 1 : 0);

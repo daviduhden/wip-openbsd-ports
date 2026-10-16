@@ -82,7 +82,6 @@ lib/python${MODPY_VERSION}/site-packages/google/protobuf/compiler/${MODPY_PYCACH
 lib/python${MODPY_VERSION}/site-packages/google/protobuf/compiler/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/google/protobuf/compiler/${MODPY_PYCACHE}plugin_pb2.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/google/protobuf/compiler/${MODPY_PYCACHE}plugin_pb2.${MODPY_PYC_MAGIC_TAG}pyc
-lib/python${MODPY_VERSION}/site-packages/google/protobuf/compiler/descriptor_pb2.py
 lib/python${MODPY_VERSION}/site-packages/google/protobuf/compiler/plugin_pb2.py
 lib/python${MODPY_VERSION}/site-packages/google/protobuf/descriptor.py
 lib/python${MODPY_VERSION}/site-packages/google/protobuf/descriptor_database.py
@@ -142,9 +141,7 @@ lib/python${MODPY_VERSION}/site-packages/google/protobuf/internal/testing_reflea
 lib/python${MODPY_VERSION}/site-packages/google/protobuf/internal/type_checkers.py
 lib/python${MODPY_VERSION}/site-packages/google/protobuf/internal/well_known_types.py
 lib/python${MODPY_VERSION}/site-packages/google/protobuf/internal/wire_format.py
-lib/python${MODPY_VERSION}/site-packages/google/protobuf/json_enumvalue_options_pb2.py
 lib/python${MODPY_VERSION}/site-packages/google/protobuf/json_format.py
-lib/python${MODPY_VERSION}/site-packages/google/protobuf/json_options_pb2.py
 lib/python${MODPY_VERSION}/site-packages/google/protobuf/message.py
 lib/python${MODPY_VERSION}/site-packages/google/protobuf/message_factory.py
 lib/python${MODPY_VERSION}/site-packages/google/protobuf/proto.py

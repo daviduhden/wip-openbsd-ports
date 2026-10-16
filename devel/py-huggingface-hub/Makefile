@@ -1,6 +1,6 @@
 COMMENT =	client library for models and datasets on Hugging Face
 
-MODPY_DISTV =	2.2.0
+MODPY_DISTV =	1.33.0
 DISTNAME =	huggingface_hub-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 
@@ -30,5 +30,8 @@ TEST_DEPENDS = devel/py-test-mock \
 	devel/py-jedi
 PORTHOME = ${WRKDIR}
 TEST_ENV += GIT_TERMINAL_PROMPT=0 HUGGINGFACE_CO_STAGING=1 HF_TOKEN= HUGGING_FACE_HUB_TOKEN=
+
+# LiteLLM requires huggingface-hub <2.
+PORTROACH =	limit:^1\.
 
 .include <bsd.port.mk>

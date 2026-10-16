@@ -50,6 +50,8 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}_tensor
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}_tensorboard_logger.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}_tree_cache.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}_tree_cache.${MODPY_PYC_MAGIC_TAG}pyc
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}_upload_large_folder.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}_upload_large_folder.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}_upload_pipeline.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}_upload_pipeline.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/${MODPY_PYCACHE}_webhooks_payload.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
@@ -112,6 +114,7 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_snapshot_download.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_space_api.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_tensorboard_logger.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_tree_cache.py
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_upload_large_folder.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_upload_pipeline.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_webhooks_payload.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/_webhooks_server.py
@@ -152,6 +155,8 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}col
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}collections.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}datasets.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}datasets.${MODPY_PYC_MAGIC_TAG}pyc
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}deprecated_cli.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}deprecated_cli.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}discussions.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}discussions.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}download.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
@@ -170,6 +175,8 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}mod
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}models.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}papers.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}papers.${MODPY_PYC_MAGIC_TAG}pyc
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}repo_files.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}repo_files.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}repos.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}repos.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}sandbox.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
@@ -182,6 +189,8 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}sys
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}system.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}upload.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}upload.${MODPY_PYC_MAGIC_TAG}pyc
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}upload_large_folder.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}upload_large_folder.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}webhooks.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/${MODPY_PYCACHE}webhooks.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/_city_game.py
@@ -200,6 +209,7 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/buckets.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/cache.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/collections.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/datasets.py
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/deprecated_cli.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/discussions.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/download.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/extensions.py
@@ -209,12 +219,14 @@ lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/jobs.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/lfs.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/models.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/papers.py
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/repo_files.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/repos.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/sandbox.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/skills.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/spaces.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/system.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/upload.py
+lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/upload_large_folder.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/cli/webhooks.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/community.py
 lib/python${MODPY_VERSION}/site-packages/huggingface_hub/constants.py

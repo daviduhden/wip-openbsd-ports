@@ -2,11 +2,13 @@ COMMENT = Monero Light Wallet Server
 
 GH_ACCOUNT = vtnerd
 GH_PROJECT = monero-lws
-GH_TAGNAME = v1.0.3
+GH_TAGNAME = v1.0.4
 
+# Monero release monero-lws is built against (its external/monero
+# submodule) and the version of the net/monero runtime dependency.
 VERSION = 0.18.5.3
 DISTNAME = ${GH_PROJECT}-${GH_TAGNAME:S/^v//}
-PKGNAME = monero-lws-${VERSION}
+PKGNAME = monero-lws-${GH_TAGNAME:S/^v//}
 
 DISTFILES = ${GH_DISTFILE}
 MONERO_DIST = monero-source-v${VERSION}.tar.bz2

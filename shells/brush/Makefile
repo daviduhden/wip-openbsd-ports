@@ -2,10 +2,18 @@ COMMENT =		Bourne-compatible shell written in Rust
 
 V =			0.4.0
 PTYPROCESS_V =		0.5.0
+# zhiburt/ptyprocess has no OpenBSD support yet: it has no ptsname_r and has to
+# call TIOCSCTTY on the pty slave, like FreeBSD and macOS.  The crate source is
+# fetched as its own distfile, pinned to the 0.5.0 release commit, and patched
+# below, so the OpenBSD fix applies to a fixed, checksummed source tree instead
+# of the crate tarball unpacked into the cargo vendor directory.
+PTYPROCESS_COMMIT =	fe9e796035fc63c99136b706aa86354fab73d4bc
 DISTNAME =		brush-${V}
 GH_ACCOUNT =		reubeno
 GH_PROJECT =		brush
 GH_TAGNAME =		brush-shell-v${V}
+
+DIST_TUPLE +=		github zhiburt ptyprocess ${PTYPROCESS_COMMIT} ./ptyprocess
 CATEGORIES =		shells
 
 HOMEPAGE =		https://github.com/reubeno/brush/
@@ -27,16 +35,18 @@ TEST_DEPENDS =		shells/bash
 MAKE_ENV +=		BASH_PATH=${LOCALBASE}/bin/bash
 
 post-extract:
-	mkdir -p ${MODCARGO_VENDOR_DIR}
-	if [ ! -d ${MODCARGO_VENDOR_DIR}/ptyprocess-${PTYPROCESS_V} ]; then \
-		tar -xzf ${DISTDIR}/cargo/ptyprocess-${PTYPROCESS_V}.tar.gz \
-			-C ${MODCARGO_VENDOR_DIR}; \
-		${LOCALBASE}/bin/cargo-generate-vendor \
-			${DISTDIR}/cargo/ptyprocess-${PTYPROCESS_V}.tar.gz \
-			${MODCARGO_VENDOR_DIR}/ptyprocess-${PTYPROCESS_V}; \
-	fi
-	patch -F 0 -d ${MODCARGO_VENDOR_DIR}/ptyprocess-${PTYPROCESS_V} -p0 \
+	# Patch the DIST_TUPLE'd ptyprocess tree before the cargo vendor metadata
+	# is generated from it, so the recorded checksums describe the patched
+	# files, and install the patched tree as the vendored crate.
+	patch -F 0 -d ${WRKDIR}/ptyprocess -p0 \
 		< ${FILESDIR}/patch-ptyprocess_openbsd
+	mkdir -p ${MODCARGO_VENDOR_DIR}
+	rm -rf ${MODCARGO_VENDOR_DIR}/ptyprocess-${PTYPROCESS_V}
+	cp -R ${WRKDIR}/ptyprocess \
+		${MODCARGO_VENDOR_DIR}/ptyprocess-${PTYPROCESS_V}
+	${LOCALBASE}/bin/cargo-generate-vendor \
+		${DISTDIR}/cargo/ptyprocess-${PTYPROCESS_V}.tar.gz \
+		${MODCARGO_VENDOR_DIR}/ptyprocess-${PTYPROCESS_V}
 
 # brush-shell is the workspace's default member and the package upstream
 # recommends installing; the "brush" facade crate only forwards the same

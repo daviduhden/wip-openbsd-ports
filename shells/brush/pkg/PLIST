@@ -1,4 +1,1 @@
-@conflict bash-<6
-@pkgpath shells/bash
-@shell bin/bash
 @shell bin/brush

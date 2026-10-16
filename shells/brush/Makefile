@@ -22,7 +22,7 @@ SEPARATE_BUILD =	Yes
 # The compatibility suite compares brush against bash as the oracle.  There is
 # no bash in the OpenBSD base system, so pull shells/bash in for the test run
 # and point the harness (config.rs: --bash-path, env BASH_PATH) at it.  This
-# only affects testing; the built package still conflicts with shells/bash.
+# only affects testing; the package itself does not provide bash.
 TEST_DEPENDS =		shells/bash
 MAKE_ENV +=		BASH_PATH=${LOCALBASE}/bin/bash
 
@@ -44,11 +44,9 @@ post-extract:
 # which would embed uutils coreutils builtins, stays disabled.
 MODCARGO_INSTALL_TARGET_PATHS =	brush-shell
 
-# bash(1) is installed as an alias so that ports depending on shells/bash
-# work without source changes; pkg/PLIST declares @conflict/@pkgpath for
-# shells/bash.  The shell is still available under its own name as well.
-post-install:
-	cd ${PREFIX}/bin && ln -sf brush bash
+# The shell is installed as ${PREFIX}/bin/brush only.  It is not installed as
+# a bash(1) replacement, so the package carries no bin/bash, no @conflict and
+# no shells/bash @pkgpath.
 
 .include "crates.inc"
 

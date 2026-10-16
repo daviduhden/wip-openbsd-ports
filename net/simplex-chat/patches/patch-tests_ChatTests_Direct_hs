@@ -11,9 +11,10 @@ builder takes.  The timed-message example uses a ttl comfortably larger than
 the assertions.  Give the aborted connection-switch examples a larger settle
 delay before reading the persisted chat items.
 
-The timeout-retry fixture also subscribes Bob's reply queue. Check the
-subscription, confirmation and connected notifications in either order;
-they come from independent startup and command/subscriber threads.
+The timeout-retry fixture checks Bob's confirmation and connected
+notifications in either order: they come from independent command and
+subscriber threads.  The "subscribed 1 connections" line belongs to Alice's
+own setup and is not part of Bob's output.
 
 The client-timeout example assumes that a 10 microsecond transport timeout
 always interrupts a loopback SMP command.  System.Timeout.timeout cannot fire
@@ -96,7 +97,7 @@ Index: tests/ChatTests/Direct.hs
  
        pure inv
  
-@@ -313,10 +336,13 @@ testRetryConnectingClientTimeout ps = do
+@@ -313,10 +336,12 @@ testRetryConnectingClientTimeout ps = do
          bob <## "invitation link: ok to connect"
          _sLinkData <- getTermLine bob
          bob ##> ("/_connect 1 " <> inv)
@@ -106,14 +107,13 @@ Index: tests/ChatTests/Direct.hs
 -          (bob <## "alice (Alice): contact is connected")
 +          ( bob
 +              <### [ ConsoleString "confirmation sent!",
-+                     ConsoleString "subscribed 1 connections on server localhost",
 +                     ConsoleString "alice (Alice): contact is connected"
 +                   ]
 +          )
            (alice <## "bob (Bob): contact is connected")
          alice #> "@bob message 1"
          bob <# "alice> message 1"
-@@ -1337,21 +1363,50 @@ testNegotiateCall =
+@@ -1337,21 +1362,50 @@ testNegotiateCall =
      threadDelay 100000
      bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "incoming call: connecting...")])
      -- participants can update calls as connected
@@ -166,7 +166,7 @@ Index: tests/ChatTests/Direct.hs
  
  testMaintenanceMode :: HasCallStack => TestParams -> IO ()
  testMaintenanceMode ps = do
-@@ -2140,20 +2195,20 @@ testUsersDifferentCIExpirationTTL ps = d
+@@ -2140,20 +2194,20 @@ testUsersDifferentCIExpirationTTL ps = d
        bob #> "@alisa alisa 2"
        alice <# "bob> alisa 2"
  
@@ -192,7 +192,7 @@ Index: tests/ChatTests/Direct.hs
  
        alice #> "@bob alice 3"
        bob <# "alice> alice 3"
-@@ -2165,7 +2220,7 @@ testUsersDifferentCIExpirationTTL ps = d
+@@ -2165,7 +2219,7 @@ testUsersDifferentCIExpirationTTL ps = d
        -- second user messages
        alice ##> "/user alisa"
        showActiveUser alice "alisa"
@@ -201,7 +201,7 @@ Index: tests/ChatTests/Direct.hs
  
        alice #> "@bob alisa 3"
        bob <# "alisa> alisa 3"
-@@ -2174,12 +2229,15 @@ testUsersDifferentCIExpirationTTL ps = d
+@@ -2174,12 +2228,15 @@ testUsersDifferentCIExpirationTTL ps = d
  
        alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2"), (1, "alisa 3"), (0, "alisa 4")])
  
@@ -218,7 +218,7 @@ Index: tests/ChatTests/Direct.hs
        alice #$> ("/_get chat @2 count=100", chat, [(1,"chat banner")])
  
        -- second user messages
-@@ -2187,8 +2245,9 @@ testUsersDifferentCIExpirationTTL ps = d
+@@ -2187,8 +2244,9 @@ testUsersDifferentCIExpirationTTL ps = d
        showActiveUser alice "alisa"
        alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2"), (1, "alisa 3"), (0, "alisa 4")])
  
@@ -229,7 +229,7 @@ Index: tests/ChatTests/Direct.hs
        alice #$> ("/_get chat @5 count=100", chat, [(1,"chat banner")])
    where
      cfg = testCfg {initialCleanupManagerDelay = 0, cleanupManagerStepDelay = 0, ciExpirationInterval = 500000}
-@@ -2197,14 +2256,14 @@ testUsersRestartCIExpiration :: HasCallS
+@@ -2197,14 +2255,14 @@ testUsersRestartCIExpiration :: HasCallS
  testUsersRestartCIExpiration ps = do
    withNewTestChat ps "bob" bobProfile $ \bob -> do
      withNewTestChatCfg ps cfg "alice" aliceProfile $ \alice -> do
@@ -248,7 +248,7 @@ Index: tests/ChatTests/Direct.hs
        connectUsers alice bob
  
        -- first user messages
-@@ -2236,7 +2295,7 @@ testUsersRestartCIExpiration ps = do
+@@ -2236,7 +2294,7 @@ testUsersRestartCIExpiration ps = do
        -- first user messages
        alice ##> "/user alice"
        showActiveUser alice "alice (Alice)"
@@ -257,7 +257,7 @@ Index: tests/ChatTests/Direct.hs
  
        alice #> "@bob alice 3"
        bob <# "alice> alice 3"
-@@ -2248,7 +2307,7 @@ testUsersRestartCIExpiration ps = do
+@@ -2248,7 +2306,7 @@ testUsersRestartCIExpiration ps = do
        -- second user messages
        alice ##> "/user alisa"
        showActiveUser alice "alisa"
@@ -266,7 +266,7 @@ Index: tests/ChatTests/Direct.hs
  
        alice #> "@bob alisa 3"
        bob <# "alisa> alisa 3"
-@@ -2257,12 +2316,14 @@ testUsersRestartCIExpiration ps = do
+@@ -2257,12 +2315,14 @@ testUsersRestartCIExpiration ps = do
  
        alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2"), (1, "alisa 3"), (0, "alisa 4")])
  
@@ -282,7 +282,7 @@ Index: tests/ChatTests/Direct.hs
        alice #$> ("/_get chat @2 count=100", chat, [(1,"chat banner")])
  
        -- second user messages
-@@ -2270,8 +2331,9 @@ testUsersRestartCIExpiration ps = do
+@@ -2270,8 +2330,9 @@ testUsersRestartCIExpiration ps = do
        showActiveUser alice "alisa"
        alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2"), (1, "alisa 3"), (0, "alisa 4")])
  
@@ -293,7 +293,7 @@ Index: tests/ChatTests/Direct.hs
        alice #$> ("/_get chat @5 count=100", chat, [(1,"chat banner")])
    where
      cfg = testCfg {initialCleanupManagerDelay = 0, cleanupManagerStepDelay = 0, ciExpirationInterval = 500000}
-@@ -2358,7 +2420,10 @@ testDisableCIExpirationOnlyForOneUser ps
+@@ -2358,7 +2419,10 @@ testDisableCIExpirationOnlyForOneUser ps
        -- create second user and set ttl
        alice ##> "/create user alisa"
        showActiveUser alice "alisa"
@@ -305,7 +305,7 @@ Index: tests/ChatTests/Direct.hs
        connectUsers alice bob
  
        -- first user disables expiration
-@@ -2370,7 +2435,7 @@ testDisableCIExpirationOnlyForOneUser ps
+@@ -2370,7 +2434,7 @@ testDisableCIExpirationOnlyForOneUser ps
        -- second user still has ttl configured
        alice ##> "/user alisa"
        showActiveUser alice "alisa"
@@ -314,7 +314,7 @@ Index: tests/ChatTests/Direct.hs
  
        alice #> "@bob alisa 1"
        bob <# "alisa> alisa 1"
-@@ -2379,6 +2444,11 @@ testDisableCIExpirationOnlyForOneUser ps
+@@ -2379,6 +2443,11 @@ testDisableCIExpirationOnlyForOneUser ps
  
        alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2")])
  
@@ -326,7 +326,7 @@ Index: tests/ChatTests/Direct.hs
        threadDelay 2000000
  
        -- second user messages are deleted
-@@ -2410,13 +2480,13 @@ testUsersTimedMessages ps' = do
+@@ -2410,13 +2479,13 @@ testUsersTimedMessages ps' = do
    withNewTestChat ps "bob" bobProfile $ \bob -> do
      withNewTestChat ps "alice" aliceProfile $ \alice -> do
        connectUsers alice bob
@@ -342,7 +342,7 @@ Index: tests/ChatTests/Direct.hs
  
        -- first user messages
        alice ##> "/user alice"
-@@ -2844,7 +2914,7 @@ testAbortSwitchContact ps = do
+@@ -2844,7 +2913,7 @@ testAbortSwitchContact ps = do
        bob <## "alice started changing address for you"
        bob <## "alice changed address for you"
        alice <## "bob: you changed address"
@@ -351,7 +351,7 @@ Index: tests/ChatTests/Direct.hs
        alice #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(1, "started changing address..."), (1, "started changing address..."), (1, "you changed address")])
        bob #$> ("/_get chat @2 count=100", chat, chatFeatures <> [(0, "started changing address for you..."), (0, "started changing address for you..."), (0, "changed address for you")])
        alice <##> bob
-@@ -2891,7 +2961,7 @@ testAbortSwitchGroupMember ps = do
+@@ -2891,7 +2960,7 @@ testAbortSwitchGroupMember ps = do
        bob <## "#team: alice started changing address for you"
        bob <## "#team: alice changed address for you"
        alice <## "#team: you changed address for bob"

@@ -13,7 +13,7 @@ DPB_PROPERTIES =	parallel
 USE_WXNEEDED =		Yes
 
 V =			0.163.0
-REVISION =       0
+REVISION =		1
 GH_ACCOUNT =		openai
 GH_PROJECT =		codex
 GH_TAGNAME =		rust-v${V}

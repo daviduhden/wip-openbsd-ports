@@ -46,11 +46,13 @@ for my $dep ( split /,/, $ENV{EXTRA} // '' ) {
 } ## end for my $dep ( split /,/...)
 
 for my $file (@ARGV) {
-    if ( $file =~ /(?:^|\/|\.)(?:test\.)?plan\.json$/ ) {
+    if ( $file =~ m{(?:^|[/.])(?:test[.])?plan[.]json$} ) {
         my $json = do {
             open my $fh, '<', $file or die "$file: $!";
-            local $/;
-            <$fh>;
+            local $/ = undef;
+            my $contents = <$fh>;
+            close $fh or die "close $file: $!";
+            $contents;
         };
         my $plan = decode_json($json);
         for my $unit ( @{ $plan->{'install-plan'} // [] } ) {
@@ -77,11 +79,13 @@ for my $file (@ARGV) {
         $seen{"$n\t$v\t$r"} = 1;
         $seen_nv{"$n\t$v"}  = 1;
     } ## end while (<$fh>)
+    close $fh or die "close $file: $!";
 } ## end for my $file (@ARGV)
 
 my @deps = sort keys %seen;
-print "MODCABAL_MANIFEST\t= \\\n";
+print "MODCABAL_MANIFEST\t= \\\n" or die "write stdout: $!";
 for my $i ( 0 .. $#deps ) {
-    print "\t$deps[$i]";
-    print $i == $#deps ? "\n" : "\t\\\n";
+    print "\t$deps[$i]"                     or die "write stdout: $!";
+    print( $i == $#deps ? "\n" : "\t\\\n" ) or die "write stdout: $!";
 }
+close STDOUT or die "close stdout: $!";

@@ -1,0 +1,27 @@
+Offline Perl regression tests
+
+From the collection root:
+
+    prove -v tools/t/perl-tools.t
+
+Uses only Perl core modules, including Test::More. Commands run in disposable
+fixtures. BSD make and HTTP requests are mocked: no ports or Codex are compiled,
+no packages are installed, and no external network is accessed. The suite also
+loads the sandbox regression driver's private helpers to exercise capture and
+failure handling on a Unix host. This does not validate pledge/unveil.
+
+To validate the actual sandbox after building/installing Codex on OpenBSD:
+
+    perl devel/codex/files/openbsd-sandbox-regress.pl /usr/local/bin/codex
+
+That separate native suite compiles small C/Rust/Cargo fixtures.
+
+The local Perl::Critic installation can be used without persistent changes:
+
+    env PATH=/var/home/david/perl5/bin:$PATH \
+        PERL5LIB=/var/home/david/perl5/lib/perl5 \
+        perlcritic --severity 1 tools/*.pl tools/t/*.t \
+        devel/codex/files/*.pl net/simplex-chat/files/*.pl net/simplexmq/files/*.pl
+
+No critic policy exclusions are installed. Remaining default-policy findings
+are adjudicated in the local audit/perl-critic/report.md maintenance report.

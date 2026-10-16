@@ -1,9 +1,10 @@
-New file: OpenBSD helper that applies pledge(2)/unveil(2) and execs the target.
+Apply the OpenBSD pledge/unveil sandbox in a fresh helper process.
+Use an exec promise ceiling compatible with native tools that pledge themselves.
 
 Index: codex-rs/sandboxing/src/openbsd.rs
 --- /dev/null
 +++ codex-rs/sandboxing/src/openbsd.rs
-@@ -0,0 +1,290 @@
+@@ -0,0 +1,379 @@
 +//! OpenBSD sandbox backend: `pledge(2)` promises and `unveil(2)` rules.
 +//!
 +//! # Architecture
@@ -65,6 +66,20 @@ Index: codex-rs/sandboxing/src/openbsd.rs
 +/// symlink in a private directory on `PATH` and also passes it as `argv[0]`.
 +pub const CODEX_OPENBSD_SANDBOX_ARG0: &str = "codex-openbsd-sandbox";
 +
++/// Resolves the running Codex executable for helper launches and PATH aliases.
++/// Rust's `current_exe()` is best-effort on OpenBSD and can return a bare argv[0].
++/// Never turn a failed resolution into a PATH search for a privileged helper.
++pub fn sandbox_executable() -> std::io::Result<PathBuf> {
++    let path = rust_openbsd::execpath()?;
++    if !path.is_absolute() {
++        return Err(std::io::Error::new(
++            std::io::ErrorKind::InvalidData,
++            "getexecpath(3) returned a non-absolute executable path",
++        ));
++    }
++    Ok(path)
++}
++
 +/// Exit status used when the helper cannot set up or perform the execution.
 +///
 +/// `126` mirrors the shell convention for "found but not executable"; it is
@@ -92,6 +107,11 @@ Index: codex-rs/sandboxing/src/openbsd.rs
 +    permission_profile: &PermissionProfile,
 +    enforce_managed_network: bool,
 +) -> Result<Vec<String>, OpenBsdPolicyError> {
++    if !command_cwd.is_absolute() {
++        return Err(OpenBsdPolicyError::Invalid(
++            "command working directory must be absolute".to_string(),
++        ));
++    }
 +    let policy = translate_permission_profile(
 +        permission_profile,
 +        sandbox_policy_cwd,
@@ -208,8 +228,12 @@ Index: codex-rs/sandboxing/src/openbsd.rs
 +    let policy: OpenBsdSandboxPolicy = serde_json::from_str(&policy_json)
 +        .map_err(|err| format!("invalid --openbsd-policy: {err}"))?;
 +
++    let command_cwd = PathBuf::from(command_cwd);
++    if !command_cwd.is_absolute() {
++        return Err("command working directory must be absolute".to_string());
++    }
 +    Ok(HelperArguments {
-+        command_cwd: PathBuf::from(command_cwd),
++        command_cwd,
 +        policy,
 +        command,
 +    })
@@ -251,27 +275,21 @@ Index: codex-rs/sandboxing/src/openbsd.rs
 +    permissions
 +}
 +
-+/// Builds the execution promise set for the target program.
++/// Builds the target's syscall ceiling, independently of its unveil path rules.
 +///
-+/// The set is deliberately explicit and auditable rather than derived from
-+/// [`Promise::ALL`]. Promises that are not granted here fail closed: the
-+/// kernel aborts the process (or returns `ENOSYS` for the few calls the
-+/// `error` promise covers, which is never granted).
++/// Native OpenBSD tools pledge themselves: sh and make request write promises
++/// even for read-only work. `error` makes the kernel intersect such requests
++/// with the current set instead of rejecting startup with EPERM. It never
++/// grants a missing promise; forbidden syscalls return ENOSYS (or abort after
++/// the target voluntarily drops `error`). Exec promises retain the ceiling
++/// across subsequent execs even when a shell reduces its current promises.
 +///
-+/// * `stdio` — descriptors, memory, timers and process attributes, which every
-+///   dynamically linked program and its loader need.
-+/// * `rpath` — reading files, and resolving the dynamic loader's libraries.
-+/// * `prot_exec` — the loader maps shared objects executable.
-+/// * `exec`, `proc` — shells, `make`, `cargo`, `rustc` and `clang` fork and
-+///   execute subprocesses and signal them.
-+/// * `tty` — interactive shells use terminal ioctls.
-+/// * `wpath`, `cpath`, `flock` — only when the policy grants writes; `flock`
-+///   is required by build tools such as `cargo` for their lock files.
-+/// * `inet`, `dns` — only when the policy enables the network.
-+///
-+/// Notably absent: `unix`, `fattr`, `chown`, `dpath`, `getpw`, `settime`,
-+/// `audio`, `video`, `vmm`, and every other promise. Operations that need them
-+/// are denied instead of being silently permitted.
++/// `getpw` supports account lookup; `flock` permits shared read locks too.
++/// `fattr` is needed for build outputs and SQLite's same-owner fchown in Cargo.
++/// The kernel's `fattr` promise includes that operation without `chown`, which
++/// would additionally permit arbitrary ownership changes. Path-based metadata
++/// writes still require unveil `w`; descriptor-based metadata operations follow
++/// pledge's descriptor semantics (see the port's sandbox maintenance notes).
 +fn exec_promises(policy: &OpenBsdSandboxPolicy) -> Promises {
 +    let mut promises = vec![
 +        Promise::Stdio,
@@ -280,9 +298,12 @@ Index: codex-rs/sandboxing/src/openbsd.rs
 +        Promise::Exec,
 +        Promise::Proc,
 +        Promise::Tty,
++        Promise::Getpw,
++        Promise::Flock,
++        Promise::Error,
 +    ];
 +    if policy.writable {
-+        promises.extend([Promise::Wpath, Promise::Cpath, Promise::Flock]);
++        promises.extend([Promise::Wpath, Promise::Cpath, Promise::Fattr]);
 +    }
 +    if policy.network {
 +        promises.extend([Promise::Inet, Promise::Dns]);
@@ -293,4 +314,73 @@ Index: codex-rs/sandboxing/src/openbsd.rs
 +/// Sets the current and execution promise sets in one `pledge(2)` call.
 +fn pledge_both_with_context(current: &Promises, exec: &Promises) -> Result<(), String> {
 +    rust_openbsd::pledge_both(current, exec).map_err(|err| format!("pledge(2): {err}"))
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    fn policy(writable: bool, network: bool) -> OpenBsdSandboxPolicy {
++        OpenBsdSandboxPolicy {
++            restrict_filesystem: true,
++            writable,
++            network,
++            rules: Vec::new(),
++        }
++    }
++
++    #[test]
++    fn read_only_allows_native_self_pledge_without_granting_writes() {
++        let promises = exec_promises(&policy(false, false));
++        for promise in [
++            Promise::Error,
++            Promise::Getpw,
++            Promise::Flock,
++            Promise::Exec,
++        ] {
++            assert!(promises.contains(promise));
++        }
++        for promise in [
++            Promise::Wpath,
++            Promise::Cpath,
++            Promise::Fattr,
++            Promise::Inet,
++            Promise::Dns,
++        ] {
++            assert!(!promises.contains(promise));
++        }
++    }
++
++    #[test]
++    fn writable_build_tools_get_fattr_without_arbitrary_chown() {
++        let promises = exec_promises(&policy(true, false));
++        for promise in [
++            Promise::Wpath,
++            Promise::Cpath,
++            Promise::Fattr,
++            Promise::Flock,
++        ] {
++            assert!(promises.contains(promise));
++        }
++        for promise in [
++            Promise::Chown,
++            Promise::Unix,
++            Promise::Inet,
++            Promise::Dns,
++            Promise::Unveil,
++        ] {
++            assert!(!promises.contains(promise));
++        }
++    }
++
++    #[test]
++    fn network_promises_follow_policy() {
++        for writable in [false, true] {
++            for network in [false, true] {
++                let promises = exec_promises(&policy(writable, network));
++                assert_eq!(promises.contains(Promise::Inet), network);
++                assert_eq!(promises.contains(Promise::Dns), network);
++            }
++        }
++    }
 +}

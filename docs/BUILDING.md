@@ -1,0 +1,387 @@
+# Building and Testing These Ports on OpenBSD
+
+Ports use the same `category/port` layout as the OpenBSD ports tree,
+including nested subports grouped under a shared directory
+(`category/group/port`, like `sysutils/uutils/awk`).
+The categories currently present are `databases`, `devel`, `editors`,
+`games`, `graphics`, `mail`, `misc`, `multimedia`, `net`, `security`,
+`shells`, `sysutils`, `textproc`, `www` and `x11`.
+List the installable paths without checking out or changing anything:
+
+```sh
+./fetch-ports.ksh --list
+```
+
+Ports creating daemon accounts also need their entries from `user.list`.
+The copy helper merges these entries into the cloned tree, preserving
+upstream entries and refusing conflicting IDs or account names. Do not
+overwrite a newer tree's complete registry with this repository's snapshot.
+
+## Prerequisites
+
+Configure the ports tree in the usual OpenBSD way:
+
+- set `WRKOBJDIR`
+- set `DISTDIR`
+- set `PACKAGE_REPOSITORY`
+- use `doas` or `sudo` as your privilege helper
+
+Use `--copy-only` to install ports into an existing CVS or Git checkout.
+It does not check out a tree, create system accounts or change host
+configuration. Omit the port arguments to copy all ports:
+
+```sh
+doas ./fetch-ports.ksh --copy-only /usr/ports net/simplexmq net/simplex-chat
+doas ./fetch-ports.ksh --copy-only /usr/ports
+```
+
+Each port is copied to its existing category, never over the complete
+category directory. Replaced ports are saved under
+`TREE/.wip-backups/category-port.XXXXXXXX/port` (the category slashes are
+replaced by underscores for a nested subport); nested CVS metadata is
+preserved. Before the swap the script records the files that are about to
+be removed and added in `TREE/.wip-changes/category-port.created.txt` and
+`TREE/.wip-changes/category-port.deleted.txt` (one path per line, relative
+to the port root, CVS metadata excluded), so `cvs add`, `cvs remove` and a
+later `cvs diff` can be driven from them. Copying a nested subport also
+installs the files its group shares with the subports, for example
+`Makefile.inc`, without touching any sibling port. Stale patches are not
+carried into the new copy. Paths that name categories, traverse parents or
+use symlinked port roots are rejected. The local account entries from
+`user.list` are merged as well. Files become readable by the ports build
+user even when the Git checkout is private.
+
+Without arguments the script retains its interactive OpenBSD bootstrap
+workflow, which replaces the ports checkout and configures the host.
+Use `--copy-only` when you already have a checkout. Use `--no-provision`
+to keep the interactive workflow but skip creating the `user` account
+and configuring doas:
+
+```sh
+doas ./fetch-ports.ksh --no-provision
+```
+
+Every patch has one target file and an `Index:` header. Dependency
+sources requiring LF conversion are normalized with `dos2unix` before
+dependency patches.
+
+## General Workflow
+
+From the port directory:
+
+```sh
+make clean
+make fetch
+make makesum
+make patch
+make configure
+make build
+make fake
+make update-plist
+make port-lib-depends-check
+make package
+```
+
+Not every target is always useful for every port, but this is the
+standard order when you are refreshing or validating a port.
+
+## Updating Ports
+
+Ports that use `devel/cargo`, `lang/go` or `devel/cabal` keep generated
+dependency data next to the `Makefile`:
+
+- `editors/msedit` uses `devel/cargo` and `crates.inc`.
+- `sysutils/uutils` is a group of subports (`coreutils`, `findutils`,
+  `diffutils`, `grep`, `sed`, `awk`, `tar`); each builds one project
+  and keeps its own `crates.inc`.
+- `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/gum`,
+  `devel/sequin`, `devel/shfmt`, `devel/soft-serve`, `net/wishlist`,
+  `net/xd-torrent` and the other Charm CLI/TUI ports under `databases`,
+  `graphics`, `mail`, `misc`, `multimedia`, `security` and `textproc`
+  use `lang/go` and `modules.inc`.
+- `devel/fourmolu`, `net/simplexmq` and `net/simplex-chat` use
+  `devel/cabal` and `cabal.inc`.
+
+Never edit these files by hand. Regenerating them needs network access,
+while the regular build must stay offline. The short form for each
+module:
+
+```sh
+# devel/cargo, for example editors/msedit
+make clean
+make makesum
+make extract
+make modcargo-gen-crates > /tmp/crates.inc
+cp /tmp/crates.inc crates.inc
+make clean
+make makesum
+make modcargo-gen-crates-licenses > /tmp/crates.inc
+mv /tmp/crates.inc crates.inc
+
+# lang/go, for example net/xd-torrent
+make clean
+make modgo-gen-modules > modules.inc
+make makesum
+
+# devel/cabal, for example net/simplexmq
+make clean
+make makesum
+make cabal-inc
+make makesum
+```
+
+Each `sysutils/uutils` subport builds a single project from a single
+`Cargo.lock`, so the regular `make modcargo-gen-crates` sequence above
+applies inside its directory.  Refresh the pinned revision in the
+subport `Makefile` first: `GH_TAGNAME` for the released projects, and
+`AWK_COMMIT`/`INDEXMAP_COMMIT` or `TAR_COMMIT`/`UUCORE_COMMIT` plus the
+matching `DIST_TUPLE` entries for the unreleased ones.
+
+[UPDATE.md](UPDATE.md) has the complete procedure: which version
+variables to bump, how to refresh patches, and how to validate the
+result.
+
+## Monero
+
+The Monero port is a CMake-based C++ port.
+
+Recommended workflow:
+
+```sh
+cd /usr/ports/net/monero
+make clean
+make fetch
+make makesum
+make patch
+make configure
+make build
+make fake
+make update-plist
+make port-lib-depends-check
+make package
+```
+
+Notes:
+
+- `make configure` is the first useful gate for CMake dependency
+  problems.
+- `make port-lib-depends-check` catches missing or extra shared-library
+  deps.
+- `make update-plist` should be run after `fake` whenever installed
+  files change.
+- The current OpenBSD port disables Monero stack-trace detection via
+  the `DEPENDS` CMake path, so `configure` should not try to resolve a
+  standalone `libunwind` package on this tree.
+
+## XD Torrent
+
+The XD torrent port is a Go port and uses `modules.inc` for vendored
+module metadata.
+
+Recommended workflow:
+
+```sh
+cd /usr/ports/net/xd-torrent
+make clean
+make fetch
+make makesum
+make patch
+make configure
+make build
+make fake
+make update-plist
+make port-lib-depends-check
+make package
+```
+
+When upstream `go.mod` or `go.sum` changes:
+
+```sh
+make modgo-gen-modules > modules.inc
+make makesum
+```
+
+Notes:
+
+- `modules.inc` is the file that records the module list and
+  replacement module hashes used by the OpenBSD Go ports
+  infrastructure.
+- `make port-lib-depends-check` is still worth running because the
+  final binary may link against native libraries even when the source
+  is Go.
+- `make update-plist` is needed if the binary set or installed
+  symlinks change.
+- See [UPDATE.md](UPDATE.md) before bumping the version; it covers the
+  full `modules.inc` regeneration and module checksum workflow.
+
+## MS Edit (editors/msedit)
+
+The MS Edit port is a Rust port that uses the `devel/cargo` module and
+records its crate set in `crates.inc`.
+
+Recommended workflow:
+
+```sh
+cd /usr/ports/editors/msedit
+make clean
+make fetch
+make makesum
+make patch
+make configure
+make build
+make fake
+make update-plist
+make port-lib-depends-check
+make package
+```
+
+Notes:
+
+- `crates.inc` is generated with `make modcargo-gen-crates` and
+  `make modcargo-gen-crates-licenses`; see [UPDATE.md](UPDATE.md) for
+  the update procedure.
+- `MODCARGO_INSTALL` is `No`; the `edit` binary and the license file
+  are installed by the port's own `do-install` target.
+- ICU is loaded with `dlopen()`; `MODCARGO_ENV` pins the library
+  sonames and disables upstream's renaming auto-detection.
+- The port defines its own `do-test` target that exercises the `edit`,
+  `lsh` and `stdext` crates.
+
+## SimpleXMQ (net/simplexmq)
+
+The SimpleXMQ port uses the `devel/cabal` module and builds two
+servers as well as a Haskell client library. It pins several vendored
+GitHub dependencies via `DIST_TUPLE` and patches them from `files/`.
+
+The `cabal.inc` file is generated by the `cabal-inc` target (run
+manually when the port is refreshed). The target uses `cabal-bundler`
+from Hackage to produce the `MODCABAL_MANIFEST`.
+
+A dedicated `_simplexmq` user and group are created for running the
+servers. See `pkg/README` for server initialization instructions.
+
+### libressl / ED448
+
+XFTP server initialization requires `--sign-algorithm ED25519` because
+LibreSSL does not export ED448. The ED448 fallback is documented in
+`pkg/README` and in the rc.d scripts.
+
+### cabal-inc regeneration
+
+When upstream releases are updated or `MODCABAL_MANIFEST` drifts:
+
+```sh
+cd /usr/ports/net/simplexmq
+make clean
+make makesum
+make cabal-inc
+make makesum
+```
+
+The first `make makesum` records the new upstream and `DIST_TUPLE`
+checksums; `cabal-inc` then rewrites `cabal.inc`; the second one adds
+the Hackage tarballs from the new manifest to `distinfo`. See
+[UPDATE.md](UPDATE.md) for the complete version-bump procedure.
+
+### Testing
+
+```sh
+cd /usr/ports/net/simplexmq
+make do-test
+```
+
+This runs the upstream test suite (`simplexmq-test`) using
+`cabal v2-test`. The test target uses `allow-newer: *` from the
+patched `cabal.project` to resolve dependency bounds. Network access
+is required on the first test run to download test-only dependencies.
+
+Build time (reference): ~2 hours on amd64 with 4 jobs.
+
+## SimpleX Chat (net/simplex-chat)
+
+The SimpleX Chat port is a client-only build that depends on a
+patched, vendored copy of the simplexmq library. It uses the
+`devel/cabal` module.
+
+### Relationship to simplexmq
+
+The client port vendors the same simplexmq commit through `DIST_TUPLE`
+and applies a subset of the same patches. The server-side patches
+(keepalive, warp, server mains, web embedding) are not needed for the
+client and are omitted.
+
+### sqlcipher
+
+The client links against `databases/sqlcipher` at runtime. The build
+uses the vendored `direct-sqlcipher` and `sqlcipher-simple` Haskell
+bindings. `LIB_DEPENDS` on `sqlcipher` ensures the native library is
+available when the binary starts.
+
+### cabal-inc regeneration
+
+```sh
+cd /usr/ports/net/simplex-chat
+make clean
+make makesum
+make cabal-inc
+make makesum
+```
+
+See [UPDATE.md](UPDATE.md) for the version variables and patch sets to
+refresh when upstream moves.
+
+### Testing
+
+```sh
+cd /usr/ports/net/simplex-chat
+make do-test
+```
+
+This runs the upstream test suite (`simplex-chat-test`) using
+`cabal v2-test` with the same `allow-newer: *` bound relaxation.
+
+The suite is run without the `CI` environment variable.  The examples that are
+inherently wall-clock sensitive or need an interactive terminal were made
+deterministic by the port patches (larger TTLs, synchronous expiry and bounded
+polling) or are skipped explicitly; see the comments in
+`patches/patch-tests_*`.
+
+### Query plans
+
+`Save query plans` compares the SQLite `EXPLAIN QUERY PLAN` output collected
+during the run with the checked-in files, which are platform-specific.  On
+OpenBSD they must be regenerated once and installed from `files/`:
+
+```sh
+cd /usr/ports/net/simplex-chat
+make do-test SIMPLEX_UPDATE_QUERY_PLANS=1
+cp /usr/obj/ports/simplex-chat-*/simplex-chat-*/src/Simplex/Chat/Store/SQLite/Migrations/chat_query_plans.txt files/
+cp /usr/obj/ports/simplex-chat-*/simplex-chat-*/src/Simplex/Chat/Store/SQLite/Migrations/agent_query_plans.txt files/
+make clean && make do-test
+```
+
+`SIMPLEX_UPDATE_QUERY_PLANS=1` makes the test write the plans without
+asserting them.  Until the OpenBSD files are installed from `files/`, the
+example only writes the plans and does not assert, so the default
+`make do-test` is green.  Once `files/chat_query_plans.txt` and
+`files/agent_query_plans.txt` exist, `post-patch` installs them and the
+example verifies them (`SIMPLEX_QUERY_PLANS_PLATFORM=1`).
+
+## Practical Validation
+
+After packaging, the important checks are:
+
+1. `make update-plist` if the installed file list changed.
+2. `make port-lib-depends-check` if shared-library dependencies
+   changed.
+3. `make package` to verify the final package assembly.
+
+For a quick smoke test, install the package and run the main binaries
+manually. For Monero, that usually means starting `monerod` or
+checking the CLI binaries. For XD, confirm that `XD` and the
+`XD-CLI` symlink are present and start with a known config file.
+
+For SimpleXMQ servers, run
+`doas -u _simplexmq /usr/local/bin/smp-server init` and then
+`doas rcctl start smp_server`. For the SimpleX Chat client, run
+`/usr/local/bin/simplex-chat` directly.

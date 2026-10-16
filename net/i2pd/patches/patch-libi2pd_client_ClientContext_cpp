@@ -1,0 +1,48 @@
+Rebind the UDP cleanup timer when SIGHUP replaces the shared destination,
+before the old io_context can be destroyed. Serialize timer replacement and
+shutdown with CleanupUDP(), which uses the forwards mutex. OpenBSD only.
+
+Index: libi2pd_client/ClientContext.cpp
+--- libi2pd_client/ClientContext.cpp.orig
++++ libi2pd_client/ClientContext.cpp
+@@ -190,10 +190,15 @@ namespace client
+ 		}
+ 
+ 		LogPrint(eLogInfo, "Clients: Stopping UDP Tunnels timers");
+-		if (m_CleanupUDPTimer)
+ 		{
+-			m_CleanupUDPTimer->cancel ();
+-			m_CleanupUDPTimer = nullptr;
++#ifdef __OpenBSD__
++			std::lock_guard<std::mutex> lock(m_ForwardsMutex);
++#endif
++			if (m_CleanupUDPTimer)
++			{
++				m_CleanupUDPTimer->cancel ();
++				m_CleanupUDPTimer = nullptr;
++			}
+ 		}
+ 
+ 		{
+@@ -220,6 +225,21 @@ namespace client
+ 		m_SharedLocalDestination->Release ();
+ 		CreateNewSharedLocalDestination ();
+ 
++#ifdef __OpenBSD__
++		// The old destination (still in m_Destinations) owns the timer's
++		// io_context. Rebind before it is stopped and removed below.
++		// CleanupUDP() uses the same mutex when touching/rearming the timer.
++		{
++			std::lock_guard<std::mutex> lock(m_ForwardsMutex);
++			if (m_CleanupUDPTimer)
++			{
++				m_CleanupUDPTimer->cancel ();
++				m_CleanupUDPTimer = std::make_unique<boost::asio::steady_timer>(m_SharedLocalDestination->GetService ());
++				ScheduleCleanupUDP ();
++			}
++		}
++#endif
++
+ 		// recreate HTTP proxy
+ 		if (m_HttpProxy)
+ 		{

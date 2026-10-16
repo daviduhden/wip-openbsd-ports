@@ -1,0 +1,14 @@
+Use the OpenBSD port data directory for --service without an explicit datadir.
+
+Index: libi2pd/FS.cpp
+--- libi2pd/FS.cpp.orig
++++ libi2pd/FS.cpp
+@@ -113,6 +113,8 @@ namespace fs {
+ 				dataDir = fs_lib::wpath(commonAppData).string() + "\\" + appName;
+ #endif
+ 			}
++#elif defined(__OpenBSD__)
++			dataDir = "/var/" + appName;
+ #else
+ 			dataDir = "/var/lib/" + appName;
+ #endif

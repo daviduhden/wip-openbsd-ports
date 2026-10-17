@@ -1,11 +1,10 @@
-Apply the OpenBSD pledge/unveil sandbox in a fresh helper process.
-Use an exec promise ceiling compatible with native tools that pledge themselves.
+Fail closed when the kernel cannot preserve the filesystem sandbox across exec.
 
 Index: codex-rs/sandboxing/src/openbsd.rs
 --- /dev/null
 +++ codex-rs/sandboxing/src/openbsd.rs
-@@ -0,0 +1,379 @@
-+//! OpenBSD sandbox backend: `pledge(2)` promises and `unveil(2)` rules.
+@@ -0,0 +1,320 @@
++//! OpenBSD pathname sandbox backend using locked `unveil(2)` rules.
 +//!
 +//! # Architecture
 +//!
@@ -16,33 +15,28 @@ Index: codex-rs/sandboxing/src/openbsd.rs
 +//! [`OpenBsdSandboxPolicy`] onto the helper's command line; the helper applies
 +//! it to itself and then `execve(2)`s the target program.
 +//!
-+//! This boundary is a fresh, single-threaded process, which matters:
++//! The helper installs and locks the unveil rules before executing the target.
++//! Unveil rules are inherited by fork, but the current kernel destroys them
++//! on exec unless execution promises were installed. Restricted policies are
++//! therefore rejected: this backend must never claim filesystem containment
++//! that disappears when it executes the target.
++//! It deliberately does not call pledge: without the `exec` promise, pledging
++//! the helper would prevent execution on kernels that require that promise.
++//! Without `error`, native tools' self-pledge calls also cannot safely be
++//! intersected with an inherited syscall ceiling.
 +//!
-+//! * The helper is created by `execve(2)` from the (possibly multithreaded)
-+//!   controller, so it never performs nontrivial Rust work in a `fork(2)` child.
-+//! * `pledge(2)` reductions are applied to a process that has exactly one
-+//!   thread, avoiding the kernel's sibling-thread unwind during unveil cleanup.
++//! This backend restricts pathname access only. Profiles requiring network
++//! containment are rejected in both the controller and the helper. It does
++//! not restrict descriptor operations, process operations or other syscalls.
 +//!
 +//! # Order of operations
 +//!
 +//! 1. Validate the policy and the execution arguments.
-+//! 2. `chdir(2)` into the command working directory (before any restriction).
-+//! 3. Install every `unveil(2)` rule.
-+//! 4. Lock the unveil configuration with `unveil(NULL, NULL)`.
-+//! 5. Set the current and execution promise sets with a single
-+//!    `pledge(promises, execpromises)` call.
-+//! 6. `execve(2)` the target program.
-+//!
-+//! Step 5 is where execution promises matter: the promises that restrict the
-+//! *target* are the second `pledge(2)` argument. A successful `pledge(2)` in
-+//! the helper does not by itself restrict the executed program, so the helper
-+//! always sets `execpromises` explicitly.
-+//!
-+//! The helper's own current promises include `exec`, which is a path promise;
-+//! this keeps the kernel from discarding the unveil state while the helper
-+//! transitions. Its promises are deliberately not taken from the policy, so a
-+//! malformed policy cannot widen the helper itself.
++//! 2. `chdir(2)` into the command working directory.
++//! 3. Install every `unveil(2)` rule and lock with `unveil(NULL, NULL)`.
++//! 4. `execve(2)` the target program.
 +
++use std::os::unix::fs::FileTypeExt;
 +use std::os::unix::process::CommandExt;
 +use std::path::Path;
 +use std::path::PathBuf;
@@ -50,8 +44,6 @@ Index: codex-rs/sandboxing/src/openbsd.rs
 +use codex_protocol::models::PermissionProfile;
 +use rust_openbsd::Permission;
 +use rust_openbsd::Permissions;
-+use rust_openbsd::Promise;
-+use rust_openbsd::Promises;
 +
 +use crate::openbsd_policy::OpenBsdPermissions;
 +use crate::openbsd_policy::OpenBsdPolicyError;
@@ -117,6 +109,7 @@ Index: codex-rs/sandboxing/src/openbsd.rs
 +        sandbox_policy_cwd,
 +        enforce_managed_network,
 +    )?;
++    ensure_exec_sandbox_supported(&policy)?;
 +    let policy_json = serde_json::to_string(&policy).map_err(|err| {
 +        OpenBsdPolicyError::Serialization(format!("failed to serialize openbsd policy: {err}"))
 +    })?;
@@ -157,6 +150,7 @@ Index: codex-rs/sandboxing/src/openbsd.rs
 +fn run_sandbox_helper() -> Result<(), String> {
 +    let arguments = parse_arguments()?;
 +    validate_policy(&arguments.policy).map_err(|err| err.to_string())?;
++    ensure_exec_sandbox_supported(&arguments.policy).map_err(|err| err.to_string())?;
 +
 +    let program = arguments
 +        .command
@@ -171,19 +165,24 @@ Index: codex-rs/sandboxing/src/openbsd.rs
 +        apply_unveil_rules(&arguments.policy)?;
 +    }
 +
-+    // The current promise set must include a path promise (`exec`) so that the
-+    // kernel does not tear down the unveil configuration as the helper
-+    // transitions, and the execution promise set carries the restrictions that
-+    // apply once the target image is loaded.
-+    let helper_promises = Promises::new([Promise::Stdio, Promise::Rpath, Promise::Exec]);
-+    let exec_promises = exec_promises(&arguments.policy);
-+    pledge_both_with_context(&helper_promises, &exec_promises)?;
-+
 +    let mut command = std::process::Command::new(&program);
 +    command.args(&arguments.command[1..]);
 +    // `exec` only returns on failure.
 +    let error = command.exec();
 +    Err(format!("exec({program}): {error}"))
++}
++
++/// Refuse a restriction which the kernel would discard at the exec boundary.
++fn ensure_exec_sandbox_supported(policy: &OpenBsdSandboxPolicy) -> Result<(), OpenBsdPolicyError> {
++    if policy.restrict_filesystem {
++        return Err(OpenBsdPolicyError::Unsupported(
++            "unveil rules are discarded by execve without execution promises; \
++             the OpenBSD backend cannot enforce this filesystem sandbox without \
++             the removed execution promise"
++                .to_string(),
++        ));
++    }
++    Ok(())
 +}
 +
 +/// Parsed helper command line.
@@ -247,6 +246,19 @@ Index: codex-rs/sandboxing/src/openbsd.rs
 +
 +/// Installs and locks the unveil rules.
 +fn apply_unveil_rules(policy: &OpenBsdSandboxPolicy) -> Result<(), String> {
++    // The implicit writable device must not grant writes to a regular file
++    // (or follow a substituted symlink) in a misconfigured filesystem.
++    if policy
++        .rules
++        .iter()
++        .any(|rule| rule.path == Path::new("/dev/null") && rule.permissions.write)
++    {
++        let metadata = std::fs::symlink_metadata("/dev/null")
++            .map_err(|err| format!("lstat(/dev/null): {err}"))?;
++        if !metadata.file_type().is_char_device() {
++            return Err("/dev/null must be a character device, not a file or symlink".to_string());
++        }
++    }
 +    for rule in &policy.rules {
 +        let permissions = permissions_from_bits(rule.permissions);
 +        rust_openbsd::unveil(rule.path.as_path(), permissions)
@@ -275,111 +287,39 @@ Index: codex-rs/sandboxing/src/openbsd.rs
 +    permissions
 +}
 +
-+/// Builds the target's syscall ceiling, independently of its unveil path rules.
-+///
-+/// Native OpenBSD tools pledge themselves: sh and make request write promises
-+/// even for read-only work. `error` makes the kernel intersect such requests
-+/// with the current set instead of rejecting startup with EPERM. It never
-+/// grants a missing promise; forbidden syscalls return ENOSYS (or abort after
-+/// the target voluntarily drops `error`). Exec promises retain the ceiling
-+/// across subsequent execs even when a shell reduces its current promises.
-+///
-+/// `getpw` supports account lookup; `flock` permits shared read locks too.
-+/// `fattr` is needed for build outputs and SQLite's same-owner fchown in Cargo.
-+/// The kernel's `fattr` promise includes that operation without `chown`, which
-+/// would additionally permit arbitrary ownership changes. Path-based metadata
-+/// writes still require unveil `w`; descriptor-based metadata operations follow
-+/// pledge's descriptor semantics (see the port's sandbox maintenance notes).
-+fn exec_promises(policy: &OpenBsdSandboxPolicy) -> Promises {
-+    let mut promises = vec![
-+        Promise::Stdio,
-+        Promise::Rpath,
-+        Promise::ProtExec,
-+        Promise::Exec,
-+        Promise::Proc,
-+        Promise::Tty,
-+        Promise::Getpw,
-+        Promise::Flock,
-+        Promise::Error,
-+    ];
-+    if policy.writable {
-+        promises.extend([Promise::Wpath, Promise::Cpath, Promise::Fattr]);
-+    }
-+    if policy.network {
-+        promises.extend([Promise::Inet, Promise::Dns]);
-+    }
-+    Promises::new(promises)
-+}
-+
-+/// Sets the current and execution promise sets in one `pledge(2)` call.
-+fn pledge_both_with_context(current: &Promises, exec: &Promises) -> Result<(), String> {
-+    rust_openbsd::pledge_both(current, exec).map_err(|err| format!("pledge(2): {err}"))
-+}
-+
 +#[cfg(test)]
 +mod tests {
 +    use super::*;
 +
-+    fn policy(writable: bool, network: bool) -> OpenBsdSandboxPolicy {
-+        OpenBsdSandboxPolicy {
++    #[test]
++    fn restricted_execution_fails_closed() {
++        let mut policy = OpenBsdSandboxPolicy {
 +            restrict_filesystem: true,
-+            writable,
-+            network,
++            writable: false,
++            network: true,
 +            rules: Vec::new(),
-+        }
++        };
++        assert!(ensure_exec_sandbox_supported(&policy).is_err());
++        policy.restrict_filesystem = false;
++        assert!(ensure_exec_sandbox_supported(&policy).is_ok());
 +    }
 +
 +    #[test]
-+    fn read_only_allows_native_self_pledge_without_granting_writes() {
-+        let promises = exec_promises(&policy(false, false));
-+        for promise in [
-+            Promise::Error,
-+            Promise::Getpw,
-+            Promise::Flock,
-+            Promise::Exec,
-+        ] {
-+            assert!(promises.contains(promise));
-+        }
-+        for promise in [
-+            Promise::Wpath,
-+            Promise::Cpath,
-+            Promise::Fattr,
-+            Promise::Inet,
-+            Promise::Dns,
-+        ] {
-+            assert!(!promises.contains(promise));
-+        }
-+    }
-+
-+    #[test]
-+    fn writable_build_tools_get_fattr_without_arbitrary_chown() {
-+        let promises = exec_promises(&policy(true, false));
-+        for promise in [
-+            Promise::Wpath,
-+            Promise::Cpath,
-+            Promise::Fattr,
-+            Promise::Flock,
-+        ] {
-+            assert!(promises.contains(promise));
-+        }
-+        for promise in [
-+            Promise::Chown,
-+            Promise::Unix,
-+            Promise::Inet,
-+            Promise::Dns,
-+            Promise::Unveil,
-+        ] {
-+            assert!(!promises.contains(promise));
-+        }
-+    }
-+
-+    #[test]
-+    fn network_promises_follow_policy() {
-+        for writable in [false, true] {
-+            for network in [false, true] {
-+                let promises = exec_promises(&policy(writable, network));
-+                assert_eq!(promises.contains(Promise::Inet), network);
-+                assert_eq!(promises.contains(Promise::Dns), network);
++    fn permission_conversion_preserves_each_bit() {
++        for bits in 0_u8..16 {
++            let translated = permissions_from_bits(OpenBsdPermissions {
++                read: bits & 1 != 0,
++                write: bits & 2 != 0,
++                execute: bits & 4 != 0,
++                create: bits & 8 != 0,
++            });
++            for (bit, permission) in [
++                (1, Permission::Read),
++                (2, Permission::Write),
++                (4, Permission::Execute),
++                (8, Permission::Create),
++            ] {
++                assert_eq!(translated.is_enabled(permission), bits & bit != 0);
 +            }
 +        }
 +    }

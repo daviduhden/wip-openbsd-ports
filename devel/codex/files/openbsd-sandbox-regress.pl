@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 # Run after rebuilding/installing Codex on OpenBSD; no model or API required.
-# Usage: perl openbsd-sandbox-regress.pl [/absolute/path/to/codex]
+# Usage: perl openbsd-sandbox-regress.pl [--quick] [/absolute/path/to/codex]
+# --quick skips compiler invocations and compiler startup checks.
 # All writes, including attempted escapes, target disposable fixtures.
 # Build cases compile tiny fixtures, never Codex itself. Uses core Perl modules.
 
@@ -9,13 +10,15 @@ use warnings;
 use Cwd            qw(abs_path);
 use File::Basename qw(basename);
 use File::Spec;
-use File::Temp qw(tempdir tempfile);
+use File::Temp   qw(tempdir tempfile);
+use Getopt::Long qw(GetOptions);
 use IO::Socket::INET;
 use POSIX       qw(WNOHANG setpgid _exit);
 use Time::HiRes qw(time sleep);
 use constant {
     COMMAND_TIMEOUT   => 120,
     SETUP_FAILURE     => 125,
+    SANDBOX_UNAVAILABLE => 77,
     SIGNAL_EXIT_BASE  => 128,
     TERMINATION_GRACE => 0.2,
     POLL_INTERVAL     => 0.05,
@@ -125,7 +128,10 @@ sub main {
     die
       "Run this regression suite on OpenBSD after installing the new package\n"
       unless $^O eq 'openbsd';
-    die "Usage: $0 [/absolute/path/to/codex]\n" if @ARGV > 1;
+    my $quick = 0;
+    my $usage = "Usage: $0 [--quick] [/absolute/path/to/codex]\n";
+    GetOptions( 'quick' => \$quick ) or die $usage;
+    die $usage if @ARGV > 1;
     my $codex = find_executable( $ARGV[0] // 'codex' );
     my $perl  = find_executable($^X);
     my $base =
@@ -148,29 +154,23 @@ sub main {
     local $ENV{CODEX_HOME} = "$base/home";
     local $ENV{CARGO_HOME} = "$work/cargo-home";
     local $ENV{TMPDIR}     = "$work/tmp";
+    write_file( "$base/home/config.toml",
+            "[permissions.openbsd-read]\nextends=\":read-only\"\n"
+          . "[permissions.openbsd-read.network]\nenabled=true\n"
+          . "[permissions.openbsd-workspace]\nextends=\":workspace\"\n"
+          . "[permissions.openbsd-workspace.filesystem]\n\":slash_tmp\"=\"read\"\n"
+          . "[permissions.openbsd-workspace.network]\nenabled=true\n" );
+    my $writer = 'open my $f, ">", $ARGV[0] or die "open: $!\n"; '
+      . 'print {$f} "changed" or die "write: $!\n"; close $f or die "close: $!\n";';
     my @failures;
     my $run = sub {
         my ( $name, $mode, $command, %options ) = @_;
 
-        # Explicit overrides select known policies instead of ambient defaults.
+        # Network access is explicit; disabled-network profiles must reject
+        # setup rather than silently run with unrestricted network access.
         my @args = (
-            $codex,
-            'sandbox',
-            '-c',
-            "sandbox_mode=\"$mode\"",
-            '-c',
-            'sandbox_workspace_write.exclude_slash_tmp=true',
-            '-c',
-            'sandbox_workspace_write.exclude_tmpdir_env_var=true',
-            '-c',
-            'sandbox_workspace_write.network_access='
-              . ( $options{network} ? 'true' : 'false' ),
-            '--',
-            @$command,
-        );
-        @args = (
             $codex, 'sandbox', '--permission-profile', $mode, '--', @$command
-        ) if $options{profile};
+        );
         my $before =
           defined $options{unchanged}
           ? read_file( $options{unchanged} )
@@ -181,8 +181,11 @@ sub main {
             # Setup failures and timeouts are not evidence of enforcement.
             my $passed = !$timed_out
               && (
-                $options{denied}
-                ? ( $exit != 0
+                $options{reject_setup} ? ( $exit != 0
+                      && $exit < SIGNAL_EXIT_BASE
+                      && $output =~
+                      /network[ ]isolation[ ]is[ ]unavailable/xms )
+                : $options{denied} ? ( $exit != 0
                       && $exit != SETUP_FAILURE
                       && $exit != 126
                       && $exit != 127 )
@@ -209,51 +212,75 @@ sub main {
         push @failures, $name unless $ok;
     };
 
+    my ( $probe_exit, $probe_timeout, $probe_output ) = capture(
+        $base, $work,
+        [ $codex, 'sandbox', '--permission-profile', 'openbsd-read', '--',
+          $perl, '-e', 'exit 0' ]
+    );
+    if ( !$probe_timeout && $probe_exit != 0
+        && index( $probe_output, 'unveil rules are discarded by execve' ) >= 0 ) {
+        print {*STDERR} "UNSUPPORTED: the kernel cannot retain this execution sandbox\n"
+          or die "write stderr: $!\n";
+        return SANDBOX_UNAVAILABLE;
+    }
+
     $run->(
-        'named read-only profile',
+        'named read-only rejects unavailable network isolation',
         ':read-only',
-        [ '/bin/sh', '-c', 'echo profile-ok' ],
-        profile => 1
+        [ $perl, '-e', $writer, "$work/read-marker" ],
+        reject_setup => 1,
+        unchanged    => "$work/read-marker"
     );
     $run->(
-        'named workspace profile',
+        'named workspace rejects unavailable network isolation',
         ':workspace',
-        [ '/bin/sh', '-c', 'echo profile-ok > profile-output' ],
-        profile => 1
+        [ $perl, '-e', $writer, "$work/work-marker" ],
+        reject_setup => 1,
+        unchanged    => "$work/work-marker"
     );
     $run->(
         'read-only shell builtin',
-        'read-only', [ '/bin/sh', '-c', 'echo shell-ok' ]
+        'openbsd-read', [ '/bin/sh', '-c', 'echo shell-ok' ]
     );
     $run->(
         'read-only shell subprocess',
-        'read-only', [ '/bin/sh', '-c', '/bin/cat hello.c' ]
+        'openbsd-read', [ '/bin/sh', '-c', '/bin/cat hello.c' ]
     );
-    $run->( 'read-only make dry run', 'read-only', [ '/usr/bin/make', '-n' ] );
+    $run->(
+        'read-only shell null redirection',
+        'openbsd-read', [ '/bin/sh', '-c', 'echo discarded >/dev/null' ]
+    );
+    $run->(
+        'read-only subprocess null redirection',
+        'openbsd-read', [ '/bin/sh', '-c', '/bin/cat hello.c >/dev/null' ]
+    );
+    $run->(
+        'read-only make dry run',
+        'openbsd-read',
+        [ '/usr/bin/make', '-n' ]
+    );
     $run->(
         'workspace shell pipeline',
-        'workspace-write',
+        'openbsd-workspace',
         [ '/bin/sh', '-c', 'echo shell-ok | /usr/bin/tee shell-output' ]
     );
-    $run->( 'workspace make', 'workspace-write', ['/usr/bin/make'] );
+    $run->( 'workspace make', 'openbsd-workspace', ['/usr/bin/make'] );
 
     # Direct Perl probes distinguish real denials from sandboxed shell startup
     # failures. Use the same executable for positive and negative controls.
-    my $writer = 'open my $f, ">", $ARGV[0] or die "open: $!\n"; '
-      . 'print {$f} "changed" or die "write: $!\n"; close $f or die "close: $!\n";';
     $run->(
         'workspace direct write',
-        'workspace-write', [ $perl, '-e', $writer, 'allowed' ]
+        'openbsd-workspace', [ $perl, '-e', $writer, 'allowed' ]
     );
     $run->(
         'disabled sandbox bypass',
-        'danger-full-access', [ $perl, '-e', $writer, "$base/full-access" ]
+        ':danger-full-access', [ $perl, '-e', $writer, "$base/full-access" ]
     );
     my @denials = (
-        [ 'read-only write', "$work/readonly-new",   'read-only' ],
-        [ 'outside write',   "$base/outside",        'workspace-write' ],
-        [ 'symlink escape',  "$work/escape/escaped", 'workspace-write' ],
-        map { [ "protected $_", "$work/$_/config", 'workspace-write' ] }
+        [ 'read-only write', "$work/readonly-new",   'openbsd-read' ],
+        [ 'outside write',   "$base/outside",        'openbsd-workspace' ],
+        [ 'symlink escape',  "$work/escape/escaped", 'openbsd-workspace' ],
+        map { [ "protected $_", "$work/$_/config", 'openbsd-workspace' ] }
           qw(.git .agents .codex .aws),
     );
     for my $case (@denials) {
@@ -264,9 +291,26 @@ sub main {
             unchanged => $target
         );
     }
+
+    # Repeat protection with the final path absent: unveil must prevent
+    # first-time creation, rather than merely fail while applying the rules.
+    rmdir "$work/.codex" or die "rmdir missing-metadata fixture: $!\n";
+    my $mkdir = 'mkdir $ARGV[0] or die "mkdir: $!\n";';
+    $run->(
+        'workspace directory creation control',
+        'openbsd-workspace',
+        [ $perl, '-e', $mkdir, "$work/fresh" ]
+    );
+    $run->(
+        'missing .codex directory stays protected',
+        'openbsd-workspace',
+        [ $perl, '-e', $mkdir, "$work/.codex" ],
+        denied    => 1,
+        unchanged => "$work/.codex"
+    );
     $run->(
         'workspace metadata',
-        'workspace-write',
+        'openbsd-workspace',
         [
             $perl,
             '-e',
@@ -276,7 +320,7 @@ sub main {
     );
     $run->(
         'same-owner fchown (Cargo SQLite)',
-        'workspace-write',
+        'openbsd-workspace',
         [
             $perl,
             '-e',
@@ -300,39 +344,43 @@ sub main {
       . 'or die "connect: $!\n"; close $s or die "close: $!\n";';
     $run->(
         'network enabled control',
-        'workspace-write',
-        [ $perl, '-e', $connection ],
-        network => 1
+        'openbsd-workspace',
+        [ $perl, '-e', $connection ]
     );
     $run->(
-        'network disabled',
-        'workspace-write',
-        [ $perl, '-e', $connection ],
-        denied => 1
+        'network disabled rejects command before execution',
+        ':workspace',
+        [ $perl, '-e', $writer, "$work/network-marker" ],
+        reject_setup => 1,
+        unchanged    => "$work/network-marker"
     );
     close $listener or die "close listener: $!\n";
 
-    $run->(
-        'clang compile with authorized TMPDIR',
-        'workspace-write', [ '/usr/bin/clang', 'hello.c', '-o', 'hello-c' ]
-    );
-    $run->(
-        'rustc compile',
-        'workspace-write',
-        [ '/usr/local/bin/rustc', 'src/main.rs', '-o', 'hello-rust' ]
-    );
-    $run->(
-        'cargo offline build',
-        'workspace-write', [ '/usr/local/bin/cargo', 'build', '--offline' ]
-    );
-
-    for my $tool ( '/usr/bin/clang', '/usr/local/bin/rustc',
-        '/usr/local/bin/cargo' )
-    {
+    if ( !$quick ) {
         $run->(
-            basename($tool) . ' read-only startup',
-            'read-only', [ $tool, '--version' ]
+            'clang compile with authorized TMPDIR',
+            'openbsd-workspace',
+            [ '/usr/bin/clang', 'hello.c', '-o', 'hello-c' ]
         );
+        $run->(
+            'rustc compile',
+            'openbsd-workspace',
+            [ '/usr/local/bin/rustc', 'src/main.rs', '-o', 'hello-rust' ]
+        );
+        $run->(
+            'cargo offline build',
+            'openbsd-workspace',
+            [ '/usr/local/bin/cargo', 'build', '--offline' ]
+        );
+
+        for my $tool ( '/usr/bin/clang', '/usr/local/bin/rustc',
+            '/usr/local/bin/cargo' )
+        {
+            $run->(
+                basename($tool) . ' read-only startup',
+                'openbsd-read', [ $tool, '--version' ]
+            );
+        }
     }
     if (@failures) {
         print {*STDERR} scalar(@failures)
@@ -341,7 +389,7 @@ sub main {
           or die "write stderr: $!\n";
         return 1;
     }
-    print "All OpenBSD sandbox regressions passed\n"
+    print "All selected OpenBSD sandbox regressions passed\n"
       or die "write stdout: $!\n";
     close STDOUT or die "close stdout: $!\n";
     return 0;

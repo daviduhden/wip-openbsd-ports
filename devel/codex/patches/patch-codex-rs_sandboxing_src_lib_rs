@@ -30,7 +30,7 @@ Index: codex-rs/sandboxing/src/lib.rs
 +            }
 +            #[cfg(not(target_os = "openbsd"))]
 +            SandboxTransformError::OpenBsdUnavailable => CodexErr::UnsupportedOperation(
-+                "openbsd pledge/unveil sandbox is only available on OpenBSD".to_string(),
++                "openbsd unveil sandbox is only available on OpenBSD".to_string(),
 +            ),
              SandboxTransformError::EnvironmentNetworkProxy(message) => {
                  CodexErr::UnsupportedOperation(message)

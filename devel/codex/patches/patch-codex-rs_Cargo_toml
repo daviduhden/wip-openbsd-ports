@@ -1,6 +1,6 @@
 Resolve pinned Git dependencies from DIST_TUPLE sources, rather than fetching
 Git repositories during the Cargo build, and declare the OpenBSD-only
-pledge(2)/unveil(2) bindings as a workspace dependency.  The crate is fetched
+unveil(2) bindings as a workspace dependency.  The crate is fetched
 by the port through DIST_TUPLE and consumed as a path dependency; it is only
 used by the OpenBSD target and has no dependencies of its own.  Both changes
 live in this single patch because update-patches keys patches by the file they
@@ -43,7 +43,7 @@ Index: codex-rs/Cargo.toml
 +rmcp = { path = "../rust-sdk/crates/rmcp", version = "=3.5.1", default-features = false }
 +runfiles = { path = "../runfiles/rust/runfiles" }
  rustix = { version = "1.1.4", features = ["net"] }
-+# OpenBSD-only sandbox bindings for pledge(2)/unveil(2). Fetched by the port
++# OpenBSD-only sandbox bindings for unveil(2). Fetched by the port
 +# through DIST_TUPLE and consumed as a path dependency; it has no dependencies
 +# of its own.
 +rust-openbsd = { path = "../rust-openbsd" }

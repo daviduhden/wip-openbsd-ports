@@ -1,12 +1,10 @@
-Translate Codex permission profiles into OpenBSD unveil rules.
-Fail closed for unsupported read policies, deny globs and managed proxy containment.
+Translate pathname policies with unveil; reject network containment without approximation.
 
 Index: codex-rs/sandboxing/src/openbsd_policy.rs
 --- /dev/null
 +++ codex-rs/sandboxing/src/openbsd_policy.rs
-@@ -0,0 +1,576 @@
+@@ -0,0 +1,717 @@
 +//! Translation of Codex permission profiles into an OpenBSD
-+//! [`pledge(2)`](https://man.openbsd.org/pledge.2) /
 +//! [`unveil(2)`](https://man.openbsd.org/unveil.2) policy.
 +//!
 +//! The translation is intentionally platform independent and is compiled on
@@ -74,6 +72,14 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +        create: false,
 +    };
 +
++    /// `r` and `w`: the null device, without creation or execution permission.
++    pub const READ_WRITE: Self = Self {
++        read: true,
++        write: true,
++        execute: false,
++        create: false,
++    };
++
 +    /// `r`, `w`, `c`, and `x`: full access to a writable root.
 +    pub const READ_WRITE_CREATE_EXECUTE: Self = Self {
 +        read: true,
@@ -108,12 +114,11 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +    /// Whether `unveil(2)` must be configured and locked.
 +    ///
 +    /// `false` for profiles that ask Codex *not* to build a filesystem sandbox
-+    /// (`unrestricted` and `external-sandbox`); the helper then applies only
-+    /// the pledge restrictions.
++    /// (`unrestricted` and `external-sandbox`); no pathname rules are applied.
 +    pub restrict_filesystem: bool,
-+    /// Whether the executed program may modify the filesystem.
++    /// Whether the profile grants filesystem writes, excluding the null device.
 +    pub writable: bool,
-+    /// Whether the executed program may use the network (`inet`, `dns`).
++    /// Whether the profile allows unrestricted network access. Must be true.
 +    pub network: bool,
 +    /// `unveil(2)` rules in application order.
 +    pub rules: Vec<OpenBsdUnveilRule>,
@@ -125,7 +130,7 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +/// was handed malformed input", so that callers can report the two separately.
 +#[derive(Clone, Debug, Eq, PartialEq)]
 +pub enum OpenBsdPolicyError {
-+    /// The policy cannot be enforced correctly with `pledge(2)`/`unveil(2)`.
++    /// The policy cannot be enforced correctly with `unveil(2)`.
 +    ///
 +    /// The sandbox fails closed: the command is not executed.
 +    Unsupported(String),
@@ -157,11 +162,9 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +/// `sandbox_policy_cwd` is the working directory that relative profile entries
 +/// resolve against, exactly as the other platform backends use it.
 +///
-+/// `enforce_managed_network` is set when the caller requires all egress to go
-+/// through the managed network proxy. `pledge(2)` can either grant the `inet`
-+/// promise (any outbound connection) or withhold it (no sockets at all); it
-+/// cannot restrict egress to a proxy, so any active managed proxy is rejected
-+/// rather than silently permitting direct connections alongside the proxy.
++/// `enforce_managed_network` requires proxy-only egress. Unveil does not
++/// restrict network syscalls, so both proxy containment and disabled network
++/// access must be rejected rather than silently granting network access.
 +///
 +/// # Errors
 +///
@@ -178,11 +181,12 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +
 +    if enforce_managed_network {
 +        return Err(OpenBsdPolicyError::Unsupported(
-+            "a managed network proxy requires proxy-only egress, which pledge(2) cannot \
-+             express: granting `inet` would allow arbitrary outbound connections"
++            "a managed network proxy requires proxy-only egress, which unveil(2) cannot enforce"
 +                .to_string(),
 +        ));
 +    }
++
++    require_unrestricted_network(network)?;
 +
 +    if !matches!(file_system.kind, FileSystemSandboxKind::Restricted) {
 +        // `unrestricted` and `external-sandbox` profiles do not ask Codex to
@@ -202,6 +206,7 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +        }];
 +        append_deny_rules(&file_system, sandbox_policy_cwd, &mut rules)?;
 +        let writable = rules.iter().any(|rule| rule.permissions.is_writable());
++        append_null_device_rule(&file_system, sandbox_policy_cwd, &mut rules);
 +        return Ok(OpenBsdSandboxPolicy {
 +            restrict_filesystem: true,
 +            writable,
@@ -258,12 +263,32 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +    append_deny_rules(&file_system, sandbox_policy_cwd, &mut rules)?;
 +
 +    let writable = rules.iter().any(|rule| rule.permissions.is_writable());
++    append_null_device_rule(&file_system, sandbox_policy_cwd, &mut rules);
 +    Ok(OpenBsdSandboxPolicy {
 +        restrict_filesystem: true,
 +        writable,
 +        network,
 +        rules,
 +    })
++}
++
++/// Permit shell output redirection to the null device, as upstream's other
++/// backends do. Explicit read denials of this path or its ancestors take
++/// precedence, as do existing rules for this exact path. Never try to widen
++/// an earlier rule, which unveil would reject. The helper checks that the
++/// device is not a regular file or symlink before installing the rules.
++/// No directory is made writable here.
++fn append_null_device_rule(
++    file_system: &FileSystemSandboxPolicy,
++    sandbox_policy_cwd: &Path,
++    rules: &mut Vec<OpenBsdUnveilRule>,
++) {
++    let path = Path::new("/dev/null");
++    if file_system.can_read_local_path_with_cwd(path, sandbox_policy_cwd)
++        && !rules.iter().any(|rule| rule.path == path)
++    {
++        push_rule(rules, path.to_path_buf(), OpenBsdPermissions::READ_WRITE);
++    }
 +}
 +
 +/// Validates a policy before the helper applies it.
@@ -279,6 +304,7 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +/// configuration would deny the entire filesystem, including the program about
 +/// to be executed).
 +pub fn validate_policy(policy: &OpenBsdSandboxPolicy) -> Result<(), OpenBsdPolicyError> {
++    require_unrestricted_network(policy.network)?;
 +    if policy.restrict_filesystem && policy.rules.is_empty() {
 +        return Err(OpenBsdPolicyError::Invalid(
 +            "restricted policy without any unveil rule".to_string(),
@@ -296,6 +322,18 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +                rule.path.display()
 +            )));
 +        }
++    }
++    Ok(())
++}
++
++/// Reject network containment before applying any filesystem restriction.
++fn require_unrestricted_network(network: bool) -> Result<(), OpenBsdPolicyError> {
++    if !network {
++        return Err(OpenBsdPolicyError::Unsupported(
++            "network isolation is unavailable with the OpenBSD unveil backend; \
++             select a profile with network access enabled explicitly"
++                .to_string(),
++        ));
 +    }
 +    Ok(())
 +}
@@ -350,15 +388,46 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +        PathBuf::from("/work")
 +    }
 +
++    fn read_only_with_network() -> PermissionProfile {
++        PermissionProfile::from_runtime_permissions(
++            &FileSystemSandboxPolicy::read_only(),
++            NetworkSandboxPolicy::Enabled,
++        )
++    }
++
++    #[test]
++    fn network_isolation_is_rejected_before_translation() {
++        for profile in [
++            PermissionProfile::read_only(),
++            PermissionProfile::workspace_write(),
++        ] {
++            assert!(matches!(
++                translate_permission_profile(&profile, &cwd(), false),
++                Err(OpenBsdPolicyError::Unsupported(_))
++            ));
++        }
++    }
++
++    #[test]
++    fn helper_rejects_serialized_network_isolation() {
++        let mut policy = translate_permission_profile(&read_only_with_network(), &cwd(), false)
++            .expect("translate");
++        policy.network = false;
++        assert!(matches!(
++            validate_policy(&policy),
++            Err(OpenBsdPolicyError::Unsupported(_))
++        ));
++    }
++
 +    #[test]
 +    fn read_only_profile_reads_everything_and_writes_nothing() {
-+        let profile = PermissionProfile::read_only();
++        let profile = read_only_with_network();
 +        let policy = translate_permission_profile(&profile, &cwd(), false).expect("translate");
 +
 +        assert!(policy.restrict_filesystem);
 +        assert!(!policy.writable);
-+        assert!(!policy.network);
-+        assert_eq!(policy.rules.len(), 1);
++        assert!(policy.network);
++        assert_eq!(policy.rules.len(), 2);
 +        assert_eq!(policy.rules[0].path, PathBuf::from("/"));
 +        assert_eq!(
 +            policy.rules[0].permissions,
@@ -367,11 +436,84 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +    }
 +
 +    #[test]
++    fn read_only_null_device_grant_cannot_create_or_execute() {
++        let policy = translate_permission_profile(&read_only_with_network(), &cwd(), false)
++            .expect("translate");
++        let rule = policy
++            .rules
++            .iter()
++            .find(|rule| rule.path == Path::new("/dev/null"))
++            .expect("null device rule");
++        assert_eq!(rule.permissions, OpenBsdPermissions::READ_WRITE);
++        assert!(!rule.permissions.create);
++        assert!(!rule.permissions.execute);
++        assert!(!policy.writable);
++    }
++
++    #[test]
++    fn explicit_null_device_and_parent_denials_are_preserved() {
++        for denied in ["/dev/null", "/dev"] {
++            let path = AbsolutePathBuf::from_absolute_path(denied).expect("absolute");
++            let mut entries = FileSystemSandboxPolicy::read_only().entries;
++            entries.push(FileSystemSandboxEntry::new(
++                FileSystemPath::Path {
++                    path: PathUri::from_abs_path(&path),
++                },
++                FileSystemAccessMode::Deny,
++            ));
++            let profile = PermissionProfile::from_runtime_permissions(
++                &FileSystemSandboxPolicy::restricted(entries),
++                NetworkSandboxPolicy::Enabled,
++            );
++            let policy = translate_permission_profile(&profile, &cwd(), false).expect("translate");
++            assert!(
++                !policy
++                    .rules
++                    .iter()
++                    .any(|rule| rule.path == Path::new("/dev/null") && rule.permissions.write)
++            );
++            assert!(policy.rules.contains(&OpenBsdUnveilRule {
++                path: path.to_path_buf(),
++                permissions: OpenBsdPermissions::NONE,
++            }));
++        }
++    }
++
++    #[test]
++    fn explicit_null_device_carveout_is_not_widened() {
++        let mut entries = FileSystemSandboxPolicy::read_only().entries;
++        for (path, access) in [
++            ("/dev", FileSystemAccessMode::Write),
++            ("/dev/null", FileSystemAccessMode::Read),
++        ] {
++            let path = AbsolutePathBuf::from_absolute_path(path).expect("absolute");
++            entries.push(FileSystemSandboxEntry::new(
++                FileSystemPath::Path {
++                    path: PathUri::from_abs_path(&path),
++                },
++                access,
++            ));
++        }
++        let profile = PermissionProfile::from_runtime_permissions(
++            &FileSystemSandboxPolicy::restricted(entries),
++            NetworkSandboxPolicy::Enabled,
++        );
++        let policy = translate_permission_profile(&profile, &cwd(), false).expect("translate");
++        let rules: Vec<_> = policy
++            .rules
++            .iter()
++            .filter(|rule| rule.path == Path::new("/dev/null"))
++            .collect();
++        assert_eq!(rules.len(), 1);
++        assert_eq!(rules[0].permissions, OpenBsdPermissions::READ_EXECUTE);
++    }
++
++    #[test]
 +    fn workspace_write_profile_makes_roots_writable() {
 +        let root = AbsolutePathBuf::from_absolute_path("/work/project").expect("absolute");
 +        let profile = PermissionProfile::workspace_write_with(
 +            std::slice::from_ref(&root),
-+            NetworkSandboxPolicy::Restricted,
++            NetworkSandboxPolicy::Enabled,
 +            /*exclude_tmpdir_env_var*/ true,
 +            /*exclude_slash_tmp*/ true,
 +        );
@@ -379,7 +521,7 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +
 +        assert!(policy.restrict_filesystem);
 +        assert!(policy.writable);
-+        assert!(!policy.network);
++        assert!(policy.network);
 +        assert_eq!(policy.rules[0].path, PathBuf::from("/"));
 +        assert_eq!(
 +            policy.rules[0].permissions,
@@ -402,7 +544,7 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +        let root = AbsolutePathBuf::from_absolute_path("/work/project").expect("absolute");
 +        let profile = PermissionProfile::workspace_write_with(
 +            std::slice::from_ref(&root),
-+            NetworkSandboxPolicy::Restricted,
++            NetworkSandboxPolicy::Enabled,
 +            true,
 +            true,
 +        );
@@ -444,7 +586,7 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +    fn unrestricted_profile_adds_no_unveil_rules() {
 +        let profile = PermissionProfile::from_runtime_permissions(
 +            &codex_protocol::permissions::FileSystemSandboxPolicy::unrestricted(),
-+            NetworkSandboxPolicy::Restricted,
++            NetworkSandboxPolicy::Enabled,
 +        );
 +        let policy = translate_permission_profile(&profile, &cwd(), false).expect("translate");
 +        assert!(!policy.restrict_filesystem);
@@ -463,7 +605,7 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +        );
 +        let profile = PermissionProfile::from_runtime_permissions(
 +            &FileSystemSandboxPolicy::restricted(vec![entry]),
-+            NetworkSandboxPolicy::Restricted,
++            NetworkSandboxPolicy::Enabled,
 +        );
 +        let error = translate_permission_profile(&profile, &cwd(), false).expect_err("rejected");
 +        assert!(matches!(error, OpenBsdPolicyError::Unsupported(_)));
@@ -481,7 +623,7 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +        entries.push(deny);
 +        let profile = PermissionProfile::from_runtime_permissions(
 +            &FileSystemSandboxPolicy::restricted(entries),
-+            NetworkSandboxPolicy::Restricted,
++            NetworkSandboxPolicy::Enabled,
 +        );
 +        let error = translate_permission_profile(&profile, &cwd(), false).expect_err("rejected");
 +        assert!(matches!(error, OpenBsdPolicyError::Unsupported(_)));
@@ -499,7 +641,7 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +        ));
 +        let profile = PermissionProfile::from_runtime_permissions(
 +            &FileSystemSandboxPolicy::restricted(entries),
-+            NetworkSandboxPolicy::Restricted,
++            NetworkSandboxPolicy::Enabled,
 +        );
 +        let policy = translate_permission_profile(&profile, &cwd(), false).expect("translate");
 +        assert!(policy.rules.contains(&OpenBsdUnveilRule {
@@ -521,7 +663,7 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +        ));
 +        let profile = PermissionProfile::from_runtime_permissions(
 +            &FileSystemSandboxPolicy::restricted(entries),
-+            NetworkSandboxPolicy::Restricted,
++            NetworkSandboxPolicy::Enabled,
 +        );
 +        assert!(matches!(
 +            translate_permission_profile(&profile, &cwd(), false),
@@ -531,9 +673,8 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +
 +    #[test]
 +    fn validation_rejects_relative_and_empty_paths() {
-+        let mut policy =
-+            translate_permission_profile(&PermissionProfile::read_only(), &cwd(), false)
-+                .expect("translate");
++        let mut policy = translate_permission_profile(&read_only_with_network(), &cwd(), false)
++            .expect("translate");
 +        policy.rules.push(OpenBsdUnveilRule {
 +            path: PathBuf::from("relative/path"),
 +            permissions: OpenBsdPermissions::READ_EXECUTE,
@@ -543,9 +684,8 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +            Err(OpenBsdPolicyError::Invalid(_))
 +        ));
 +
-+        let mut policy =
-+            translate_permission_profile(&PermissionProfile::read_only(), &cwd(), false)
-+                .expect("translate");
++        let mut policy = translate_permission_profile(&read_only_with_network(), &cwd(), false)
++            .expect("translate");
 +        policy.rules.push(OpenBsdUnveilRule {
 +            path: PathBuf::new(),
 +            permissions: OpenBsdPermissions::READ_EXECUTE,
@@ -561,7 +701,7 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +        let policy = OpenBsdSandboxPolicy {
 +            restrict_filesystem: true,
 +            writable: false,
-+            network: false,
++            network: true,
 +            rules: Vec::new(),
 +        };
 +        assert!(matches!(
@@ -573,8 +713,8 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +    #[test]
 +    fn validation_accepts_translated_policies() {
 +        for profile in [
-+            PermissionProfile::read_only(),
-+            PermissionProfile::workspace_write(),
++            read_only_with_network(),
++            PermissionProfile::workspace_write_with(&[], NetworkSandboxPolicy::Enabled, true, true),
 +        ] {
 +            let policy = translate_permission_profile(&profile, &cwd(), false).expect("translate");
 +            assert!(validate_policy(&policy).is_ok());

@@ -19,7 +19,7 @@ Index: codex-rs/arg0/src/lib.rs
      }
 +    #[cfg(target_os = "openbsd")]
 +    if exe_name == CODEX_OPENBSD_SANDBOX_ARG0 {
-+        // The OpenBSD helper applies pledge(2)/unveil(2) to itself and then
++        // The OpenBSD helper applies unveil(2) to itself and then
 +        // execs the target; it never returns.
 +        codex_sandboxing::openbsd::run_openbsd_sandbox_main();
 +    }

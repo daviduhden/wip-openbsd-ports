@@ -2,38 +2,24 @@
 | Running ${PKGSTEM} on OpenBSD
 +-----------------------------------------------------------------------
 
-Codex restricts the commands it runs with pledge(2) and unveil(2): a sandboxed
-command is started through the same executable, re-invoked as
-"codex-openbsd-sandbox", which installs the unveiled paths, applies the promise
-set and then execs the target. The backend is selected automatically for the
-workspace-write and read-only profiles; the danger-full-access profile still
-runs commands without a sandbox. The helper resolves its own executable with
-getexecpath(3), so this package requires OpenBSD 8.0 or later.
+The OpenBSD command sandbox is currently unavailable without the legacy
+execution promise. Restricted filesystem profiles are rejected before command
+execution, including profiles with network access enabled explicitly.
 
-To run a local command with the same permission-profile resolution as Codex:
+The kernel clears unveil rules on execve unless execpromises are installed.
+Using unveil alone in a launcher would therefore run the target with no
+filesystem restrictions. The backend checks this limitation in both the
+controller and helper and fails closed. It does not request exec or error.
+Network isolation and managed-proxy containment are also unsupported.
 
-	codex sandbox --permission-profile :read-only -- /bin/sh -c 'echo ok'
-	codex sandbox --permission-profile :workspace -- /usr/bin/make
+The danger-full-access profile is an explicit opt-out and continues to run
+commands without a sandbox. This package does not silently select it when a
+restricted profile fails. getexecpath(3) is still used to resolve helper paths.
+The internal OpenBsdPledgeUnveil identifier is retained for compatibility.
 
-The target receives the pledge "error" promise so native OpenBSD programs
-can pledge themselves without increasing their permitted operations. A
-forbidden system call returns ENOSYS while that promise remains active;
-programs that drop it can still abort on a pledge violation. Writable
-profiles include fattr for build-tool metadata operations, including Cargo's
-same-owner fchown; arbitrary ownership changes are not granted.
-
-Filesystem paths, including temporary directories and protected metadata,
-come from the selected permission profile. If a profile excludes /tmp and
-$TMPDIR, build tools need a TMPDIR inside an authorized writable root.
-Arbitrary narrow read policies, glob read denials, managed-proxy containment,
-and AF_UNIX sockets are not supported by this backend. Unsupported policies
-fail before command execution; socket operations remain blocked by pledge.
-
-unveil restricts pathname operations, not access through existing file
-descriptors. Writable profiles need fattr, which also permits descriptor
-metadata operations such as fchmod. These kernel semantics differ from
-path-based metadata protection; the backend does not provide full parity
-with every other platform's sandbox.
+The regression script reports unsupported sandbox execution with exit 77;
+it must not be interpreted as a passing security test. --quick omits compiler
+invocations when a compatible implementation is available in the future.
 
 The installed executables carry the WXNEEDED flag, because V8 compiles with
 W^X, so the filesystem holding ${LOCALBASE} must be mounted with the wxallowed

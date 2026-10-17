@@ -36,13 +36,13 @@ Index: codex-rs/sandboxing/src/manager.rs
 +            }
 +            #[cfg(target_os = "openbsd")]
 +            Self::OpenBsdPreparation(err) => {
-+                write!(f, "failed to prepare OpenBSD pledge/unveil sandbox: {err}")
++                write!(f, "failed to prepare OpenBSD unveil sandbox: {err}")
 +            }
 +            #[cfg(not(target_os = "openbsd"))]
 +            Self::OpenBsdUnavailable => {
 +                write!(
 +                    f,
-+                    "openbsd pledge/unveil sandbox is only available on OpenBSD"
++                    "openbsd unveil sandbox is only available on OpenBSD"
 +                )
 +            }
              Self::WindowsMxcPreparation(err) => {

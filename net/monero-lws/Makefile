@@ -87,8 +87,8 @@ do-install:
 	${INSTALL_PROGRAM} ${LWS_WRKBUILD}/src/monero-lws-daemon ${PREFIX}/bin/
 	${INSTALL_PROGRAM} ${LWS_WRKBUILD}/src/monero-lws-admin ${PREFIX}/bin/
 	${INSTALL_PROGRAM} ${LWS_WRKBUILD}/src/monero-lws-client ${PREFIX}/bin/
-	${INSTALL_DATA_DIR} ${SYSCONFDIR}/monero-lws
-	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/lib/monero-lws
-	${INSTALL_DATA_DIR} ${LOCALSTATEDIR}/log/monero-lws
+	${INSTALL_DATA_DIR} ${PREFIX}/share/examples/monero-lws
+	${INSTALL_DATA} ${FILESDIR}/monero-lws.conf \
+		${PREFIX}/share/examples/monero-lws/monero-lws.conf
 
 .include <bsd.port.mk>

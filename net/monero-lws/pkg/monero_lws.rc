@@ -2,8 +2,7 @@
 
 daemon="${TRUEPREFIX}/bin/monero-lws-daemon"
 daemon_user="_monerod"
-daemon_flags="--db-path=${LOCALSTATEDIR}/lib/monero-lws \
-	--rest-server=http://127.0.0.1:8443"
+daemon_flags="--config-file=${SYSCONFDIR}/monero-lws/monero-lws.conf"
 daemon_logger="daemon.info"
 
 . /etc/rc.d/rc.subr
@@ -15,9 +14,10 @@ rc_reload=NO
 # it connects to tcp://127.0.0.1:18082 by default.  Pass --sub here and
 # --zmq-pub to monerod for block notifications instead of polling.
 #
-# The wallet REST API listens on localhost only.  Add one --rest-server
-# argument for every further listener; https:// endpoints use a self-signed
-# certificate unless --rest-ssl-key and --rest-ssl-certificate are given.
-# Use --config-file=<path> for options that should not show up in the process
-# list, such as --lws-server-pass.  Further flags belong in rc.conf.local(8).
+# The wallet REST API is left on localhost by the db-path and rest-server
+# settings in the configuration file.  Add one --rest-server argument for
+# every further listener; https:// endpoints use a self-signed certificate
+# unless --rest-ssl-key and --rest-ssl-certificate are given.  Keep secrets
+# such as --lws-server-pass in the configuration file so that they do not
+# show up in the process list.  Further flags belong in rc.conf.local(8).
 rc_cmd "$1"

@@ -2,8 +2,11 @@
 @bin bin/monero-lws-admin
 @bin bin/monero-lws-client
 @bin bin/monero-lws-daemon
+share/examples/monero-lws/
+@sample ${SYSCONFDIR}/monero-lws/
+share/examples/monero-lws/monero-lws.conf
+@sample ${SYSCONFDIR}/monero-lws/monero-lws.conf
 @owner _monerod
 @group _monerod
-@sample ${SYSCONFDIR}/monero-lws/
 @sample ${LOCALSTATEDIR}/lib/monero-lws/
 @sample ${LOCALSTATEDIR}/log/monero-lws/

@@ -1,6 +1,3 @@
-Resolve effective OpenBSD paths before filesystem initialization and sandboxing.
-Keep only startup promises until Unix daemonization and unveil are complete.
-
 Index: daemon/Daemon.cpp
 --- daemon/Daemon.cpp.orig
 +++ daemon/Daemon.cpp
@@ -138,7 +135,7 @@ Index: daemon/Daemon.cpp
 +		datadir = i2p::fs::GetDataDir ();
 +		i2p::fs::Init ();
 +		i2p::config::SetOption ("conf", AbsolutePath (config));
-+		for (const char * option : {"tunconf", "tunnelsdir", "certsdir", "logfile",
++		for (const char * option : {"tunconf", "tunnelsdir", "certsdir", "logfile", "pidfile",
 +			"reseed.file", "reseed.zipfile", "addressbook.hostsfile",
 +			"openbsd.pledge_file", "openbsd.unevil_file"})
 +		{
@@ -170,7 +167,7 @@ Index: daemon/Daemon.cpp
 +		std::string policy; i2p::config::GetOption ("openbsd.pledge_file", policy);
 +		if (usePledge && policy.empty ())
 +		{
-+			std::string promises = "stdio rpath wpath cpath inet dns unix flock proc";
++			std::string promises = "stdio rpath wpath cpath fattr inet dns unix flock proc";
 +			bool useUnveil; i2p::config::GetOption ("openbsd.unevil_enabled", useUnveil);
 +			if (useUnveil) promises += " unveil";
 +			bool upnp; i2p::config::GetOption ("upnp.enabled", upnp);

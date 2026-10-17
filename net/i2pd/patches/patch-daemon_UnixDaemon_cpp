@@ -1,9 +1,3 @@
-Apply unveil to effective paths after daemonization and PID handling, then
-remove startup pledge promises before starting services. Preserve policy options
-and report every sandbox failure, including before the logger thread starts.
-Consume control signals on the daemon thread, so SIGHUP cannot reload and join
-a destination from its own service thread or perform unsafe work in a handler.
-
 Index: daemon/UnixDaemon.cpp
 --- daemon/UnixDaemon.cpp.orig
 +++ daemon/UnixDaemon.cpp
@@ -88,7 +82,7 @@ Index: daemon/UnixDaemon.cpp
  			// Signal handler
  			struct sigaction sa;
  			sa.sa_handler = handle_signal;
-@@ -210,13 +258,149 @@ namespace i2p
+@@ -210,13 +258,150 @@ namespace i2p
  				sigaction(SIGCONT, &sa, 0);
  			}
  
@@ -99,7 +93,8 @@ Index: daemon/UnixDaemon.cpp
 +			bool useUnveil, usePledge;
 +			i2p::config::GetOption ("openbsd.unevil_enabled", useUnveil);
 +			i2p::config::GetOption ("openbsd.pledge_enabled", usePledge);
-+			std::string promises = "stdio rpath wpath cpath inet dns unix flock";
++			// CreatePrivateFile() uses chmod when saving router and destination keys.
++			std::string promises = "stdio rpath wpath cpath fattr inet dns unix flock";
 +			bool upnp; i2p::config::GetOption ("upnp.enabled", upnp);
 +			if (upnp) promises += " mcast";
 +			std::vector<std::string> extraPaths;
@@ -238,7 +233,7 @@ Index: daemon/UnixDaemon.cpp
  		}
  
  		void DaemonUnix::run ()
-@@ -225,6 +409,36 @@ namespace i2p
+@@ -225,6 +410,36 @@ namespace i2p
  			while (running)
  			{
  				std::this_thread::sleep_for (std::chrono::seconds(1));

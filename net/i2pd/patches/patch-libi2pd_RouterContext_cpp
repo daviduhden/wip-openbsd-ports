@@ -1,6 +1,3 @@
-Keep an explicitly configured IPv6 SSU2 MTU when the advertised address changes.
-Restored automatic discovery must not overwrite the manual setting on OpenBSD.
-
 Index: libi2pd/RouterContext.cpp
 --- libi2pd/RouterContext.cpp.orig
 +++ libi2pd/RouterContext.cpp

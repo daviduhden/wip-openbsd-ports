@@ -1,7 +1,3 @@
-Read the matching AF_LINK interface MTU already returned by getifaddrs on
-OpenBSD. Its NET_RT_IFLIST sysctl is permitted by pledge("inet"); neither
-SIOCGIFMTU nor a newly required route promise is necessary.
-
 Index: libi2pd/util.cpp
 --- libi2pd/util.cpp.orig
 +++ libi2pd/util.cpp

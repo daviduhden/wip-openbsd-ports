@@ -1,7 +1,3 @@
-Rebind the UDP cleanup timer when SIGHUP replaces the shared destination,
-before the old io_context can be destroyed. Serialize timer replacement and
-shutdown with CleanupUDP(), which uses the forwards mutex. OpenBSD only.
-
 Index: libi2pd_client/ClientContext.cpp
 --- libi2pd_client/ClientContext.cpp.orig
 +++ libi2pd_client/ClientContext.cpp

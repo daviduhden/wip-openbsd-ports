@@ -1,25 +1,26 @@
-Use /etc/i2pd for tunnel configuration and certificates, log through
-syslog, and leave the HTTP console disabled in the packaged configuration.
-
 Index: contrib/i2pd.conf
 --- contrib/i2pd.conf.orig
 +++ contrib/i2pd.conf
-@@ -8,16 +8,16 @@
+@@ -7,17 +7,17 @@
+ ## by removing the "#" symbol.
  
  ## Tunnels config file
- ## Default: ~/.i2pd/tunnels.conf or /var/lib/i2pd/tunnels.conf
+-## Default: ~/.i2pd/tunnels.conf or /var/lib/i2pd/tunnels.conf
 -# tunconf = /var/lib/i2pd/tunnels.conf
++## Default: ~/.i2pd/tunnels.conf or /var/i2pd/tunnels.conf
 +tunconf = /etc/i2pd/tunnels.conf
  
  ## Tunnels config files path
  ## Use that path to store separated tunnels in different config files.
- ## Default: ~/.i2pd/tunnels.d or /var/lib/i2pd/tunnels.d
+-## Default: ~/.i2pd/tunnels.d or /var/lib/i2pd/tunnels.d
 -# tunnelsdir = /var/lib/i2pd/tunnels.d
++## Default: ~/.i2pd/tunnels.d or /var/i2pd/tunnels.d
 +tunnelsdir = /etc/i2pd/tunnels.d
  
  ## Path to certificates used for verifying .su3, families
- ## Default: ~/.i2pd/certificates or /var/lib/i2pd/certificates
+-## Default: ~/.i2pd/certificates or /var/lib/i2pd/certificates
 -# certsdir = /var/lib/i2pd/certificates
++## Default: ~/.i2pd/certificates or /var/i2pd/certificates
 +certsdir = /etc/i2pd/certificates
  
  ## Where to write pidfile (default: /run/i2pd.pid, not used in Windows)

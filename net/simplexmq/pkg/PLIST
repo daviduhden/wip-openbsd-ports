@@ -1,5 +1,5 @@
-@newgroup _${MODCABAL_STEM}:906
-@newuser _${MODCABAL_STEM}:906:906::SimpleXMQ daemon:${LOCALSTATEDIR}/simplex:/sbin/nologin
+@newgroup _${MODCABAL_STEM}:907
+@newuser _${MODCABAL_STEM}:907:907::SimpleXMQ daemon:${LOCALSTATEDIR}/simplex:/sbin/nologin
 @rcscript ${RCDIR}/smp_server
 @rcscript ${RCDIR}/xftp_server
 @bin bin/smp-server

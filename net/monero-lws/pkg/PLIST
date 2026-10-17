@@ -8,5 +8,5 @@ share/examples/monero-lws/monero-lws.conf
 @sample ${SYSCONFDIR}/monero-lws/monero-lws.conf
 @owner _monerod
 @group _monerod
-@sample ${LOCALSTATEDIR}/lib/monero-lws/
+@sample ${LOCALSTATEDIR}/monero-lws/
 @sample ${LOCALSTATEDIR}/log/monero-lws/

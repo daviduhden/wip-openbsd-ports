@@ -63,7 +63,7 @@ MONERO_PATCHES += patch-src_serialization_binary_archive_h
 
 post-patch:
 .for _p in ${MONERO_PATCHES}
-	patch -d ${MONERO_WRKSRC} -p0 < ${FILESDIR}/${_p}
+	patch -d ${MONERO_WRKSRC} -p0 < ${FILESDIR}/monero/${_p}
 .endfor
 
 do-configure:

@@ -223,11 +223,11 @@ Index: daemon/UnixDaemon.cpp
 +#ifdef __OpenBSD__
 +			// Keep the PID lock while router data is still being saved.
 +			bool stopped = Daemon_Singleton::stop();
-+			i2p::fs::Remove(pidfile);
+ 			i2p::fs::Remove(pidfile);
 +			close (pidFH);
 +			return stopped;
 +#else
- 			i2p::fs::Remove(pidfile);
++			i2p::fs::Remove(pidfile);
  			return Daemon_Singleton::stop();
 +#endif
  		}

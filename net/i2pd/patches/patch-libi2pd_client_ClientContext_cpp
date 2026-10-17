@@ -20,10 +20,11 @@ Index: libi2pd_client/ClientContext.cpp
  		}
  
  		{
-@@ -220,6 +225,21 @@ namespace client
+@@ -219,6 +224,21 @@ namespace client
+ 		// change shared local destination
  		m_SharedLocalDestination->Release ();
  		CreateNewSharedLocalDestination ();
- 
++
 +#ifdef __OpenBSD__
 +		// The old destination (still in m_Destinations) owns the timer's
 +		// io_context. Rebind before it is stopped and removed below.
@@ -38,7 +39,6 @@ Index: libi2pd_client/ClientContext.cpp
 +			}
 +		}
 +#endif
-+
+ 
  		// recreate HTTP proxy
  		if (m_HttpProxy)
- 		{

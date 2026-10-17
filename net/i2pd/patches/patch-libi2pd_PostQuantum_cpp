@@ -248,22 +248,22 @@ Index: libi2pd/PostQuantum.cpp
 +		if (ok) return true;
  #else
 -		if (!m_IsPubCached)
--		{
--			LogPrint(eLogError, "MLKEM: No public key for Encaps");
--			return;
--		}
--		auto pub_key = MLKEM_public_key_new(MLKEM768_RANK);
--		if (MLKEM_parse_public_key (pub_key, m_CachedPub, m_KeyLen) != 1)
 +		MLKEMBuffer ct, secret;
 +		if (m_PublicKey && MLKEM_encap (m_PublicKey, &ct.data, &ct.len, &secret.data, &secret.len) == 1 &&
 +			ct.len == m_CTLen && secret.len == 32)
  		{
--			LogPrint(eLogError, "MLKEM can't parse cached public key");
+-			LogPrint(eLogError, "MLKEM: No public key for Encaps");
 -			return;
 +			memcpy (ciphertext, ct.data, m_CTLen);
 +			memcpy (shared, secret.data, 32);
 +			return true;
  		}
+-		auto pub_key = MLKEM_public_key_new(MLKEM768_RANK);
+-		if (MLKEM_parse_public_key (pub_key, m_CachedPub, m_KeyLen) != 1)
+-		{
+-			LogPrint(eLogError, "MLKEM can't parse cached public key");
+-			return;
+-		}
 -		uint8_t * out_ct = nullptr;
 -		size_t out_ct_len = 0;
 -		uint8_t * out_ss = nullptr;

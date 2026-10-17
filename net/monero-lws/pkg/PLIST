@@ -1,3 +1,4 @@
+@rcscript ${RCDIR}/monero_lws
 @bin bin/monero-lws-admin
 @bin bin/monero-lws-client
 @bin bin/monero-lws-daemon

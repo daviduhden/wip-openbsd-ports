@@ -13,7 +13,7 @@ DPB_PROPERTIES =	parallel
 USE_WXNEEDED =		Yes
 
 V =			0.163.0
-REVISION =		2
+REVISION =		3
 GH_ACCOUNT =		openai
 GH_PROJECT =		codex
 GH_TAGNAME =		rust-v${V}
@@ -31,9 +31,9 @@ DIST_TUPLE +=		github microsoft mxc 6cd3d58f05d3447e67109cfb75e042803b843ca4 ./m
 DIST_TUPLE +=		github hyperium h3 e07e69412876f7e26f026bd75a48b2704d8c8283 ./h3
 DIST_TUPLE +=		github modelcontextprotocol rust-sdk 4048ac40e958fb1a7d614617a2ae8d26666ee2fa ./rust-sdk
 # OpenBSD pledge(2)/unveil(2) bindings for the sandbox backend, pinned to the
-# revision the port is validated against. The backend enables the crate's
+# selected revision. The backend enables the crate's
 # `openbsd-8-0` feature (getexecpath(3)), so the port requires OpenBSD 8.0.
-DIST_TUPLE +=		github daviduhden rust-openbsd 24f45496473ddbde171f1ba97897c2470ac26fed ./rust-openbsd
+DIST_TUPLE +=		github daviduhden rust-openbsd 1984b9510937cc40f0a483a52311630721aa8dcd ./rust-openbsd
 
 MAINTAINER =		Kirill A. Korinsky <kirill@korins.ky>
 

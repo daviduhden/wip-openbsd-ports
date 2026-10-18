@@ -1,0 +1,16 @@
+Reject --from-cli package replacement under the system package manager.
+
+Index: codex-rs/app-server-daemon/src/prepare_install.rs
+--- codex-rs/app-server-daemon/src/prepare_install.rs.orig
++++ codex-rs/app-server-daemon/src/prepare_install.rs
+@@ -52,6 +52,10 @@ pub async fn update_from_cli(
+     confirm: impl FnOnce(&InstallRequest) -> Result<bool>,
+ ) -> Result<Option<crate::UpdateOutput>> {
+     crate::ensure_supported_platform()?;
++    anyhow::ensure!(
++        !cfg!(target_os = "openbsd"),
++        "the daemon is managed by the system package manager; use pkg_add -u"
++    );
+     #[cfg(windows)]
+     crate::backend::windows::ensure_not_elevated()?;
+     let daemon = Daemon::from_environment()?;

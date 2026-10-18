@@ -61,7 +61,40 @@ Index: codex-rs/sandboxing/src/manager.rs
              Self::WindowsMxcPreparation(_) => None,
              Self::EnvironmentNetworkProxy(_) => None,
              #[cfg(target_os = "macos")]
-@@ -474,6 +503,48 @@ impl SandboxManager {
+@@ -375,6 +404,32 @@ impl SandboxManager {
+             network.and_then(NetworkProxy::managed_mitm_ca_trust_bundle_path);
+         let base_effective_permission_profile =
+             effective_permission_profile(permissions, additional_permissions.as_ref());
++        // OpenBSD has no command sandbox that can enforce restricted profiles.
++        // Never let a managed request reach a backend or run without isolation.
++        #[cfg(target_os = "openbsd")]
++        {
++            let (file_system_policy, network_policy) =
++                base_effective_permission_profile.to_runtime_permissions();
++            if matches!(
++                &base_effective_permission_profile,
++                PermissionProfile::Managed { .. }
++            ) || sandbox != SandboxType::None
++                || (matches!(
++                    file_system_policy.kind,
++                    codex_protocol::permissions::FileSystemSandboxKind::Restricted
++                ) && !file_system_policy.has_full_disk_read_access())
++                || should_require_platform_sandbox(
++                    &file_system_policy,
++                    network_policy,
++                    enforce_managed_network,
++                )
++            {
++                return Err(SandboxTransformError::OpenBsdPreparation(
++                    "OpenBSD cannot enforce a managed sandbox; select explicit danger-full-access or external isolation"
++                        .to_string(),
++                ));
++            }
++        }
+         let pending_sandboxed_request = PendingSandboxedExecRequest::new(
+             &command.cwd,
+             sandbox_policy_cwd,
+@@ -474,6 +529,48 @@ impl SandboxManager {
              }
              #[cfg(not(target_os = "macos"))]
              SandboxType::MacosSeatbelt => return Err(SandboxTransformError::SeatbeltUnavailable),

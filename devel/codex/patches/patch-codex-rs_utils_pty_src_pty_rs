@@ -1,0 +1,62 @@
+Index: codex-rs/utils/pty/src/pty.rs
+--- codex-rs/utils/pty/src/pty.rs.orig
++++ codex-rs/utils/pty/src/pty.rs
+@@ -606,9 +606,57 @@ pub fn close_inherited_fds_except(preser
+     }
+ }
+ 
++// OpenBSD has no allocating descriptor enumeration in this post-fork path.
++// Count valid descriptors rather than using resource limits: inherited high
++// descriptors may remain open after the process lowers its limits.
++#[cfg(target_os = "openbsd")]
++pub(crate) fn close_inherited_fds_except(preserved_fds: &[RawFd]) {
++    unsafe extern "C" {
++        // OpenBSD syscall; not exposed by all supported libc crate versions.
++        fn getdtablecount() -> libc::c_int;
++    }
++
++    // After fork this child has its own descriptor table and one thread. Block
++    // signal handlers while counting/scanning so they cannot change that table.
++    // Cleanup remains best-effort, matching the other platform implementations.
++    unsafe {
++        let mut all_signals: libc::sigset_t = std::mem::zeroed();
++        let mut old_mask: libc::sigset_t = std::mem::zeroed();
++        if libc::sigfillset(&mut all_signals) == -1
++            || libc::sigprocmask(libc::SIG_BLOCK, &all_signals, &mut old_mask) == -1
++        {
++            return;
++        }
++        let mut remaining = getdtablecount();
++        for fd in 0..=RawFd::MAX {
++            if remaining <= 0 {
++                break;
++            }
++            let flags = libc::fcntl(fd, libc::F_GETFD);
++            if flags == -1 {
++                continue;
++            }
++            // Count every valid descriptor, including preserved and CLOEXEC
++            // descriptors, even though those must remain open until exec.
++            remaining -= 1;
++            if fd > libc::STDERR_FILENO
++                && !preserved_fds.contains(&fd)
++                && flags & libc::FD_CLOEXEC == 0
++            {
++                // Keep std::process's CLOEXEC exec-error pipe intact.
++                libc::close(fd);
++            }
++        }
++        libc::sigprocmask(libc::SIG_SETMASK, &old_mask, std::ptr::null_mut());
++    }
++}
++
+ // Other Unix platforms use best-effort /dev/fd cleanup.
+ // Directory enumeration allocates, so this path is not guaranteed fork-safe.
+-#[cfg(all(unix, not(any(target_os = "linux", target_os = "macos"))))]
++#[cfg(all(
++    unix,
++    not(any(target_os = "linux", target_os = "macos", target_os = "openbsd"))
++))]
+ pub(crate) fn close_inherited_fds_except(preserved_fds: &[RawFd]) {
+     if let Ok(dir) = std::fs::read_dir("/dev/fd") {
+         let mut fds = Vec::new();

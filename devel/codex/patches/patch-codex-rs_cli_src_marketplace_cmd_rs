@@ -1,0 +1,24 @@
+Reject marketplace add/upgrade while plugins are disabled (OpenBSD default).
+Index: codex-rs/cli/src/marketplace_cmd.rs
+--- codex-rs/cli/src/marketplace_cmd.rs.orig
++++ codex-rs/cli/src/marketplace_cmd.rs
+@@ -149,6 +149,9 @@ impl MarketplaceCli {
+ }
+ 
+ async fn run_add(config: Config, args: AddMarketplaceArgs) -> Result<()> {
++    if !config.plugins_config_input().plugins_enabled {
++        bail!("plugins are disabled; enable features.plugins explicitly");
++    }
+     let AddMarketplaceArgs {
+         source,
+         ref_name,
+@@ -369,6 +372,9 @@ async fn run_upgrade(
+     args: UpgradeMarketplaceArgs,
+     builder: codex_core::config::ConfigBuilder,
+ ) -> Result<()> {
++    if !config.plugins_config_input().plugins_enabled {
++        bail!("plugins are disabled; enable features.plugins explicitly");
++    }
+     let UpgradeMarketplaceArgs {
+         marketplace_name,
+         json,

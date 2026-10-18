@@ -3,7 +3,7 @@ Translate pathname policies with unveil; reject network containment without appr
 Index: codex-rs/sandboxing/src/openbsd_policy.rs
 --- /dev/null
 +++ codex-rs/sandboxing/src/openbsd_policy.rs
-@@ -0,0 +1,717 @@
+@@ -0,0 +1,723 @@
 +//! Translation of Codex permission profiles into an OpenBSD
 +//! [`unveil(2)`](https://man.openbsd.org/unveil.2) policy.
 +//!
@@ -176,6 +176,12 @@ Index: codex-rs/sandboxing/src/openbsd_policy.rs
 +    sandbox_policy_cwd: &Path,
 +    enforce_managed_network: bool,
 +) -> Result<OpenBsdSandboxPolicy, OpenBsdPolicyError> {
++    if matches!(permission_profile, PermissionProfile::Managed { .. }) {
++        return Err(OpenBsdPolicyError::Unsupported(
++            "managed permission profiles cannot be enforced by the OpenBSD backend".to_string(),
++        ));
++    }
++
 +    let file_system = permission_profile.file_system_sandbox_policy();
 +    let network = permission_profile.network_sandbox_policy().is_enabled();
 +

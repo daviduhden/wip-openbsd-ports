@@ -1,0 +1,14 @@
+Index: codex-rs/sandboxing/src/lib.rs
+--- codex-rs/sandboxing/src/lib.rs.orig
++++ codex-rs/sandboxing/src/lib.rs
+@@ -75,6 +75,10 @@ pub fn system_bwrap_warning(
+ impl From<SandboxTransformError> for CodexErr {
+     fn from(err: SandboxTransformError) -> Self {
+         match err {
++            #[cfg(target_os = "openbsd")]
++            SandboxTransformError::OpenBsdSandboxUnavailable => CodexErr::UnsupportedOperation(
++                "OpenBSD has no supported command sandbox; select explicit danger-full-access or provide external isolation".to_string(),
++            ),
+             error @ SandboxTransformError::InvalidCommandCwd { .. }
+             | error @ SandboxTransformError::InvalidSandboxPolicyCwd { .. } => {
+                 CodexErr::InvalidRequest(error.to_string())

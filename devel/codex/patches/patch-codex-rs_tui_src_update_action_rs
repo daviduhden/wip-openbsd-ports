@@ -1,0 +1,13 @@
+Index: codex-rs/tui/src/update_action.rs
+--- codex-rs/tui/src/update_action.rs.orig
++++ codex-rs/tui/src/update_action.rs
+@@ -81,6 +81,9 @@ impl UpdateAction {
+ 
+ #[cfg(not(debug_assertions))]
+ pub fn get_update_action() -> Option<UpdateAction> {
++    if cfg!(target_os = "openbsd") {
++        return None; // Updates are managed by pkg_add, never an upstream installer.
++    }
+     UpdateAction::from_install_context(InstallContext::current())
+ }
+ 

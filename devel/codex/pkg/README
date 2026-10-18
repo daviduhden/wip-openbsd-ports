@@ -17,6 +17,13 @@ commands without a sandbox. This package does not silently select it when a
 restricted profile fails. getexecpath(3) is still used to resolve helper paths.
 The internal OpenBsdPledgeUnveil identifier is retained for compatibility.
 
+Managed/restricted sessions are rejected at session creation, before hooks,
+MCP or shell snapshots run. Configuration-only commands such as login, doctor
+and MCP administration can still load configuration. The app-server/daemon has
+no --sandbox switch of its own; to start a session through it, set
+sandbox_mode = "danger-full-access" in ~/.codex/config.toml or declare an
+external sandbox. Do not use the daemon to obtain isolation it does not have.
+
 The regression script reports unsupported sandbox execution with exit 77;
 it must not be interpreted as a passing security test. --quick omits compiler
 invocations when a compatible implementation is available in the future.
@@ -47,6 +54,19 @@ datasize limit in used login class..
 
 Also, Codex may use a lot of open files, you may need to raise both
 the system-wide maxfiles and used login class limits.
+
+Git, Node.js (npm) and xdg-utils are installed as runtime dependencies. Git
+is used by repository/worktree/apply operations; npm by explicitly configured
+npm plugins; and xdg-open by browser login/OAuth. Plugins and marketplaces are
+disabled by default; enable features.plugins=true to permit upstream
+synchronization, installation or marketplace add/upgrade. Other MCP servers
+and hooks may require separately packaged executables. Browser login prints
+the URL if the launcher fails, and device-auth remains usable.
+OpenBSD ksh is recognized as the POSIX shell and preferred over bash/zsh when
+the user shell is not an explicit choice. Shell snapshots are limited to
+bash/zsh; the ksh/sh path runs commands without a snapshot. Clipboard access
+uses X11 when DISPLAY is set, and Secret Service needs a D-Bus session and
+provider.
 
 The local app-server daemon is enabled for eligible interactive sessions by
 upstream's daemon_auto_start feature (enabled by default). It uses the same

@@ -13,7 +13,7 @@ DPB_PROPERTIES =	parallel
 USE_WXNEEDED =		Yes
 
 V =			0.163.0
-REVISION =		3
+REVISION =		0
 GH_ACCOUNT =		openai
 GH_PROJECT =		codex
 GH_TAGNAME =		rust-v${V}
@@ -57,7 +57,10 @@ BUILD_DEPENDS =		devel/cmake/core \
 LIB_DEPENDS =		textproc/oniguruma \
 			x11/dbus
 
-RUN_DEPENDS =		lang/python/3 \
+RUN_DEPENDS =		devel/git \
+			devel/xdg-utils \
+			lang/node \
+			lang/python/3 \
 			textproc/ripgrep
 
 MODULES =		devel/cargo

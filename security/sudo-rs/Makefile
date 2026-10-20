@@ -1,4 +1,4 @@
-COMMENT =		execute a command as another user (memory-safe implementation)
+COMMENT =		Memory-safe sudo implementation
 
 V =			0.2.15
 DISTNAME =		sudo-rs-${V}
@@ -30,6 +30,7 @@ LIB_DEPENDS =		security/openpam
 # The result is a first porting attempt and needs to be built and tested
 # on OpenBSD; see pkg/DESCR.
 MODCARGO_INSTALL =	No
+MODCARGO_RUSTFLAGS +=	-C link-arg=-L${LOCALBASE}/lib
 
 do-install:
 	${INSTALL_PROGRAM} ${MODCARGO_TARGET_DIR}/release/sudo ${PREFIX}/bin/sudo

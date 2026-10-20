@@ -13,4 +13,3 @@ share/examples/sudo-rs/
 share/examples/sudo-rs/sudoers
 @mode 0440
 @sample ${SYSCONFDIR}/sudoers
-@mode

@@ -1,0 +1,17 @@
+Account for OpenBSD's signed device ID when comparing it with the u64
+returned by Metadata::rdev(). Reject negative IDs before converting them
+to avoid treating an invalid terminal device as a match.
+
+Index: src/system/term/find_tty.rs
+--- src/system/term/find_tty.rs.orig
++++ src/system/term/find_tty.rs
+@@ -25,4 +25,6 @@
+ }
+ 
+ fn is_our_tty(metadata: fs::Metadata, tty_dev: DeviceId) -> bool {
+-    metadata.file_type().is_char_device() && metadata.rdev() == tty_dev.inner()
++    metadata.file_type().is_char_device()
++        && tty_dev.inner() >= 0
++        && metadata.rdev() == tty_dev.inner() as u64
+ }
+ 

@@ -2,10 +2,11 @@
 @newuser _confettysh:910:910::Confettysh account:${LOCALSTATEDIR}/confettysh:/sbin/nologin
 @rcscript ${RCDIR}/confettysh
 @bin bin/confettysh
+@mode 700
 @owner _confettysh
 @group _confettysh
-@mode 700
 @sample ${LOCALSTATEDIR}/confettysh/
 @mode
 @owner
 @group
+share/doc/pkg-readmes/${PKGSTEM}

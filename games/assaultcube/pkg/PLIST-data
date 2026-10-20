@@ -540,14 +540,14 @@ share/assaultcube/packages/models/mapmodels/cleaner/grate_aqueous/grate_aqueous.
 share/assaultcube/packages/models/mapmodels/cleaner/grate_aqueous/md3.cfg
 share/assaultcube/packages/models/mapmodels/cleaner/grates/
 share/assaultcube/packages/models/mapmodels/cleaner/grates/grate.jpg
-share/assaultcube/packages/models/mapmodels/cleaner/grates/grate_hor.md3
 share/assaultcube/packages/models/mapmodels/cleaner/grates/grate_hor/
+share/assaultcube/packages/models/mapmodels/cleaner/grates/grate_hor.md3
 share/assaultcube/packages/models/mapmodels/cleaner/grates/grate_hor/md3.cfg
 share/assaultcube/packages/models/mapmodels/cleaner/grates/grate_hor_rust/
 share/assaultcube/packages/models/mapmodels/cleaner/grates/grate_hor_rust/md3.cfg
 share/assaultcube/packages/models/mapmodels/cleaner/grates/grate_rust.jpg
-share/assaultcube/packages/models/mapmodels/cleaner/grates/grate_vert.md3
 share/assaultcube/packages/models/mapmodels/cleaner/grates/grate_vert/
+share/assaultcube/packages/models/mapmodels/cleaner/grates/grate_vert.md3
 share/assaultcube/packages/models/mapmodels/cleaner/grates/grate_vert/md3.cfg
 share/assaultcube/packages/models/mapmodels/cleaner/grates/grate_vert_rust/
 share/assaultcube/packages/models/mapmodels/cleaner/grates/grate_vert_rust/md3.cfg
@@ -1122,8 +1122,8 @@ share/assaultcube/packages/models/mapmodels/toca/droppedceiling/tiles/
 share/assaultcube/packages/models/mapmodels/toca/droppedceiling/tiles/md3.cfg
 share/assaultcube/packages/models/mapmodels/toca/droppedceiling/tiles/tris.md3
 share/assaultcube/packages/models/mapmodels/toca/electric/
-share/assaultcube/packages/models/mapmodels/toca/electric/outlet.jpg
 share/assaultcube/packages/models/mapmodels/toca/electric/outlet/
+share/assaultcube/packages/models/mapmodels/toca/electric/outlet.jpg
 share/assaultcube/packages/models/mapmodels/toca/electric/outlet/md3.cfg
 share/assaultcube/packages/models/mapmodels/toca/electric/outlet/tris.md3
 share/assaultcube/packages/models/mapmodels/toca/electric/switch/
@@ -1797,10 +1797,10 @@ share/assaultcube/packages/textures/DigitalFlux/light_brown_dirt_01.jpg
 share/assaultcube/packages/textures/DigitalFlux/light_brown_dirt_02.jpg
 share/assaultcube/packages/textures/DigitalFlux/reddish_brown_dirt_01.jpg
 share/assaultcube/packages/textures/DigitalFlux/reddish_brown_dirt_02.jpg
-share/assaultcube/packages/textures/YesWeCamp/
-share/assaultcube/packages/textures/YesWeCamp/beton.jpg
-share/assaultcube/packages/textures/YesWeCamp/senoner.jpg
-share/assaultcube/packages/textures/YesWeCamp/stones.jpg
+share/assaultcube/packages/textures/${PERMIT_PACKAGE}WeCamp/
+share/assaultcube/packages/textures/${PERMIT_PACKAGE}WeCamp/beton.jpg
+share/assaultcube/packages/textures/${PERMIT_PACKAGE}WeCamp/senoner.jpg
+share/assaultcube/packages/textures/${PERMIT_PACKAGE}WeCamp/stones.jpg
 share/assaultcube/packages/textures/arcitool/
 share/assaultcube/packages/textures/arcitool/Blockbohlen-natur.jpg
 share/assaultcube/packages/textures/arcitool/Cotta1-grau.jpg
@@ -2339,3 +2339,4 @@ share/assaultcube/packages/textures/zastrow/wood_crate_02.jpg
 share/assaultcube/packages/textures/zastrow/wood_crate_03.jpg
 share/assaultcube/packages/textures/zastrow/wood_crate_10.jpg
 share/assaultcube/packages/textures/zastrow/wood_crate_12.jpg
+share/doc/pkg-readmes/assaultcube-server

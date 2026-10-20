@@ -1,0 +1,305 @@
+Exercise OpenBSD descriptor cleanup across exec, including sparse and high
+descriptors, lowered resource limits, preserved descriptors and CLOEXEC flags.
+Check error propagation, concurrent spawning and restoration of signal masks,
+and verify that the parent's descriptor flags and signal mask stay unchanged.
+
+Index: codex-rs/utils/pty/src/pty_openbsd_tests.rs
+--- /dev/null
++++ codex-rs/utils/pty/src/pty_openbsd_tests.rs
+@@ -0,0 +1,296 @@
++use super::OpenBsdFdCleanup;
++use super::make_fds_inheritable;
++use std::fs::File;
++use std::io;
++use std::os::fd::AsRawFd;
++use std::os::fd::RawFd;
++use std::os::unix::process::CommandExt;
++use std::process::Command;
++use std::process::Stdio;
++
++// This test is also the exec target. All inspection here happens after exec.
++#[test]
++fn exec_probe() {
++    let Ok(expected) = std::env::var("CODEX_OPENBSD_FD_PROBE") else {
++        return;
++    };
++    for item in expected.split(',').filter(|item| !item.is_empty()) {
++        let (fd, flags) = item.split_once(':').unwrap();
++        let fd = fd.parse::<RawFd>().unwrap();
++        let flags = flags.parse::<i32>().unwrap();
++        assert_eq!(unsafe { libc::fcntl(fd, libc::F_GETFD) }, flags, "fd {fd}");
++    }
++}
++
++fn command() -> Command {
++    let mut command = Command::new(std::env::current_exe().unwrap());
++    command.args(["--exact", concat!(module_path!(), "::exec_probe"), "--nocapture"]);
++    command
++        .stdin(Stdio::null())
++        .stdout(Stdio::null())
++        .stderr(Stdio::piped());
++    command
++}
++
++fn run_case(
++    targets: &[(RawFd, bool)],
++    preserved: &[RawFd],
++    lower_limit: bool,
++    missing: bool,
++) -> io::Result<()> {
++    let source = File::open("/dev/null")?;
++    let mut cleanup = OpenBsdFdCleanup::new()?;
++    let mut command = command();
++    if missing {
++        command = Command::new(
++            std::env::current_exe()?.with_file_name("codex-pty-missing-executable"),
++        );
++    }
++    let mut expected = String::from("0:0,1:0,2:0");
++    for &(fd, _) in targets {
++        let flags = if preserved.contains(&fd) { 0 } else { -1 };
++        expected.push_str(&format!(",{fd}:{flags}"));
++    }
++    command.env("CODEX_OPENBSD_FD_PROBE", expected);
++    let targets = targets.to_vec();
++    let preserved = preserved.to_vec();
++    // SAFETY: The callback only uses syscalls, preallocated data and errno errors.
++    unsafe {
++        command.pre_exec(move || {
++            let mut limit: libc::rlimit = std::mem::zeroed();
++            if libc::getrlimit(libc::RLIMIT_NOFILE, &mut limit) == -1 {
++                return Err(io::Error::last_os_error());
++            }
++            limit.rlim_cur = limit.rlim_max;
++            if libc::setrlimit(libc::RLIMIT_NOFILE, &limit) == -1 {
++                return Err(io::Error::last_os_error());
++            }
++            for &(fd, cloexec) in &targets {
++                if libc::dup2(source.as_raw_fd(), fd) == -1
++                    || libc::fcntl(
++                        fd,
++                        libc::F_SETFD,
++                        if cloexec { libc::FD_CLOEXEC } else { 0 },
++                    ) == -1
++                {
++                    return Err(io::Error::last_os_error());
++                }
++            }
++            if lower_limit {
++                limit.rlim_cur = 64;
++                if libc::setrlimit(libc::RLIMIT_NOFILE, &limit) == -1 {
++                    return Err(io::Error::last_os_error());
++                }
++            }
++            let mut mask: libc::sigset_t = std::mem::zeroed();
++            libc::sigemptyset(&mut mask);
++            libc::sigaddset(&mut mask, libc::SIGUSR1);
++            if libc::sigprocmask(libc::SIG_BLOCK, &mask, std::ptr::null_mut()) == -1
++                || libc::sigprocmask(libc::SIG_BLOCK, std::ptr::null(), &mut mask) == -1
++            {
++                return Err(io::Error::last_os_error());
++            }
++            let mut standard_flags = [0; 3];
++            for (fd, flags) in standard_flags.iter_mut().enumerate() {
++                *flags = libc::fcntl(fd as RawFd, libc::F_GETFD);
++            }
++            cleanup.close_inherited_fds_except(&preserved)?;
++            let mut after: libc::sigset_t = std::mem::zeroed();
++            if libc::sigprocmask(libc::SIG_BLOCK, std::ptr::null(), &mut after) == -1
++                || mask != after
++            {
++                return Err(io::Error::from_raw_os_error(libc::EIO));
++            }
++            for (fd, flags) in standard_flags.iter().enumerate() {
++                if libc::fcntl(fd as RawFd, libc::F_GETFD) != *flags {
++                    return Err(io::Error::from_raw_os_error(libc::EIO));
++                }
++            }
++            for &(fd, cloexec) in &targets {
++                let expected = if preserved.contains(&fd) || cloexec {
++                    if cloexec {
++                        libc::FD_CLOEXEC
++                    } else {
++                        0
++                    }
++                } else {
++                    -1
++                };
++                if libc::fcntl(fd, libc::F_GETFD) != expected {
++                    return Err(io::Error::from_raw_os_error(libc::EIO));
++                }
++            }
++            make_fds_inheritable(&preserved)
++        });
++    }
++    let output = command.output()?;
++    assert!(
++        output.status.success(),
++        "{}",
++        String::from_utf8_lossy(&output.stderr)
++    );
++    Ok(())
++}
++
++fn high_fd() -> RawFd {
++    let mut limit = libc::rlimit {
++        rlim_cur: 0,
++        rlim_max: 0,
++    };
++    assert_eq!(
++        unsafe { libc::getrlimit(libc::RLIMIT_NOFILE, &mut limit) },
++        0
++    );
++    // No global sysctls or parent limits are changed. A child raises its soft limit.
++    let fd = limit.rlim_max.min(100_001) as RawFd - 1;
++    assert!(fd > 256, "test needs a descriptor limit above 256");
++    fd
++}
++
++#[test]
++fn contiguous_descriptors() {
++    run_case(
++        &[(128, false), (129, false), (130, false), (131, false)],
++        &[],
++        false,
++        false,
++    )
++    .unwrap();
++}
++
++#[test]
++fn sparse_descriptors() {
++    run_case(
++        &[(128, false), (256, false), (high_fd(), false)],
++        &[],
++        false,
++        false,
++    )
++    .unwrap();
++}
++
++#[test]
++fn one_low_descriptor() {
++    run_case(&[(128, false)], &[], false, false).unwrap();
++}
++
++#[test]
++fn one_high_descriptor() {
++    run_case(&[(high_fd(), false)], &[], false, false).unwrap();
++}
++
++#[test]
++fn preserved_descriptors_and_flags() {
++    let high = high_fd();
++    run_case(
++        &[(128, false), (256, true), (high, false)],
++        &[0, 1, 2, 128, 256, high, high],
++        false,
++        false,
++    )
++    .unwrap();
++}
++
++#[test]
++fn cloexec_remains_open_until_exec() {
++    run_case(&[(128, true), (high_fd(), true)], &[], false, false).unwrap();
++}
++
++#[test]
++fn lowered_limit_does_not_hide_high_descriptor() {
++    run_case(&[(high_fd(), false)], &[], true, false).unwrap();
++}
++
++#[test]
++fn lowered_limit_preserves_high_descriptor() {
++    let high = high_fd();
++    run_case(&[(high, false)], &[high], true, false).unwrap();
++}
++
++#[test]
++fn exec_failure_is_reported() {
++    let error = run_case(&[(high_fd(), false)], &[], false, true).unwrap_err();
++    assert_eq!(error.raw_os_error(), Some(libc::ENOENT));
++}
++
++#[test]
++fn invalid_attachment_is_reported() {
++    let error = run_case(&[], &[-1], false, false).unwrap_err();
++    assert_eq!(error.raw_os_error(), Some(libc::EBADF));
++}
++
++#[test]
++fn concurrent_spawns() {
++    let threads: Vec<_> = (0..4)
++        .map(|_| {
++            std::thread::spawn(|| {
++                for _ in 0..4 {
++                    run_case(&[(128, false), (256, true)], &[256], false, false).unwrap();
++                }
++            })
++        })
++        .collect();
++    for thread in threads {
++        thread.join().unwrap();
++    }
++}
++
++#[test]
++fn incomplete_snapshot_aborts_spawn_and_restores_mask() {
++    let mut cleanup = OpenBsdFdCleanup::new().unwrap();
++    cleanup.descriptors.truncate(1);
++    let mut command = command();
++    unsafe {
++        command.pre_exec(move || {
++            let mut before: libc::sigset_t = std::mem::zeroed();
++            let mut after: libc::sigset_t = std::mem::zeroed();
++            if libc::sigprocmask(libc::SIG_BLOCK, std::ptr::null(), &mut before) == -1 {
++                return Err(io::Error::last_os_error());
++            }
++            let error = match cleanup.close_inherited_fds_except(&[]) {
++                Err(error) => error,
++                Ok(()) => return Err(io::Error::from_raw_os_error(libc::EIO)),
++            };
++            if libc::sigprocmask(libc::SIG_BLOCK, std::ptr::null(), &mut after) == -1
++                || before != after
++            {
++                return Err(io::Error::from_raw_os_error(libc::EIO));
++            }
++            Err(error)
++        });
++    }
++    assert_eq!(
++        command.spawn().unwrap_err().raw_os_error(),
++        Some(libc::ENOMEM)
++    );
++}
++
++#[test]
++fn invalid_sysctl_aborts_spawn() {
++    let mut cleanup = OpenBsdFdCleanup::new().unwrap();
++    cleanup.mib[1] = -1;
++    let mut command = command();
++    unsafe {
++        command.pre_exec(move || cleanup.close_inherited_fds_except(&[]));
++    }
++    assert!(command.spawn().unwrap_err().raw_os_error().is_some());
++}
++
++#[test]
++fn parent_flags_and_mask_are_unchanged() {
++    let file = File::open("/dev/null").unwrap();
++    let flags = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFD) };
++    let mut before: libc::sigset_t = unsafe { std::mem::zeroed() };
++    let mut after: libc::sigset_t = unsafe { std::mem::zeroed() };
++    assert_eq!(
++        unsafe { libc::sigprocmask(libc::SIG_BLOCK, std::ptr::null(), &mut before) },
++        0
++    );
++    run_case(&[(128, true)], &[128], false, false).unwrap();
++    assert_eq!(unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFD) }, flags);
++    assert_eq!(
++        unsafe { libc::sigprocmask(libc::SIG_BLOCK, std::ptr::null(), &mut after) },
++        0
++    );
++    assert_eq!(before, after);
++}

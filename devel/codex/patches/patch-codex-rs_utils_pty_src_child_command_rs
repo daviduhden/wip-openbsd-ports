@@ -1,0 +1,38 @@
+Prepare OpenBSD descriptor cleanup in the parent so the pre-exec callback
+can close unneeded inherited descriptors without allocating after fork.
+Propagate cleanup errors to abort spawning if descriptors cannot be safely
+closed.
+
+Index: codex-rs/utils/pty/src/child_command.rs
+--- codex-rs/utils/pty/src/child_command.rs.orig
++++ codex-rs/utils/pty/src/child_command.rs
+@@ -300,9 +300,15 @@
+             #[cfg(not(target_os = "linux"))]
+             let parent_pid: Option<i32> = None;
+             if new_session || explicit_fds || !targets.is_empty() || parent_pid.is_some() {
++                #[cfg(target_os = "openbsd")]
++                let mut fd_cleanup = if explicit_fds {
++                    Some(crate::pty::OpenBsdFdCleanup::new()?)
++                } else {
++                    None
++                };
+                 // SAFETY: The caller keeps the selected descriptors open. Session
+-                // and parent-death setup use system calls; Linux and macOS cleanup
+-                // avoid allocation after fork. Other Unix targets have an
++                // and parent-death setup use system calls; Linux, macOS and OpenBSD
++                // cleanup avoid allocation after fork. Other Unix targets have an
+                 // allocation-after-fork risk documented on close_inherited_fds_except.
+                 unsafe {
+                     self.inner.pre_exec(move || {
+@@ -312,6 +318,11 @@
+                         if let Some(parent_pid) = parent_pid {
+                             crate::process_group::set_parent_death_signal(parent_pid)?;
+                         }
++                        #[cfg(target_os = "openbsd")]
++                        if let Some(cleanup) = fd_cleanup.as_mut() {
++                            cleanup.close_inherited_fds_except(&targets)?;
++                        }
++                        #[cfg(not(target_os = "openbsd"))]
+                         if explicit_fds {
+                             crate::pty::close_inherited_fds_except(&targets);
+                         }

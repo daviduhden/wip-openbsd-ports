@@ -1,52 +1,146 @@
+Use OpenBSD KERN_FILE snapshots to close inherited descriptors, including
+those above a lowered resource limit, while preserving standard streams,
+explicitly passed descriptors and CLOEXEC descriptors such as Rust's exec
+error pipe. Allocate storage before fork and block signal handlers while
+reading and consuming the child's snapshot; abort spawning on cleanup errors.
+
 Index: codex-rs/utils/pty/src/pty.rs
 --- codex-rs/utils/pty/src/pty.rs.orig
 +++ codex-rs/utils/pty/src/pty.rs
-@@ -606,9 +606,57 @@ pub fn close_inherited_fds_except(preser
+@@ -397,6 +397,8 @@
+         }
+         let inherited_fds = inherited_fds.to_vec();
+         // The child sees the same terminal on stdin, stdout, and stderr.
++        #[cfg(target_os = "openbsd")]
++        let mut fd_cleanup = OpenBsdFdCleanup::new()?;
+         unsafe {
+             command
+                 .stdin(Stdio::from(slave.try_clone()?))
+@@ -404,6 +406,9 @@
+                 .stderr(Stdio::from(slave.try_clone()?))
+                 .pre_exec(move || {
+                     configure_child_terminal()?;
++                    #[cfg(target_os = "openbsd")]
++                    fd_cleanup.close_inherited_fds_except(&inherited_fds)?;
++                    #[cfg(not(target_os = "openbsd"))]
+                     close_inherited_fds_except(&inherited_fds);
+                     make_fds_inheritable(&inherited_fds)?;
+                     Ok(())
+@@ -606,9 +611,126 @@
      }
  }
  
-+// OpenBSD has no allocating descriptor enumeration in this post-fork path.
-+// Count valid descriptors rather than using resource limits: inherited high
-+// descriptors may remain open after the process lowers its limits.
++// Allocate in the parent; take the descriptor snapshot only in the child so it
++// includes std::process's private CLOEXEC error pipe and concurrent parent opens.
++// KERN_FILE requires an unpledged process.
 +#[cfg(target_os = "openbsd")]
-+pub(crate) fn close_inherited_fds_except(preserved_fds: &[RawFd]) {
-+    unsafe extern "C" {
-+        // OpenBSD syscall; not exposed by all supported libc crate versions.
-+        fn getdtablecount() -> libc::c_int;
++pub(crate) struct OpenBsdFdCleanup {
++    mib: [libc::c_int; 6],
++    descriptors: Vec<std::mem::MaybeUninit<libc::kinfo_file>>,
++}
++
++#[cfg(target_os = "openbsd")]
++impl OpenBsdFdCleanup {
++    pub(crate) fn new() -> std::io::Result<Self> {
++        let mut mib = [
++            libc::CTL_KERN,
++            libc::KERN_FILE,
++            libc::KERN_FILE_BYPID,
++            unsafe { libc::getpid() },
++            std::mem::size_of::<libc::kinfo_file>() as libc::c_int,
++            libc::c_int::MAX,
++        ];
++        let mut bytes = 0;
++        // SAFETY: A null output buffer requests the size, including kernel slop.
++        if unsafe {
++            libc::sysctl(
++                mib.as_ptr(),
++                6,
++                std::ptr::null_mut(),
++                &mut bytes,
++                std::ptr::null_mut(),
++                0,
++            )
++        } == -1 {
++            return Err(std::io::Error::last_os_error());
++        }
++        let mut limit: libc::rlimit = unsafe { std::mem::zeroed() };
++        if unsafe { libc::getrlimit(libc::RLIMIT_NOFILE, &mut limit) } == -1 {
++            return Err(std::io::Error::last_os_error());
++        }
++        // Allow concurrent opens up to the current limit, plus cwd/root/text/trace.
++        // The snapshot size also covers already-open descriptors above a lowered
++        // limit. Neither value is used as a bound on descriptor numbers.
++        let limit_count = usize::try_from(limit.rlim_cur)
++            .ok()
++            .and_then(|count| count.checked_add(4))
++            .ok_or_else(|| std::io::Error::from_raw_os_error(libc::EOVERFLOW))?;
++        let count = (bytes / std::mem::size_of::<libc::kinfo_file>()).max(limit_count);
++        mib[5] = libc::c_int::try_from(count)
++            .map_err(|_| std::io::Error::from_raw_os_error(libc::EOVERFLOW))?;
++        let mut descriptors = Vec::new();
++        descriptors
++            .try_reserve_exact(count)
++            .map_err(|_| std::io::Error::from_raw_os_error(libc::ENOMEM))?;
++        descriptors.resize_with(count, std::mem::MaybeUninit::uninit);
++        Ok(Self { mib, descriptors })
 +    }
 +
-+    // After fork this child has its own descriptor table and one thread. Block
-+    // signal handlers while counting/scanning so they cannot change that table.
-+    // Cleanup remains best-effort, matching the other platform implementations.
-+    unsafe {
-+        let mut all_signals: libc::sigset_t = std::mem::zeroed();
-+        let mut old_mask: libc::sigset_t = std::mem::zeroed();
-+        if libc::sigfillset(&mut all_signals) == -1
-+            || libc::sigprocmask(libc::SIG_BLOCK, &all_signals, &mut old_mask) == -1
-+        {
-+            return;
-+        }
-+        let mut remaining = getdtablecount();
-+        for fd in 0..=RawFd::MAX {
-+            if remaining <= 0 {
-+                break;
-+            }
-+            let flags = libc::fcntl(fd, libc::F_GETFD);
-+            if flags == -1 {
-+                continue;
-+            }
-+            // Count every valid descriptor, including preserved and CLOEXEC
-+            // descriptors, even though those must remain open until exec.
-+            remaining -= 1;
-+            if fd > libc::STDERR_FILENO
-+                && !preserved_fds.contains(&fd)
-+                && flags & libc::FD_CLOEXEC == 0
++    pub(crate) fn close_inherited_fds_except(
++        &mut self,
++        preserved_fds: &[RawFd],
++    ) -> std::io::Result<()> {
++        // SAFETY: Only syscalls and preallocated storage are used after fork.
++        // Block handlers while taking and consuming the child's snapshot.
++        unsafe {
++            let mut all_signals: libc::sigset_t = std::mem::zeroed();
++            let mut old_mask: libc::sigset_t = std::mem::zeroed();
++            if libc::sigfillset(&mut all_signals) == -1
++                || libc::sigprocmask(libc::SIG_BLOCK, &all_signals, &mut old_mask) == -1
 +            {
-+                // Keep std::process's CLOEXEC exec-error pipe intact.
-+                libc::close(fd);
++                return Err(std::io::Error::last_os_error());
 +            }
++            let result = (|| {
++                self.mib[3] = libc::getpid();
++                let capacity = std::mem::size_of_val(self.descriptors.as_slice());
++                let mut bytes = capacity;
++                // ENOMEM means an incomplete snapshot: fail the spawn rather
++                // than leak descriptors if the table grew since preparation.
++                if libc::sysctl(
++                    self.mib.as_ptr(),
++                    6,
++                    self.descriptors.as_mut_ptr().cast(),
++                    &mut bytes,
++                    std::ptr::null_mut(),
++                    0,
++                ) == -1
++                {
++                    return Err(std::io::Error::last_os_error());
++                }
++                let entry_size = std::mem::size_of::<libc::kinfo_file>();
++                if bytes > capacity || bytes % entry_size != 0 {
++                    return Err(std::io::Error::from_raw_os_error(libc::EIO));
++                }
++                for entry in &self.descriptors[..bytes / entry_size] {
++                    let entry = entry.assume_init_ref();
++                    let fd = entry.fd_fd;
++                    // Negative entries describe cwd/root/text, not descriptors.
++                    // UF_EXCLOSE in fd_ofileflags is OpenBSD's FD_CLOEXEC bit.
++                    if fd > libc::STDERR_FILENO
++                        && !preserved_fds.contains(&fd)
++                        && entry.fd_ofileflags & libc::FD_CLOEXEC as u32 == 0
++                        && libc::close(fd) == -1
++                    {
++                        return Err(std::io::Error::last_os_error());
++                    }
++                }
++                Ok(())
++            })();
++            if libc::sigprocmask(libc::SIG_SETMASK, &old_mask, std::ptr::null_mut()) == -1 {
++                return Err(std::io::Error::last_os_error());
++            }
++            result
 +        }
-+        libc::sigprocmask(libc::SIG_SETMASK, &old_mask, std::ptr::null_mut());
 +    }
 +}
 +
@@ -60,3 +154,11 @@ Index: codex-rs/utils/pty/src/pty.rs
  pub(crate) fn close_inherited_fds_except(preserved_fds: &[RawFd]) {
      if let Ok(dir) = std::fs::read_dir("/dev/fd") {
          let mut fds = Vec::new();
+@@ -677,3 +799,7 @@
+ #[cfg(all(test, target_os = "linux"))]
+ #[path = "pty_linux_tests.rs"]
+ mod linux_tests;
++
++#[cfg(all(test, target_os = "openbsd"))]
++#[path = "pty_openbsd_tests.rs"]
++mod openbsd_tests;

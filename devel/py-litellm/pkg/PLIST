@@ -6184,10 +6184,6 @@ lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/__next.
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/__next._tree.txt
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/
-lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/r6CCRnfRG8Km6eyz1MhIZ/
-lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/r6CCRnfRG8Km6eyz1MhIZ/_buildManifest.js
-lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/r6CCRnfRG8Km6eyz1MhIZ/_clientMiddlewareManifest.js
-lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/r6CCRnfRG8Km6eyz1MhIZ/_ssgManifest.js
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/chunks/
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/chunks/001c4i4-gztis.js
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/chunks/02erlqrgtvdvz.js
@@ -6530,6 +6526,10 @@ lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/s
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/media/xinference.063cy_ievvy5u.svg
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/media/zapier.3q67ovovgk_25.svg
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/media/zscaler.42cagyicgk81q.svg
+lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/r6CCRnfRG8Km6eyz1MhIZ/
+lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/r6CCRnfRG8Km6eyz1MhIZ/_buildManifest.js
+lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/r6CCRnfRG8Km6eyz1MhIZ/_clientMiddlewareManifest.js
+lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_next/static/r6CCRnfRG8Km6eyz1MhIZ/_ssgManifest.js
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_not-found/
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_not-found/__next._full.txt
 lib/python${MODPY_VERSION}/site-packages/litellm/proxy/_experimental/out/_not-found/__next._not-found.__PAGE__.txt

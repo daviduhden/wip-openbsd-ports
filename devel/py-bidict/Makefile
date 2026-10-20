@@ -11,7 +11,7 @@ HOMEPAGE =	https://bidict.readthedocs.io/
 PERMIT_PACKAGE =	Yes
 
 MODULES =	lang/python
-MODPY_PYBUILD =	setuptools
+MODPY_PYBUILD = uv_build
 MODPY_PI =	Yes
 NO_TEST =	Yes
 

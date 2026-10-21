@@ -15,7 +15,8 @@ PERMIT_PACKAGE = Yes
 # uses pledge() and unveil()
 WANTLIB += ${COMPILER_LIBCXX}
 WANTLIB += boost_filesystem-mt boost_program_options-mt
-WANTLIB += boost_atomic-mt boost_container-mt c crypto m miniupnpc ssl z
+WANTLIB += boost_atomic-mt boost_container-mt boost_json-mt boost_url-mt
+WANTLIB += c crypto m miniupnpc ssl z
 
 COMPILER =	base-clang ports-gcc
 MODULES =	devel/cmake

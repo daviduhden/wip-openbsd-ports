@@ -1,7 +1,7 @@
 Index: daemon/I2PControl.cpp
 --- daemon/I2PControl.cpp.orig
 +++ daemon/I2PControl.cpp
-@@ -441,7 +441,7 @@ namespace client
+@@ -485,7 +485,7 @@ namespace client
  	void I2PControlService::CreateCertificate (const char *crt_path, const char *key_path)
  	{
  		FILE *f = NULL;

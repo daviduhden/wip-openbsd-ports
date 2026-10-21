@@ -9,8 +9,8 @@ Index: libi2pd/LeaseSet.cpp
  #include "Log.h"
  #include "Tag.h"
  #include "Timestamp.h"
-@@ -425,7 +426,10 @@ namespace data
- 			if (IsStoreLeases () && !preferredKeyFound) // create encryptor with leases only
+@@ -420,7 +421,10 @@ namespace data
+ 				i2p::crypto::GetCryptoPublicKeyLen (keyType) == encryptionKeyLen) // key length mismatch or unknown key type
  			{
  				// we pick max key type if preferred not found
 -#if !OPENSSL_PQ

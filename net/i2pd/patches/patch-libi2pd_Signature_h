@@ -28,7 +28,7 @@ Index: libi2pd/Signature.h
  	class ECDSAVerifier: public Verifier
  	{
  		public:
-@@ -377,7 +377,7 @@ namespace crypto
+@@ -382,7 +382,7 @@ namespace crypto
  			EVP_PKEY * GetPkey () const { return m_Pkey; };
  	};
  
@@ -37,7 +37,7 @@ Index: libi2pd/Signature.h
  	class EDDSA25519phVerifier: public EDDSA25519Verifier
  	{
  		public:
-@@ -423,7 +423,7 @@ namespace crypto
+@@ -428,7 +428,7 @@ namespace crypto
  			EDDSA25519SignerCompat * m_Fallback;
  	};
  

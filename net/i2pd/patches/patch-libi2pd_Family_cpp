@@ -63,7 +63,7 @@ Index: libi2pd/Family.cpp
 -			else
 -				curve = -1;
 -#endif	
--			if (!curve || curve == NID_X9_62_prime256v1)
+-			if ((!curve || curve == NID_X9_62_prime256v1) && family.length () + 32 <= 100)
 +			int curve = GetFamilyKeyCurve (pkey);
 +			if (curve == NID_X9_62_prime256v1 && family.length () + 32 <= 100)
  			{

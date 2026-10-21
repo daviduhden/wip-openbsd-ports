@@ -10,7 +10,7 @@ Index: libi2pd/ECIESX25519AEADRatchetSession.cpp
  					}
  				}
  				// if PQ failed it's valid situation meaning regular ECIES_X25519(type 4)
-@@ -569,7 +569,7 @@ namespace garlic
+@@ -589,7 +589,7 @@ namespace garlic
  		{
  			i2p::crypto::InitNoiseIKStateMLKEM (GetNoiseState (), m_RemoteStaticKeyType, m_RemoteStaticKey); // bpk
  			m_PQKeys = i2p::crypto::CreateMLKEMKeys (m_RemoteStaticKeyType);
@@ -19,7 +19,7 @@ Index: libi2pd/ECIESX25519AEADRatchetSession.cpp
  		}
  		else
  #endif
-@@ -587,7 +587,7 @@ namespace garlic
+@@ -607,7 +607,7 @@ namespace garlic
  		{
  			auto keyLen = i2p::crypto::GetMLKEMPublicKeyLen (m_RemoteStaticKeyType);
  			std::vector<uint8_t> encapsKey(keyLen);
@@ -28,7 +28,7 @@ Index: libi2pd/ECIESX25519AEADRatchetSession.cpp
  			// encrypt encapsKey
  			if (!Encrypt (encapsKey.data (), out + offset, keyLen))
  			{
-@@ -678,7 +678,7 @@ namespace garlic
+@@ -698,7 +698,7 @@ namespace garlic
  			memcpy (m_NSRCK->data (), m_CK, 64);
  			size_t cipherTextLen = i2p::crypto::GetMLKEMCipherTextLen (m_RemoteStaticKeyType);
  			std::vector<uint8_t> kemCiphertext(cipherTextLen);
@@ -37,7 +37,7 @@ Index: libi2pd/ECIESX25519AEADRatchetSession.cpp
  
  			if (!Encrypt (kemCiphertext.data (), out + offset, cipherTextLen))
  			{
-@@ -750,7 +750,7 @@ namespace garlic
+@@ -770,7 +770,7 @@ namespace garlic
  				size_t cipherTextLen = i2p::crypto::GetMLKEMCipherTextLen (m_RemoteStaticKeyType);
  				std::vector<uint8_t> kemCiphertext(cipherTextLen);
  				uint8_t sharedSecret[32];
@@ -46,7 +46,7 @@ Index: libi2pd/ECIESX25519AEADRatchetSession.cpp
  
  				memcpy (m_CK, m_NSRCK->data (), 64); // restore key
  				if (!Encrypt (kemCiphertext.data (), out + offset, cipherTextLen))
-@@ -829,7 +829,7 @@ namespace garlic
+@@ -854,7 +854,7 @@ namespace garlic
  			buf += cipherTextLen + 16;
  			len -= cipherTextLen + 16;
  			// decaps

@@ -17,7 +17,7 @@ Index: libi2pd/Crypto.cpp
  #include <openssl/param_build.h>
  #include <openssl/core_names.h>
  #endif
-@@ -148,7 +149,7 @@ namespace crypto
+@@ -149,7 +150,7 @@ namespace crypto
  	#define dsap GetCryptoConstants ().dsap
  	#define dsaq GetCryptoConstants ().dsaq
  	#define dsag GetCryptoConstants ().dsag
@@ -26,7 +26,7 @@ Index: libi2pd/Crypto.cpp
  	EVP_PKEY * CreateDSA (BIGNUM * pubKey, BIGNUM * privKey)
  	{
  		EVP_PKEY * pkey = nullptr;
-@@ -649,40 +650,39 @@ namespace crypto
+@@ -650,40 +651,39 @@ namespace crypto
  	static bool AEADChaCha20Poly1305 (EVP_CIPHER_CTX * ctx, const uint8_t * msg, size_t msgLen,
  		const uint8_t * ad, size_t adLen, const uint8_t * key, const uint8_t * nonce, uint8_t * buf, size_t len, bool encrypt)
  	{

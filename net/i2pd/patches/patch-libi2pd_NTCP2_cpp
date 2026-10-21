@@ -1,19 +1,7 @@
 Index: libi2pd/NTCP2.cpp
 --- libi2pd/NTCP2.cpp.orig
 +++ libi2pd/NTCP2.cpp
-@@ -49,9 +49,11 @@ namespace transport
- #if OPENSSL_PQ
-         switch (version)
-         {
-+#ifndef LIBRESSL_VERSION_NUMBER
-             case 3:
-                  m_CryptoType = i2p::data::CRYPTO_KEY_TYPE_ECIES_MLKEM512_X25519_AEAD;
-             break;
-+#endif
-             case 4:
-                  m_CryptoType = i2p::data::CRYPTO_KEY_TYPE_ECIES_MLKEM768_X25519_AEAD;
-             break;
-@@ -158,7 +160,7 @@ namespace transport
+@@ -163,7 +163,7 @@ namespace transport
              encryption.Encrypt (pub, 32, m_IV, m_Buffer); // X
              //  ML-KEM encap_key
              m_PQKeys = i2p::crypto::CreateMLKEMKeys (m_CryptoType);
@@ -22,7 +10,7 @@ Index: libi2pd/NTCP2.cpp
          }
          else
              encryption.Encrypt (GetPub (), 32, m_IV, m_Buffer); // X
-@@ -178,7 +180,7 @@ namespace transport
+@@ -183,7 +183,7 @@ namespace transport
              // ML-KEM frame
              auto keyLen = i2p::crypto::GetMLKEMPublicKeyLen (m_CryptoType);
  			std::vector<uint8_t> encapsKey(keyLen);
@@ -31,7 +19,7 @@ Index: libi2pd/NTCP2.cpp
  			// encrypt encapsKey
  			if (!Encrypt (encapsKey.data (), m_Buffer + offset, keyLen))
  			{
-@@ -250,12 +252,13 @@ namespace transport
+@@ -255,12 +255,13 @@ namespace transport
  		maxPaddingLength -= 64;
  		size_t maxMsgSize = m_MaxMsgSize;
  #if OPENSSL_PQ
@@ -47,7 +35,7 @@ Index: libi2pd/NTCP2.cpp
  			if (!Encrypt (kemCiphertext.data (), m_Buffer + offset, cipherTextLen))
  			{
  				LogPrint (eLogWarning, "NTCP2: SessionCreated ML-KEM ciphertext section AEAD encryption failed");
-@@ -373,7 +376,7 @@ namespace transport
+@@ -378,7 +379,7 @@ namespace transport
                  MixHash (m_Buffer + offset, keyLen + 16);
                  offset += keyLen + 16;
                  m_PQKeys = i2p::crypto::CreateMLKEMKeys (m_CryptoType);
@@ -56,7 +44,7 @@ Index: libi2pd/NTCP2.cpp
              }
          }
  #endif
-@@ -440,8 +443,9 @@ namespace transport
+@@ -450,8 +451,9 @@ namespace transport
  			return false;
  		}
  #if OPENSSL_PQ
@@ -67,7 +55,7 @@ Index: libi2pd/NTCP2.cpp
  			// decrypt kem_ciphertext  frame
  			size_t cipherTextLen = i2p::crypto::GetMLKEMCipherTextLen (m_CryptoType);
  			std::vector<uint8_t> kemCiphertext(cipherTextLen);
-@@ -455,7 +459,7 @@ namespace transport
+@@ -465,7 +467,7 @@ namespace transport
  			offset += cipherTextLen + 16;
  			// decaps
  			uint8_t sharedSecret[32];
@@ -76,13 +64,12 @@ Index: libi2pd/NTCP2.cpp
  			MixKey (sharedSecret);
  		}
  #endif
-@@ -2285,6 +2289,9 @@ namespace transport
- 	void NTCP2Server::SetVersion (int version)
+@@ -2318,7 +2320,7 @@ namespace transport
  	{
  #if OPENSSL_PQ
-+#ifdef LIBRESSL_VERSION_NUMBER
+ #ifdef LIBRESSL_VERSION_NUMBER
+-	if (version == 3 || version == 5) version = 2; // 3 and 5 are not supported by LibreSSL
 +		if (version == 3) version = 2; // ML-KEM-512 is not supported by LibreSSL
-+#endif
+ #endif
          m_Version = version;
  #endif
- 	}

@@ -1,15 +1,15 @@
 Index: libi2pd/Destination.cpp
 --- libi2pd/Destination.cpp.orig
 +++ libi2pd/Destination.cpp
-@@ -14,6 +14,7 @@
- #include <charconv>
+@@ -15,6 +15,7 @@
+ #include <future>
  #include <boost/algorithm/string.hpp>
  #include "Crypto.h"
 +#include "PostQuantum.h"
  #include "ECIESX25519AEADRatchetSession.h"
  #include "Log.h"
  #include "FS.h"
-@@ -1013,7 +1014,10 @@ namespace client
+@@ -1051,7 +1052,10 @@ namespace client
  					try
  					{
  						i2p::data::CryptoKeyType cryptoType = std::stoi(it1);
@@ -21,7 +21,7 @@ Index: libi2pd/Destination.cpp
  						if (cryptoType <= i2p::data::CRYPTO_KEY_TYPE_ECIES_X25519_AEAD) // skip PQ keys if not supported
  #endif
  						{
-@@ -1047,6 +1051,9 @@ namespace client
+@@ -1085,6 +1089,9 @@ namespace client
  
  		for (auto& it: encryptionKeyTypes)
  		{

@@ -1,12 +1,16 @@
 Index: libi2pd/FS.cpp
 --- libi2pd/FS.cpp.orig
 +++ libi2pd/FS.cpp
-@@ -113,6 +113,8 @@ namespace fs {
- 				dataDir = fs_lib::wpath(commonAppData).string() + "\\" + appName;
- #endif
- 			}
-+#elif defined(__OpenBSD__)
-+			dataDir = "/var/" + appName;
+@@ -108,8 +108,12 @@ namespace fs {
+ 			else
+ 				dataDir = (fs_lib::path(commonAppData)/appName).string ();
  #else
++#ifdef __OpenBSD__
++			dataDir = "/var/" + appName;
++#else
  			dataDir = "/var/lib/" + appName;
+ #endif
++#endif
+ 			return;
+ 		}
  #endif

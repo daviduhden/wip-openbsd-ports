@@ -1,0 +1,46 @@
+Index: libi2pd_client/UDPTunnel.cpp
+--- libi2pd_client/UDPTunnel.cpp.orig
++++ libi2pd_client/UDPTunnel.cpp
+@@ -484,7 +484,7 @@ namespace client
+ 
+ 	void I2PUDPServerTunnel::Start ()
+ 	{
+-		m_IsStarted = true;
++		m_IsStarted.store (true, std::memory_order_release);
+ 		m_LocalDest->Start ();
+ 
+ 		auto dgram = m_LocalDest->CreateDatagramDestination (m_Gzip);
+@@ -505,11 +505,14 @@ namespace client
+ 
+ 	void I2PUDPServerTunnel::ScheduleCleanupTimer ()
+ 	{
+-		if (m_CleanupTimer)
++		std::lock_guard<std::mutex> lock (m_CleanupTimerMutex);
++		if (m_IsStarted.load (std::memory_order_acquire) && m_CleanupTimer)
+ 		{
+ 			m_CleanupTimer->expires_after (std::chrono::seconds (I2P_UDP_SESSION_CLEANUP_INTERVAL));
+-			m_CleanupTimer->async_wait (std::bind (&I2PUDPServerTunnel::HandleCleanupTimer,
+-				this, std::placeholders::_1));
++			std::weak_ptr<I2PUDPServerTunnel> weak = shared_from_this ();
++			m_CleanupTimer->async_wait ([weak](const boost::system::error_code& ecode) {
++				if (auto self = weak.lock ()) self->HandleCleanupTimer (ecode);
++			});
+ 		}
+ 	}
+ 
+@@ -558,10 +561,12 @@ namespace client
+ 		// a config reload builds a second tunnel object and drops it when the same
+ 		// one is already there. Its destructor must not reset the receiver of the
+ 		// live tunnel: they share the datagram destination
+-		if (!m_IsStarted) return;
+-		m_IsStarted = false;
++		if (!m_IsStarted.exchange (false, std::memory_order_acq_rel)) return;
+ 		if (m_StatsTimer) m_StatsTimer->cancel ();
+-		if (m_CleanupTimer) m_CleanupTimer->cancel ();
++		{
++			std::lock_guard<std::mutex> lock (m_CleanupTimerMutex);
++			if (m_CleanupTimer) m_CleanupTimer->cancel ();
++		}
+ 		auto dgram = m_LocalDest->GetDatagramDestination ();
+ 		if (dgram) {
+ 			dgram->ResetReceiver (m_inPort);

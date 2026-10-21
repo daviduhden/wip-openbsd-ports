@@ -1,7 +1,7 @@
 Index: libi2pd/Reseed.cpp
 --- libi2pd/Reseed.cpp.orig
 +++ libi2pd/Reseed.cpp
-@@ -15,7 +15,7 @@
+@@ -16,7 +16,7 @@
  #include <boost/algorithm/string.hpp>
  #include <openssl/ssl.h>
  #include <openssl/err.h>
@@ -10,7 +10,7 @@ Index: libi2pd/Reseed.cpp
  #include <openssl/core_names.h>
  #endif
  #include <zlib.h>
-@@ -511,7 +511,7 @@ namespace data
+@@ -537,7 +537,7 @@ namespace data
  				// extract RSA key (we need n only, e = 65537)
  				EVP_PKEY * pubKey = X509_get_pubkey (cert);
  				const BIGNUM * n = nullptr;
@@ -19,7 +19,7 @@ Index: libi2pd/Reseed.cpp
  				BIGNUM * n1 = BN_new ();
  				if (EVP_PKEY_get_bn_param (pubKey, OSSL_PKEY_PARAM_RSA_N, &n1) > 0)
  					n = n1;
-@@ -531,7 +531,7 @@ namespace data
+@@ -557,7 +557,7 @@ namespace data
  				}
  				else
  					LogPrint (eLogError, "Reseed: Can't extract RSA key from ", filename);

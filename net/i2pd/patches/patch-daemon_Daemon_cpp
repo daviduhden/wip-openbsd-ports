@@ -259,3 +259,8 @@ Index: daemon/Daemon.cpp
  		i2p::crypto::InitCrypto (precomputation);
  
  		i2p::transport::InitAddressFromIface (); // get address4/6 from interfaces
+@@ -472,4 +382,0 @@ namespace util
+-#ifdef __OpenBSD__
+-//SIOCGIFMTU is not found, SOCK DGRAM not found
+-		if(openbsd_pledge_enabled) init_pledge();
+-#endif

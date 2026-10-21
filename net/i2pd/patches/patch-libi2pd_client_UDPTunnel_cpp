@@ -1,5 +1,5 @@
 Serialize cancellation and rearming of the UDP server cleanup timer. Keep only a
-weak reference in its callback so a queued handler cannot access a destroyed
+weak reference in its callback so queued handlers cannot access a destroyed
 tunnel or keep a stopped tunnel alive.
 
 Index: libi2pd_client/UDPTunnel.cpp

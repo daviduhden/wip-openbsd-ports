@@ -1,3 +1,6 @@
+Use the OpenSSL 3 RSA helper only with OpenSSL; LibreSSL follows the
+compatible legacy key creation path.
+
 Index: daemon/I2PControl.cpp
 --- daemon/I2PControl.cpp.orig
 +++ daemon/I2PControl.cpp

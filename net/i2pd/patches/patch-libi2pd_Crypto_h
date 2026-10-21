@@ -1,3 +1,5 @@
+Detect post-quantum and Ed25519ph support separately for OpenSSL and LibreSSL.
+
 Index: libi2pd/Crypto.h
 --- libi2pd/Crypto.h.orig
 +++ libi2pd/Crypto.h

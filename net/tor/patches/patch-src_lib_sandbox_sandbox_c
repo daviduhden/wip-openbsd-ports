@@ -1,0 +1,95 @@
+Index: src/lib/sandbox/sandbox.c
+--- src/lib/sandbox/sandbox.c.orig
++++ src/lib/sandbox/sandbox.c
+@@ -33,6 +33,10 @@
+ #include <stdlib.h>
+ #include <errno.h>
+ 
++#ifdef __OpenBSD__
++#include <unistd.h>
++#endif
++
+ #include "lib/sandbox/sandbox.h"
+ #include "lib/container/map.h"
+ #include "lib/err/torerr.h"
+@@ -47,6 +51,57 @@
+ 
+ #define DEBUGGING_CLOSE
+ 
++#ifdef __OpenBSD__
++static int openbsd_sandbox_active = 0;
++
++static int
++openbsd_unveil_path(const char *path, const char *permissions)
++{
++  if (unveil(path, permissions) == -1) {
++    log_warn(LD_GENERAL, "unveil(%s) failed: %s", path, strerror(errno));
++    return -1;
++  }
++  return 0;
++}
++
++static int
++openbsd_sandbox_init(void)
++{
++  static const struct {
++    const char *path;
++    const char *permissions;
++  } rules[] = {
++    /*
++     * This profile is limited to the OpenBSD port defaults. Custom paths
++     * must not enable Sandbox: they are deliberately not unveiled here.
++     */
++    { "/etc/tor/torrc", "r" },
++    { "/var/tor", "rwc" },
++    { "/etc/resolv.conf", "r" },
++    { "/etc/hosts", "r" },
++    { "/etc/services", "r" },
++    { "/dev/urandom", "r" },
++    { "/dev/log", "w" },
++  };
++
++  for (size_t i = 0; i < sizeof(rules) / sizeof(rules[0]); ++i) {
++    if (openbsd_unveil_path(rules[i].path, rules[i].permissions) < 0)
++      return -1;
++  }
++  if (unveil(NULL, NULL) == -1) {
++    log_warn(LD_GENERAL, "unveil lock failed: %s", strerror(errno));
++    return -1;
++  }
++  if (pledge("stdio rpath wpath cpath dpath fattr flock inet dns unix",
++             NULL) == -1) {
++    log_warn(LD_GENERAL, "pledge failed: %s", strerror(errno));
++    return -1;
++  }
++  openbsd_sandbox_active = 1;
++  return 0;
++}
++#endif
++
+ #if defined(USE_LIBSECCOMP)
+ 
+ #include <sys/mman.h>
+@@ -2308,6 +2363,10 @@ sandbox_init(sandbox_cfg_t *cfg)
+            "libseccomp and its necessary header files (e.g. seccomp.h).");
+   return 0;
+ 
++#elif defined(__OpenBSD__)
++  (void)cfg;
++  return openbsd_sandbox_init();
++
+ #else
+   (void)cfg;
+   log_warn(LD_GENERAL,
+@@ -2370,7 +2429,11 @@ sandbox_cfg_allow_rename(sandbox_cfg_t *
+ int
+ sandbox_is_active(void)
+ {
++#ifdef __OpenBSD__
++  return openbsd_sandbox_active != 0;
++#else
+   return 0;
++#endif
+ }
+ 
+ #endif /* !defined(USE_LIBSECCOMP) */

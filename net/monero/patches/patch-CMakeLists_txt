@@ -1,6 +1,5 @@
-Select GNU gas from devel/gas before enabling ASM on OpenBSD, where the
-base assembler is outdated. Preserve C++17, optimization, OpenBSD
-library detection, and ports readline compatibility changes.
+Set C++17 and conservative release flags; detect OpenBSD libraries and
+ports readline correctly; use devel/gas for OpenBSD assembly builds.
 
 Index: CMakeLists.txt
 --- CMakeLists.txt.orig

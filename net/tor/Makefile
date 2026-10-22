@@ -13,6 +13,8 @@ WANTLIB += c crypto event_core event_extra execinfo m pthread ssl z
 
 SITES=		https://www.torproject.org/dist/
 
+BUILD_DEPENDS=	devel/metaauto
+
 AUTOCONF_VERSION=2.69
 CONFIGURE_STYLE=autoconf
 # PIE is already taken care of on a per-arch basis, and we have stack protection

@@ -8,11 +8,11 @@ Important: upgrading from i2pd < 2.61.0
 A major change in this package starting with version 2.61.0 requires
 an intervention from most users: the running directory of i2pd, which
 is also the $HOME directory of the _i2pd user, moves from /var/lib/i2pd
-to /var/i2pd.
+to ${LOCALSTATEDIR}/i2pd.
 
 If you installed a version of this package older than 2.61.0, you'll
 probably have to change the _i2pd user $HOME directory and move all
-files under /var/lib/i2pd to /var/i2pd.
+files under /var/lib/i2pd to ${LOCALSTATEDIR}/i2pd.
 
 Unless you installed or configured i2pd in a non-standard way, here's
 how most users should proceed:
@@ -25,12 +25,12 @@ how most users should proceed:
 - delete the _i2pd user and group:
 	userdel _i2pd
 	groupdel _i2pd
-- move /var/lib/i2pd to /var/i2pd:
-	mv /var/lib/i2pd /var/i2pd
+- move /var/lib/i2pd to ${LOCALSTATEDIR}/i2pd:
+	mv /var/lib/i2pd ${LOCALSTATEDIR}/i2pd
 - install the new package:
 	pkg_add i2pd
-- edit /etc/i2pd/i2pd.conf (you can take inspiration from
-  /usr/local/share/examples/i2pd/i2pd.conf)
+- edit ${SYSCONFDIR}/i2pd/i2pd.conf (you can take inspiration from
+  ${TRUEPREFIX}/share/examples/i2pd/i2pd.conf)
 - restart the i2pd process:
 	rcctl restart i2pd
 
@@ -60,7 +60,7 @@ If you intend to run a floodfill, you should raise this limit even more:
 	# sysctl kern.maxfiles=16000
 	# echo "kern.maxfiles=16000" >> /etc/sysctl.conf
 
-and also edit /etc/login.conf.d/i2pd:
+and also edit ${SYSCONFDIR}/login.conf.d/i2pd:
 
 	i2pd:\
 		:openfiles-cur=8192:\
@@ -90,7 +90,7 @@ your peers and affect the overall operation of the I2P network.
 You can initiate a graceful shutdown without the HTTP interface by
 sending a signal to the i2pd daemon like this:
 
-	kill -INT $(cat /var/i2pd/i2pd.pid)
+	kill -INT $(cat ${LOCALSTATEDIR}/i2pd/i2pd.pid)
 
 When it shuts down gracefully, the i2pd daemon waits for all transit
 tunnels to expire, which usually takes 10 minutes.

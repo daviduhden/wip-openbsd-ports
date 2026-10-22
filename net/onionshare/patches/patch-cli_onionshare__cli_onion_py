@@ -1,20 +1,13 @@
-Omit transport configuration lines when an optional executable is absent.
-Keep UseBridges enabled when requested, so a missing transport cannot
-silently turn a bridge connection into a direct connection.
-
-Index: cli/onionshare_cli/onion.py
---- cli/onionshare_cli/onion.py.orig
-+++ cli/onionshare_cli/onion.py
-@@ -310,6 +310,18 @@ class Onion(object):
+--- cli/onionshare_cli/onion.py.orig	2026-10-16 06:50:17.000000000 +0200
++++ cli/onionshare_cli/onion.py	2026-10-22 13:07:15.265099823 +0200
+@@ -328,6 +328,16 @@ class Onion(object):
              torrc_template = torrc_template.replace(
                  "{{socks_port}}", str(self.tor_socks_port)
              )
-+            # Optional transports need not be installed with the system Tor.
-+            # UseBridges remains enabled if requested: Tor must not fall back
-+            # to a direct connection when a requested transport is absent.
 +            for placeholder, executable in (
 +                ("{{obfs4proxy_path}}", self.obfs4proxy_file_path),
 +                ("{{snowflake_path}}", self.snowflake_file_path),
++                ("{{webtunnel_path}}", self.webtunnel_file_path),
 +            ):
 +                if not executable:
 +                    torrc_template = "".join(

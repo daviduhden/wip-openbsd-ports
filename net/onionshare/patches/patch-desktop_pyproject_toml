@@ -1,20 +1,43 @@
-Use the separately installed onionshare_cli package rather than an
-editable source-tree dependency. Allow the Python and PySide6 versions
-supplied by ports.
-
-Index: desktop/pyproject.toml
---- desktop/pyproject.toml.orig
-+++ desktop/pyproject.toml
-@@ -6,9 +6,9 @@ license = "GPLv3+"
- license = "GPLv3+"
+--- desktop/pyproject.toml.orig	2026-10-16 06:50:17.000000000 +0200
++++ desktop/pyproject.toml	2026-10-22 13:08:41.122177201 +0200
+@@ -22,11 +22,11 @@ classifiers = [
+     "Environment :: Web Environment",
+ ]
+ dependencies = [
+-    "PySide6 == 6.8.2.1",
++    "PySide6 >= 6.8.2.1, < 7.0",
+     "qrcode",
+-    "werkzeug == 3.1.9",
++    "werkzeug >= 3.1.8, < 3.2",
+     "python-gnupg",
+-    "onionshare_cli",
++    "onionshare_cli == 2.7",
+ ]
  
- [tool.poetry.dependencies]
--python = ">=3.10,<3.14"
--onionshare_cli = {path = "../cli", develop = true}
--PySide6 = "6.8.2.1"
-+python = ">=3.10,<4.0"
-+onionshare_cli = "2.6.5"
-+PySide6 = ">=6.8.2.1"
- qrcode = "*"
- werkzeug = "3.1.8"
- python-gnupg = "*"
+ [project.urls]
+@@ -36,7 +36,6 @@ documentation = "https://docs.onionshare.org/"
+
+ [project.scripts]
+ onionshare = 'onionshare:main'
+-onionshare-cli = "onionshare_cli:main"
+
+ [tool.setuptools]
+ packages = [
+@@ -47,6 +46,7 @@ packages = [
+     "onionshare.tab.mode.receive_mode",
+     "onionshare.tab.mode.website_mode",
+     "onionshare.tab.mode.chat_mode",
++    "onionshare.tab.mode.download_mode",
+ ]
+
+ [tool.setuptools.package-data]
+@@ -58,9 +58,6 @@ onionshare = [
+     "resources/countries/*",
+ ]
+
+-[tool.poetry.dependencies]
+-onionshare_cli = { path = "../cli", develop = true }
+-
+ [tool.poetry.group.dev.dependencies]
+ click = "*"
+ black = "*"

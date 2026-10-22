@@ -1,7 +1,7 @@
 COMMENT-main =		share files and services privately over Tor
 COMMENT-gui =		Qt interface for OnionShare
 
-MODPY_DISTV =		2.6.5
+MODPY_DISTV =		2.7
 DISTNAME =		onionshare-${MODPY_DISTV}
 CATEGORIES =		net
 HOMEPAGE =		https://onionshare.org/
@@ -21,15 +21,12 @@ MODULES =		lang/python
 MODPY_PYBUILD =		poetry-core
 MODPY_BUILD_DIR =	${WRKSRC}/cli
 
-RUN_DEPENDS-main =	devel/py-cffi \
-			devel/py-click \
-			devel/py-colorama \
+RUN_DEPENDS-main =	devel/py-colorama \
 			devel/py-gevent \
 			graphics/py-qrcode \
 			net/py-gevent-websocket \
 			net/py-socks \
 			net/py-stem \
-			net/py-wsproto \
 			net/tor \
 			security/py-PyNaCl \
 			sysutils/py-packaging \
@@ -39,7 +36,6 @@ RUN_DEPENDS-main =	devel/py-cffi \
 			www/py-flask-compress \
 			www/py-flask-socketio \
 			www/py-requests \
-			www/py-urllib3 \
 			www/py-waitress \
 			www/py-werkzeug
 RUN_DEPENDS-gui =	${BASE_PKGPATH},-main=${MODPY_DISTV} \
@@ -49,7 +45,8 @@ RUN_DEPENDS-gui =	${BASE_PKGPATH},-main=${MODPY_DISTV} \
 			x11/gtk+4,-guic \
 			x11/qt6/pyside6/pyside
 
-TEST_DEPENDS =		${RUN_DEPENDS-main}
+TEST_DEPENDS =		${RUN_DEPENDS-main} \
+			devel/py-pytest
 PORTHOME =		${WRKDIR}
 
 post-patch:
@@ -70,10 +67,13 @@ do-install:
 	${INSTALL_DATA} ${WRKSRC}/LICENSE.txt \
 		${PREFIX}/share/doc/onionshare/
 	${INSTALL_DATA_DIR} ${PREFIX}/share/applications \
-		${PREFIX}/share/icons/hicolor/scalable/apps
+		${PREFIX}/share/icons/hicolor/scalable/apps \
+		${PREFIX}/share/metainfo
 	${INSTALL_DATA} ${WRKSRC}/desktop/org.onionshare.OnionShare.desktop \
 		${PREFIX}/share/applications/
 	${INSTALL_DATA} ${WRKSRC}/desktop/org.onionshare.OnionShare.svg \
 		${PREFIX}/share/icons/hicolor/scalable/apps/
+	${INSTALL_DATA} ${WRKSRC}/desktop/org.onionshare.OnionShare.appdata.xml \
+		${PREFIX}/share/metainfo/
 
 .include <bsd.port.mk>

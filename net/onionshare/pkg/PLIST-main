@@ -1,5 +1,4 @@
 bin/onionshare-cli
-lib/python${MODPY_VERSION}/site-packages/onionshare-${MODPY_DISTV}.dist-info/RECORD
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli-${MODPY_DISTV}.dist-info/
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli-${MODPY_DISTV}.dist-info/METADATA
@@ -51,6 +50,7 @@ lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/templates/
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/templates/403.html
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/templates/404.html
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/templates/405.html
+lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/templates/413.html
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/templates/500.html
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/templates/chat.html
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/templates/denied.html
@@ -59,10 +59,10 @@ lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/templates/rece
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/templates/send.html
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/templates/thankyou.html
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/torrc_template
-lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/torrc_template-meek_lite_azure
+lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/torrc_template-meek
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/torrc_template-obfs4
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/torrc_template-snowflake
-lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/version.txt
+lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/torrc_template-webtunnel
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/resources/wordlist.txt
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/settings.py
 lib/python${MODPY_VERSION}/site-packages/onionshare_cli/web/

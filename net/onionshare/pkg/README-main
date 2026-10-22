@@ -13,10 +13,23 @@ configure bridges explicitly if required. Missing transports must cause
 bridge setup to fail, not bypass the requested bridge. Built-in bridge
 addresses and Tor transport interoperability need runtime verification.
 
-Socket.IO 5 and Engine.IO 4, Flask-SocketIO, simple-websocket and bidict are
-private modules in onionshare_cli._vendor. They do not replace the older
-system Socket.IO/Engine.IO packages. Their source and licenses are included.
+Chat uses the system Flask-SocketIO 5, python-socketio 5, python-engineio 4,
+gevent and gevent-websocket packages. The port requires gevent explicitly,
+so Eventlet is neither installed nor selected as a fallback. This preserves
+the chat client's WebSocket-only transport rather than falling back silently
+to an incompatible backend.
 
-The initial port is untested on OpenBSD. In particular test all four modes,
-authenticated/public sharing, symbolic-link handling, Tor shutdown and
-cleanup, and GUI/PySide6 compatibility before relying on it for privacy.
+The port metadata accepts the OpenBSD versions of PyNaCl, Werkzeug, Stem and
+qrcode after static API review. CFFI remains installed transitively through
+PyNaCl and gevent. Click, urllib3, setuptools, wheel, Cython and pkgconfig
+are not imported by OnionShare at runtime; urllib3 and wsproto remain
+transitive dependencies of requests and simple-websocket respectively.
+
+The Engine.IO port also retains requests and websocket-client so its packaged
+outbound client remains usable. OnionShare's Flask-SocketIO server does not
+import those client paths directly.
+
+This update is untested on OpenBSD. In particular test all five modes,
+authenticated/public sharing, symbolic-link handling, Unix-socket and TCP
+fallbacks, Tor shutdown and cleanup, bridge transports, WebSocket chat, and
+GUI/PySide6 compatibility before relying on it for privacy.

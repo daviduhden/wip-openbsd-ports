@@ -2,6 +2,7 @@ bin/onionshare
 lib/python${MODPY_VERSION}/site-packages/onionshare/
 lib/python${MODPY_VERSION}/site-packages/onionshare-${MODPY_DISTV}.dist-info/
 lib/python${MODPY_VERSION}/site-packages/onionshare-${MODPY_DISTV}.dist-info/METADATA
+lib/python${MODPY_VERSION}/site-packages/onionshare-${MODPY_DISTV}.dist-info/RECORD
 lib/python${MODPY_VERSION}/site-packages/onionshare-${MODPY_DISTV}.dist-info/WHEEL
 lib/python${MODPY_VERSION}/site-packages/onionshare-${MODPY_DISTV}.dist-info/entry_points.txt
 lib/python${MODPY_VERSION}/site-packages/onionshare/__init__.py
@@ -341,7 +342,9 @@ lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/dark_icon-c
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/dark_logo_text.png
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/dark_logo_text_bg.png
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/dark_mode_chat.png
+lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/dark_mode_download.png
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/dark_mode_new_tab_chat.png
+lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/dark_mode_new_tab_download.png
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/dark_mode_new_tab_receive.png
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/dark_mode_new_tab_share.png
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/dark_mode_new_tab_website.png
@@ -365,7 +368,9 @@ lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/light_histo
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/light_logo_text.png
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/light_logo_text_bg.png
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/light_mode_chat.png
+lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/light_mode_download.png
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/light_mode_new_tab_chat.png
+lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/light_mode_new_tab_download.png
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/light_mode_new_tab_receive.png
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/light_mode_new_tab_share.png
 lib/python${MODPY_VERSION}/site-packages/onionshare/resources/images/light_mode_new_tab_website.png
@@ -504,6 +509,11 @@ lib/python${MODPY_VERSION}/site-packages/onionshare/tab/mode/chat_mode/__init__.
 lib/python${MODPY_VERSION}/site-packages/onionshare/tab/mode/chat_mode/${MODPY_PYCACHE}/
 lib/python${MODPY_VERSION}/site-packages/onionshare/tab/mode/chat_mode/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
 lib/python${MODPY_VERSION}/site-packages/onionshare/tab/mode/chat_mode/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
+lib/python${MODPY_VERSION}/site-packages/onionshare/tab/mode/download_mode/
+lib/python${MODPY_VERSION}/site-packages/onionshare/tab/mode/download_mode/__init__.py
+lib/python${MODPY_VERSION}/site-packages/onionshare/tab/mode/download_mode/${MODPY_PYCACHE}/
+lib/python${MODPY_VERSION}/site-packages/onionshare/tab/mode/download_mode/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}${MODPY_PYOEXTENSION}
+lib/python${MODPY_VERSION}/site-packages/onionshare/tab/mode/download_mode/${MODPY_PYCACHE}__init__.${MODPY_PYC_MAGIC_TAG}pyc
 lib/python${MODPY_VERSION}/site-packages/onionshare/tab/mode/file_selection.py
 lib/python${MODPY_VERSION}/site-packages/onionshare/tab/mode/history.py
 lib/python${MODPY_VERSION}/site-packages/onionshare/tab/mode/mode_settings_widget.py
@@ -535,5 +545,6 @@ lib/python${MODPY_VERSION}/site-packages/onionshare/update_checker.py
 lib/python${MODPY_VERSION}/site-packages/onionshare/widgets.py
 share/applications/org.onionshare.OnionShare.desktop
 share/icons/hicolor/scalable/apps/org.onionshare.OnionShare.svg
+share/metainfo/org.onionshare.OnionShare.appdata.xml
 @tag update-desktop-database
 @tag gtk-update-icon-cache %D/share/icons/hicolor

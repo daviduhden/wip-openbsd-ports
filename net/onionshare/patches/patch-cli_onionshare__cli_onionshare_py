@@ -1,0 +1,11 @@
+--- cli/onionshare_cli/onionshare.py.orig	2026-10-16 06:50:17.000000000 +0200
++++ cli/onionshare_cli/onionshare.py	2026-10-22 13:07:15.285579737 +0200
+@@ -96,7 +96,7 @@ class OnionShare(object):
+             any(char.isspace() for char in socket_path)
+             or "," in socket_path
+             or (
+-                self.common.platform == "Darwin"
++                self.common.platform in ("Darwin", "BSD")
+                 and len(os.fsencode(socket_path)) >= 104
+             )
+         ):

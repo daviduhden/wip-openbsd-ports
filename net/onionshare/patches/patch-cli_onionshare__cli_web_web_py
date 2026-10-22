@@ -1,10 +1,6 @@
-Require the gevent SocketIO backend provided by the port rather than
-silently selecting another backend when gevent initialization fails.
-
-Index: cli/onionshare_cli/web/web.py
---- cli/onionshare_cli/web/web.py.orig
-+++ cli/onionshare_cli/web/web.py
-@@ -167,17 +167,11 @@ class Web:
+--- cli/onionshare_cli/web/web.py.orig	2026-10-16 06:50:17.000000000 +0200
++++ cli/onionshare_cli/web/web.py	2026-10-22 13:07:15.277100437 +0200
+@@ -170,17 +170,11 @@ class Web:
              self.website_mode = WebsiteModeWeb(self.common, self)
          elif self.mode == "chat":
              if self.common.verbose:

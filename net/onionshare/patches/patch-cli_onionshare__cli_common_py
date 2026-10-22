@@ -1,11 +1,6 @@
-Use the ports LOCALBASE for Tor and its GeoIP data. Find optional
-pluggable transport executables on PATH instead of assuming they are
-installed under /usr/local/bin.
-
-Index: cli/onionshare_cli/common.py
---- cli/onionshare_cli/common.py.orig
-+++ cli/onionshare_cli/common.py
-@@ -380,12 +380,12 @@ class Common:
+--- cli/onionshare_cli/common.py.orig	2026-10-16 06:50:17.000000000 +0200
++++ cli/onionshare_cli/common.py	2026-10-22 13:07:25.623592905 +0200
+@@ -386,13 +386,13 @@ class Common:
                  tor_geo_ipv6_file_path = os.path.join(prefix, "share/tor/geoip6")
  
          elif self.platform == "BSD":
@@ -15,12 +10,32 @@ Index: cli/onionshare_cli/common.py
 -            obfs4proxy_file_path = "/usr/local/bin/obfs4proxy"
 -            snowflake_file_path = "/usr/local/bin/snowflake-client"
 -            meek_client_file_path = "/usr/local/bin/meek-client"
+-            webtunnel_file_path = "/usr/local/bin/webtunnel-client"
 +            tor_path = "${LOCALBASE}/bin/tor"
 +            tor_geo_ip_file_path = "${LOCALBASE}/share/tor/geoip"
 +            tor_geo_ipv6_file_path = "${LOCALBASE}/share/tor/geoip6"
 +            obfs4proxy_file_path = shutil.which("obfs4proxy")
 +            snowflake_file_path = shutil.which("snowflake-client")
 +            meek_client_file_path = shutil.which("meek-client")
++            webtunnel_file_path = shutil.which("webtunnel-client")
  
          return (
              tor_path,
+@@ -417,6 +417,8 @@ class Common:
+                 # (like running tests in Linux while pretending to be in Windows)
+                 try:
+                     xdg_config_home = os.environ["XDG_CONFIG_HOME"]
++                    if not os.path.isabs(xdg_config_home):
++                        raise ValueError("XDG_CONFIG_HOME must be absolute")
+                     onionshare_data_dir = f"{xdg_config_home}/onionshare"
+                 except Exception:
+                     onionshare_data_dir = os.path.expanduser("~/.config/onionshare")
+@@ -427,6 +429,8 @@ class Common:
+         else:
+             try:
+                 xdg_config_home = os.environ["XDG_CONFIG_HOME"]
++                if not os.path.isabs(xdg_config_home):
++                    raise ValueError("XDG_CONFIG_HOME must be absolute")
+                 onionshare_data_dir = f"{xdg_config_home}/onionshare"
+             except Exception:
+                 onionshare_data_dir = os.path.expanduser("~/.config/onionshare")

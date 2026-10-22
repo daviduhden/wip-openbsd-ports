@@ -1,16 +1,34 @@
-Set C++17 and conservative release flags; detect OpenBSD libraries and
-ports readline correctly; use devel/gas for OpenBSD assembly builds.
+Use C++17 and conservative release flags; detect OpenBSD libraries and
+ports readline; route ASM through Clang to devel/gas so CMake compiler
+flags work for assembly sources on OpenBSD.
 
 Index: CMakeLists.txt
 --- CMakeLists.txt.orig
 +++ CMakeLists.txt
-@@ -90,13 +90,18 @@ elseif (USE_CLANG_TIDY_CXX)
+@@ -90,13 +90,35 @@ elseif (USE_CLANG_TIDY_CXX)
  	monero_clang_tidy("CXX")
  endif()
  
 +if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-+  # Prefer GNU gas from devel/gas over the outdated base assembler.
-+  find_program(CMAKE_ASM_COMPILER gas HINTS "$ENV{LOCALBASE}/bin")
++  # Clang handles CMake flags, then delegates assembly to ports gas.
++  find_program(MONERO_GAS_EXECUTABLE gas
++    HINTS "$ENV{LOCALBASE}/bin")
++  if(NOT MONERO_GAS_EXECUTABLE)
++    message(FATAL_ERROR "devel/gas is required for OpenBSD ASM builds")
++  endif()
++  set(_monero_gas_dir "${CMAKE_BINARY_DIR}/gas-bin")
++  file(MAKE_DIRECTORY "${_monero_gas_dir}")
++  file(REMOVE "${_monero_gas_dir}/as")
++  execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink
++    "${MONERO_GAS_EXECUTABLE}" "${_monero_gas_dir}/as"
++    RESULT_VARIABLE _monero_gas_link_result)
++  if(NOT _monero_gas_link_result STREQUAL "0")
++    message(FATAL_ERROR "Could not link devel/gas for ASM builds")
++  endif()
++  set(CMAKE_ASM_COMPILER "${CMAKE_C_COMPILER}" CACHE FILEPATH
++    "Use the Clang driver with devel/gas" FORCE)
++  set(CMAKE_ASM_FLAGS_INIT
++    "-fno-integrated-as -B${_monero_gas_dir}")
 +endif()
 +
  enable_language(C ASM)
@@ -24,7 +42,7 @@ Index: CMakeLists.txt
  set(CMAKE_CXX_STANDARD_REQUIRED ON)
  set(CMAKE_CXX_EXTENSIONS OFF)
  
-@@ -343,7 +348,7 @@ endif()
+@@ -343,7 +365,7 @@ endif()
  if(WIN32 OR ARM OR PPC64LE OR PPC64 OR PPC)
    set(OPT_FLAGS_RELEASE "-O2")
  else()
@@ -33,7 +51,7 @@ Index: CMakeLists.txt
  endif()
  
  # BUILD_TAG is used to select the build type to check for a new version
-@@ -1137,7 +1142,7 @@ if(MINGW)
+@@ -1137,7 +1159,7 @@ if(MINGW)
      set(ICU_LIBRARIES ${ICUIO_LIBRARIES} ${ICUIN_LIBRARIES} ${ICUUC_LIBRARIES} ${ICUDT_LIBRARIES} ${ICUTU_LIBRARIES} ${ICONV_LIBRARIES})
      set(CMAKE_FIND_LIBRARY_SUFFIXES ${OLD_LIB_SUFFIXES})
    endif()
@@ -42,7 +60,7 @@ Index: CMakeLists.txt
    set(EXTRA_LIBRARIES "")
  elseif(FREEBSD)
    set(EXTRA_LIBRARIES execinfo)
-@@ -1183,9 +1188,16 @@ if(USE_READLINE AND NOT DEPENDS)
+@@ -1183,9 +1205,16 @@ if(USE_READLINE AND NOT DEPENDS)
      message(STATUS "Could not find GNU readline library so building without readline support")
    endif()
  elseif(USE_READLINE AND DEPENDS AND NOT MINGW)

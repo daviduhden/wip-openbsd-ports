@@ -7,6 +7,7 @@ include/i2pd/AddressBook.h
 include/i2pd/BOB.h
 include/i2pd/Base.h
 include/i2pd/Blinding.h
+include/i2pd/BoostStream.h
 include/i2pd/CPU.h
 include/i2pd/ClientContext.h
 include/i2pd/Config.h
@@ -56,6 +57,9 @@ include/i2pd/Streaming.h
 include/i2pd/Tag.h
 include/i2pd/Timestamp.h
 include/i2pd/Torrents.h
+include/i2pd/TorrentsDHT.h
+include/i2pd/TorrentsRPC.h
+include/i2pd/TorrentsTunnel.h
 include/i2pd/TransitTunnel.h
 include/i2pd/TransportSession.h
 include/i2pd/Transports.h
@@ -71,157 +75,14 @@ include/i2pd/util.h
 include/i2pd/version.h
 @static-lib lib/libi2pd.a
 @static-lib lib/libi2pdclient.a
+@static-lib lib/libi2pdlang.a
+share/doc/pkg-readmes/${PKGSTEM}
+share/examples/i2pd/
+share/examples/i2pd/i2pd.conf
 @mode 0750
 @owner _i2pd
 @group _i2pd
 @sample ${SYSCONFDIR}/i2pd/
-@mode
-@sample ${LOCALSTATEDIR}/i2pd/
-@sample ${LOCALSTATEDIR}/i2pd/certificates/
-@sample ${LOCALSTATEDIR}/i2pd/certificates/family/
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/
-@sample ${LOCALSTATEDIR}/i2pd/certificates/router/
-@owner
-@group
-@static-lib lib/libi2pdlang.a
-share/doc/pkg-readmes/${PKGSTEM}
-share/examples/i2pd/
-share/examples/i2pd/certificates/
-share/examples/i2pd/certificates/family/
-share/examples/i2pd/certificates/family/gostcoin.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/family/gostcoin.crt
-@owner
-@group
-share/examples/i2pd/certificates/family/i2p-dev.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/family/i2p-dev.crt
-@owner
-@group
-share/examples/i2pd/certificates/family/i2pd-dev.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/family/i2pd-dev.crt
-@owner
-@group
-share/examples/i2pd/certificates/family/mca2-i2p.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/family/mca2-i2p.crt
-@owner
-@group
-share/examples/i2pd/certificates/family/stormycloud.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/family/stormycloud.crt
-@owner
-@group
-share/examples/i2pd/certificates/family/volatile.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/family/volatile.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/
-share/examples/i2pd/certificates/reseed/acetone_at_mail.i2p.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/acetone_at_mail.i2p.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/admin_at_likogan.dev.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/admin_at_likogan.dev.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/admin_at_stormycloud.org.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/admin_at_stormycloud.org.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/creativecowpat_at_mail.i2p.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/creativecowpat_at_mail.i2p.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/diyarciftci_at_protonmail.com.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/diyarciftci_at_protonmail.com.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/echelon3_at_mail.i2p.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/echelon3_at_mail.i2p.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/hankhill19580_at_gmail.com.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/hankhill19580_at_gmail.com.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/i2p-reseed_at_mk16.de.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/i2p-reseed_at_mk16.de.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/igor_at_novg.net.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/igor_at_novg.net.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/lazygravy_at_mail.i2p.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/lazygravy_at_mail.i2p.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/orignal_at_mail.i2p.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/orignal_at_mail.i2p.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/r4sas-reseed_at_mail.i2p.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/r4sas-reseed_at_mail.i2p.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/rambler_at_mail.i2p.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/rambler_at_mail.i2p.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/reseed_at_diva.exchange.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/reseed_at_diva.exchange.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/sahil_at_mail.i2p.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/sahil_at_mail.i2p.crt
-@owner
-@group
-share/examples/i2pd/certificates/reseed/vserod1488_at_proton.me.crt
-@owner _i2pd
-@group _i2pd
-@sample ${LOCALSTATEDIR}/i2pd/certificates/reseed/vserod1488_at_proton.me.crt
-@owner
-@group
-share/examples/i2pd/i2pd.conf
 @mode 0640
 @owner root
 @group _i2pd
@@ -239,3 +100,35 @@ share/examples/i2pd/tunnels.conf
 @group
 share/examples/login.conf.d/i2pd
 @sample ${SYSCONFDIR}/login.conf.d/i2pd
+@cwd ${LOCALSTATEDIR}
+@owner _i2pd
+@group _i2pd
+i2pd/
+i2pd/certificates/
+i2pd/certificates/family/
+i2pd/certificates/family/gostcoin.crt
+i2pd/certificates/family/i2p-dev.crt
+i2pd/certificates/family/i2pd-dev.crt
+i2pd/certificates/family/mca2-i2p.crt
+i2pd/certificates/family/stormycloud.crt
+i2pd/certificates/family/volatile.crt
+i2pd/certificates/reseed/
+i2pd/certificates/reseed/acetone_at_mail.i2p.crt
+i2pd/certificates/reseed/admin_at_likogan.dev.crt
+i2pd/certificates/reseed/admin_at_stormycloud.org.crt
+i2pd/certificates/reseed/creativecowpat_at_mail.i2p.crt
+i2pd/certificates/reseed/damian.buho_at_proton.me.crt
+i2pd/certificates/reseed/diyarciftci_at_protonmail.com.crt
+i2pd/certificates/reseed/echelon3_at_mail.i2p.crt
+i2pd/certificates/reseed/freedompeer_at_skhron.eu.crt
+i2pd/certificates/reseed/i2p-reseed_at_mk16.de.crt
+i2pd/certificates/reseed/idk_at_stormycloud.org.crt
+i2pd/certificates/reseed/igor_at_novg.net.crt
+i2pd/certificates/reseed/lazygravy_at_mail.i2p.crt
+i2pd/certificates/reseed/orignal_at_mail.i2p.crt
+i2pd/certificates/reseed/r4sas-reseed_at_mail.i2p.crt
+i2pd/certificates/reseed/rambler_at_mail.i2p.crt
+i2pd/certificates/reseed/reseed_at_diva.exchange.crt
+i2pd/certificates/reseed/reseedserver_at_mail.i2p.crt
+i2pd/certificates/reseed/sahil_at_mail.i2p.crt
+i2pd/certificates/reseed/vserod1488_at_proton.me.crt

@@ -31,15 +31,16 @@ CONFIGURE_ARGS =	-DWITH_UPNP=ON
 WRKSRC =	${WRKDIST}/build
 
 post-install:
-	${INSTALL_DATA_DIR} ${PREFIX}/include/i2pd
+	${INSTALL_DATA_DIR} ${PREFIX}/include/i2pd \
+		${PREFIX}/share/examples/i2pd
 	${INSTALL_DATA} ${WRKDIST}/libi2pd{,_client}/*.h \
 		${PREFIX}/include/i2pd
 .for dir in family reseed
-	${INSTALL_DATA_DIR} ${PREFIX}/share/examples/i2pd/certificates/${dir}
+	${INSTALL_DATA_DIR} ${WRKINST}${LOCALSTATEDIR}/i2pd/certificates/${dir}
 	${INSTALL_DATA} ${WRKDIST}/contrib/certificates/${dir}/* \
-		${PREFIX}/share/examples/i2pd/certificates/${dir}
+		${WRKINST}${LOCALSTATEDIR}/i2pd/certificates/${dir}
 .endfor
-	${INSTALL_DATA} ${WRKDIST}/contrib/i2pd.conf \
+	${SUBST_DATA} ${WRKDIST}/contrib/i2pd.conf \
 		${PREFIX}/share/examples/i2pd/i2pd.conf
 	${INSTALL_DATA} ${WRKDIST}/contrib/tunnels.conf \
 		${PREFIX}/share/examples/i2pd/tunnels.conf

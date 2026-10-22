@@ -1,6 +1,6 @@
 Own XFTP test clients until their callback finishes, including assertion
-failure. Close their HTTP/2 threads before shutting down the fixture server.
-
+failure. Close their HTTP/2 threads before shutting down the fixture
+server.
 Index: tests/XFTPClient.hs
 --- tests/XFTPClient.hs.orig
 +++ tests/XFTPClient.hs

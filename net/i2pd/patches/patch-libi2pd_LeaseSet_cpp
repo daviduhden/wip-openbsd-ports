@@ -1,5 +1,5 @@
-Validate post-quantum key types when choosing encryption keys for lease sets.
-
+Validate post-quantum key types when choosing encryption keys for lease
+sets.
 Index: libi2pd/LeaseSet.cpp
 --- libi2pd/LeaseSet.cpp.orig
 +++ libi2pd/LeaseSet.cpp

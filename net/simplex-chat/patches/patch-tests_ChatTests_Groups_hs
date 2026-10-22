@@ -1,31 +1,34 @@
-Replace fixed sleeps in front of asynchronous state with bounded polling and
-give the owner-signed roster and group-forwarding setup deterministic waits.
+Replace fixed sleeps in front of asynchronous state with bounded polling
+and give the owner-signed roster and group-forwarding setup
+deterministic waits.
 
-Group forwarding: the host learns that two members are directly connected
-from their x.grp.mem.con messages; a late message overwrites the MRIntroduced
-relation the test forces and forwarding is disabled, making the example time
-out.  Wait until both relations are already MRConnected before forcing.
+Group forwarding: the host learns that two members are directly
+connected from their x.grp.mem.con messages; a late message overwrites
+the MRIntroduced relation the test forces and forwarding is disabled,
+making the example time out. Wait until both relations are already
+MRConnected before forcing.
 
-Promoted-members roster: the owner-signed roster snapshot and the owner intros
-arrive asynchronously and have no terminal event, so poll the database for the
-applied member role (checkMemberRowEventually) instead of relying on a fixed
-sleep.  Negative checks stay immediate.
+Promoted-members roster: the owner-signed roster snapshot and the owner
+intros arrive asynchronously and have no terminal event, so poll the
+database for the applied member role (checkMemberRowEventually) instead
+of relying on a fixed sleep. Negative checks stay immediate.
 
 Also give the group-link member role / blocked name checks and the group
 history disappearing-message TTL more time on a loaded builder.
 
-Keep the group-link host online until the offline invitee finishes joining.
+Keep the group-link host online until the offline invitee finishes
+joining.
 
 Before stopping the quota-test recipient, wait (bounded, at most ten
 seconds) for received setup messages to be broker-ACKed and removed from
-the agent store. Reading terminal output does not establish an empty queue.
+the agent store. Reading terminal output does not establish an empty
+queue.
 
-Every member prints a "<member>> connected" group item for each peer whose
-group connection is established (memberConnectedChatItem); it is created
-asynchronously relative to the member relation vector the setup polls, so the
-forwarding setup now consumes the items that have already arrived on every
-member.
-
+Every member prints a "<member>> connected" group item for each peer
+whose group connection is established (memberConnectedChatItem); it is
+created asynchronously relative to the member relation vector the setup
+polls, so the forwarding setup now consumes the items that have already
+arrived on every member.
 Index: tests/ChatTests/Groups.hs
 Index: tests/ChatTests/Groups.hs
 --- tests/ChatTests/Groups.hs.orig

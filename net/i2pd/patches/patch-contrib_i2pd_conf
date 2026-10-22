@@ -1,5 +1,5 @@
-Set the packaged configuration paths and defaults for the OpenBSD i2pd layout.
-
+Set the packaged configuration paths and defaults for the OpenBSD i2pd
+layout.
 Index: contrib/i2pd.conf
 --- contrib/i2pd.conf.orig
 +++ contrib/i2pd.conf

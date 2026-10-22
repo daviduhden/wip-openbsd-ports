@@ -1,7 +1,6 @@
 Handle the Underlining constructor added in newer terminal library
-versions. Underlining is a text decoration, not a color layer, so
-fall back to the foreground color as a sensible default.
-
+versions. Underlining is a text decoration, not a color layer, so fall
+back to the foreground color as a sensible default.
 Index: src/Simplex/Chat/Terminal/Output.hs
 --- src/Simplex/Chat/Terminal/Output.hs.orig
 +++ src/Simplex/Chat/Terminal/Output.hs

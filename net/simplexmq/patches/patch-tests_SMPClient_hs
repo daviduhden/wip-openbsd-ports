@@ -1,18 +1,19 @@
-Accept a dedicated client-service credential in notification service tests.
-The server fixture is restricted to the serverAuth EKU and cannot be used as
-a TLS client certificate with tls 2.4.  Each test generates one unrestricted
-credential through the production helper and reuses it for all reconnects,
-preserving the certificate fingerprint and SMP service identity.
+Accept a dedicated client-service credential in notification service
+tests. The server fixture is restricted to the serverAuth EKU and cannot
+be used as a TLS client certificate with tls 2.4. Each test generates
+one unrestricted credential through the production helper and reuses it
+for all reconnects, preserving the certificate fingerprint and SMP
+service identity.
 
-Make the server fixture wait for the complete server action, not merely the
-transport's listening-socket notification.  Store saving, proxy shutdown and
-connection finalizers all run after that notification and must finish before
-the next test can reuse their paths and ports.
+Make the server fixture wait for the complete server action, not merely
+the transport's listening-socket notification. Store saving, proxy
+shutdown and connection finalizers all run after that notification and
+must finish before the next test can reuse their paths and ports.
 
 Import tryPutTMVar explicitly for the start-error path added below.
 
-Keep the shutdown watchdog effective, including the synchronous killThread call.
-
+Keep the shutdown watchdog effective, including the synchronous
+killThread call.
 Index: tests/SMPClient.hs
 --- tests/SMPClient.hs.orig
 +++ tests/SMPClient.hs

@@ -1,5 +1,5 @@
-Close all protocol clients on success and failure, and identify the failing proxy setup stage.
-
+Close all protocol clients on success and failure, and identify the
+failing proxy setup stage.
 Index: tests/RSLVTests.hs
 --- tests/RSLVTests.hs.orig
 +++ tests/RSLVTests.hs

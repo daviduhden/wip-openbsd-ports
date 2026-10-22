@@ -1,6 +1,4 @@
-- don't hardcode -O2
-- inject port infrastructure' cflags/cxxflags
-
+- don't hardcode -O2 - inject port infrastructure' cflags/cxxflags
 Index: Makefile
 --- Makefile.orig
 +++ Makefile

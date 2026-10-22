@@ -1,5 +1,5 @@
-Fail closed when the kernel cannot preserve the filesystem sandbox across exec.
-
+Fail closed when the kernel cannot preserve the filesystem sandbox
+across exec.
 Index: codex-rs/sandboxing/src/openbsd.rs
 --- /dev/null
 +++ codex-rs/sandboxing/src/openbsd.rs

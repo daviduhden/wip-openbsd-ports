@@ -1,8 +1,7 @@
-Install the manual page under man/man1 rather than share/man/man1, and stop
-setuptools from installing non-Python directories such as doc/ into
-site-packages through implicit namespace package discovery.  Namespace
+Install the manual page under man/man1 rather than share/man/man1, and
+stop setuptools from installing non-Python directories such as doc/ into
+site-packages through implicit namespace package discovery. Namespace
 discovery is disabled upstream in bdf641b5fda40, after this release.
-
 Index: pyproject.toml
 --- pyproject.toml.orig
 +++ pyproject.toml

@@ -1,5 +1,5 @@
-Resolve embedded web assets relative to the project root during Cabal builds.
-
+Resolve embedded web assets relative to the project root during Cabal
+builds.
 Index: apps/common/Web/Embedded.hs
 --- apps/common/Web/Embedded.hs.orig
 +++ apps/common/Web/Embedded.hs

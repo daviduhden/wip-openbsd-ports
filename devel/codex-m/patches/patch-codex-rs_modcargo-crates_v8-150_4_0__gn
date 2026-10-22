@@ -1,6 +1,6 @@
-Revert 
-https://github.com/denoland/rusty_v8/commit/1bc16604555847e020945abe39b8d4b2fec5dd9e#diff-b2b1f3ec619c03c5bba2f171beab1301d960e1dcac6a17a99ce02326ce9c49b4
-
+Revert rusty_v8 commit 1bc1660, which enables optional Rust/C++
+integration and temporal support by default; this port does not build
+those optional features.
 Index: codex-rs/modcargo-crates/v8-150.4.0/.gn
 --- codex-rs/modcargo-crates/v8-150.4.0/.gn.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/.gn

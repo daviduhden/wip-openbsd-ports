@@ -1,6 +1,5 @@
 Use BSD sysctl paths and exclude the incompatible thread-ID branches
 from Abseil system information code.
-
 Index: codex-rs/modcargo-crates/v8-150.4.0/third_party/abseil-cpp/absl/base/internal/sysinfo.cc
 --- codex-rs/modcargo-crates/v8-150.4.0/third_party/abseil-cpp/absl/base/internal/sysinfo.cc.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/third_party/abseil-cpp/absl/base/internal/sysinfo.cc

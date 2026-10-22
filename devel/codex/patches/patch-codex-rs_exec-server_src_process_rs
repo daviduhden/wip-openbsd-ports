@@ -1,5 +1,4 @@
 Map the exec-server protocol sandbox type back to OpenBsdPledgeUnveil.
-
 Index: codex-rs/exec-server/src/process.rs
 --- codex-rs/exec-server/src/process.rs.orig
 +++ codex-rs/exec-server/src/process.rs

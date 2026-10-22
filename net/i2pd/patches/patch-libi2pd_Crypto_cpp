@@ -1,6 +1,5 @@
-Select OpenSSL 3 APIs only for OpenSSL and validate cryptographic key and
-parameter operations on the supported crypto backends.
-
+Select OpenSSL 3 APIs only for OpenSSL and validate cryptographic key
+and parameter operations on the supported crypto backends.
 Index: libi2pd/Crypto.cpp
 --- libi2pd/Crypto.cpp.orig
 +++ libi2pd/Crypto.cpp

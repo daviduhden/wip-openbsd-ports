@@ -1,6 +1,5 @@
-Keep the daemon enabled while directing package updates to pkg_add.
-Do not offer self-installation actions for a distributor-owned executable.
-
+Keep the daemon enabled while directing package updates to pkg_add. Do
+not offer self-installation actions for a distributor-owned executable.
 Index: codex-rs/tui/src/app/daemon_menu.rs
 --- codex-rs/tui/src/app/daemon_menu.rs.orig
 +++ codex-rs/tui/src/app/daemon_menu.rs

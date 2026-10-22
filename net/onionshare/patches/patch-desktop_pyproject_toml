@@ -1,5 +1,6 @@
-Make the desktop wheel depend on the matching packaged CLI release, relax compatible GUI dependency pins, and include the download mode assets required by the desktop application.
-
+Make the desktop wheel depend on the matching packaged CLI release,
+relax compatible GUI dependency pins, and include the download mode
+assets required by the desktop application.
 Index: desktop/pyproject.toml
 --- desktop/pyproject.toml.orig	2026-10-16 06:50:17.000000000 +0200
 +++ desktop/pyproject.toml	2026-10-22 13:08:41.122177201 +0200

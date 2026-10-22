@@ -1,33 +1,35 @@
-Compare three rounds of AUTH CPU-time measurements. Interleave short blocks
-and alternate their order, preserving 3*n requests per case and the original
-30% regression limit. Fixed-order full blocks failed by 40.8% on Linux;
-the same operation varied 2.7-fold between blocks, without matching GC cost.
-Sums over the interleaved blocks still failed in full runs (SX25519/SX25519
-in the seed 803636663 run): a few blocks absorb whole-process CPU noise and
-the sum weights every block equally. Compare the median of the per-pair
-relative differences instead. Each adjacent wrong-key/missing-queue block
-pair is measured back-to-back, so shared noise cancels within a pair, while
-a systematic timing leak shifts most pairs and still exceeds the limit.
-Print the sum difference as well for diagnosis. Do not discard slow samples
-or retry until the timing assertion passes.
+Compare three rounds of AUTH CPU-time measurements. Interleave short
+blocks and alternate their order, preserving 3*n requests per case and
+the original 30% regression limit. Fixed-order full blocks failed by
+40.8% on Linux; the same operation varied 2.7-fold between blocks,
+without matching GC cost. Sums over the interleaved blocks still failed
+in full runs (SX25519/SX25519 in the seed 803636663 run): a few blocks
+absorb whole-process CPU noise and the sum weights every block equally.
+Compare the median of the per-pair relative differences instead. Each
+adjacent wrong-key/missing-queue block pair is measured back-to-back, so
+shared noise cancels within a pair, while a systematic timing leak
+shifts most pairs and still exceeds the limit. Print the sum difference
+as well for diagnosis. Do not discard slow samples or retry until the
+timing assertion passes.
 
-Generate one unrestricted TLS credential for each notification service test
-and reuse it across connections and server restarts.  tls 2.4 rejects the
-server-only fixture for client authentication, while generating a new
-credential for every connection changes the SMP service identity.
+Generate one unrestricted TLS credential for each notification service
+test and reuse it across connections and server restarts. tls 2.4
+rejects the server-only fixture for client authentication, while
+generating a new credential for every connection changes the SMP service
+identity.
 
 Read CLOCK_PROCESS_CPUTIME_ID through System.Clock instead of timeit's
-System.CPUTime. GHC 9.10 selects getrusage on OpenBSD (_POSIX_TIMERS == -1);
-that backend reports sampled ticks, quantizing these short blocks to 10 ms.
-OpenBSD's process CPU clock uses accumulated runtime instead. Keep the CPU
-metric, all samples, aggregation, response assertions and threshold. Reject
-nonpositive samples explicitly rather than passing NaN to the comparison.
-Wall time and optional +RTS -T GC statistics remain diagnostics only.
+System.CPUTime. GHC 9.10 selects getrusage on OpenBSD (_POSIX_TIMERS ==
+-1); that backend reports sampled ticks, quantizing these short blocks
+to 10 ms. OpenBSD's process CPU clock uses accumulated runtime instead.
+Keep the CPU metric, all samples, aggregation, response assertions and
+threshold. Reject nonpositive samples explicitly rather than passing NaN
+to the comparison. Wall time and optional +RTS -T GC statistics remain
+diagnostics only.
 
 Read service-subscription metrics strictly. The lazy reader leaves the
 handle locked while the periodic writer reopens it; its resource-busy
 exception terminates the server and makes the client fail with TLS EOF.
-
 Index: tests/ServerTests.hs
 Index: tests/ServerTests.hs
 --- tests/ServerTests.hs.orig

@@ -1,11 +1,11 @@
-Do not let the CI environment variable decide which examples run.  The
-broadcast bot example needs an interactive stdin (the bot reads stdin in a
-loop and gets EOF in a non-interactive build), so skip it unconditionally,
-and run the directory and "Save query plans" examples so the
-platform-specific query plans can be verified on OpenBSD.
+Do not let the CI environment variable decide which examples run. The
+broadcast bot example needs an interactive stdin (the bot reads stdin in
+a loop and gets EOF in a non-interactive build), so skip it
+unconditionally, and run the directory and "Save query plans" examples
+so the platform-specific query plans can be verified on OpenBSD.
 
-Allow opt-in terminal traces when investigating failures hidden by cleanup.
-
+Allow opt-in terminal traces when investigating failures hidden by
+cleanup.
 Index: tests/Test.hs
 --- tests/Test.hs.orig
 +++ tests/Test.hs

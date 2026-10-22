@@ -1,6 +1,5 @@
-Select signature key classes according to the APIs available in OpenSSL and
-LibreSSL, including optional Ed25519ph support.
-
+Select signature key classes according to the APIs available in OpenSSL
+and LibreSSL, including optional Ed25519ph support.
 Index: libi2pd/Signature.h
 --- libi2pd/Signature.h.orig
 +++ libi2pd/Signature.h

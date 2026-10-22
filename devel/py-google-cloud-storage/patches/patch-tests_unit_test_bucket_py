@@ -1,5 +1,4 @@
 Use the Python mock implementation without deprecated asyncio calls.
-
 Index: tests/unit/test_bucket.py
 --- tests/unit/test_bucket.py.orig
 +++ tests/unit/test_bucket.py

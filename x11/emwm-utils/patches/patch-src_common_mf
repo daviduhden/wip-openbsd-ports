@@ -1,6 +1,5 @@
 Keep the unused upstream install target consistent with this port's
-non-setuid privilege model.  The package list later applies setgid auth.
-
+non-setuid privilege model. The package list later applies setgid auth.
 Index: src/common.mf
 --- src/common.mf.orig
 +++ src/common.mf

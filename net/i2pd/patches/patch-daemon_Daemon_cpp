@@ -1,6 +1,5 @@
-Resolve configured paths before daemon startup changes directories, and prepare
-OpenBSD sandbox settings using those absolute paths.
-
+Resolve configured paths before daemon startup changes directories, and
+prepare OpenBSD sandbox settings using those absolute paths.
 Index: daemon/Daemon.cpp
 --- daemon/Daemon.cpp.orig
 +++ daemon/Daemon.cpp

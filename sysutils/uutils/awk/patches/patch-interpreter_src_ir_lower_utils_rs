@@ -1,9 +1,8 @@
 Replace the post-monomorphization "Leaked register!" const panic with an
-empty drop.  OpenBSD ports build with panic=unwind, whose cleanup paths
+empty drop. OpenBSD ports build with panic=unwind, whose cleanup paths
 instantiate Drop for LinearReg and make the const panic fire during
-compilation.  The comment above the impl explicitly allows removing the
+compilation. The comment above the impl explicitly allows removing the
 check when it produces false positives.
-
 Index: interpreter/src/ir/lower/utils.rs
 --- interpreter/src/ir/lower/utils.rs.orig
 +++ interpreter/src/ir/lower/utils.rs

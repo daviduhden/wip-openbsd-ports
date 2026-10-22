@@ -1,11 +1,11 @@
 Make the timed-message preference examples deterministic by using a ttl
-comfortably larger than the assertions (a 1s ttl is exceeded by the setup on
-a loaded builder).  Give the persistent-server retry examples more time to
-accept connections, and accept the maintenance set-client-service echo and
-its "ok" response in any order.
+comfortably larger than the assertions (a 1s ttl is exceeded by the
+setup on a loaded builder). Give the persistent-server retry examples
+more time to accept connections, and accept the maintenance
+set-client-service echo and its "ok" response in any order.
 
-Independent member connections have no defined completion order. Assert both.
-
+Independent member connections have no defined completion order. Assert
+both.
 Index: tests/ChatTests/Profiles.hs
 --- tests/ChatTests/Profiles.hs.orig
 +++ tests/ChatTests/Profiles.hs

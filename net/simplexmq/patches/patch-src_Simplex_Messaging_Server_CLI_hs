@@ -1,7 +1,6 @@
-Make the shared X.509 configuration portable to LibreSSL too, so new callers
-of the credential-generation helper cannot accidentally restore the
-unsupported ED448 default.
-
+Make the shared X.509 configuration portable to LibreSSL too, so new
+callers of the credential-generation helper cannot accidentally restore
+the unsupported ED448 default.
 Index: src/Simplex/Messaging/Server/CLI.hs
 --- src/Simplex/Messaging/Server/CLI.hs.orig
 +++ src/Simplex/Messaging/Server/CLI.hs

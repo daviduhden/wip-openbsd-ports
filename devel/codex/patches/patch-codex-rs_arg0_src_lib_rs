@@ -1,6 +1,5 @@
-Dispatch and materialize the codex-openbsd-sandbox alias.
-Use the canonical OpenBSD executable path for all PATH aliases.
-
+Dispatch and materialize the codex-openbsd-sandbox alias. Use the
+canonical OpenBSD executable path for all PATH aliases.
 Index: codex-rs/arg0/src/lib.rs
 --- codex-rs/arg0/src/lib.rs.orig
 +++ codex-rs/arg0/src/lib.rs

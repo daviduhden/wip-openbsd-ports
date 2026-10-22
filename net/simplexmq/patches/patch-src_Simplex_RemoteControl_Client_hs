@@ -1,15 +1,15 @@
-Send multicast announcements through the IPv4 interface advertised in the
-signed XRCP invitation.  On a multihomed OpenBSD host the kernel's default
-multicast route need not match the first address returned by network-info;
-using the advertised interface keeps the packet source and invitation host
-consistent.
+Send multicast announcements through the IPv4 interface advertised in
+the signed XRCP invitation. On a multihomed OpenBSD host the kernel's
+default multicast route need not match the first address returned by
+network-info; using the advertised interface keeps the packet source and
+invitation host consistent.
 
 Do not wait indefinitely for confirmation acknowledgement after the XRCP
 connection worker has terminated. Session errors remain in the original
-result TMVar, and waitSTM propagates worker exceptions. Repeated shutdown
-requests must not block on a full endSession TMVar. These are platform-
-independent lifecycle fixes; native and regression testing remain required.
-
+result TMVar, and waitSTM propagates worker exceptions. Repeated
+shutdown requests must not block on a full endSession TMVar. These are
+platform- independent lifecycle fixes; native and regression testing
+remain required.
 Index: src/Simplex/RemoteControl/Client.hs
 --- src/Simplex/RemoteControl/Client.hs.orig
 +++ src/Simplex/RemoteControl/Client.hs

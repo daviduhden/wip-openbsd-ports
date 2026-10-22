@@ -2,29 +2,31 @@ Check contact readiness without a settling sleep. Check the ended-call
 status, history, direction and duration against measured elapsed time,
 instead of assuming that the complete call always takes zero seconds.
 
-Exercise cancellation through ordinary, priority and batched store calls.
+Exercise cancellation through ordinary, priority and batched store
+calls.
 
-Make the per-user chat-item TTL examples deterministic: use a large ttl while
-setting up and asserting, then drop it to 1 so the items expire synchronously
-instead of relying on the periodic cleanup and on how long the (loaded)
-builder takes.  The timed-message example uses a ttl comfortably larger than
-the assertions.  Give the aborted connection-switch examples a larger settle
-delay before reading the persisted chat items.
+Make the per-user chat-item TTL examples deterministic: use a large ttl
+while setting up and asserting, then drop it to 1 so the items expire
+synchronously instead of relying on the periodic cleanup and on how long
+the (loaded) builder takes. The timed-message example uses a ttl
+comfortably larger than the assertions. Give the aborted
+connection-switch examples a larger settle delay before reading the
+persisted chat items.
 
 The timeout-retry fixture checks Bob's confirmation and connected
 notifications in either order: they come from independent command and
-subscriber threads.  The "subscribed 1 connections" line belongs to Alice's
-own setup and is not part of Bob's output.
+subscriber threads. The "subscribed 1 connections" line belongs to
+Alice's own setup and is not part of Bob's output.
 
-The client-timeout example assumes that a 10 microsecond transport timeout
-always interrupts a loopback SMP command.  System.Timeout.timeout cannot fire
-below the RTS timer granularity (one setitimer/kqueue tick, ~10 ms on OpenBSD),
-and getResponse() re-reads the response variable after the timeout expires, so
-depending on the machine load the command either completes first - and the
-client reports "confirmation sent!" - or the timeout fires - and it reports the
-broker error.  Both are valid outcomes of that race, so the example accepts
-either instead of asserting the one OpenBSD happened to report.
-
+The client-timeout example assumes that a 10 microsecond transport
+timeout always interrupts a loopback SMP command. System.Timeout.timeout
+cannot fire below the RTS timer granularity (one setitimer/kqueue tick,
+~10 ms on OpenBSD), and getResponse() re-reads the response variable
+after the timeout expires, so depending on the machine load the command
+either completes first - and the client reports "confirmation sent!" -
+or the timeout fires - and it reports the broker error. Both are valid
+outcomes of that race, so the example accepts either instead of
+asserting the one OpenBSD happened to report.
 Index: tests/ChatTests/Direct.hs
 Index: tests/ChatTests/Direct.hs
 --- tests/ChatTests/Direct.hs.orig

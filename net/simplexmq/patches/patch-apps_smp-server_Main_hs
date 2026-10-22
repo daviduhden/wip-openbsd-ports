@@ -1,5 +1,5 @@
-Use OpenBSD-style default configuration and log directories for smp-server.
-
+Use OpenBSD-style default configuration and log directories for
+smp-server.
 Index: apps/smp-server/Main.hs
 --- apps/smp-server/Main.hs.orig
 +++ apps/smp-server/Main.hs

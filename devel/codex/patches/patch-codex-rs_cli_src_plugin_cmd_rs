@@ -1,4 +1,5 @@
-Reject explicit plugin installation while plugins are disabled (OpenBSD default).
+Reject explicit plugin installation while plugins are disabled (OpenBSD
+default).
 Index: codex-rs/cli/src/plugin_cmd.rs
 --- codex-rs/cli/src/plugin_cmd.rs.orig
 +++ codex-rs/cli/src/plugin_cmd.rs

@@ -1,7 +1,7 @@
-OpenBSD uses the generic ps-based process identity. Keep its lstart string
-independent of the invoking client's locale and timezone so start/stop from
-different terminals can verify the same daemon. Other platforms are unchanged.
-
+OpenBSD uses the generic ps-based process identity. Keep its lstart
+string independent of the invoking client's locale and timezone so
+start/stop from different terminals can verify the same daemon. Other
+platforms are unchanged.
 Index: codex-rs/app-server-daemon/src/backend/pid.rs
 --- codex-rs/app-server-daemon/src/backend/pid.rs.orig
 +++ codex-rs/app-server-daemon/src/backend/pid.rs

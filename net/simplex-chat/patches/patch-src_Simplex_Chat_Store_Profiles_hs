@@ -1,5 +1,5 @@
-Pattern match the optional password hash instead of using list unzip on Maybe.
-
+Pattern match the optional password hash instead of using list unzip on
+Maybe.
 Index: src/Simplex/Chat/Store/Profiles.hs
 --- src/Simplex/Chat/Store/Profiles.hs.orig
 +++ src/Simplex/Chat/Store/Profiles.hs

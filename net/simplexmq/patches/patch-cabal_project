@@ -1,6 +1,5 @@
-Use the ports-provided dependency set, relax bounds for newer GHC, and pin
-tls to the API version used by the compatibility patches.
-
+Use the ports-provided dependency set, relax bounds for newer GHC, and
+pin tls to the API version used by the compatibility patches.
 Index: cabal.project
 --- cabal.project.orig
 +++ cabal.project

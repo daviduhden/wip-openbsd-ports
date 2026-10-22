@@ -1,6 +1,5 @@
 Use the indexmap-allocator-api checkout fetched by DIST_TUPLE instead of
 resolving the git dependency from the network at build time.
-
 Index: interpreter/Cargo.toml
 --- interpreter/Cargo.toml.orig
 +++ interpreter/Cargo.toml

@@ -1,11 +1,11 @@
-Retry an XFTP download once when the incremental HTTP/2 reader reports SIZE,
-retaining all size, digest and authentication checks.
+Retry an XFTP download once when the incremental HTTP/2 reader reports
+SIZE, retaining all size, digest and authentication checks.
 
 Preserve resumable files on shutdown. Commit preparation before waking
-uploaders and finalize uploaded files in a separate, joined local worker.
-Recover completion after a restart even when no chunks remain to upload.
-Publish SFDONE only after source cleanup and the completion transaction.
-
+uploaders and finalize uploaded files in a separate, joined local
+worker. Recover completion after a restart even when no chunks remain to
+upload. Publish SFDONE only after source cleanup and the completion
+transaction.
 Index: src/Simplex/FileTransfer/Agent.hs
 --- src/Simplex/FileTransfer/Agent.hs.orig
 +++ src/Simplex/FileTransfer/Agent.hs

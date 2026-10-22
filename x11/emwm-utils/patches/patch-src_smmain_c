@@ -1,11 +1,10 @@
-Use BSD Authentication for screen unlocking on OpenBSD.  This avoids
+Use BSD Authentication for screen unlocking on OpenBSD. This avoids
 reading password hashes with getpwnam_shadow(3) and crypt(3), so xmsm
-does not need setuid-root privileges.  The package installs xmsm setgid
+does not need setuid-root privileges. The package installs xmsm setgid
 auth so auth_userokay(3) can use the auth-xmsm authentication style.
 
 Keep upstream authentication and privilege handling unchanged for other
 operating systems.
-
 Index: src/smmain.c
 --- src/smmain.c.orig
 +++ src/smmain.c

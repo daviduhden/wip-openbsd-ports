@@ -1,7 +1,7 @@
 Allow the port to select its already installed codex as the app-server
-executable. System ownership is a build-time setting and takes precedence
-over user-managed packages; it never opts into the internal release updater.
-
+executable. System ownership is a build-time setting and takes
+precedence over user-managed packages; it never opts into the internal
+release updater.
 Index: codex-rs/app-server-daemon/src/managed_install.rs
 --- codex-rs/app-server-daemon/src/managed_install.rs.orig
 +++ codex-rs/app-server-daemon/src/managed_install.rs

@@ -1,5 +1,6 @@
-Keep CLI runtime requirements aligned with the dependencies installed by the OpenBSD port, remove build and development tools from runtime metadata, and relax selected pins to the packaged versions.
-
+Keep CLI runtime requirements aligned with the dependencies installed by
+the OpenBSD port, remove build and development tools from runtime
+metadata, and relax selected pins to the packaged versions.
 Index: cli/pyproject.toml
 --- cli/pyproject.toml.orig	2026-10-16 06:50:17.000000000 +0200
 +++ cli/pyproject.toml	2026-10-22 13:11:34.185611036 +0200

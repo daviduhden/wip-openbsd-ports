@@ -1,5 +1,4 @@
 Enable DuplicateRecordFields explicitly when GHC 9.10 requires it.
-
 Index: src/Simplex/Chat/Store.hs
 --- src/Simplex/Chat/Store.hs.orig
 +++ src/Simplex/Chat/Store.hs

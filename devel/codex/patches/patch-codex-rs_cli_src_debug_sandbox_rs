@@ -1,6 +1,6 @@
-Run the OpenBSD helper through upstream sandbox config/profile preparation.
-Preserve disabled-profile bypass, environment setup and child exit propagation.
-
+Run the OpenBSD helper through upstream sandbox config/profile
+preparation. Preserve disabled-profile bypass, environment setup and
+child exit propagation.
 Index: codex-rs/cli/src/debug_sandbox.rs
 --- codex-rs/cli/src/debug_sandbox.rs.orig
 +++ codex-rs/cli/src/debug_sandbox.rs

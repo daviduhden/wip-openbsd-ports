@@ -1,15 +1,16 @@
-The default test network timeout is only 500 ms.  Give the relay-session
+The default test network timeout is only 500 ms. Give the relay-session
 restart case the same four-second connection budget already used by the
 module's slow-network tests, while retaining the outer test timeout.
 
-Bracket every direct protocol client used by the proxy stress tests.  These
-tests previously leaked the proxy and relay TLS clients from every run (up to
-twenty clients in one example), so later parallel runs inherited live streams
-and could parse teardown bytes as a new TLS record.
+Bracket every direct protocol client used by the proxy stress tests.
+These tests previously leaked the proxy and relay TLS clients from every
+run (up to twenty clients in one example), so later parallel runs
+inherited live streams and could parse teardown bytes as a new TLS
+record.
 
-Also acknowledge each concurrent delivery through its actual receiving agent;
-the symmetric test traffic previously hid an ACK sent on the opposite peer.
-
+Also acknowledge each concurrent delivery through its actual receiving
+agent; the symmetric test traffic previously hid an ACK sent on the
+opposite peer.
 Index: tests/SMPProxyTests.hs
 --- tests/SMPProxyTests.hs.orig
 +++ tests/SMPProxyTests.hs

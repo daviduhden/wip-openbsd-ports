@@ -1,6 +1,5 @@
 Pass the server configuration required by http2 5.x. Use
 H.defaultServerConfig instead of the removed implicit default.
-
 Index: src/Simplex/Messaging/Transport/HTTP2/Server.hs
 --- src/Simplex/Messaging/Transport/HTTP2/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/HTTP2/Server.hs

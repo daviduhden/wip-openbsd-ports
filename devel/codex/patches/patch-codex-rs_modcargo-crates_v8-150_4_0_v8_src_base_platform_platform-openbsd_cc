@@ -1,5 +1,5 @@
-Implement the thread stack-start query using OpenBSD pthread_stackseg_np.
-
+Implement the thread stack-start query using OpenBSD
+pthread_stackseg_np.
 Index: codex-rs/modcargo-crates/v8-150.4.0/v8/src/base/platform/platform-openbsd.cc
 --- codex-rs/modcargo-crates/v8-150.4.0/v8/src/base/platform/platform-openbsd.cc.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/v8/src/base/platform/platform-openbsd.cc

@@ -1,5 +1,4 @@
 Use current Starlette, HTTPX and Trio APIs in tests.
-
 Index: tests/test_manager.py
 --- tests/test_manager.py.orig
 +++ tests/test_manager.py

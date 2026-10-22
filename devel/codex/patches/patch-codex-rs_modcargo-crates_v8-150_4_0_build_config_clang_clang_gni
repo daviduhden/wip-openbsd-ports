@@ -1,5 +1,4 @@
 Exclude BSD from Linux Clang module support, as in Chromium ports.
-
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/clang/clang.gni
 --- codex-rs/modcargo-crates/v8-150.4.0/build/config/clang/clang.gni.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/config/clang/clang.gni

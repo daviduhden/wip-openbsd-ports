@@ -1,5 +1,5 @@
-Translate pathname policies with unveil; reject network containment without approximation.
-
+Translate pathname policies with unveil; reject network containment
+without approximation.
 Index: codex-rs/sandboxing/src/openbsd_policy.rs
 --- /dev/null
 +++ codex-rs/sandboxing/src/openbsd_policy.rs

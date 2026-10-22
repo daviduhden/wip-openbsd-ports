@@ -1,5 +1,5 @@
-Use nm options accepted by the OpenBSD toolchain; omit GNU --format=posix.
-
+Use nm options accepted by the OpenBSD toolchain; omit GNU
+--format=posix.
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/toolchain/gcc_solink_wrapper.py
 --- codex-rs/modcargo-crates/v8-150.4.0/build/toolchain/gcc_solink_wrapper.py.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/toolchain/gcc_solink_wrapper.py

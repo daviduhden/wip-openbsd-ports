@@ -1,6 +1,6 @@
-Use rank-specific LibreSSL ML-KEM keys and securely release operation buffers;
-propagate failures from key generation and encapsulation operations.
-
+Use rank-specific LibreSSL ML-KEM keys and securely release operation
+buffers; propagate failures from key generation and encapsulation
+operations.
 Index: libi2pd/PostQuantum.cpp
 --- libi2pd/PostQuantum.cpp.orig
 +++ libi2pd/PostQuantum.cpp

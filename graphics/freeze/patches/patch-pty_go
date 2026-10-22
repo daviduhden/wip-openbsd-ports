@@ -1,6 +1,5 @@
 Wait for the PTY reader before consuming output; fast commands otherwise
 race with io.Copy and can incorrectly report empty output on OpenBSD.
-
 Index: pty.go
 --- pty.go.orig
 +++ pty.go

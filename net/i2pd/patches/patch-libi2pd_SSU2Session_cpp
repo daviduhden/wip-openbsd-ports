@@ -1,5 +1,5 @@
-Check ML-KEM key generation, export and encapsulation before sending SSU2 data.
-
+Check ML-KEM key generation, export and encapsulation before sending
+SSU2 data.
 Index: libi2pd/SSU2Session.cpp
 --- libi2pd/SSU2Session.cpp.orig
 +++ libi2pd/SSU2Session.cpp

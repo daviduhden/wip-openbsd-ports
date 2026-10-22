@@ -1,13 +1,14 @@
 Finish initial chat history and connection probes before announcing the
-contact as connected. Unlocked readers such as /last_item_id must see the
-complete initial history; connection-sync commands must not race probes
-still using the connection record.
+contact as connected. Unlocked readers such as /last_item_id must see
+the complete initial history; connection-sync commands must not race
+probes still using the connection record.
 
-Publish group readiness after committing initial history, as for contacts.
+Publish group readiness after committing initial history, as for
+contacts.
 
 Publish switch progress after persisting its history item, for contacts
-and group members, so readers observing completion see completed history.
-
+and group members, so readers observing completion see completed
+history.
 Index: src/Simplex/Chat/Library/Subscriber.hs
 --- src/Simplex/Chat/Library/Subscriber.hs.orig
 +++ src/Simplex/Chat/Library/Subscriber.hs

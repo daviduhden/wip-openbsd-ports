@@ -1,5 +1,5 @@
-Preserve an explicitly configured SSU2 MTU when the router address changes.
-
+Preserve an explicitly configured SSU2 MTU when the router address
+changes.
 Index: libi2pd/RouterContext.cpp
 --- libi2pd/RouterContext.cpp.orig
 +++ libi2pd/RouterContext.cpp

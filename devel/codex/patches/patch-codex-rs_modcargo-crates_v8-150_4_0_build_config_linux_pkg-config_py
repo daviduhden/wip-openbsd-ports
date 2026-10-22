@@ -1,6 +1,5 @@
-Allow the pkg-config helper to operate on OpenBSD and FreeBSD as well
-as Linux.
-
+Allow the pkg-config helper to operate on OpenBSD and FreeBSD as well as
+Linux.
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/linux/pkg-config.py
 --- codex-rs/modcargo-crates/v8-150.4.0/build/config/linux/pkg-config.py.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/config/linux/pkg-config.py

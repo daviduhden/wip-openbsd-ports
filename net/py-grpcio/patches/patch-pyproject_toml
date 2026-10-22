@@ -1,5 +1,4 @@
 relax cython version spec
-
 Index: pyproject.toml
 --- pyproject.toml.orig
 +++ pyproject.toml

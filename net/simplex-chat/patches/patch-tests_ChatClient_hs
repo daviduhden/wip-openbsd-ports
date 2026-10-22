@@ -2,25 +2,25 @@ Collect Haskell query counters under the connection lock even when a
 maintenance test already closed the database, then dispose the agent.
 Never query a closed C handle to collect this metadata.
 
-Raise the terminal and server-start waits to 30 seconds.  The release test
-build runs with debug assertions off, and the full suite on a loaded machine
-routinely needs more than the upstream five seconds before the client prints.
+Raise the terminal and server-start waits to 30 seconds. The release
+test build runs with debug assertions off, and the full suite on a
+loaded machine routinely needs more than the upstream five seconds
+before the client prints.
 
-Do not divide by zero when merging query statistics.  A query that fails
-before it ever succeeds is recorded with count 0 (DB.updateQueryErrors), and
-the shared per-run maps are merged once per chat (chat and agent store) over
-the whole suite.  When the same failing query is seen in two examples, both
-entries have count 0 and the weighted average divides by zero.  Keep the
-average at 0 in that case; the failure itself is still reported through the
-errs map.
+Do not divide by zero when merging query statistics. A query that fails
+before it ever succeeds is recorded with count 0 (DB.updateQueryErrors),
+and the shared per-run maps are merged once per chat (chat and agent
+store) over the whole suite. When the same failing query is seen in two
+examples, both entries have count 0 and the weighted average divides by
+zero. Keep the average at 0 in that case; the failure itself is still
+reported through the errs map.
 
-Keep silence assertions in the example body, so failed examples retain their
-original exception and all bracket finalizers still stop clients. Report the
-actual terminal timeout.
+Keep silence assertions in the example body, so failed examples retain
+their original exception and all bracket finalizers still stop clients.
+Report the actual terminal timeout.
 
-Initialize the virtual terminal reader before starting chat output, so its
-baseline cannot discard command echoes or subscription events.
-
+Initialize the virtual terminal reader before starting chat output, so
+its baseline cannot discard command echoes or subscription events.
 Index: tests/ChatClient.hs
 Index: tests/ChatClient.hs
 --- tests/ChatClient.hs.orig

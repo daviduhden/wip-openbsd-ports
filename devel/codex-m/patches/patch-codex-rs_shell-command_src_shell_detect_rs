@@ -1,4 +1,5 @@
-Minimal OpenBSD ksh preference: recognize ksh and prefer ksh/sh fallback over bash/zsh.
+Minimal OpenBSD ksh preference: recognize ksh and prefer ksh/sh fallback
+over bash/zsh.
 Index: codex-rs/shell-command/src/shell_detect.rs
 --- codex-rs/shell-command/src/shell_detect.rs.orig
 +++ codex-rs/shell-command/src/shell_detect.rs

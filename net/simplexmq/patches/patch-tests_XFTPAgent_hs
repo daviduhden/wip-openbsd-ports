@@ -1,16 +1,18 @@
-Bound the wrong-certificate test and exercise the advertised version matrix.
-Synchronize interrupted sends with persisted encryption state and a full
-one-element event queue, keeping chunks pending for restart and AUTH cleanup.
-Read prefix paths from the file record instead of partial directory lookups.
+Bound the wrong-certificate test and exercise the advertised version
+matrix. Synchronize interrupted sends with persisted encryption state
+and a full one-element event queue, keeping chunks pending for restart
+and AUTH cleanup. Read prefix paths from the file record instead of
+partial directory lookups.
 
 Require durable completion and source cleanup when SFDONE is received.
-Also interrupt a fully uploaded file before final progress and recover its
-completion without a server, then download it to verify the descriptions.
+Also interrupt a fully uploaded file before final progress and recover
+its completion without a server, then download it to verify the
+descriptions.
 
-Access the added SndFile fields with OverloadedRecordDot and give the local
-helpers explicit types: GHC 9.10 rejects qualified duplicate record fields in
-patterns and needs FlexibleContexts for their inferred HasField constraints.
-
+Access the added SndFile fields with OverloadedRecordDot and give the
+local helpers explicit types: GHC 9.10 rejects qualified duplicate
+record fields in patterns and needs FlexibleContexts for their inferred
+HasField constraints.
 Index: tests/XFTPAgent.hs
 --- tests/XFTPAgent.hs.orig
 +++ tests/XFTPAgent.hs

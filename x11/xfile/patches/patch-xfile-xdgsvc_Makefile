@@ -1,7 +1,6 @@
-Honor CC/CFLAGS/INCDIRS/LIBDIRS supplied by the ports framework and
-drop the pkg-config generated makefile fragment; the dbus include and
-library paths are passed on the command line instead.
-
+Honor CC/CFLAGS/INCDIRS/LIBDIRS supplied by the ports framework and drop
+the pkg-config generated makefile fragment; the dbus include and library
+paths are passed on the command line instead.
 Index: xfile-xdgsvc/Makefile
 --- xfile-xdgsvc/Makefile.orig
 +++ xfile-xdgsvc/Makefile

@@ -1,6 +1,5 @@
-Check ML-KEM key creation and key operations before continuing ECIES ratchet
-handshakes.
-
+Check ML-KEM key creation and key operations before continuing ECIES
+ratchet handshakes.
 Index: libi2pd/ECIESX25519AEADRatchetSession.cpp
 --- libi2pd/ECIESX25519AEADRatchetSession.cpp.orig
 +++ libi2pd/ECIESX25519AEADRatchetSession.cpp

@@ -1,6 +1,5 @@
-Use base-system doas as the default privilege command on OpenBSD.
-Keep upstream sucmd configuration and its save/truncate call sites intact.
-
+Use base-system doas as the default privilege command on OpenBSD. Keep
+upstream sucmd configuration and its save/truncate call sites intact.
 Index: internal/config/settings.go
 --- internal/config/settings.go.orig
 +++ internal/config/settings.go

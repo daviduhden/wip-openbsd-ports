@@ -1,6 +1,5 @@
-Read interface MTU data through getifaddrs on OpenBSD, avoiding an ioctl that
-is unavailable under the port pledge.
-
+Read interface MTU data through getifaddrs on OpenBSD, avoiding an ioctl
+that is unavailable under the port pledge.
 Index: libi2pd/util.cpp
 --- libi2pd/util.cpp.orig
 +++ libi2pd/util.cpp

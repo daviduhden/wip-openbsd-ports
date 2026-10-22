@@ -1,6 +1,5 @@
 Dispatch on the uu- prefixed binary name used by the OpenBSD packages in
 addition to the upstream names.
-
 Index: src/main.rs
 --- src/main.rs.orig
 +++ src/main.rs

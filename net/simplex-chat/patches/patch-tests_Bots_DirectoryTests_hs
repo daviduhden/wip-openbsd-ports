@@ -1,7 +1,6 @@
-Join the directory service and its database finalizers before closing its
-log or removing the enclosing temporary directory. killThread alone does
-not wait for finalizers to finish.
-
+Join the directory service and its database finalizers before closing
+its log or removing the enclosing temporary directory. killThread alone
+does not wait for finalizers to finish.
 Index: tests/Bots/DirectoryTests.hs
 --- tests/Bots/DirectoryTests.hs.orig
 +++ tests/Bots/DirectoryTests.hs

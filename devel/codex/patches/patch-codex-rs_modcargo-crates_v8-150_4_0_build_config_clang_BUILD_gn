@@ -1,5 +1,4 @@
 Use system compiler builtins on BSD; retain upstream linkage elsewhere.
-
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/clang/BUILD.gn
 --- codex-rs/modcargo-crates/v8-150.4.0/build/config/clang/BUILD.gn.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/config/clang/BUILD.gn

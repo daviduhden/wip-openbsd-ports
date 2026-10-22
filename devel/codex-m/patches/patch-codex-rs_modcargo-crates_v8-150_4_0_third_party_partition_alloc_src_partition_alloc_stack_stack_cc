@@ -1,6 +1,5 @@
 Obtain thread stack bounds with the BSD pthread APIs, including
 pthread_stackseg_np on OpenBSD.
-
 Index: codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/stack/stack.cc
 --- codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/stack/stack.cc.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/stack/stack.cc

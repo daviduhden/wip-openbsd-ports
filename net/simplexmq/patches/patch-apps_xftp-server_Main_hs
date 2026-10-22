@@ -1,5 +1,5 @@
-Use OpenBSD-style default configuration and log directories for xftp-server.
-
+Use OpenBSD-style default configuration and log directories for
+xftp-server.
 Index: apps/xftp-server/Main.hs
 --- apps/xftp-server/Main.hs.orig
 +++ apps/xftp-server/Main.hs

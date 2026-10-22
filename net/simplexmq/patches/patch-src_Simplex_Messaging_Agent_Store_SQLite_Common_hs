@@ -1,7 +1,6 @@
 Reject access to a closed store under its connection lock before calling
 SQLite. Use real nested savepoints to roll back partial writes before
 retrying a uniqueness conflict, preserving the outer transaction.
-
 Index: src/Simplex/Messaging/Agent/Store/SQLite/Common.hs
 --- src/Simplex/Messaging/Agent/Store/SQLite/Common.hs.orig
 +++ src/Simplex/Messaging/Agent/Store/SQLite/Common.hs

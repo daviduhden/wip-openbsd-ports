@@ -1,7 +1,6 @@
-Keep the terminal alive across /stop and follow the subscriber after /start.
-Join the terminal and monitor when their owner exits, then stop the agent
-and close its stores.
-
+Keep the terminal alive across /stop and follow the subscriber after
+/start. Join the terminal and monitor when their owner exits, then stop
+the agent and close its stores.
 Index: src/Simplex/Chat/Core.hs
 --- src/Simplex/Chat/Core.hs.orig
 +++ src/Simplex/Chat/Core.hs

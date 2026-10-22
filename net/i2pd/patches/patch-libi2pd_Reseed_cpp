@@ -1,5 +1,5 @@
-Use OpenSSL 3 certificate APIs only with OpenSSL, preserving LibreSSL support.
-
+Use OpenSSL 3 certificate APIs only with OpenSSL, preserving LibreSSL
+support.
 Index: libi2pd/Reseed.cpp
 --- libi2pd/Reseed.cpp.orig
 +++ libi2pd/Reseed.cpp

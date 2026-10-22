@@ -1,6 +1,5 @@
 Provide GN toolchain definitions for OpenBSD, including the amd64 and
 arm64 targets supported by this port.
-
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/toolchain/openbsd/BUILD.gn
 --- codex-rs/modcargo-crates/v8-150.4.0/build/toolchain/openbsd/BUILD.gn.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/toolchain/openbsd/BUILD.gn

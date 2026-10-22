@@ -1,7 +1,6 @@
-For local OpenBSD execution with full disk read access, verify patch files
-without the unsupported filesystem sandbox. Preserve verification contexts
-for remote environments and restricted read policies.
-
+For local OpenBSD execution with full disk read access, verify patch
+files without the unsupported filesystem sandbox. Preserve verification
+contexts for remote environments and restricted read policies.
 Index: codex-rs/core/src/tools/handlers/apply_patch.rs
 --- codex-rs/core/src/tools/handlers/apply_patch.rs.orig
 +++ codex-rs/core/src/tools/handlers/apply_patch.rs

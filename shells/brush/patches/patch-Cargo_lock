@@ -1,6 +1,6 @@
-Record ptyprocess as a patched dependency: with the path override in Cargo.toml
-it is no longer resolved from the registry, so it has no source or checksum.
-
+Record ptyprocess as a patched dependency: with the path override in
+Cargo.toml it is no longer resolved from the registry, so it has no
+source or checksum.
 Index: Cargo.lock
 --- Cargo.lock.orig
 +++ Cargo.lock

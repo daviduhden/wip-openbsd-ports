@@ -1,15 +1,15 @@
 Make the chat-list preview item selection deterministic.
 
-findGroupChatPreviews_, findDirectChatPreviews_ and findLocalChatPreviews_
-picked the last chat item ordering only by the timestamp column, while the
-canonical item queries (getChatItemIDs CRLast, get*ChatItemLast) order by
-item_ts/created_at and chat_item_id.  When several items share the same
-timestamp - a burst of internal items, e.g. the group feature items followed
-by RGEMemberConnected - SQLite could return any of them, so the chat list
-preview showed a group feature item ("SimpleX links: on", "Recent history:
-off", "Direct messages: on") instead of the "connected" event.  Use the same
+findGroupChatPreviews_, findDirectChatPreviews_ and
+findLocalChatPreviews_ picked the last chat item ordering only by the
+timestamp column, while the canonical item queries (getChatItemIDs
+CRLast, get*ChatItemLast) order by item_ts/created_at and chat_item_id.
+When several items share the same timestamp - a burst of internal items,
+e.g. the group feature items followed by RGEMemberConnected - SQLite
+could return any of them, so the chat list preview showed a group
+feature item ("SimpleX links: on", "Recent history: off", "Direct
+messages: on") instead of the "connected" event. Use the same
 chat_item_id tie-break as the rest of the store.
-
 Index: src/Simplex/Chat/Store/Messages.hs
 --- src/Simplex/Chat/Store/Messages.hs.orig
 +++ src/Simplex/Chat/Store/Messages.hs

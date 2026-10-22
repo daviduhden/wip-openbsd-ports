@@ -1,7 +1,7 @@
-The upstream 120-second per-example watchdog is too short for the complete
-200-subscription and 100-message concurrent workloads on OpenBSD builders.
-Keep those tests intact and raise only their outer cleanup-safe bound.
-
+The upstream 120-second per-example watchdog is too short for the
+complete 200-subscription and 100-message concurrent workloads on
+OpenBSD builders. Keep those tests intact and raise only their outer
+cleanup-safe bound.
 Index: tests/Util.hs
 --- tests/Util.hs.orig
 +++ tests/Util.hs

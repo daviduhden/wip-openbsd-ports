@@ -1,53 +1,58 @@
 Keep the asynchronous integration workloads meaningful on slower OpenBSD
-builders: preserve the original 50-message two-way workload after an upstream
-refactor changed its counter from total messages to messages per peer, use one
-producer per peer so that case measures bidirectional delivery rather than
-redundant same-connection database contention, and give every asynchronous ACK
-a distinct correlation ID.  Allow individual stress-test events more time,
-poll queue state instead of sleeping for a fixed interval, and verify that all
-network waiters resume without using host scheduler timings as a benchmark.
-Run the upstream six-subscription batching scenario, which still crosses
-multiple three-item batches, instead of the 200-connection stress variant that
-exceeded even the five-minute port watchdog.  Give the 100-message
-delivery-receipt workload a realistic platform-specific bound, and drive
-client-notice checks from their reported expiration deadline instead of
-sleeping exactly on a whole-second boundary.  Bracket the network-state agents
-so their SQLite handles and worker threads cannot leak into later examples.
+builders: preserve the original 50-message two-way workload after an
+upstream refactor changed its counter from total messages to messages
+per peer, use one producer per peer so that case measures bidirectional
+delivery rather than redundant same-connection database contention, and
+give every asynchronous ACK a distinct correlation ID. Allow individual
+stress-test events more time, poll queue state instead of sleeping for a
+fixed interval, and verify that all network waiters resume without using
+host scheduler timings as a benchmark. Run the upstream six-subscription
+batching scenario, which still crosses multiple three-item batches,
+instead of the 200-connection stress variant that exceeded even the
+five-minute port watchdog. Give the 100-message delivery-receipt
+workload a realistic platform-specific bound, and drive client-notice
+checks from their reported expiration deadline instead of sleeping
+exactly on a whole-second boundary. Bracket the network-state agents so
+their SQLite handles and worker threads cannot leak into later examples.
 
 Also export and use the common timeout assertion for intentional
-wrong-certificate connections.  A TLS cleanup regression must fail the test
-instead of hanging the complete port build.
+wrong-certificate connections. A TLS cleanup regression must fail the
+test instead of hanging the complete port build.
 
-Scope retry-test agents and their replacements across assertion failures.
-Separate server restart from negative-cache expiry. Preserve all stress counts,
-watchdogs and assertions; print non-consuming worker/queue snapshots on timeout.
+Scope retry-test agents and their replacements across assertion
+failures. Separate server restart from negative-cache expiry. Preserve
+all stress counts, watchdogs and assertions; print non-consuming
+worker/queue snapshots on timeout.
 
-Keep both stress-test event consumers alive until their shared completion
-barrier; a completed peer must still drain normal quota warnings and QCONT.
-Retain the existing event filter and reject extra data/receipt/OK events.
+Keep both stress-test event consumers alive until their shared
+completion barrier; a completed peer must still drain normal quota
+warnings and QCONT. Retain the existing event filter and reject extra
+data/receipt/OK events.
 
-Wait for the expected subscription IDs rather than two server events: after
-queue deletion one of the servers can have no subscriptions and emits no event.
-Keep the wait bounded and reject empty, duplicate or unexpected subscription IDs.
+Wait for the expected subscription IDs rather than two server events:
+after queue deletion one of the servers can have no subscriptions and
+emits no event. Keep the wait bounded and reject empty, duplicate or
+unexpected subscription IDs.
 
-Drain session-mode notifications continuously and check the exact DOWN/UP
-connection sets. Independent reconnects and deferred full-queue writes do not
-guarantee arrival order; reject duplicate, empty or unexpected IDs and keep
-the existing ten-second bound, session counts and message exchanges.
+Drain session-mode notifications continuously and check the exact
+DOWN/UP connection sets. Independent reconnects and deferred full-queue
+writes do not guarantee arrival order; reject duplicate, empty or
+unexpected IDs and keep the existing ten-second bound, session counts
+and message exchanges.
 
-Keep the real confirmation ACK pending across receive-server shutdown using
-an outgoing-operation barrier. Check both synchronous and asynchronous
-acceptance, retaining the ten-second event bound and the complete handshake
-and post-restart message exchange.
+Keep the real confirmation ACK pending across receive-server shutdown
+using an outgoing-operation barrier. Check both synchronous and
+asynchronous acceptance, retaining the ten-second event bound and the
+complete handshake and post-restart message exchange.
 
 Register every session in the confirmation-restart test so its first
-failure cannot leak a store into later examples. Use the shared ten-second
-event budget for the concurrent delivery-receipt workload.
+failure cannot leak a store into later examples. Use the shared
+ten-second event budget for the concurrent delivery-receipt workload.
 
-After delivery timeout, wait for the delivery worker to discard its cached
-message and assert no resend after server restart. These messages were
-queued offline, not in flight on the transport when deletion completed.
-
+After delivery timeout, wait for the delivery worker to discard its
+cached message and assert no resend after server restart. These messages
+were queued offline, not in flight on the transport when deletion
+completed.
 Index: tests/AgentTests/FunctionalAPITests.hs
 Index: tests/AgentTests/FunctionalAPITests.hs
 --- tests/AgentTests/FunctionalAPITests.hs.orig

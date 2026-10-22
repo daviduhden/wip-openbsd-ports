@@ -1,6 +1,5 @@
-Enable the ImageMagick filter documented upstream.  This provides
-loaders for common formats which XImaging does not handle internally.
-
+Enable the ImageMagick filter documented upstream. This provides loaders
+for common formats which XImaging does not handle internally.
 Index: src/XImaging.ad
 --- src/XImaging.ad.orig
 +++ src/XImaging.ad

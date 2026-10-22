@@ -1,6 +1,6 @@
-Consume the ptyprocess tree fetched with DIST_TUPLE (and patched for OpenBSD)
-as a path dependency, instead of resolving the crate from the registry.
-
+Consume the ptyprocess tree fetched with DIST_TUPLE (and patched for
+OpenBSD) as a path dependency, instead of resolving the crate from the
+registry.
 Index: Cargo.toml
 --- Cargo.toml.orig
 +++ Cargo.toml

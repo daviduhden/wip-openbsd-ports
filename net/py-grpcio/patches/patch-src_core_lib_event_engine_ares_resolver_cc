@@ -1,5 +1,4 @@
 Our ancient <arpa/nameser.h> lacks ns_*
-
 Index: src/core/lib/event_engine/ares_resolver.cc
 --- src/core/lib/event_engine/ares_resolver.cc.orig
 +++ src/core/lib/event_engine/ares_resolver.cc

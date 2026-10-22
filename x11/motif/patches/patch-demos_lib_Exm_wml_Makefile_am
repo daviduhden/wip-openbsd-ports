@@ -1,7 +1,6 @@
 GNU make provides RM as a built-in variable, BSD make does not, and
-automake no longer defines it either.  Define it so the $(RM)
-recipes work with make(1).
-
+automake no longer defines it either. Define it so the $(RM) recipes
+work with make(1).
 Index: demos/lib/Exm/wml/Makefile.am
 --- demos/lib/Exm/wml/Makefile.am.orig
 +++ demos/lib/Exm/wml/Makefile.am

@@ -1,6 +1,5 @@
 Enable the previously commented X resources in the installed application
 defaults, including fonts, colors, translations and menu accelerators.
-
 Index: doc/NEdit.ad
 --- doc/NEdit.ad.orig
 +++ doc/NEdit.ad

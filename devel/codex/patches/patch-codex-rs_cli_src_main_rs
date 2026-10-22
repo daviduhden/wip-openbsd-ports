@@ -1,6 +1,6 @@
-Raise the CLI macro recursion limit and dispatch codex sandbox on OpenBSD.
-Include OpenBSD in the common sandbox argument parser regressions.
-
+Raise the CLI macro recursion limit and dispatch codex sandbox on
+OpenBSD. Include OpenBSD in the common sandbox argument parser
+regressions.
 Index: codex-rs/cli/src/main.rs
 --- codex-rs/cli/src/main.rs.orig
 +++ codex-rs/cli/src/main.rs

@@ -1,7 +1,6 @@
 Detect OpenBSD as a test-harness host OS and skip the compatibility
 cases that differ on OpenBSD (pty/oracle output, ulimit to infinity,
 extglob handling).
-
 Index: brush-shell/tests/cases/compat/patterns/filename_expansion.yaml
 --- brush-shell/tests/cases/compat/patterns/filename_expansion.yaml.orig
 +++ brush-shell/tests/cases/compat/patterns/filename_expansion.yaml

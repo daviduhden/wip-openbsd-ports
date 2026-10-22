@@ -1,5 +1,5 @@
-Use FFS-compatible sparse files on OpenBSD without weakening the cmp fast-path test.
-
+Use FFS-compatible sparse files on OpenBSD without weakening the cmp
+fast-path test.
 Index: tests/integration.rs
 --- tests/integration.rs.orig
 +++ tests/integration.rs

@@ -1,7 +1,5 @@
 Recognize DW_EH_PE_omit before masking the table encoding; otherwise
-0xff becomes 0x0f and takes the unknown-encoding abort path.
-Reference: www/chromium/patches/patch-third_party_libunwind_src_src_EHHeaderParser_hpp.
-
+0xff becomes 0x0f and reaches the unknown-encoding abort path.
 Index: codex-rs/modcargo-crates/v8-150.4.0/third_party/libunwind/src/src/EHHeaderParser.hpp
 --- codex-rs/modcargo-crates/v8-150.4.0/third_party/libunwind/src/src/EHHeaderParser.hpp.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/third_party/libunwind/src/src/EHHeaderParser.hpp

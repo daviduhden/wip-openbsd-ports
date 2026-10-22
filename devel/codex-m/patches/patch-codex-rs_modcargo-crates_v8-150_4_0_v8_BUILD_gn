@@ -1,6 +1,5 @@
 Export OpenBSD/BSD V8 platform defines, select platform-openbsd.cc and
 link libexecinfo instead of Linux platform sources.
-
 Index: codex-rs/modcargo-crates/v8-150.4.0/v8/BUILD.gn
 --- codex-rs/modcargo-crates/v8-150.4.0/v8/BUILD.gn.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/v8/BUILD.gn

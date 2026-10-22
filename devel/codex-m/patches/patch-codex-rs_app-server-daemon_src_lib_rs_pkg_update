@@ -1,5 +1,5 @@
-Reject internal daemon update entry points and keep the updater disabled.
-
+Reject internal daemon update entry points and keep the updater
+disabled.
 Index: codex-rs/app-server-daemon/src/lib.rs
 --- codex-rs/app-server-daemon/src/lib.rs.orig
 +++ codex-rs/app-server-daemon/src/lib.rs

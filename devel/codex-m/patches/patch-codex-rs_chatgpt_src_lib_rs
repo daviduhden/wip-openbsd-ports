@@ -1,5 +1,5 @@
-Raise the recursion limit in the ChatGPT crate so Rust can compile its deeply nested module and macro expansion tree.
-
+Raise the recursion limit in the ChatGPT crate so Rust can compile its
+deeply nested module and macro expansion tree.
 Index: codex-rs/chatgpt/src/lib.rs
 --- codex-rs/chatgpt/src/lib.rs.orig
 +++ codex-rs/chatgpt/src/lib.rs

@@ -1,6 +1,5 @@
 Use the CLI GNU make selection for the comprehensive syntax test,
 including gmake on OpenBSD.
-
 Index: tests/test_comprehensive.py
 --- tests/test_comprehensive.py.orig
 +++ tests/test_comprehensive.py

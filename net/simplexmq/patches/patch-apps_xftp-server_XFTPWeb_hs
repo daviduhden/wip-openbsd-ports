@@ -1,5 +1,5 @@
-Resolve embedded XFTP web assets relative to the project root in Cabal builds.
-
+Resolve embedded XFTP web assets relative to the project root in Cabal
+builds.
 Index: apps/xftp-server/XFTPWeb.hs
 --- apps/xftp-server/XFTPWeb.hs.orig
 +++ apps/xftp-server/XFTPWeb.hs

@@ -1,6 +1,5 @@
 Disable daemon auto start by default
 https://github.com/openai/codex/issues/48050
-
 Index: codex-rs/features/src/lib.rs
 --- codex-rs/features/src/lib.rs.orig
 +++ codex-rs/features/src/lib.rs

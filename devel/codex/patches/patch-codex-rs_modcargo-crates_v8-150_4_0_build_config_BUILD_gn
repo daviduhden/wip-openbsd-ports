@@ -1,6 +1,6 @@
-Use the current Chromium BSD default-libraries branch without altering Linux.
-The former iterator-debugging hunk is redundant with is_linux on OpenBSD.
-
+Use the current Chromium BSD default-libraries branch without altering
+Linux. The former iterator-debugging hunk is redundant with is_linux on
+OpenBSD.
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/BUILD.gn
 --- codex-rs/modcargo-crates/v8-150.4.0/build/config/BUILD.gn.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/config/BUILD.gn

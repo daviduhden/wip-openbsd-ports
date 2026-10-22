@@ -1,7 +1,6 @@
 Continue the month_number ternary expression explicitly: OpenBSD's awk
 does not accept a bare newline after ':' as a line continuation, so the
 release date could not be derived from Common/Tcdefs.h.
-
 Index: Build/Tools/source_date_epoch.sh
 --- Build/Tools/source_date_epoch.sh.orig
 +++ Build/Tools/source_date_epoch.sh

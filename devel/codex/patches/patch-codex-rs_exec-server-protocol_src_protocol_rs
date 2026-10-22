@@ -1,5 +1,4 @@
 Carry the OpenBSD sandbox type over the exec-server protocol.
-
 Index: codex-rs/exec-server-protocol/src/protocol.rs
 --- codex-rs/exec-server-protocol/src/protocol.rs.orig
 +++ codex-rs/exec-server-protocol/src/protocol.rs

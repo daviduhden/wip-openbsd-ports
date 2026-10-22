@@ -1,8 +1,8 @@
-Exercise OpenBSD descriptor cleanup across exec, including sparse and high
-descriptors, lowered resource limits, preserved descriptors and CLOEXEC flags.
-Check error propagation, concurrent spawning and restoration of signal masks,
-and verify that the parent's descriptor flags and signal mask stay unchanged.
-
+Exercise OpenBSD descriptor cleanup across exec, including sparse and
+high descriptors, lowered resource limits, preserved descriptors and
+CLOEXEC flags. Check error propagation, concurrent spawning and
+restoration of signal masks, and verify that the parent's descriptor
+flags and signal mask stay unchanged.
 Index: codex-rs/utils/pty/src/pty_openbsd_tests.rs
 --- /dev/null
 +++ codex-rs/utils/pty/src/pty_openbsd_tests.rs

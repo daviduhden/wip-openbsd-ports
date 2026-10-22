@@ -1,6 +1,6 @@
 Keep the existing X11 clipboard lease alive on OpenBSD too. arboard uses
-its Unix/X11 backend here; no new clipboard implementation is introduced.
-
+its Unix/X11 backend here; no new clipboard implementation is
+introduced.
 Index: codex-rs/tui/src/clipboard_copy.rs
 --- codex-rs/tui/src/clipboard_copy.rs.orig
 +++ codex-rs/tui/src/clipboard_copy.rs

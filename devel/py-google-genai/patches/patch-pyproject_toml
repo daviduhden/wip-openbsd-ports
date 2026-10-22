@@ -1,6 +1,6 @@
 Twine and pkginfo publish releases; neither is used by the setuptools
-build backend. Do not require publishing tools for an offline port build.
-
+build backend. Do not require publishing tools for an offline port
+build.
 Index: pyproject.toml
 --- pyproject.toml.orig
 +++ pyproject.toml

@@ -1,6 +1,6 @@
 Mark only the usable WASM stack segment with MAP_STACK on OpenBSD.
-Preserve both no-access guard pages and the existing allocation lifetime.
-
+Preserve both no-access guard pages and the existing allocation
+lifetime.
 Index: codex-rs/modcargo-crates/v8-150.4.0/v8/src/wasm/stacks.cc
 --- codex-rs/modcargo-crates/v8-150.4.0/v8/src/wasm/stacks.cc.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/v8/src/wasm/stacks.cc

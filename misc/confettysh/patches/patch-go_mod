@@ -4,7 +4,6 @@ Building the unmodified go.mod with a current Go toolchain fails with
 "updates to go.mod needed; to update it: go mod tidy" because a
 dependency declares a newer language version. Only the go directive
 changes; the dependency set is unchanged.
-
 Index: go.mod
 --- go.mod.orig
 +++ go.mod

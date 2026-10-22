@@ -1,18 +1,19 @@
-OpenBSD builders need more than the upstream 90-second per-example watchdog
-for the complete asynchronous chat integration workloads.  Keep every test
-and assertion intact while retaining a finite cleanup-safe bound.
+OpenBSD builders need more than the upstream 90-second per-example
+watchdog for the complete asynchronous chat integration workloads. Keep
+every test and assertion intact while retaining a finite cleanup-safe
+bound.
 
-getProfilePictureByName must not assume the profile image has already been
-delivered: poll for a bounded time and decode the nullable column as Maybe,
-so a late update returns Nothing instead of failing with a NULL-to-Text
-conversion error.
+getProfilePictureByName must not assume the profile image has already
+been delivered: poll for a bounded time and decode the nullable column
+as Maybe, so a late update returns Nothing instead of failing with a
+NULL-to-Text conversion error.
 
-Independent member connections have no defined completion order. Assert both.
+Independent member connections have no defined completion order. Assert
+both.
 
-The (<??) operator consumes up to N optional asynchronous lines and fails on
-any other output, so the examples below can account for the member-connected
-group items without weakening their assertions.
-
+The (<??) operator consumes up to N optional asynchronous lines and
+fails on any other output, so the examples below can account for the
+member-connected group items without weakening their assertions.
 Index: tests/ChatTests/Utils.hs
 --- tests/ChatTests/Utils.hs.orig
 +++ tests/ChatTests/Utils.hs

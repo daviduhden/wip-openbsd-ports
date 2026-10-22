@@ -1,6 +1,5 @@
-Recognize OpenBSD arm64 before the generic arm prefix.
-The Chromium patch places this branch after arm and cannot match arm64 there.
-
+Recognize OpenBSD arm64 before the generic arm prefix. The Chromium
+patch places this branch after arm and cannot match arm64 there.
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/detect_host_arch.py
 --- codex-rs/modcargo-crates/v8-150.4.0/build/detect_host_arch.py.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/detect_host_arch.py

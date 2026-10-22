@@ -1,8 +1,8 @@
 Depend on rust-openbsd, for OpenBSD only.
 
-The `openbsd-8-0` feature is enabled because the backend resolves the helper
-executable with getexecpath(3), which first appeared in OpenBSD 8.0.
-
+The `openbsd-8-0` feature is enabled because the backend resolves the
+helper executable with getexecpath(3), which first appeared in OpenBSD
+8.0.
 Index: codex-rs/sandboxing/Cargo.toml
 --- codex-rs/sandboxing/Cargo.toml.orig
 +++ codex-rs/sandboxing/Cargo.toml

@@ -1,7 +1,8 @@
-Regression tests for unmasked worker bodies and completion after cancellation.
+Regression tests for unmasked worker bodies and completion after
+cancellation.
 
-Check that catchAll_ handles ordinary failures and rethrows cancellation.
-
+Check that catchAll_ handles ordinary failures and rethrows
+cancellation.
 Index: tests/CoreTests/UtilTests.hs
 --- tests/CoreTests/UtilTests.hs.orig
 +++ tests/CoreTests/UtilTests.hs

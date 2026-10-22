@@ -1,8 +1,8 @@
-OpenBSD has no ptsname_r and does not acquire the controlling terminal just
-by opening the pty slave: like FreeBSD/macOS it has to call TIOCSCTTY (see
-login_tty(3)).  Add an OpenBSD get_slave_name based on ptsname(3) and route
-OpenBSD to the TIOCSCTTY branch of make_controlling_tty.
-
+OpenBSD has no ptsname_r and does not acquire the controlling terminal
+just by opening the pty slave: like FreeBSD/macOS it has to call
+TIOCSCTTY (see login_tty(3)). Add an OpenBSD get_slave_name based on
+ptsname(3) and route OpenBSD to the TIOCSCTTY branch of
+make_controlling_tty.
 Index: ptyprocess/src/lib.rs
 --- ptyprocess/src/lib.rs.orig
 +++ ptyprocess/src/lib.rs

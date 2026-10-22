@@ -1,6 +1,5 @@
-Resolve tungstenite from the pinned DIST_TUPLE source rather than fetching
-the fork during the build.
-
+Resolve tungstenite from the pinned DIST_TUPLE source rather than
+fetching the fork during the build.
 Index: tokio-tungstenite/Cargo.toml
 --- tokio-tungstenite/Cargo.toml.orig
 +++ tokio-tungstenite/Cargo.toml

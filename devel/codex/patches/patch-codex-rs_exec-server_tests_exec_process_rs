@@ -1,5 +1,4 @@
 Handle the OpenBSD sandbox type in a Windows-only test assertion.
-
 Index: codex-rs/exec-server/tests/exec_process.rs
 --- codex-rs/exec-server/tests/exec_process.rs.orig
 +++ codex-rs/exec-server/tests/exec_process.rs

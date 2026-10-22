@@ -15,7 +15,7 @@ MODPY_PYBUILD =	setuptools
 MODPY_PI =	Yes
 NO_TEST =	Yes
 
-RUN_DEPENDS =	net/py-socketio \
+RUN_DEPENDS =	net/py-socketio>=5.12 \
 		www/py-flask
 
 .include <bsd.port.mk>

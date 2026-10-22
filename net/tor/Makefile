@@ -9,6 +9,7 @@ MAINTAINER=	Pascal Stumpf <pascal@stumpf.co>
 # GPLv3
 PERMIT_PACKAGE=	Yes
 
+# uses pledge() and unveil()
 WANTLIB += c crypto event_core event_extra execinfo m pthread ssl z
 
 SITES=		https://www.torproject.org/dist/

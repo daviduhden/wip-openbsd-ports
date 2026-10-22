@@ -157,6 +157,10 @@ sub find_ports {
                 wanted => sub {
                     return unless basename($_) eq 'Makefile';
                     return if $File::Find::name =~ m{/(CVS|files|patches)/};
+                    open( my $fh, '<', $_ ) or die "$_: $!";
+                    my $t = do { local $/ = undef; <$fh> // q{} };
+                    close $fh or die "close $_: $!";
+                    return if $t =~ /bsd\.port\.subdir\.mk/;
                     my $rel = File::Spec->abs2rel( $File::Find::name, $PORTS );
                     ( my $dir = dirname($rel) ) =~ s{^\./}{};
                     push @ports, $dir;
@@ -180,8 +184,18 @@ sub manifest_state {
 # a manifest label maps to the file it stands for
 sub labelpath {
     my ( $dir, $label ) = @_;
-    return "$dir/pkg/PLIST" if $label eq 'PLIST';
+    return "$dir/pkg/$label" if $label =~ /^PLIST(?:-.+)?$/;
     return "$dir/$label";
+}
+
+sub plists {
+    my ($dir) = @_;
+    open( my $fh, '<', "$dir/Makefile" ) or return ('PLIST');
+    my $t = do { local $/ = undef; <$fh> // q{} };
+    close $fh or die "close file: $!";
+    my ($packages) = $t =~ /^MULTI_PACKAGES\s*=\s*(.*)$/m;
+    return ('PLIST') unless defined $packages;
+    return map { "PLIST$_" } split /\s+/, $packages;
 }
 
 # expected module manifests for a port, from its Makefile
@@ -226,8 +240,10 @@ sub pending_ports {
         my @missing;
         my $d = manifest_state("$dir/distinfo");
         push @missing, 'distinfo' if $d ne 'ok';
-        my $pl = manifest_state("$dir/pkg/PLIST");
-        push @missing, 'PLIST' if $pl ne 'ok';
+        for my $pl ( plists($dir) ) {
+            push @missing, $pl
+              if manifest_state( labelpath( $dir, $pl ) ) ne 'ok';
+        }
         for my $i ( manifests($dir) ) {
             push @missing, $i if manifest_state("$dir/$i") ne 'ok';
         }
@@ -271,7 +287,7 @@ for my $item (@todo) {
     $grc |= sh( $plog, "cd $qdir && $MAKE makesum" )
       if grep { $_ eq 'distinfo' } @missing;
     $grc |= sh( $plog, "cd $qdir && $MAKE update-plist" )
-      if grep { $_ eq 'PLIST' } @missing;
+      if grep { /^PLIST(?:-.+)?$/ } @missing;
     $grc |= sh( $plog, "cd $qdir && $MAKE modgo-gen-modules > modules.inc" )
       if grep { $_ eq 'modules.inc' } @missing;
     $grc |= sh( $plog,

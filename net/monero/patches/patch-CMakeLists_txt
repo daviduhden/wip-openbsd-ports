@@ -4,12 +4,18 @@ ports readline correctly; use devel/gas for OpenBSD assembly builds.
 Index: CMakeLists.txt
 --- CMakeLists.txt.orig
 +++ CMakeLists.txt
-@@ -92,0 +93,5 @@
+@@ -90,13 +90,18 @@ elseif (USE_CLANG_TIDY_CXX)
+ 	monero_clang_tidy("CXX")
+ endif()
+ 
 +if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
 +  # Prefer GNU gas from devel/gas over the outdated base assembler.
 +  find_program(CMAKE_ASM_COMPILER gas HINTS "$ENV{LOCALBASE}/bin")
 +endif()
 +
+ enable_language(C ASM)
+ 
+ # Require C11/C++11 and disable extensions for all targets
  set(CMAKE_C_STANDARD 11)
  set(CMAKE_C_STANDARD_REQUIRED ON)
  set(CMAKE_C_EXTENSIONS OFF)

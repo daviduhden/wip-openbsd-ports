@@ -1,6 +1,7 @@
 Multicast membership is per socket and per interface. Let callers name
 the interface for each membership, provide IP_MULTICAST_IF for the
 sender, and report setsockopt failures with their actual errno.
+
 Index: src/Simplex/RemoteControl/Discovery/Multicast.hsc
 --- src/Simplex/RemoteControl/Discovery/Multicast.hsc.orig
 +++ src/Simplex/RemoteControl/Discovery/Multicast.hsc

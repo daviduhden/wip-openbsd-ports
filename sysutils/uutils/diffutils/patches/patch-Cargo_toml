@@ -1,5 +1,6 @@
 Build diff and cmp as independent binaries while retaining the multicall
 binary required by upstream tests. Only diff and cmp are installed.
+
 Index: Cargo.toml
 --- Cargo.toml.orig
 +++ Cargo.toml

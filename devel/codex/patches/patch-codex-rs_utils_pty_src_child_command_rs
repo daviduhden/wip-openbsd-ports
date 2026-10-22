@@ -2,6 +2,7 @@ Prepare OpenBSD descriptor cleanup in the parent so the pre-exec
 callback can close unneeded inherited descriptors without allocating
 after fork. Propagate cleanup errors to abort spawning if descriptors
 cannot be safely closed.
+
 Index: codex-rs/utils/pty/src/child_command.rs
 --- codex-rs/utils/pty/src/child_command.rs.orig
 +++ codex-rs/utils/pty/src/child_command.rs

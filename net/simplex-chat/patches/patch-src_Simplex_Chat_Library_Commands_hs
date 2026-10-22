@@ -3,6 +3,7 @@ before returning from /stop. Stop the agent statistics finalizer while
 its store is still open. Publish startup ownership before allowing
 database access, and unmask worker bodies independently of their
 callers.
+
 Index: src/Simplex/Chat/Library/Commands.hs
 --- src/Simplex/Chat/Library/Commands.hs.orig
 +++ src/Simplex/Chat/Library/Commands.hs

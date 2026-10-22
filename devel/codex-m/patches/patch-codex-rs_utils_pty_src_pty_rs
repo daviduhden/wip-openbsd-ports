@@ -4,6 +4,7 @@ standard streams, explicitly passed descriptors and CLOEXEC descriptors
 such as Rust's exec error pipe. Allocate storage before fork and block
 signal handlers while reading and consuming the child's snapshot; abort
 spawning on cleanup errors.
+
 Index: codex-rs/utils/pty/src/pty.rs
 --- codex-rs/utils/pty/src/pty.rs.orig
 +++ codex-rs/utils/pty/src/pty.rs

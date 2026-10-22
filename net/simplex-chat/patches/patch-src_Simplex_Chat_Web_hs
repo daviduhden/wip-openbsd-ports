@@ -1,6 +1,7 @@
 Preserve asynchronous cancellation during web preview rendering and
 stale file cleanup so stopChatController can join the web preview
 worker.
+
 Index: src/Simplex/Chat/Web.hs
 --- src/Simplex/Chat/Web.hs.orig
 +++ src/Simplex/Chat/Web.hs

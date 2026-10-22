@@ -1,5 +1,6 @@
 Honor paths and flags supplied by the ports framework. Correct the
 OpenMP option name and keep OpenMP disabled unless explicitly enabled.
+
 Index: mf/Makefile.OpenBSD
 --- mf/Makefile.OpenBSD.orig
 +++ mf/Makefile.OpenBSD

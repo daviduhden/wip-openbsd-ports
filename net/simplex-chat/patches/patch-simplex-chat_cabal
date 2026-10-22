@@ -1,4 +1,5 @@
 Use ram byte arrays consistently with the vendored simplexmq library.
+
 Index: simplex-chat.cabal
 --- simplex-chat.cabal.orig
 +++ simplex-chat.cabal

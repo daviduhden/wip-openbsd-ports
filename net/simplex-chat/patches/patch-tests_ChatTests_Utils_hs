@@ -14,6 +14,7 @@ both.
 The (<??) operator consumes up to N optional asynchronous lines and
 fails on any other output, so the examples below can account for the
 member-connected group items without weakening their assertions.
+
 Index: tests/ChatTests/Utils.hs
 --- tests/ChatTests/Utils.hs.orig
 +++ tests/ChatTests/Utils.hs

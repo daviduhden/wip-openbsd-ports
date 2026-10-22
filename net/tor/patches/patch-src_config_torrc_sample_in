@@ -1,6 +1,7 @@
 Enable Tor’s OpenBSD unveil and pledge sandbox in the packaged default
 torrc. The configured /etc/tor/torrc and /var/tor data directory match
 the paths granted by the port’s sandbox profile.
+
 Index: src/config/torrc.sample.in
 --- src/config/torrc.sample.in.orig
 +++ src/config/torrc.sample.in

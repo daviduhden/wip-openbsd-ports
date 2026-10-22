@@ -1,4 +1,5 @@
 Make the optional tracing test dependency lazy.
+
 Index: tests/conftest.py
 --- tests/conftest.py.orig
 +++ tests/conftest.py

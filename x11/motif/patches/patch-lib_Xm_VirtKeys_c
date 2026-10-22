@@ -1,4 +1,5 @@
 Check bounds before accessing the keycaps table.
+
 Index: lib/Xm/VirtKeys.c
 --- lib/Xm/VirtKeys.c.orig
 +++ lib/Xm/VirtKeys.c

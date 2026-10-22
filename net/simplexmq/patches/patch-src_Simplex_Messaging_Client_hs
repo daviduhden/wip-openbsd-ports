@@ -6,6 +6,7 @@ or asynchronously cancelled connection attempts.
 
 Unmask the transport thread while retaining synchronous cancellation and
 completion.
+
 Index: src/Simplex/Messaging/Client.hs
 --- src/Simplex/Messaging/Client.hs.orig
 +++ src/Simplex/Messaging/Client.hs

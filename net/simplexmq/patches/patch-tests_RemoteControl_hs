@@ -9,6 +9,7 @@ cancellation. The old five-second timeout did not cover the preceding
 listener wait; a failed peer could leave that wait blocked until the
 300-second watchdog. Use loopback for this local pairing too, retaining
 TLS and encrypted packets.
+
 Index: tests/RemoteControl.hs
 --- tests/RemoteControl.hs.orig
 +++ tests/RemoteControl.hs

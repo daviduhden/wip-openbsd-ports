@@ -1,4 +1,5 @@
 Avoid overflowing the OpenBSD thread stack on deeply nested bridge JSON.
+
 Index: swival/python_bridge.py
 --- swival/python_bridge.py.orig
 +++ swival/python_bridge.py

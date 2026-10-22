@@ -5,6 +5,7 @@ established sessions and close the backend directly on handshake errors.
 
 Also use tls's public TLS unique channel binding API when available, but
 fall back to tls-exporter for sessions where TLS unique is not exposed.
+
 Index: src/Simplex/Messaging/Transport.hs
 --- src/Simplex/Messaging/Transport.hs.orig
 +++ src/Simplex/Messaging/Transport.hs

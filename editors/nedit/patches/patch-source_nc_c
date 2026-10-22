@@ -1,5 +1,6 @@
 Rename the client program in the usage help and avoid the %n printf
 conversion.
+
 Index: source/nc.c
 --- source/nc.c.orig
 +++ source/nc.c

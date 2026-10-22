@@ -11,6 +11,7 @@ record.
 Also acknowledge each concurrent delivery through its actual receiving
 agent; the symmetric test traffic previously hid an ACK sent on the
 opposite peer.
+
 Index: tests/SMPProxyTests.hs
 --- tests/SMPProxyTests.hs.orig
 +++ tests/SMPProxyTests.hs

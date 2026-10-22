@@ -1,4 +1,5 @@
 Add .pp to the list of extensions for Pascal source files.
+
 Index: source/preferences.c
 --- source/preferences.c.orig
 +++ source/preferences.c

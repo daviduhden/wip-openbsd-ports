@@ -1,6 +1,7 @@
 Replace upstream's setuid-root requirement with the privilege model used
 by this port: BSD Authentication through group auth, and system commands
 run as the invoking user.
+
 Index: src/xmsm.1
 --- src/xmsm.1.orig
 +++ src/xmsm.1

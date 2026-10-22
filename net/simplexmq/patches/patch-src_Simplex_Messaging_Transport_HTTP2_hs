@@ -1,6 +1,7 @@
 Build with http2 5.x using its public client configuration template.
 http2 5.x removed the Config constructor; use HC.defaultConfig instead
 with qualified field selectors.
+
 Index: src/Simplex/Messaging/Transport/HTTP2.hs
 --- src/Simplex/Messaging/Transport/HTTP2.hs.orig
 +++ src/Simplex/Messaging/Transport/HTTP2.hs

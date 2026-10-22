@@ -2,6 +2,7 @@ Avoid Linux-style ifunc support on BSD and report the OpenBSD zero
 segment. Adapt the Chromium ports zero-segment hunk to the native
 VM_MIN_ADDRESS guarantee for the two architectures supported by this
 port.
+
 Index: codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/page_allocator_internals_posix.cc
 --- codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/page_allocator_internals_posix.cc.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/page_allocator_internals_posix.cc

@@ -6,6 +6,7 @@ set-client-service echo and its "ok" response in any order.
 
 Independent member connections have no defined completion order. Assert
 both.
+
 Index: tests/ChatTests/Profiles.hs
 --- tests/ChatTests/Profiles.hs.orig
 +++ tests/ChatTests/Profiles.hs

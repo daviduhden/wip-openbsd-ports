@@ -1,5 +1,6 @@
 Expose the OpenBSD sandbox launcher with the common permission/profile
 options.
+
 Index: codex-rs/cli/src/lib.rs
 --- codex-rs/cli/src/lib.rs.orig
 +++ codex-rs/cli/src/lib.rs

@@ -1,6 +1,7 @@
 Default to package-manager updates rather than checking upstream
 releases at startup. An explicit user setting still overrides this
 default.
+
 Index: codex-rs/core/src/config/mod.rs
 --- codex-rs/core/src/config/mod.rs.orig
 +++ codex-rs/core/src/config/mod.rs

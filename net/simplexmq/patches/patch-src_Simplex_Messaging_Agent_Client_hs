@@ -6,6 +6,7 @@ retain the cached error and its configured backoff.
 Read activity and enqueue disconnection events in the same STM
 transaction so shutdown releases callbacks blocked by a full event
 queue. Include the local XFTP completion worker in worker diagnostics.
+
 Index: src/Simplex/Messaging/Agent/Client.hs
 --- src/Simplex/Messaging/Agent/Client.hs.orig
 +++ src/Simplex/Messaging/Agent/Client.hs

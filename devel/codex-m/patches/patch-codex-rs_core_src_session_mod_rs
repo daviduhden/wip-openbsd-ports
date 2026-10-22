@@ -1,6 +1,7 @@
 Reject managed sessions at the central session-spawn boundary.
 Configuration-only commands (login, doctor, MCP administration) and
 app-server startup remain usable.
+
 Index: codex-rs/core/src/session/mod.rs
 --- codex-rs/core/src/session/mod.rs.orig
 +++ codex-rs/core/src/session/mod.rs

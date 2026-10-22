@@ -1,4 +1,5 @@
 Reject the package-manager update path with an explicit pkg_add message.
+
 Index: codex-rs/cli/src/main.rs
 --- codex-rs/cli/src/main.rs.orig
 +++ codex-rs/cli/src/main.rs

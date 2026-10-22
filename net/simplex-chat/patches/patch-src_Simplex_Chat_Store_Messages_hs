@@ -10,6 +10,7 @@ could return any of them, so the chat list preview showed a group
 feature item ("SimpleX links: on", "Recent history: off", "Direct
 messages: on") instead of the "connected" event. Use the same
 chat_item_id tie-break as the rest of the store.
+
 Index: src/Simplex/Chat/Store/Messages.hs
 --- src/Simplex/Chat/Store/Messages.hs.orig
 +++ src/Simplex/Chat/Store/Messages.hs

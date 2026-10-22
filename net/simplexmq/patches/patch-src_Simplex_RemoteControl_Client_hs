@@ -10,6 +10,7 @@ result TMVar, and waitSTM propagates worker exceptions. Repeated
 shutdown requests must not block on a full endSession TMVar. These are
 platform- independent lifecycle fixes; native and regression testing
 remain required.
+
 Index: src/Simplex/RemoteControl/Client.hs
 --- src/Simplex/RemoteControl/Client.hs.orig
 +++ src/Simplex/RemoteControl/Client.hs

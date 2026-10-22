@@ -29,7 +29,9 @@ whose group connection is established (memberConnectedChatItem); it is
 created asynchronously relative to the member relation vector the setup
 polls, so the forwarding setup now consumes the items that have already
 arrived on every member.
+
 Index: tests/ChatTests/Groups.hs
+
 Index: tests/ChatTests/Groups.hs
 --- tests/ChatTests/Groups.hs.orig
 +++ tests/ChatTests/Groups.hs

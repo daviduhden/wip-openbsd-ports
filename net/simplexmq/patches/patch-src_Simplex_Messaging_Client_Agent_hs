@@ -6,6 +6,7 @@ instance.
 
 Unmask the reconnect body while publishing its ownership atomically with
 shutdown.
+
 Index: src/Simplex/Messaging/Client/Agent.hs
 --- src/Simplex/Messaging/Client/Agent.hs.orig
 +++ src/Simplex/Messaging/Client/Agent.hs

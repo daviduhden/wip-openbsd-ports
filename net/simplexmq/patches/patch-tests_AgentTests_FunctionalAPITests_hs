@@ -53,7 +53,9 @@ After delivery timeout, wait for the delivery worker to discard its
 cached message and assert no resend after server restart. These messages
 were queued offline, not in flight on the transport when deletion
 completed.
+
 Index: tests/AgentTests/FunctionalAPITests.hs
+
 Index: tests/AgentTests/FunctionalAPITests.hs
 --- tests/AgentTests/FunctionalAPITests.hs.orig
 +++ tests/AgentTests/FunctionalAPITests.hs

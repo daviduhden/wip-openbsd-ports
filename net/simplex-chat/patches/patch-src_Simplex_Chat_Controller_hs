@@ -2,6 +2,7 @@ Keep ownership of controller startup jobs and joinable timed-item tasks.
 Catch only synchronous database exceptions: converting ThreadKilled or
 AsyncCancelled into a ChatError lets workers continue after cancellation
 and can block stopChatController while it joins them.
+
 Index: src/Simplex/Chat/Controller.hs
 --- src/Simplex/Chat/Controller.hs.orig
 +++ src/Simplex/Chat/Controller.hs

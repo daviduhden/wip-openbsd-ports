@@ -15,6 +15,7 @@ the previous TLS sessions and stores.
 Join closing connections even when their finalizer starts before
 registration. Unmask handler bodies and keep TLS/socket cleanup
 interruptible.
+
 Index: src/Simplex/Messaging/Transport/Server.hs
 --- src/Simplex/Messaging/Transport/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/Server.hs

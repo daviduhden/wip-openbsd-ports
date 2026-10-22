@@ -6,6 +6,7 @@ requiring the command echo first. These are console lines and carry no
 timestamp, so <### (which compares the lines as printed) is the operator
 that matches them; <##? strips a timestamp and errors on the first line
 that has none. No assertion is dropped.
+
 Index: tests/ChatTests/Files.hs
 --- tests/ChatTests/Files.hs.orig
 +++ tests/ChatTests/Files.hs

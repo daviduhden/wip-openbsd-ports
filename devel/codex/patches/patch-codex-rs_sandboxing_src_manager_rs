@@ -1,5 +1,6 @@
 Select and transform the OpenBSD backend through the arg0 helper.
 Resolve the helper executable with getexecpath(3), never a PATH search.
+
 Index: codex-rs/sandboxing/src/manager.rs
 --- codex-rs/sandboxing/src/manager.rs.orig
 +++ codex-rs/sandboxing/src/manager.rs

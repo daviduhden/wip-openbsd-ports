@@ -1,4 +1,5 @@
 Reject managed trusted-snapshot replacement on OpenBSD.
+
 Index: codex-rs/core/src/config/mod.rs
 --- codex-rs/core/src/config/mod.rs.orig
 +++ codex-rs/core/src/config/mod.rs

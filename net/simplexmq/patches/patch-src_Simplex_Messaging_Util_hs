@@ -2,6 +2,7 @@ Unmask owned worker bodies while keeping publication and completion
 callbacks masked.
 
 Preserve cancellation in catchAll and catchAll_ as in tryAllErrors.
+
 Index: src/Simplex/Messaging/Util.hs
 --- src/Simplex/Messaging/Util.hs.orig
 +++ src/Simplex/Messaging/Util.hs

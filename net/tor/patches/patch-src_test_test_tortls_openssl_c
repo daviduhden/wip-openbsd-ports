@@ -1,5 +1,6 @@
 Use the LibreSSL TLS state text in the OpenSSL compatibility tests,
 while retaining OpenSSL’s own state string for upstream OpenSSL builds.
+
 Index: src/test/test_tortls_openssl.c
 --- src/test/test_tortls_openssl.c.orig
 +++ src/test/test_tortls_openssl.c

@@ -6,6 +6,7 @@ uploaders and finalize uploaded files in a separate, joined local
 worker. Recover completion after a restart even when no chunks remain to
 upload. Publish SFDONE only after source cleanup and the completion
 transaction.
+
 Index: src/Simplex/FileTransfer/Agent.hs
 --- src/Simplex/FileTransfer/Agent.hs.orig
 +++ src/Simplex/FileTransfer/Agent.hs

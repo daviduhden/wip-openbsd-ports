@@ -1,5 +1,6 @@
 Teach the depends toolchain file to use OpenBSD's ereadline and curses
 paths.
+
 Index: contrib/depends/toolchain.cmake.in
 --- contrib/depends/toolchain.cmake.in.orig
 +++ contrib/depends/toolchain.cmake.in

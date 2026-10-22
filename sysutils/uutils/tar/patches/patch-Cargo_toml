@@ -1,5 +1,6 @@
 Use the uutils/coreutils checkout fetched by DIST_TUPLE for uucore and
 uutests instead of resolving them from the network at build time.
+
 Index: Cargo.toml
 --- Cargo.toml.orig
 +++ Cargo.toml

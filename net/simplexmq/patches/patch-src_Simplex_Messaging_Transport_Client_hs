@@ -11,6 +11,7 @@ bracket.
 
 Use base bracket for network cleanup: UnliftIO.bracket disables
 TLS.bye's internal timeout.
+
 Index: src/Simplex/Messaging/Transport/Client.hs
 --- src/Simplex/Messaging/Transport/Client.hs.orig
 +++ src/Simplex/Messaging/Transport/Client.hs

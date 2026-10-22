@@ -1,4 +1,5 @@
 OpenBSD does not expose the TCP keepalive tuning options used on Linux.
+
 Index: src/Simplex/Messaging/Transport/KeepAlive.hs
 --- src/Simplex/Messaging/Transport/KeepAlive.hs.orig
 +++ src/Simplex/Messaging/Transport/KeepAlive.hs

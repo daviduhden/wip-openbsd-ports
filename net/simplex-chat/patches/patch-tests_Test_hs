@@ -6,6 +6,7 @@ so the platform-specific query plans can be verified on OpenBSD.
 
 Allow opt-in terminal traces when investigating failures hidden by
 cleanup.
+
 Index: tests/Test.hs
 --- tests/Test.hs.orig
 +++ tests/Test.hs

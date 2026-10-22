@@ -6,6 +6,7 @@ them when SIMPLEX_QUERY_PLANS_PLATFORM=1 (set by the port when the
 regenerated files are installed from files/), and
 SIMPLEX_UPDATE_QUERY_PLANS=1 makes it write them without asserting, so
 they can be regenerated on OpenBSD.
+
 Index: tests/SchemaDump.hs
 --- tests/SchemaDump.hs.orig
 +++ tests/SchemaDump.hs

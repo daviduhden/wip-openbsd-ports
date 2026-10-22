@@ -1,4 +1,5 @@
 Report the OpenBSD backend when classifying sandbox denials.
+
 Index: codex-rs/sandboxing/src/violation.rs
 --- codex-rs/sandboxing/src/violation.rs.orig
 +++ codex-rs/sandboxing/src/violation.rs

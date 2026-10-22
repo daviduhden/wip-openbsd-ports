@@ -1,5 +1,6 @@
 Prefer the OpenBSD ksh/sh fallback over bash/zsh and recognize ksh as a
 POSIX shell.
+
 Index: codex-rs/shell-command/src/shell_detect.rs
 --- codex-rs/shell-command/src/shell_detect.rs.orig
 +++ codex-rs/shell-command/src/shell_detect.rs

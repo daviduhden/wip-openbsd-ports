@@ -14,6 +14,7 @@ Import tryPutTMVar explicitly for the start-error path added below.
 
 Keep the shutdown watchdog effective, including the synchronous
 killThread call.
+
 Index: tests/SMPClient.hs
 --- tests/SMPClient.hs.orig
 +++ tests/SMPClient.hs

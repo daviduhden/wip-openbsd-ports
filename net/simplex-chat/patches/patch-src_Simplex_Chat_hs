@@ -1,4 +1,5 @@
 Track controller startup jobs and serialize its start/stop lifetime.
+
 Index: src/Simplex/Chat.hs
 --- src/Simplex/Chat.hs.orig
 +++ src/Simplex/Chat.hs

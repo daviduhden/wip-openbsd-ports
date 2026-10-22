@@ -1,6 +1,7 @@
 Cover the worker shutdown contract directly: the first cancellation
 waits for an in-progress startup to publish its action, while subsequent
 cancellations return without consuming the action TMVar again.
+
 Index: tests/CoreTests/TSessionSubs.hs
 --- tests/CoreTests/TSessionSubs.hs.orig
 +++ tests/CoreTests/TSessionSubs.hs

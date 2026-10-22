@@ -1,4 +1,5 @@
 Count online CPUs on OpenBSD using HW_NCPUONLINE.
+
 Index: codex-rs/modcargo-crates/v8-150.4.0/v8/src/base/sys-info.cc
 --- codex-rs/modcargo-crates/v8-150.4.0/v8/src/base/sys-info.cc.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/v8/src/base/sys-info.cc

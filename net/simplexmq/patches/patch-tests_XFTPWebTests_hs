@@ -1,4 +1,5 @@
 Avoid ambiguous ByteArray conversions in XFTP web tests with GHC 9.10.
+
 Index: tests/XFTPWebTests.hs
 --- tests/XFTPWebTests.hs.orig
 +++ tests/XFTPWebTests.hs

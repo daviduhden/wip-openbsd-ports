@@ -1,6 +1,7 @@
 Remove torrc template lines for optional transport plugins whose
 executables are not installed; this prevents Tor from failing
 configuration validation for unavailable bridges.
+
 Index: cli/onionshare_cli/onion.py
 --- cli/onionshare_cli/onion.py.orig	2026-10-16 06:50:17.000000000 +0200
 +++ cli/onionshare_cli/onion.py	2026-10-22 13:07:15.265099823 +0200

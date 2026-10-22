@@ -1,4 +1,5 @@
 Use mkstemp(3) for the print temporary file instead of tmpnam(3).
+
 Index: source/file.c
 --- source/file.c.orig
 +++ source/file.c

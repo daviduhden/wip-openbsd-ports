@@ -1,5 +1,6 @@
 Check ML-KEM setup and key operations during NTCP2 handshakes so
 failures abort the handshake instead of using invalid key material.
+
 Index: libi2pd/NTCP2.cpp
 --- libi2pd/NTCP2.cpp.orig
 +++ libi2pd/NTCP2.cpp

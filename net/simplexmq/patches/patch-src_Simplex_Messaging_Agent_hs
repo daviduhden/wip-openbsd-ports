@@ -15,6 +15,7 @@ after both retry delays and suspension/network waits.
 Serialize async ACK registration with receive/delete processing; do not
 queue a second ACK for an already acknowledged stored message. Preserve
 interactive request mode when creating a contact-link reply queue.
+
 Index: src/Simplex/Messaging/Agent.hs
 --- src/Simplex/Messaging/Agent.hs.orig
 +++ src/Simplex/Messaging/Agent.hs

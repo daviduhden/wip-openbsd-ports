@@ -1,4 +1,5 @@
 Keep generated migration SQL column definitions consistently indented.
+
 Index: src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql
 --- src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql.orig
 +++ src/Simplex/Messaging/Agent/Store/SQLite/Migrations/agent_schema.sql

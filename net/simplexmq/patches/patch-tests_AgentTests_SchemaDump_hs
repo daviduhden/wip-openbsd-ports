@@ -8,6 +8,7 @@ Export only schemaDumpTest, as in simplex-chat. Test.hs already imports
 only this entry point, so this keeps helpers private without fixing an
 existing ambiguity or changing the suite's temporary-directory
 lifecycle.
+
 Index: tests/AgentTests/SchemaDump.hs
 --- tests/AgentTests/SchemaDump.hs.orig
 +++ tests/AgentTests/SchemaDump.hs

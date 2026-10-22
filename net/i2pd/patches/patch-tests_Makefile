@@ -1,5 +1,6 @@
 Drop the separate Boost.System link dependency, which is not needed by
 the current Boost configuration.
+
 Index: tests/Makefile
 --- tests/Makefile.orig
 +++ tests/Makefile

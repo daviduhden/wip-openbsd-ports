@@ -1,4 +1,5 @@
 Reject --from-cli package replacement under the system package manager.
+
 Index: codex-rs/app-server-daemon/src/prepare_install.rs
 --- codex-rs/app-server-daemon/src/prepare_install.rs.orig
 +++ codex-rs/app-server-daemon/src/prepare_install.rs

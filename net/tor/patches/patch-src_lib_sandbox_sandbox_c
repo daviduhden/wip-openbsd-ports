@@ -1,6 +1,7 @@
 Implement Tor’s OpenBSD sandbox with unveil path permissions and a
 pledge promise set, allowing the packaged daemon to restrict filesystem
 and system-call access when Sandbox 1 is configured.
+
 Index: src/lib/sandbox/sandbox.c
 --- src/lib/sandbox/sandbox.c.orig
 +++ src/lib/sandbox/sandbox.c

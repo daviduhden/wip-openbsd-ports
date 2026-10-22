@@ -1,6 +1,7 @@
 Generate ARM64 Keccak constants in read-only data rather than
 execute-only text; use page-relative addressing to reach the separate
 section.
+
 Index: codex-rs/modcargo-crates/aws-lc-sys-0.45.0/aws-lc/crypto/fipsmodule/sha/asm/keccak1600-armv8.pl
 --- codex-rs/modcargo-crates/aws-lc-sys-0.45.0/aws-lc/crypto/fipsmodule/sha/asm/keccak1600-armv8.pl.orig
 +++ codex-rs/modcargo-crates/aws-lc-sys-0.45.0/aws-lc/crypto/fipsmodule/sha/asm/keccak1600-armv8.pl

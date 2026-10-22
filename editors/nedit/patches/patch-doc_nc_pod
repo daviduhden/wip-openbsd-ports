@@ -1,5 +1,6 @@
 Rename the client program to ncl in its manual page, matching the name
 installed by this package.
+
 Index: doc/nc.pod
 --- doc/nc.pod.orig
 +++ doc/nc.pod

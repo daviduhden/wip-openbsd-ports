@@ -1,6 +1,7 @@
 Select the OpenBSD host toolchain and expose BSD platform flags. Reuse
 the Linux GN scaffolding where subsequent patches exclude Linux-only
 APIs.
+
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/BUILDCONFIG.gn
 --- codex-rs/modcargo-crates/v8-150.4.0/build/config/BUILDCONFIG.gn.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/config/BUILDCONFIG.gn

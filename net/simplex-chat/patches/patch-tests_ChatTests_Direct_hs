@@ -27,7 +27,9 @@ either completes first - and the client reports "confirmation sent!" -
 or the timeout fires - and it reports the broker error. Both are valid
 outcomes of that race, so the example accepts either instead of
 asserting the one OpenBSD happened to report.
+
 Index: tests/ChatTests/Direct.hs
+
 Index: tests/ChatTests/Direct.hs
 --- tests/ChatTests/Direct.hs.orig
 +++ tests/ChatTests/Direct.hs

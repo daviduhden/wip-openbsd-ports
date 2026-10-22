@@ -1,5 +1,6 @@
 Keep the optional Xet accelerator off the OpenBSD dependency list. The
 upstream client already falls back to ordinary HTTP downloads.
+
 Index: setup.py
 --- setup.py.orig
 +++ setup.py

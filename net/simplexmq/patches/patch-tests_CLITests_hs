@@ -7,6 +7,7 @@ The generated configuration should still be checked for the upstream
 production defaults, but the test daemons must not bind privileged port
 443. Rewrite only the temporary test configurations to use unprivileged
 ports so the tests do not require root solely for low-port binding.
+
 Index: tests/CLITests.hs
 --- tests/CLITests.hs.orig
 +++ tests/CLITests.hs

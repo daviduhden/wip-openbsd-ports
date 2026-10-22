@@ -1,5 +1,6 @@
 Reject unsupported post-quantum encryption key types when parsing
 destinations.
+
 Index: libi2pd/Destination.cpp
 --- libi2pd/Destination.cpp.orig
 +++ libi2pd/Destination.cpp

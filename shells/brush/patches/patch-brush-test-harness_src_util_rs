@@ -1,6 +1,7 @@
 Detect OpenBSD as a test-harness host OS and skip the compatibility
 cases that differ on OpenBSD (pty/oracle output, ulimit to infinity,
 extglob handling).
+
 Index: brush-test-harness/src/util.rs
 --- brush-test-harness/src/util.rs.orig
 +++ brush-test-harness/src/util.rs

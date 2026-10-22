@@ -9,6 +9,7 @@ their bodies even when the caller brackets client creation. Error
 publication must not block behind an already published client. Join
 workers on failure and close with interruptible cancel so TLS shutdown
 deadlines can fire.
+
 Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
 --- src/Simplex/Messaging/Transport/HTTP2/Client.hs.orig
 +++ src/Simplex/Messaging/Transport/HTTP2/Client.hs

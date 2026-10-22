@@ -4,6 +4,7 @@ and 'exec_str' is never assigned at all, so the error message passed an
 indeterminate pointer to %s. Initialize 'rv' and report the name of the
 binary that failed to execute. Make process_message() return a value on
 all paths; it is declared to return int.
+
 Index: xfile-xdgsvc/xfile-xdg.c
 --- xfile-xdgsvc/xfile-xdg.c.orig
 +++ xfile-xdgsvc/xfile-xdg.c

@@ -1,5 +1,6 @@
 Handle OpenBSD signals in the daemon loop and install pledge and unveil
 rules after startup-only operations have finished.
+
 Index: daemon/UnixDaemon.cpp
 --- daemon/UnixDaemon.cpp.orig
 +++ daemon/UnixDaemon.cpp

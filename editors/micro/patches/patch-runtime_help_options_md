@@ -1,5 +1,6 @@
 Document the OpenBSD port's doas default in the bundled help and
 example.
+
 Index: runtime/help/options.md
 --- runtime/help/options.md.orig
 +++ runtime/help/options.md

@@ -1,5 +1,6 @@
 Use native namespace packages; legacy .pth files mask other google
 packages.
+
 Index: setup.py
 --- setup.py.orig
 +++ setup.py

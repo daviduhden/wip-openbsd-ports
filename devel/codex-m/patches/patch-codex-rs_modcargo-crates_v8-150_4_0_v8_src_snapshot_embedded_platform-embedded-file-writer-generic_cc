@@ -1,5 +1,6 @@
 Emit page-aligned OpenBSD embedded code and the .openbsd.mutable section
 to support the required memory protections.
+
 Index: codex-rs/modcargo-crates/v8-150.4.0/v8/src/snapshot/embedded/platform-embedded-file-writer-generic.cc
 --- codex-rs/modcargo-crates/v8-150.4.0/v8/src/snapshot/embedded/platform-embedded-file-writer-generic.cc.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/v8/src/snapshot/embedded/platform-embedded-file-writer-generic.cc

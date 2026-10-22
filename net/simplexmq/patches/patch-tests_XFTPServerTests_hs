@@ -5,6 +5,7 @@ exceeds the HTTP/2 stream window and retains all XFTP authentication and
 digest checks. Check that receive deadlines and cancellation propagate,
 while IO errors still become FILE_IO. No existing example or timeout is
 weakened.
+
 Index: tests/XFTPServerTests.hs
 --- tests/XFTPServerTests.hs.orig
 +++ tests/XFTPServerTests.hs

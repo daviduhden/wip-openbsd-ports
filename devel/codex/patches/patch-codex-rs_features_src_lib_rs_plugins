@@ -1,4 +1,5 @@
 Disable plugins by default on OpenBSD; explicit opt-in is required.
+
 Index: codex-rs/features/src/lib.rs
 --- codex-rs/features/src/lib.rs.orig
 +++ codex-rs/features/src/lib.rs

@@ -1,4 +1,5 @@
 disable -fasynchronous-unwind-tables as it breaks build on armv7
+
 Index: configure.ac
 --- configure.ac.orig
 +++ configure.ac

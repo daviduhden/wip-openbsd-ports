@@ -1,5 +1,6 @@
 Find the packaged Fluent catalogs while preserving their upstream
 layout.
+
 Index: src/uucore/src/lib/mods/locale.rs
 --- src/uucore/src/lib/mods/locale.rs.orig
 +++ src/uucore/src/lib/mods/locale.rs

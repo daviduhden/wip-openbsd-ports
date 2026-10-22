@@ -1,4 +1,5 @@
 Do not use redundant ^| table markers that OpenBSD groff rejects.
+
 Index: doc/man/man5/UIL.5
 --- doc/man/man5/UIL.5.orig
 +++ doc/man/man5/UIL.5

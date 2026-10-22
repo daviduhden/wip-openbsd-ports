@@ -1,5 +1,6 @@
 Keep the shipped ARM64 Keccak assembly in sync with the generator patch:
 constants must remain readable under OpenBSD execute-only mappings.
+
 Index: modcargo-crates/aws-lc-sys-0.43.0/aws-lc/generated-src/linux-aarch64/crypto/fipsmodule/keccak1600-armv8.S
 --- modcargo-crates/aws-lc-sys-0.43.0/aws-lc/generated-src/linux-aarch64/crypto/fipsmodule/keccak1600-armv8.S.orig
 +++ modcargo-crates/aws-lc-sys-0.43.0/aws-lc/generated-src/linux-aarch64/crypto/fipsmodule/keccak1600-armv8.S

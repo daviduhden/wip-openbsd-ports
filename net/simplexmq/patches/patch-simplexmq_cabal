@@ -2,6 +2,7 @@ Use the crypton-era ASN.1 packages, time-hourglass, ram byte arrays, and
 the tls 2.4 API targeted by the OpenBSD compatibility patches. Declare
 the existing clock dependency for the AUTH timing test's direct process
 CPU clock; no additional distfile or runtime dependency is needed.
+
 Index: simplexmq.cabal
 --- simplexmq.cabal.orig
 +++ simplexmq.cabal

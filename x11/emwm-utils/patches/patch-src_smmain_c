@@ -5,6 +5,7 @@ auth so auth_userokay(3) can use the auth-xmsm authentication style.
 
 Keep upstream authentication and privilege handling unchanged for other
 operating systems.
+
 Index: src/smmain.c
 --- src/smmain.c.orig
 +++ src/smmain.c

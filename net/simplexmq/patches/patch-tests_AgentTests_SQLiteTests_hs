@@ -8,6 +8,7 @@ and resolve that server after closing and reopening the store.
 Mark a prepared send file as uploading before its chunk is expected,
 matching the stricter upload query that only selects committed
 preparation.
+
 Index: tests/AgentTests/SQLiteTests.hs
 --- tests/AgentTests/SQLiteTests.hs.orig
 +++ tests/AgentTests/SQLiteTests.hs

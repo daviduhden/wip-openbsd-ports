@@ -1,5 +1,6 @@
 Track UDP server tunnel shutdown atomically and guard cleanup timer
 operations shared by the event loop and configuration reload.
+
 Index: libi2pd_client/UDPTunnel.h
 --- libi2pd_client/UDPTunnel.h.orig
 +++ libi2pd_client/UDPTunnel.h

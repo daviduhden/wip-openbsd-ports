@@ -1,5 +1,6 @@
 Gate OpenSSL 3 signature APIs away from LibreSSL and safely handle
 Ed25519ph signing and verification.
+
 Index: libi2pd/Signature.cpp
 --- libi2pd/Signature.cpp.orig
 +++ libi2pd/Signature.cpp

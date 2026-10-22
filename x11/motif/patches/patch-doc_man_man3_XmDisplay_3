@@ -1,4 +1,5 @@
 Do not use a ^| table marker that OpenBSD groff rejects.
+
 Index: doc/man/man3/XmDisplay.3
 --- doc/man/man3/XmDisplay.3.orig
 +++ doc/man/man3/XmDisplay.3

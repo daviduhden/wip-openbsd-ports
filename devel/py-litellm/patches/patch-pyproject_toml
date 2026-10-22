@@ -1,6 +1,7 @@
 Package the SDK and native bridge used by Swival. Proxy/CLI extras are a
 separate dependency set and conflict with Swival's required Rich
 version.
+
 Index: pyproject.toml
 --- pyproject.toml.orig
 +++ pyproject.toml

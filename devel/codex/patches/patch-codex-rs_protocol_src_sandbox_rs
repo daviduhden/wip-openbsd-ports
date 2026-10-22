@@ -1,6 +1,7 @@
 Retain the OpenBsdPledgeUnveil protocol name and metric tag for
 compatibility. The OpenBSD implementation now enforces pathname rules
 with unveil only.
+
 Index: codex-rs/protocol/src/sandbox.rs
 --- codex-rs/protocol/src/sandbox.rs.orig
 +++ codex-rs/protocol/src/sandbox.rs

@@ -2,6 +2,7 @@ Skip the findutils tests that cannot pass on OpenBSD: the /etc/shadow
 permission check is bypassed when the suite runs as root, the time/newer
 tests depend on the filesystem timestamp/birthtime resolution and clock,
 and birthtimes are not usable in the OpenBSD test environment.
+
 Index: src/find/mod.rs
 --- src/find/mod.rs.orig
 +++ src/find/mod.rs

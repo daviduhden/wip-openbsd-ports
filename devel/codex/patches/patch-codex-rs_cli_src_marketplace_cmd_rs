@@ -1,5 +1,6 @@
 Reject marketplace add/upgrade while plugins are disabled (OpenBSD
 default).
+
 Index: codex-rs/cli/src/marketplace_cmd.rs
 --- codex-rs/cli/src/marketplace_cmd.rs.orig
 +++ codex-rs/cli/src/marketplace_cmd.rs

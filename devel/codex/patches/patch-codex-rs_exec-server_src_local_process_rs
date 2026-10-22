@@ -1,4 +1,5 @@
 Report OpenBsdPledgeUnveil for locally started processes.
+
 Index: codex-rs/exec-server/src/local_process.rs
 --- codex-rs/exec-server/src/local_process.rs.orig
 +++ codex-rs/exec-server/src/local_process.rs

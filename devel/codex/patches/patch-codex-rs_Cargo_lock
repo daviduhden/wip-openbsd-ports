@@ -1,4 +1,5 @@
 Record the rust-openbsd path dependency in the lockfile.
+
 Index: codex-rs/Cargo.lock
 --- codex-rs/Cargo.lock.orig
 +++ codex-rs/Cargo.lock

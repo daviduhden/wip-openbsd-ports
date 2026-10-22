@@ -13,6 +13,7 @@ Access the added SndFile fields with OverloadedRecordDot and give the
 local helpers explicit types: GHC 9.10 rejects qualified duplicate
 record fields in patterns and needs FlexibleContexts for their inferred
 HasField constraints.
+
 Index: tests/XFTPAgent.hs
 --- tests/XFTPAgent.hs.orig
 +++ tests/XFTPAgent.hs

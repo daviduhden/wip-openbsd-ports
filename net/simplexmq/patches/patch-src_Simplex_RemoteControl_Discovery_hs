@@ -14,6 +14,7 @@ port.
 Join INADDR_ANY only as a fallback, rather than repeating membership on
 an already joined default interface. Retain explicit multihomed
 memberships.
+
 Index: src/Simplex/RemoteControl/Discovery.hs
 --- src/Simplex/RemoteControl/Discovery.hs.orig
 +++ src/Simplex/RemoteControl/Discovery.hs

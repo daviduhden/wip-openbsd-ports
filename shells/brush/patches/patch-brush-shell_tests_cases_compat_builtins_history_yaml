@@ -1,5 +1,6 @@
 Skip the pty history cases on OpenBSD: the oracle prompt handling
 differs (bash times out waiting for the prompt and is killed).
+
 Index: brush-shell/tests/cases/compat/builtins/history.yaml
 --- brush-shell/tests/cases/compat/builtins/history.yaml.orig
 +++ brush-shell/tests/cases/compat/builtins/history.yaml

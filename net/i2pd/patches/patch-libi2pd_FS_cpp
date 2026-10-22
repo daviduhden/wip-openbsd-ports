@@ -1,4 +1,5 @@
 Use /var/i2pd for the OpenBSD service data directory.
+
 Index: libi2pd/FS.cpp
 --- libi2pd/FS.cpp.orig
 +++ libi2pd/FS.cpp

@@ -1,10 +1,15 @@
-Avoid -Ofast, set C++17 for protobuf compatibility, improve OpenBSD
-detection for EXTRA_LIBRARIES, and use the ports readline/curses
-libraries when building through the depends CMake path on OpenBSD.
+Select GNU gas from devel/gas before enabling ASM on OpenBSD, where the
+base assembler is outdated. Preserve C++17, optimization, OpenBSD
+library detection, and ports readline compatibility changes.
 Index: CMakeLists.txt
 --- CMakeLists.txt.orig
 +++ CMakeLists.txt
-@@ -96,7 +96,7 @@ set(CMAKE_C_STANDARD 11)
+@@ -92,0 +93,5 @@
++if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
++  # Prefer GNU gas from devel/gas over the outdated base assembler.
++  find_program(CMAKE_ASM_COMPILER gas HINTS "$ENV{LOCALBASE}/bin")
++endif()
++
  set(CMAKE_C_STANDARD 11)
  set(CMAKE_C_STANDARD_REQUIRED ON)
  set(CMAKE_C_EXTENSIONS OFF)
@@ -13,7 +18,7 @@ Index: CMakeLists.txt
  set(CMAKE_CXX_STANDARD_REQUIRED ON)
  set(CMAKE_CXX_EXTENSIONS OFF)
  
-@@ -343,7 +343,7 @@ endif()
+@@ -343,7 +348,7 @@ endif()
  if(WIN32 OR ARM OR PPC64LE OR PPC64 OR PPC)
    set(OPT_FLAGS_RELEASE "-O2")
  else()
@@ -22,7 +27,7 @@ Index: CMakeLists.txt
  endif()
  
  # BUILD_TAG is used to select the build type to check for a new version
-@@ -1137,7 +1137,7 @@ if(MINGW)
+@@ -1137,7 +1142,7 @@ if(MINGW)
      set(ICU_LIBRARIES ${ICUIO_LIBRARIES} ${ICUIN_LIBRARIES} ${ICUUC_LIBRARIES} ${ICUDT_LIBRARIES} ${ICUTU_LIBRARIES} ${ICONV_LIBRARIES})
      set(CMAKE_FIND_LIBRARY_SUFFIXES ${OLD_LIB_SUFFIXES})
    endif()
@@ -31,7 +36,7 @@ Index: CMakeLists.txt
    set(EXTRA_LIBRARIES "")
  elseif(FREEBSD)
    set(EXTRA_LIBRARIES execinfo)
-@@ -1183,9 +1183,16 @@ if(USE_READLINE AND NOT DEPENDS)
+@@ -1183,9 +1188,16 @@ if(USE_READLINE AND NOT DEPENDS)
      message(STATUS "Could not find GNU readline library so building without readline support")
    endif()
  elseif(USE_READLINE AND DEPENDS AND NOT MINGW)

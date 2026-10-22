@@ -52,7 +52,8 @@ WANTLIB += absl_vlog_config_internal
 
 COMPILER = base-clang
 MODULES = devel/cmake
-BUILD_DEPENDS = devel/ninja \
+BUILD_DEPENDS = devel/gas \
+		devel/ninja \
 		devel/re2c
 
 CONFIGURE_ARGS += -GNinja \

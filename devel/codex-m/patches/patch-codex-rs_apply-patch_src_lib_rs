@@ -1,3 +1,6 @@
+Preserve the anyhow error chain when reporting patch verification failures;
+the outer error alone hides the filesystem failure useful for diagnosis.
+
 Index: codex-rs/apply-patch/src/lib.rs
 --- codex-rs/apply-patch/src/lib.rs.orig
 +++ codex-rs/apply-patch/src/lib.rs

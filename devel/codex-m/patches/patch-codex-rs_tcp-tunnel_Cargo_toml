@@ -1,3 +1,6 @@
+Use the pinned h3 DIST_TUPLE source for both crates instead of a build-time
+Git fetch.
+
 Index: codex-rs/tcp-tunnel/Cargo.toml
 --- codex-rs/tcp-tunnel/Cargo.toml.orig
 +++ codex-rs/tcp-tunnel/Cargo.toml

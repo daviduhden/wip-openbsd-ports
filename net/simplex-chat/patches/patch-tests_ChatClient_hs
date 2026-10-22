@@ -22,6 +22,7 @@ Initialize the virtual terminal reader before starting chat output, so its
 baseline cannot discard command echoes or subscription events.
 
 Index: tests/ChatClient.hs
+Index: tests/ChatClient.hs
 --- tests/ChatClient.hs.orig
 +++ tests/ChatClient.hs
 @@ -84,7 +84,8 @@ import Data.ByteArray (ScrubbedBytes)

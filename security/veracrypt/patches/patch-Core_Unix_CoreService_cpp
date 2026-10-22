@@ -3,6 +3,7 @@ terminal. Keep its slave on stderr across doas closefrom(), forward one
 password response, and detach the elevated worker before releasing the tty.
 Format OpenBSD FFS through a restricted privileged service request.
 
+Index: Core/Unix/CoreService.cpp
 --- Core/Unix/CoreService.cpp.orig
 +++ Core/Unix/CoreService.cpp
 @@ -14,6 +14,15 @@

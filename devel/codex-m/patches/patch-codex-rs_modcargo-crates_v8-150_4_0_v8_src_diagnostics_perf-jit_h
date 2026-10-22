@@ -1,3 +1,5 @@
+Keep PerfJitLogger declarations in sync with the BSD implementation patch.
+
 Index: codex-rs/modcargo-crates/v8-150.4.0/v8/src/diagnostics/perf-jit.h
 --- codex-rs/modcargo-crates/v8-150.4.0/v8/src/diagnostics/perf-jit.h.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/v8/src/diagnostics/perf-jit.h

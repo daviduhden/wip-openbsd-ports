@@ -1,3 +1,6 @@
+Use protoc from the protobuf build dependency instead of the vendored
+protoc binary, which has no OpenBSD release.
+
 Index: codex-rs/code-mode-protocol/build.rs
 --- codex-rs/code-mode-protocol/build.rs.orig
 +++ codex-rs/code-mode-protocol/build.rs

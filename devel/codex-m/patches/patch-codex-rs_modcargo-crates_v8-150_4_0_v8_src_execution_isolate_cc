@@ -1,3 +1,5 @@
+Mark embedded V8 code executable with mprotect on OpenBSD outside IA32.
+
 Index: codex-rs/modcargo-crates/v8-150.4.0/v8/src/execution/isolate.cc
 --- codex-rs/modcargo-crates/v8-150.4.0/v8/src/execution/isolate.cc.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/v8/src/execution/isolate.cc

@@ -1,3 +1,5 @@
+Reject managed network enforcement before the native-process launch shortcut. An HTTP proxy alone cannot enforce command egress policy when OpenBSD has no supported command sandbox.
+
 Index: codex-rs/exec-server/src/process_sandbox.rs
 --- codex-rs/exec-server/src/process_sandbox.rs.orig
 +++ codex-rs/exec-server/src/process_sandbox.rs

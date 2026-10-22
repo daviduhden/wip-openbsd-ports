@@ -1,3 +1,6 @@
+Allow GCC 4.2 to select its mode(TI) implementation for 128-bit Ed25519 arithmetic; upstream only enables that compiler path from GCC 4.4.
+
+Index: src/ext/ed25519/donna/ed25519-donna-portable.h
 --- src/ext/ed25519/donna/ed25519-donna-portable.h.orig	Fri Dec 11 14:53:44 2015
 +++ src/ext/ed25519/donna/ed25519-donna-portable.h	Fri Dec 11 14:53:57 2015
 @@ -50,7 +50,7 @@

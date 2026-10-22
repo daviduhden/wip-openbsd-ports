@@ -1,5 +1,6 @@
 Provide the certificate file mocked by the generated mTLS tests.
 
+Index: tests/unit/gapic/conftest.py
 --- /dev/null
 +++ tests/unit/gapic/conftest.py
 @@ -0,0 +1,11 @@

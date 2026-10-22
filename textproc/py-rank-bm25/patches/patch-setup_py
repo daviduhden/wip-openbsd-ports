@@ -1,3 +1,5 @@
+Set the released package version directly because the ports source archive does not carry the Git metadata required by version.py to calculate it.
+
 Index: setup.py
 --- setup.py.orig
 +++ setup.py

@@ -1,3 +1,6 @@
+Do not select Linux-specific allocator sources when reusing Linux GN
+settings for BSD.
+
 Index: codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/BUILD.gn
 --- codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/BUILD.gn.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/BUILD.gn

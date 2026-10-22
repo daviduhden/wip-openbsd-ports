@@ -1,3 +1,5 @@
+Disable memory tagging and the Linux x64 feature branch on BSD.
+
 Index: codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/partition_alloc.gni
 --- codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/partition_alloc.gni.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/partition_alloc.gni

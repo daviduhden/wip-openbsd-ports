@@ -1,3 +1,7 @@
+Do not use descriptor zero as an absent-watch sentinel. Keep the watched
+set consistent and skip queued events for already removed descriptors
+against the original deadline rather than extending the timeout.
+
 Index: codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs
 --- codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs.orig
 +++ codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs

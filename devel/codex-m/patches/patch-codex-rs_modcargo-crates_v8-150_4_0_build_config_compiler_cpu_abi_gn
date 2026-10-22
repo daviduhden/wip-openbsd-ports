@@ -1,3 +1,6 @@
+Avoid Chromium-specific ABI and architecture compiler switches on BSD
+when using the port-selected system toolchain.
+
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler_cpu_abi.gn
 --- codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler_cpu_abi.gn.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler_cpu_abi.gn

@@ -1,3 +1,5 @@
+Define the BSD allocator thread ID type.
+
 Index: codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/partition_alloc_base/threading/platform_thread.h
 --- codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/partition_alloc_base/threading/platform_thread.h.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/partition_alloc_base/threading/platform_thread.h

@@ -1,3 +1,5 @@
+Use getentropy for BSD allocator randomness before the existing fallback.
+
 Index: codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/partition_alloc_base/rand_util_posix.cc
 --- codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/partition_alloc_base/rand_util_posix.cc.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/third_party/partition_alloc/src/partition_alloc/partition_alloc_base/rand_util_posix.cc

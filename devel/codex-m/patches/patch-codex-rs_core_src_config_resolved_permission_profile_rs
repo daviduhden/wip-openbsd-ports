@@ -1,3 +1,5 @@
+Reject managed permission profiles whenever they are loaded or changed on OpenBSD, so the UI and configuration layer cannot promise sandbox restrictions that the OpenBSD backend cannot enforce.
+
 Index: codex-rs/core/src/config/resolved_permission_profile.rs
 --- codex-rs/core/src/config/resolved_permission_profile.rs.orig
 +++ codex-rs/core/src/config/resolved_permission_profile.rs

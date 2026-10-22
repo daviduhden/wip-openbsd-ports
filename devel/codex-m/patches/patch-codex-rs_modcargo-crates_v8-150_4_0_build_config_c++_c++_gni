@@ -1,3 +1,5 @@
+Disable Clang modules on BSD for the port-provided compiler toolchain.
+
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/c++/c++.gni
 --- codex-rs/modcargo-crates/v8-150.4.0/build/config/c++/c++.gni.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/config/c++/c++.gni

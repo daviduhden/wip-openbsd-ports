@@ -1,3 +1,11 @@
+Resolve pinned Git dependencies from DIST_TUPLE sources, rather than fetching
+Git repositories during the Cargo build, and declare the OpenBSD-only
+unveil(2) bindings as a workspace dependency.  The crate is fetched
+by the port through DIST_TUPLE and consumed as a path dependency; it is only
+used by the OpenBSD target and has no dependencies of its own.  Both changes
+live in this single patch because update-patches keys patches by the file they
+modify.
+
 Index: codex-rs/Cargo.toml
 --- codex-rs/Cargo.toml.orig
 +++ codex-rs/Cargo.toml

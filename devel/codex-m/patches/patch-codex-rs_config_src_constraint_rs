@@ -1,3 +1,5 @@
+Add a specific configuration error for managed sandbox profiles on OpenBSD, where Codex cannot enforce the requested filesystem and network restrictions. The error directs users to full access or isolation supplied outside Codex.
+
 Index: codex-rs/config/src/constraint.rs
 --- codex-rs/config/src/constraint.rs.orig
 +++ codex-rs/config/src/constraint.rs

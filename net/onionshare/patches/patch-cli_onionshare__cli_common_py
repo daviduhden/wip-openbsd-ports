@@ -1,3 +1,6 @@
+Use ${LOCALBASE} for Tor and GeoIP data, discover optional transport binaries through PATH, and reject relative XDG_CONFIG_HOME values so OnionShare resolves its data directory consistently in ports installs.
+
+Index: cli/onionshare_cli/common.py
 --- cli/onionshare_cli/common.py.orig	2026-10-16 06:50:17.000000000 +0200
 +++ cli/onionshare_cli/common.py	2026-10-22 13:07:25.623592905 +0200
 @@ -386,13 +386,13 @@ class Common:

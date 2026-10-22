@@ -1,3 +1,6 @@
+Use system compiler/binutils names and expose extra flags passed by the
+port, rather than requiring the Chromium LLVM directory layout.
+
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/toolchain/gcc_toolchain.gni
 --- codex-rs/modcargo-crates/v8-150.4.0/build/toolchain/gcc_toolchain.gni.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/toolchain/gcc_toolchain.gni

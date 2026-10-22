@@ -1,3 +1,7 @@
+Validate the system package manifest and executable version without copying
+a CLI package into CODEX_HOME. Reject explicit --from-cli replacement of
+an executable owned by the system package manager.
+
 Index: codex-rs/app-server-daemon/src/prepare_install.rs
 --- codex-rs/app-server-daemon/src/prepare_install.rs.orig
 +++ codex-rs/app-server-daemon/src/prepare_install.rs

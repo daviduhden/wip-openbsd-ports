@@ -1,3 +1,5 @@
+Disable Codex self-update actions on OpenBSD because installed binaries are owned by the ports package manager; users must update them with pkg_add.
+
 Index: codex-rs/tui/src/update_action.rs
 --- codex-rs/tui/src/update_action.rs.orig
 +++ codex-rs/tui/src/update_action.rs

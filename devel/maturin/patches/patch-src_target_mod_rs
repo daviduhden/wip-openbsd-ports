@@ -1,3 +1,5 @@
+Map Rust riscv32 and riscv64 targets to the riscv64 package target name used by OpenBSD, so maturin selects the correct wheel and platform tags.
+
 Index: src/target/mod.rs
 --- src/target/mod.rs.orig
 +++ src/target/mod.rs

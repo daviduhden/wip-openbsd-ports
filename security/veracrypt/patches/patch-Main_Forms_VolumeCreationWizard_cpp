@@ -1,5 +1,6 @@
 Run OpenBSD FFS formatting through the elevated core service.
 
+Index: Main/Forms/VolumeCreationWizard.cpp
 --- Main/Forms/VolumeCreationWizard.cpp.orig
 +++ Main/Forms/VolumeCreationWizard.cpp
 @@ -17,6 +17,9 @@

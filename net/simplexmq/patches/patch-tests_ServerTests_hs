@@ -29,6 +29,7 @@ handle locked while the periodic writer reopens it; its resource-busy
 exception terminates the server and makes the client fail with TLS EOF.
 
 Index: tests/ServerTests.hs
+Index: tests/ServerTests.hs
 --- tests/ServerTests.hs.orig
 +++ tests/ServerTests.hs
 @@ -33,12 +33,14 @@ import Data.Hashable (hash)

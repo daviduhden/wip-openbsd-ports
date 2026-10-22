@@ -1,3 +1,5 @@
+Register the OpenBSD backend modules and surface its transform errors.
+
 Index: codex-rs/sandboxing/src/lib.rs
 --- codex-rs/sandboxing/src/lib.rs.orig
 +++ codex-rs/sandboxing/src/lib.rs

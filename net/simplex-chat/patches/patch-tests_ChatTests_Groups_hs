@@ -27,6 +27,7 @@ forwarding setup now consumes the items that have already arrived on every
 member.
 
 Index: tests/ChatTests/Groups.hs
+Index: tests/ChatTests/Groups.hs
 --- tests/ChatTests/Groups.hs.orig
 +++ tests/ChatTests/Groups.hs
 @@ -2990,7 +2990,7 @@ testGroupLinkMemberRole =

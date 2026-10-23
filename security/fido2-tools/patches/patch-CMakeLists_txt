@@ -1,4 +1,4 @@
-# Link the tools against the system libfido2 library.
+# Link tool dependencies when using the system libfido2.
 
 Index: CMakeLists.txt
 --- CMakeLists.txt.orig
@@ -33,21 +33,22 @@ Index: CMakeLists.txt
  	set(_FIDO2_LIBRARY fido2_shared)
  elseif(BUILD_STATIC_LIBS)
  	set(_FIDO2_LIBRARY fido2)
-@@ -225,7 +239,12 @@ else()
+@@ -225,7 +239,13 @@ else()
  	include(FindPkgConfig)
  	pkg_search_module(CBOR libcbor)
  	pkg_search_module(CRYPTO libcrypto)
 -	pkg_search_module(ZLIB zlib)
 +	if(USE_SYSTEM_FIDO2)
-+		# libfido2 from the system already carries its zlib dependency.
++		# fido2-token uses zlib directly when linking the system libfido2.
 +		set(ZLIB_FOUND TRUE)
++		set(ZLIB_LIBRARIES z)
 +	else()
 +		pkg_search_module(ZLIB zlib)
 +	endif()
  
  	if(NOT CBOR_FOUND AND NOT HAVE_CBOR_H)
  		message(FATAL_ERROR "could not find libcbor")
-@@ -482,7 +501,9 @@ if(BUILD_TESTS)
+@@ -482,7 +502,9 @@ if(BUILD_TESTS)
  	enable_testing()
  endif()
  

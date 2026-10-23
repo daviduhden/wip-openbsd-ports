@@ -1,0 +1,6 @@
+fido2-manage is a command-line utility for managing FIDO2 authenticators.
+It supports authenticator information, PIN changes and policy, resident
+credentials, biometric enrollment where supported, and factory reset.
+
+The tool uses OpenBSD's libfido2 and native /dev/fido HID interface. Device
+capabilities vary; no specific manufacturer or model is guaranteed.

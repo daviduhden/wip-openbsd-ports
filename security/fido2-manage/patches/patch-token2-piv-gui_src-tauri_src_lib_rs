@@ -1,0 +1,25 @@
+# Exclude GUI modules from CLI builds.
+
+Index: token2-piv-gui/src-tauri/src/lib.rs
+--- token2-piv-gui/src-tauri/src/lib.rs.orig
++++ token2-piv-gui/src-tauri/src/lib.rs
+@@ -1,11 +1,17 @@
+-// Library surface so both the GUI binary (main.rs) and the fido2-manage CLI
+-// (src/bin/fido2-manage.rs) share the same code.
++#[cfg(feature = "gui")]
+ pub mod certs;
++#[cfg(feature = "gui")]
+ pub mod commands;
+ pub mod fido;
++#[cfg(feature = "gui")]
+ pub mod oath;
++#[cfg(feature = "gui")]
+ pub mod t2otp;
++#[cfg(feature = "gui")]
+ pub mod t2otp_hid;
++#[cfg(feature = "gui")]
+ pub mod t2model;
++#[cfg(feature = "gui")]
+ pub mod piv;
++#[cfg(feature = "gui")]
+ pub mod t2piv;

@@ -1,0 +1,13 @@
+# Record libc as a direct CLI dependency.
+
+Index: token2-piv-gui/src-tauri/Cargo.lock
+--- token2-piv-gui/src-tauri/Cargo.lock.orig
++++ token2-piv-gui/src-tauri/Cargo.lock
+@@ -4529,6 +4529,7 @@ dependencies = [
+  "hidapi",
+  "hmac",
+  "image",
++ "libc",
+  "p256",
+  "pbkdf2",
+  "pcsc",

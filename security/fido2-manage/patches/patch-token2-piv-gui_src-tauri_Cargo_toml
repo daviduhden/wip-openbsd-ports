@@ -1,0 +1,92 @@
+# Separate CLI and GUI Cargo features.
+
+Index: token2-piv-gui/src-tauri/Cargo.toml
+--- token2-piv-gui/src-tauri/Cargo.toml.orig
++++ token2-piv-gui/src-tauri/Cargo.toml
+@@ -13,42 +13,56 @@ path = "src/lib.rs"
+ [[bin]]
+ name = "token2-key-manager"
+ path = "src/main.rs"
++required-features = ["gui"]
+
+ [[bin]]
+ name = "fido2-manage"
+ path = "src/bin/fido2-manage.rs"
++required-features = ["cli"]
++
++[features]
++default = ["gui", "cli"]
++cli = []
++gui = [
++    "dep:tauri", "dep:hidapi", "dep:rfd", "dep:rsa",
++    "dep:spki", "dep:der", "dep:pem", "dep:x509-parser", "dep:sha2",
++    "dep:rcgen", "dep:time", "dep:pcsc", "dep:hmac", "dep:sha1",
++    "dep:pbkdf2", "dep:base32", "dep:rand", "dep:url", "dep:rqrr",
++    "dep:image", "dep:p256", "dep:aes", "dep:cbc", "dep:sec1", "dep:windows"
++]
+
+ [build-dependencies]
+ tauri-build = { version = "2", features = [] }
+
+ [dependencies]
+-tauri = { version = "2", features = [] }
++tauri = { version = "2", features = [] , optional = true }
+ serde = { version = "1", features = ["derive"] }
+ serde_json = "1"
++libc = "0.2"
+ hex = "0.4"
+-hidapi = "2"
+-rfd = "0.15"
+-rsa = "0.9"
+-spki = { version = "0.7", features = ["std"] }
+-der = { version = "0.7", features = ["std", "oid"] }
+-pem = "3"
+-x509-parser = { version = "0.16", features = ["verify"] }
+-sha2 = "0.10"
+-rcgen = "0.13"
+-time = "0.3"
+-pcsc = "2"
+-hmac = "0.12"
+-sha1 = "0.10"
+-pbkdf2 = { version = "0.12", default-features = false, features = ["hmac"] }
+-base32 = "0.5"
+-rand = "0.8"
+-url = "2"
+-rqrr = { version = "0.11", default-features = false }
+-image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+-p256 = { version = "0.13", features = ["ecdh"] }
+-aes = "0.8"
+-cbc = { version = "0.1", features = ["alloc"] }
+-sec1 = { version = "0.7", features = ["der", "std"] }
++hidapi = { version = "2", optional = true }
++rfd = { version = "0.15", optional = true }
++rsa = { version = "0.9", optional = true }
++spki = { version = "0.7", features = ["std"] , optional = true }
++der = { version = "0.7", features = ["std", "oid"] , optional = true }
++pem = { version = "3", optional = true }
++x509-parser = { version = "0.16", features = ["verify"] , optional = true }
++sha2 = { version = "0.10", optional = true }
++rcgen = { version = "0.13", optional = true }
++time = { version = "0.3", optional = true }
++pcsc = { version = "2", optional = true }
++hmac = { version = "0.12", optional = true }
++sha1 = { version = "0.10", optional = true }
++pbkdf2 = { version = "0.12", default-features = false, features = ["hmac"] , optional = true }
++base32 = { version = "0.5", optional = true }
++rand = { version = "0.8", optional = true }
++url = { version = "2", optional = true }
++rqrr = { version = "0.11", default-features = false , optional = true }
++image = { version = "0.25", default-features = false, features = ["png", "jpeg"] , optional = true }
++p256 = { version = "0.13", features = ["ecdh"] , optional = true }
++aes = { version = "0.8", optional = true }
++cbc = { version = "0.1", features = ["alloc"] , optional = true }
++sec1 = { version = "0.7", features = ["der", "std"] , optional = true }
+
+ [profile.dev]
+ incremental = true
+@@ -66,4 +80,4 @@ lto = true
+ codegen-units = 1
+
+ [target.'cfg(windows)'.dependencies]
+-windows = { version = "0.58", features = ["Win32_Graphics_Gdi", "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_Security", "Win32_System_Threading"] }
++windows = { version = "0.58", features = ["Win32_Graphics_Gdi", "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_Security", "Win32_System_Threading"], optional = true }

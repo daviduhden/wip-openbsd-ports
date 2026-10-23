@@ -1,0 +1,25 @@
+# Skip GUI and PIV links for CLI builds.
+
+Index: token2-piv-gui/src-tauri/build.rs
+--- token2-piv-gui/src-tauri/build.rs.orig
++++ token2-piv-gui/src-tauri/build.rs
+@@ -8,7 +8,9 @@ fn main() {
+     let name = std::env::var("T2PIV_LIB_NAME").unwrap_or_else(|_| {
+         if cfg!(target_os = "windows") { "libt2piv".into() } else { "t2piv".into() }
+     });
+-    println!("cargo:rustc-link-lib=dylib={name}");
++    if std::env::var_os("CARGO_FEATURE_GUI").is_some() {
++        println!("cargo:rustc-link-lib=dylib={name}");
++    }
+     // libfido2 (fido2-manage fork, PC/SC enabled)
+     if let Ok(dir) = std::env::var("FIDO2_LIB_DIR") {
+         println!("cargo:rustc-link-search=native={dir}");
+@@ -29,5 +31,7 @@ fn main() {
+     } else {
+         println!("cargo:rustc-link-lib=dylib={fido}");
+     }
+-    tauri_build::build()
++    if std::env::var_os("CARGO_FEATURE_GUI").is_some() {
++        tauri_build::build()
++    }
+ }

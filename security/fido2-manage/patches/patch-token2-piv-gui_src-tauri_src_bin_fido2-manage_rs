@@ -1,0 +1,66 @@
+# Use the system termios ABI for PIN input.
+
+Index: token2-piv-gui/src-tauri/src/bin/fido2-manage.rs
+--- token2-piv-gui/src-tauri/src/bin/fido2-manage.rs.orig
++++ token2-piv-gui/src-tauri/src/bin/fido2-manage.rs
+@@ -176,26 +176,30 @@ fn read_masked() -> R<String> {
+ #[cfg(unix)]
+ fn read_masked() -> R<String> {
+     use std::io::Read;
+-    use std::os::unix::io::AsRawFd;
+-    // termios raw-ish: disable ECHO and canonical mode on the tty.
+-    #[repr(C)]
+-    #[derive(Clone)]
+-    struct Termios { c_iflag: u32, c_oflag: u32, c_cflag: u32, c_lflag: u32, c_line: u8, c_cc: [u8; 32], c_ispeed: u32, c_ospeed: u32 }
+-    extern "C" {
+-        fn tcgetattr(fd: i32, t: *mut Termios) -> i32;
+-        fn tcsetattr(fd: i32, actions: i32, t: *const Termios) -> i32;
++    use std::os::fd::AsRawFd;
++
++    struct TtyRestore {
++        fd: i32,
++        original: libc::termios,
++    }
++    impl Drop for TtyRestore {
++        fn drop(&mut self) {
++            unsafe { libc::tcsetattr(self.fd, libc::TCSANOW, &self.original); }
++        }
+     }
+-    const ECHO: u32 = 0o0000010;
+-    const ICANON: u32 = 0o0000002;
+-    const TCSANOW: i32 = 0;
++
+     let fd = std::io::stdin().as_raw_fd();
+-    let mut orig: Termios = unsafe { std::mem::zeroed() };
+-    let have = unsafe { tcgetattr(fd, &mut orig) } == 0;
+-    if have {
+-        let mut raw = orig.clone();
+-        raw.c_lflag &= !(ECHO | ICANON);
+-        unsafe { tcsetattr(fd, TCSANOW, &raw); }
++    let mut original: libc::termios = unsafe { std::mem::zeroed() };
++    if unsafe { libc::tcgetattr(fd, &mut original) } == -1 {
++        return Err("cannot read terminal settings; refusing to echo a PIN".into());
++    }
++    let restore = TtyRestore { fd, original };
++    let mut hidden = restore.original;
++    hidden.c_lflag &= !(libc::ECHO | libc::ICANON | libc::ISIG);
++    if unsafe { libc::tcsetattr(fd, libc::TCSANOW, &hidden) } == -1 {
++        return Err(std::io::Error::last_os_error().to_string());
+     }
++
+     let mut out = String::new();
+     let mut byte = [0u8; 1];
+     let mut stdin = std::io::stdin();
+@@ -204,11 +208,11 @@ fn read_masked() -> R<String> {
+         match byte[0] {
+             b'\r' | b'\n' => break,
+             8 | 127 => { if out.pop().is_some() { eprint!("\u{8} \u{8}"); std::io::stderr().flush().ok(); } }
+-            3 => { if have { unsafe { tcsetattr(fd, TCSANOW, &orig); } } return Err("cancelled".into()); }
++            3 | 26 => return Err("cancelled".into()),
+             c => { out.push(c as char); eprint!("*"); std::io::stderr().flush().ok(); }
+         }
+     }
+-    if have { unsafe { tcsetattr(fd, TCSANOW, &orig); } }
++    drop(restore);
+     Ok(out)
+ }

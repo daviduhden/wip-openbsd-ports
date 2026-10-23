@@ -5,7 +5,8 @@ MODPY_DISTV =		2.7
 DISTNAME =		onionshare-${MODPY_DISTV}
 CATEGORIES =		net
 HOMEPAGE =		https://onionshare.org/
-SITES =			https://github.com/onionshare/onionshare/releases/download/v${MODPY_DISTV}/
+ONIONSHARE_SITE=https://github.com/onionshare/onionshare/releases/download
+SITES =	${ONIONSHARE_SITE}/v${MODPY_DISTV}/
 DIST_SUBDIR =		onionshare
 WRKDIST =		${WRKDIR}/onionshare
 

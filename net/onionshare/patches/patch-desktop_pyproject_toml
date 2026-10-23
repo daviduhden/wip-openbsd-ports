@@ -3,8 +3,8 @@ relax compatible GUI dependency pins, and include the download mode
 assets required by the desktop application.
 
 Index: desktop/pyproject.toml
---- desktop/pyproject.toml.orig	2026-10-16 06:50:17.000000000 +0200
-+++ desktop/pyproject.toml	2026-10-22 13:08:41.122177201 +0200
+--- desktop/pyproject.toml.orig
++++ desktop/pyproject.toml
 @@ -22,11 +22,11 @@ classifiers = [
      "Environment :: Web Environment",
  ]
@@ -18,7 +18,7 @@ Index: desktop/pyproject.toml
 -    "onionshare_cli",
 +    "onionshare_cli == 2.7",
  ]
- 
+
  [project.urls]
 @@ -36,7 +36,6 @@ documentation = "https://docs.onionshare.org/"
 
@@ -36,13 +36,13 @@ Index: desktop/pyproject.toml
  ]
 
  [tool.setuptools.package-data]
-@@ -58,9 +58,6 @@ onionshare = [
+@@ -57,9 +57,6 @@ onionshare = [
+     "resources/locale/*",
      "resources/countries/*",
  ]
-
+-
 -[tool.poetry.dependencies]
 -onionshare_cli = { path = "../cli", develop = true }
--
+
  [tool.poetry.group.dev.dependencies]
  click = "*"
- black = "*"

@@ -3,8 +3,8 @@ the backend installed by the CLI port and avoiding a fallback to an
 unavailable default async backend.
 
 Index: cli/onionshare_cli/web/web.py
---- cli/onionshare_cli/web/web.py.orig	2026-10-16 06:50:17.000000000 +0200
-+++ cli/onionshare_cli/web/web.py	2026-10-22 13:07:15.277100437 +0200
+--- cli/onionshare_cli/web/web.py.orig
++++ cli/onionshare_cli/web/web.py
 @@ -170,17 +170,11 @@ class Web:
              self.website_mode = WebsiteModeWeb(self.common, self)
          elif self.mode == "chat":

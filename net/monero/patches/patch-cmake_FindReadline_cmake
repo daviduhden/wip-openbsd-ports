@@ -1,29 +1,37 @@
-Find devel/readline as ereadline on OpenBSD instead of base
-libedit/readline.
+Find OpenBSD's base libedit readline interface and link its system
+curses dependency while retaining GNU readline discovery elsewhere.
 
 Index: cmake/FindReadline.cmake
 --- cmake/FindReadline.cmake.orig
 +++ cmake/FindReadline.cmake
-@@ -21,20 +21,30 @@
+@@ -21,27 +21,44 @@
  #  GNU_READLINE_LIBRARY      The GNU readline library or empty string.
  #  LIBEDIT_LIBRARY           The libedit library or empty string.
  
+-find_path(Readline_ROOT_DIR
+-    NAMES include/readline/readline.h
+-    PATHS /usr/local/opt/readline/ /opt/homebrew/opt/readline/ /opt/local/ /usr/local/ /usr/
+-    NO_DEFAULT_PATH
+-)
 +if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-+  set(_READLINE_ROOT_NAME include/ereadline/readline/readline.h)
-+  set(_READLINE_INCLUDE_SUBDIR "/include/ereadline")
-+  set(_READLINE_LIBRARY_NAME ereadline)
++    set(_READLINE_ROOT_NAME include/readline/readline.h)
++    set(_READLINE_INCLUDE_SUBDIR /include)
++    set(_READLINE_LIBRARY_NAME edit)
 +else()
-+  set(_READLINE_ROOT_NAME include/readline/readline.h)
-+  set(_READLINE_INCLUDE_SUBDIR "/include")
-+  set(_READLINE_LIBRARY_NAME readline)
++    set(_READLINE_ROOT_NAME include/readline/readline.h)
++    set(_READLINE_INCLUDE_SUBDIR /include)
++    set(_READLINE_LIBRARY_NAME readline)
 +endif()
 +
- find_path(Readline_ROOT_DIR
--    NAMES include/readline/readline.h
-+    NAMES ${_READLINE_ROOT_NAME}
-     PATHS /usr/local/opt/readline/ /opt/homebrew/opt/readline/ /opt/local/ /usr/local/ /usr/
-     NO_DEFAULT_PATH
- )
++if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
++    find_path(Readline_ROOT_DIR NAMES ${_READLINE_ROOT_NAME}
++        PATHS /usr NO_DEFAULT_PATH)
++else()
++    find_path(Readline_ROOT_DIR
++        NAMES ${_READLINE_ROOT_NAME}
++        PATHS /usr/local/opt/readline/ /opt/homebrew/opt/readline/ /opt/local/ /usr/local/ /usr/
++        NO_DEFAULT_PATH)
++endif()
  
  find_path(Readline_INCLUDE_DIR
      NAMES readline/readline.h
@@ -38,3 +46,25 @@ Index: cmake/FindReadline.cmake
      PATHS ${Readline_ROOT_DIR}/lib
      NO_DEFAULT_PATH
  )
+ 
+-find_library(Termcap_LIBRARY
+-  NAMES tinfo termcap ncursesw ncurses cursesw curses
+-)
++if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
++  find_library(Termcap_LIBRARY NAMES curses PATHS /usr/lib NO_DEFAULT_PATH)
++else()
++  find_library(Termcap_LIBRARY
++    NAMES tinfo termcap ncursesw ncurses cursesw curses)
++endif()
+ 
+ if(Readline_INCLUDE_DIR AND Readline_LIBRARY)
+   set(READLINE_FOUND TRUE)
+@@ -87,5 +104,8 @@ if(HAVE_COMPLETION_FUNCTION AND HAVE_COP
+ elseif(READLINE_FOUND AND NOT HAVE_COPY_TEXT)
+   set(LIBEDIT_FOUND TRUE)
+   set(LIBEDIT_LIBRARY ${Readline_LIBRARY})
++  if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
++    set(GNU_READLINE_LIBRARY ${LIBEDIT_LIBRARY})
++  endif()
+ endif(HAVE_COMPLETION_FUNCTION AND HAVE_COPY_TEXT)
+ 

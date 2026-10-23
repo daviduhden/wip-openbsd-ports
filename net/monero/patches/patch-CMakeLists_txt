@@ -1,39 +1,58 @@
-Use C++17 and conservative release flags; detect OpenBSD libraries and
-ports readline; route ASM through Clang to devel/gas so CMake compiler
-flags work for assembly sources on OpenBSD.
+Use LLVM 22 for C and C++, LLVM MC for raw assembly, and
+OpenBSD libedit for readline-compatible console editing. Set C++17
+and conservative release flags, and detect OpenBSD system libraries.
 
 Index: CMakeLists.txt
 --- CMakeLists.txt.orig
 +++ CMakeLists.txt
-@@ -90,13 +90,35 @@ elseif (USE_CLANG_TIDY_CXX)
- 	monero_clang_tidy("CXX")
- endif()
+@@ -46,6 +46,20 @@ endif()
+ cmake_minimum_required(VERSION 3.5)
+ message(STATUS "CMake version ${CMAKE_VERSION}")
  
-+if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-+  # Clang handles CMake flags, then delegates assembly to ports gas.
-+  find_program(MONERO_GAS_EXECUTABLE gas
++if(CMAKE_HOST_SYSTEM_NAME STREQUAL "OpenBSD")
++  find_program(MONERO_CLANG_EXECUTABLE clang-22
 +    HINTS "$ENV{LOCALBASE}/bin")
-+  if(NOT MONERO_GAS_EXECUTABLE)
-+    message(FATAL_ERROR "devel/gas is required for OpenBSD ASM builds")
++  find_program(MONERO_CLANGXX_EXECUTABLE clang++-22
++    HINTS "$ENV{LOCALBASE}/bin")
++  if(NOT MONERO_CLANG_EXECUTABLE OR NOT MONERO_CLANGXX_EXECUTABLE)
++    message(FATAL_ERROR "devel/llvm/22 is required to build Monero")
 +  endif()
-+  set(_monero_gas_dir "${CMAKE_BINARY_DIR}/gas-bin")
-+  file(MAKE_DIRECTORY "${_monero_gas_dir}")
-+  file(REMOVE "${_monero_gas_dir}/as")
-+  execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink
-+    "${MONERO_GAS_EXECUTABLE}" "${_monero_gas_dir}/as"
-+    RESULT_VARIABLE _monero_gas_link_result)
-+  if(NOT _monero_gas_link_result STREQUAL "0")
-+    message(FATAL_ERROR "Could not link devel/gas for ASM builds")
-+  endif()
-+  set(CMAKE_ASM_COMPILER "${CMAKE_C_COMPILER}" CACHE FILEPATH
-+    "Use the Clang driver with devel/gas" FORCE)
-+  set(CMAKE_ASM_FLAGS_INIT
-+    "-fno-integrated-as -B${_monero_gas_dir}")
++  set(CMAKE_C_COMPILER "${MONERO_CLANG_EXECUTABLE}" CACHE FILEPATH
++    "LLVM 22 C compiler" FORCE)
++  set(CMAKE_CXX_COMPILER "${MONERO_CLANGXX_EXECUTABLE}" CACHE FILEPATH
++    "LLVM 22 C++ compiler" FORCE)
 +endif()
 +
+ project(monero)
+ 
+ option (USE_CCACHE "Use ccache if a usable instance is found" ON)
+@@ -92,11 +106,32 @@ endif()
+ 
  enable_language(C ASM)
  
- # Require C11/C++11 and disable extensions for all targets
+-# Require C11/C++11 and disable extensions for all targets
++if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
++  find_program(MONERO_LLVM_MC_EXECUTABLE llvm-mc-22
++    HINTS "$ENV{LOCALBASE}/bin")
++  if(NOT MONERO_LLVM_MC_EXECUTABLE)
++    message(FATAL_ERROR "devel/llvm/22 llvm-mc is required for ASM builds")
++  endif()
++  execute_process(COMMAND "${CMAKE_C_COMPILER}" -dumpmachine
++    OUTPUT_VARIABLE MONERO_ASM_TARGET_TRIPLE
++    RESULT_VARIABLE MONERO_ASM_TRIPLE_RESULT
++    OUTPUT_STRIP_TRAILING_WHITESPACE)
++  if(NOT MONERO_ASM_TRIPLE_RESULT EQUAL 0)
++    message(FATAL_ERROR "Could not determine the OpenBSD target triple")
++  endif()
++  # Raw .s inputs need no preprocessing; .S files use Clang's LLVM MC.
++  string(CONCAT CMAKE_ASM_COMPILE_OBJECT
++    "${MONERO_LLVM_MC_EXECUTABLE} "
++    "-triple=${MONERO_ASM_TARGET_TRIPLE} "
++    "-filetype=obj "
++    "-o <OBJECT> <SOURCE>")
++endif()
++
++# Require C11/C++17 and disable extensions for all targets
  set(CMAKE_C_STANDARD 11)
  set(CMAKE_C_STANDARD_REQUIRED ON)
  set(CMAKE_C_EXTENSIONS OFF)
@@ -42,7 +61,7 @@ Index: CMakeLists.txt
  set(CMAKE_CXX_STANDARD_REQUIRED ON)
  set(CMAKE_CXX_EXTENSIONS OFF)
  
-@@ -343,7 +365,7 @@ endif()
+@@ -343,7 +378,7 @@ endif()
  if(WIN32 OR ARM OR PPC64LE OR PPC64 OR PPC)
    set(OPT_FLAGS_RELEASE "-O2")
  else()
@@ -51,27 +70,46 @@ Index: CMakeLists.txt
  endif()
  
  # BUILD_TAG is used to select the build type to check for a new version
-@@ -1137,7 +1159,7 @@ if(MINGW)
+@@ -1137,7 +1172,7 @@ if(MINGW)
      set(ICU_LIBRARIES ${ICUIO_LIBRARIES} ${ICUIN_LIBRARIES} ${ICUUC_LIBRARIES} ${ICUDT_LIBRARIES} ${ICUTU_LIBRARIES} ${ICONV_LIBRARIES})
      set(CMAKE_FIND_LIBRARY_SUFFIXES ${OLD_LIB_SUFFIXES})
    endif()
 -elseif(APPLE OR OPENBSD OR ANDROID)
-+elseif(APPLE OR CMAKE_SYSTEM_NAME MATCHES "kOpenBSD.*|OpenBSD.*" OR OPENBSD OR ANDROID)
++elseif(APPLE OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" OR ANDROID)
    set(EXTRA_LIBRARIES "")
  elseif(FREEBSD)
    set(EXTRA_LIBRARIES execinfo)
-@@ -1183,9 +1205,16 @@ if(USE_READLINE AND NOT DEPENDS)
-     message(STATUS "Could not find GNU readline library so building without readline support")
+@@ -1171,21 +1206,31 @@ if (HIDAPI_FOUND OR LibUSB_COMPILE_TEST_
+   endif()
+ endif()
+ 
+-option(USE_READLINE "Build with GNU readline support." ON)
++option(USE_READLINE "Build with readline-compatible console editing." ON)
+ if(USE_READLINE AND NOT DEPENDS)
+   find_package(Readline)
+-  if(READLINE_FOUND AND GNU_READLINE_FOUND)
++  if(READLINE_FOUND AND (GNU_READLINE_FOUND OR LIBEDIT_FOUND))
+     add_definitions(-DHAVE_READLINE)
+     include_directories(${Readline_INCLUDE_DIR})
+-    message(STATUS "Found readline library at: ${Readline_ROOT_DIR}")
++    if(LIBEDIT_FOUND)
++      set(GNU_READLINE_LIBRARY ${LIBEDIT_LIBRARY})
++    endif()
++    message(STATUS "Found readline-compatible library at: ${Readline_ROOT_DIR}")
+     set(EPEE_READLINE epee_readline)
+   else()
+-    message(STATUS "Could not find GNU readline library so building without readline support")
++    message(STATUS "Could not find readline-compatible library; console editing is disabled")
    endif()
  elseif(USE_READLINE AND DEPENDS AND NOT MINGW)
 -  find_path(Readline_INCLUDE_PATH readline/readline.h)
 -  find_library(Readline_LIBRARY readline)
 -  find_library(Terminfo_LIBRARY tinfo)
 +  if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-+    find_path(Readline_INCLUDE_PATH readline/readline.h PATH_SUFFIXES ereadline)
-+    include_directories(${Readline_INCLUDE_PATH})
-+    find_library(Readline_LIBRARY ereadline)
-+    find_library(Terminfo_LIBRARY curses)
++    find_path(Readline_INCLUDE_PATH readline/readline.h PATHS /usr/include
++      NO_DEFAULT_PATH)
++    find_library(Readline_LIBRARY edit PATHS /usr/lib NO_DEFAULT_PATH)
++    find_library(Terminfo_LIBRARY curses PATHS /usr/lib NO_DEFAULT_PATH)
 +  else()
 +    find_path(Readline_INCLUDE_PATH readline/readline.h)
 +    find_library(Readline_LIBRARY readline)

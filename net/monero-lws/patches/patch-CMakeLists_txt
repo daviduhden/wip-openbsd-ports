@@ -1,0 +1,23 @@
+Select the versioned LLVM 22 C++ compiler before CMake configures
+the independent Monero-LWS project on OpenBSD.
+
+Index: CMakeLists.txt
+--- CMakeLists.txt.orig
++++ CMakeLists.txt
+@@ -27,6 +27,16 @@
+ # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+ cmake_minimum_required(VERSION 3.5.0)
++if(CMAKE_HOST_SYSTEM_NAME STREQUAL "OpenBSD")
++  find_program(MONERO_LWS_CLANGXX_EXECUTABLE clang++-22
++    HINTS "$ENV{LOCALBASE}/bin")
++  if(NOT MONERO_LWS_CLANGXX_EXECUTABLE)
++    message(FATAL_ERROR "devel/llvm/22 is required to build Monero-LWS")
++  endif()
++  set(CMAKE_CXX_COMPILER "${MONERO_LWS_CLANGXX_EXECUTABLE}" CACHE FILEPATH
++    "LLVM 22 C++ compiler" FORCE)
++endif()
++
+ project(monero-lws)
+ 
+ enable_language(CXX)

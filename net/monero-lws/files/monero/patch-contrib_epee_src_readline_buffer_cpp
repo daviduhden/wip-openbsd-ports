@@ -1,0 +1,102 @@
+Adapt readline callbacks and history to OpenBSD libedit's exposed API.
+Refresh the prompt without mutating the editor's private line buffer.
+
+Index: contrib/epee/src/readline_buffer.cpp
+--- contrib/epee/src/readline_buffer.cpp.orig
++++ contrib/epee/src/readline_buffer.cpp
+@@ -6,6 +6,11 @@
+ #include <boost/thread/mutex.hpp>
+ #include <boost/thread/lock_guard.hpp>
+ #include <boost/algorithm/string.hpp>
++#include <algorithm>
++
++#ifdef __OpenBSD__
++extern "C" int rl_done;
++#endif
+ 
+ static bool same_as_last_line(const std::string&);
+ static void install_line_handler();
+@@ -123,6 +128,16 @@ int rdln::readline_buffer::sync()
+     return -1;
+   }
+ 
++#ifdef __OpenBSD__
++  const std::string prompt = rl_prompt ? rl_prompt : "";
++  const bool redraw = rl_end || !prompt.empty();
++  if (redraw)
++  {
++    /* Refresh the live line without changing its editing state. */
++    rl_set_prompt("");
++    rl_forced_update_display();
++  }
++#else
+ #if RL_READLINE_VERSION < 0x0700
+   char lbuf[2] = {0,0};
+   char *line = NULL;
+@@ -144,6 +159,7 @@ int rdln::readline_buffer::sync()
+     rl_redisplay();
+ #endif
+   }
++#endif
+ 
+   do
+   {
+@@ -151,6 +167,10 @@ int rdln::readline_buffer::sync()
+   }
+   while ( this->snextc() != EOF );
+ 
++#ifdef __OpenBSD__
++  if (redraw)
++    rl_set_prompt(prompt.c_str());
++#else
+ #if RL_READLINE_VERSION < 0x0700
+   if (end || (rl_prompt && *rl_prompt))
+   {
+@@ -160,8 +180,13 @@ int rdln::readline_buffer::sync()
+     rl_point = point;
+   }
+ #endif
++#endif
+   rl_on_new_line();
++#ifdef __OpenBSD__
++  rl_forced_update_display();
++#else
+   rl_redisplay();
++#endif
+ 
+   return 0;
+ }
+@@ -201,10 +226,10 @@ static void handle_line(char* line)
+ // equal to test_line.
+ static bool same_as_last_line(const std::string& test_line)
+ {
+-  // Note that state->offset == state->length, when a new line was entered.
+-  auto state = std::unique_ptr<HISTORY_STATE, decltype(free)*>{history_get_history_state(), free};
+-  return state->length > 0
+-    && test_line.compare(state->entries[state->length-1]->line) == 0;
++  if (history_length <= 0)
++    return false;
++  HIST_ENTRY *last = history_get(history_base + history_length - 1);
++  return last && test_line.compare(last->line) == 0;
+ }
+ 
+ static char* completion_matches(const char* text, int state)
+@@ -250,7 +275,9 @@ static void install_line_handler()
+ 
+ static void remove_line_handler()
+ {
++#ifndef __OpenBSD__
+   rl_replace_line("", 0);
++#endif
+   rl_set_prompt("");
+   rl_redisplay();
+   rl_callback_handler_remove();
+@@ -258,6 +285,8 @@ static void remove_line_handler()
+ 
+ void rdln::clear_screen()
+ {
++#ifndef __OpenBSD__
+   rl_clear_screen(0, 0);
++#endif
+ }
+ 

@@ -17,7 +17,7 @@ ONLY_FOR_ARCHS = amd64 i386 arm64 armv7 riscv64
 WANTLIB += ${COMPILER_LIBCXX} boost_chrono-mt boost_date_time-mt
 WANTLIB += boost_filesystem-mt boost_locale-mt boost_program_options-mt
 WANTLIB += boost_serialization-mt boost_thread-mt c crypto curses
-WANTLIB += ereadline execinfo hidapi-libusb m protobuf sodium ssl
+WANTLIB += edit execinfo hidapi-libusb m protobuf sodium ssl
 WANTLIB += unbound usb-1.0 utf8_validity zmq
 WANTLIB += absl_base absl_base_cpu_detect absl_city absl_civil_time
 WANTLIB += absl_cord absl_cord_internal absl_cordz_functions absl_cordz_handle
@@ -52,7 +52,7 @@ WANTLIB += absl_vlog_config_internal
 
 COMPILER = base-clang
 MODULES = devel/cmake
-BUILD_DEPENDS = devel/gas \
+BUILD_DEPENDS = devel/llvm/22 \
 		devel/ninja \
 		devel/re2c
 
@@ -66,7 +66,6 @@ LIB_DEPENDS = devel/abseil-cpp \
 		devel/boost \
 		devel/libusb1 \
 		devel/protobuf \
-		devel/readline \
 		net/zeromq \
 		net/libunbound \
 		comms/libhidapi

@@ -36,7 +36,7 @@ WANTLIB += c crypto hidapi-libusb m sodium ssl unbound usb-1.0 zmq
 
 COMPILER = base-clang
 MODULES = devel/cmake
-BUILD_DEPENDS = devel/gas \
+BUILD_DEPENDS = devel/llvm/22 \
 		devel/ninja \
 		devel/re2c
 
@@ -46,7 +46,6 @@ RUN_DEPENDS = net/monero=${VERSION}
 LIB_DEPENDS = devel/boost,-md \
 		devel/libusb1 \
 		devel/protobuf \
-		devel/readline \
 		net/zeromq \
 		net/libunbound \
 		converters/libiconv \
@@ -58,6 +57,8 @@ MONERO_PATCHES += patch-cmake_FindReadline_cmake
 MONERO_PATCHES += patch-cmake_CheckTrezor_cmake
 MONERO_PATCHES += patch-CMakeLists_txt
 MONERO_PATCHES += patch-contrib_depends_toolchain_cmake_in
+MONERO_PATCHES += patch-contrib_epee_src_CMakeLists_txt
+MONERO_PATCHES += patch-contrib_epee_src_readline_buffer_cpp
 MONERO_PATCHES += patch-external_db_drivers_liblmdb_mdb_c
 MONERO_PATCHES += patch-src_device_device_io_hid_cpp
 MONERO_PATCHES += patch-src_serialization_binary_archive_h

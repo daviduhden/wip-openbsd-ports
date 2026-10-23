@@ -1,0 +1,33 @@
+Build and link epee_readline when OpenBSD libedit supplies the
+readline API, and install the target when GUI dependencies are built.
+
+Index: contrib/epee/src/CMakeLists.txt
+--- contrib/epee/src/CMakeLists.txt.orig
++++ contrib/epee/src/CMakeLists.txt
+@@ -41,7 +41,7 @@ monero_add_library(epee byte_slice.cpp b
+     ${EPEE_HEADERS_PUBLIC}
+     )
+ 
+-if (USE_READLINE AND (GNU_READLINE_FOUND OR (DEPENDS AND NOT MINGW)))
++if (USE_READLINE AND (GNU_READLINE_FOUND OR LIBEDIT_FOUND OR (DEPENDS AND NOT MINGW)))
+   monero_add_library(epee_readline readline_buffer.cpp)
+ endif()
+ 
+@@ -56,7 +56,7 @@ if (BUILD_GUI_DEPS)
+     endif()
+     install(TARGETS epee
+         ARCHIVE DESTINATION ${lib_folder})
+-    if (USE_READLINE AND GNU_READLINE_FOUND)
++    if (USE_READLINE AND (GNU_READLINE_FOUND OR LIBEDIT_FOUND))
+       install(TARGETS epee_readline
+           ARCHIVE DESTINATION ${lib_folder})
+     endif()
+@@ -74,7 +74,7 @@ target_link_libraries(epee
+   PRIVATE
+     ${EXTRA_LIBRARIES})
+ 
+-if (USE_READLINE AND (GNU_READLINE_FOUND OR (DEPENDS AND NOT MINGW)))
++if (USE_READLINE AND (GNU_READLINE_FOUND OR LIBEDIT_FOUND OR (DEPENDS AND NOT MINGW)))
+   target_link_libraries(epee_readline
+     PUBLIC
+       easylogging

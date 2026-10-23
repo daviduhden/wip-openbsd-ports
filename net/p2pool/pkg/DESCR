@@ -1,0 +1,7 @@
+P2Pool is a decentralized peer-to-peer mining pool for Monero. It connects
+an existing Monero daemon to mining clients and coordinates pool shares
+without a central pool operator. Start monerod with its local ZMQ publisher,
+for example --zmq-pub tcp://127.0.0.1:18083. Start P2Pool with the daemon's
+RPC address and a wallet address, then point XMRig at the local Stratum
+endpoint, usually 127.0.0.1:3333. Configure wallet and node endpoints
+explicitly; package installation does not start either program.

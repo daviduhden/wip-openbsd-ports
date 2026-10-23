@@ -1,0 +1,11 @@
+XMRig is a high performance, open source CPU miner for Monero and other
+RandomX based coins. It can connect to a local Monero node through a
+P2Pool instance or to a compatible pool directly.
+
+To mine with P2Pool, configure the P2Pool stratum endpoint in XMRig's
+configuration, usually 127.0.0.1:3333 for a local P2Pool instance. The
+Monero node RPC/ZMQ endpoints and wallet address are configured in P2Pool.
+Start monerod with --zmq-pub tcp://127.0.0.1:18083, then start P2Pool with
+--host 127.0.0.1 --wallet YOUR_WALLET_ADDRESS. Point XMRig at the local
+Stratum server with -o 127.0.0.1:3333. A sample XMRig configuration is
+installed in share/examples/xmrig/config.json. Start all programs manually.

@@ -1,0 +1,20 @@
+# Make the common RandomX path switch generated code between
+# writable and executable permissions when secure JIT mode is enabled.
+
+Index: src/crypto/randomx/vm_compiled.cpp
+--- src/crypto/randomx/vm_compiled.cpp.orig
++++ src/crypto/randomx/vm_compiled.cpp
+@@ -49,7 +49,13 @@ namespace randomx {
+ 		compiler.prepare();
+ 		VmBase<softAes>::generateProgram(seed);
+ 		randomx_vm::initialize();
++#		ifdef XMRIG_SECURE_JIT
++		compiler.enableWriting();
++#		endif
+ 		compiler.generateProgram(program, config, randomx_vm::getFlags());
++#		ifdef XMRIG_SECURE_JIT
++		compiler.enableExecution();
++#		endif
+ 		mem.memory = datasetPtr->memory + datasetOffset;
+ 		execute();
+ 	}

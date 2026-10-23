@@ -1,0 +1,56 @@
+# Secure JIT mode transitions generated code pages between writable and
+# executable permissions, avoiding writable executable pages on OpenBSD.
+
+Index: src/crypto/cn/CryptoNight_x86.h
+--- src/crypto/cn/CryptoNight_x86.h.orig
++++ src/crypto/cn/CryptoNight_x86.h
+@@ -40,6 +40,7 @@
+ #include "crypto/cn/CnAlgo.h"
+ #include "crypto/cn/CryptoNight_monero.h"
+ #include "crypto/cn/CryptoNight.h"
++#include "crypto/common/VirtualMemory.h"
+ #include "crypto/cn/soft_aes.h"
+ 
+ 
+@@ -695,7 +696,13 @@ inline void cryptonight_single_hash(cons
+             const int code_size = v4_random_math_init<ALGO>(code, height);
+ 
+             if (ALGO == Algorithm::CN_R) {
++#               ifdef XMRIG_SECURE_JIT
++                VirtualMemory::protectRW(ctx[0]->generated_code, 0x4000);
++#               endif
+                 v4_soft_aes_compile_code(code, code_size, reinterpret_cast<void*>(ctx[0]->generated_code), Assembly::NONE);
++#               ifdef XMRIG_SECURE_JIT
++                VirtualMemory::protectRX(ctx[0]->generated_code, 0x4000);
++#               endif
+             }
+ 
+             ctx[0]->generated_code_data = { ALGO, height };
+@@ -948,7 +955,13 @@ inline void cryptonight_single_hash_asm(
+     if (props.isR() && !ctx[0]->generated_code_data.match(ALGO, height)) {
+         V4_Instruction code[256];
+         const int code_size = v4_random_math_init<ALGO>(code, height);
++#       ifdef XMRIG_SECURE_JIT
++        VirtualMemory::protectRW(ctx[0]->generated_code, 0x4000);
++#       endif
+         cn_r_compile_code<ALGO>(code, code_size, reinterpret_cast<void*>(ctx[0]->generated_code), ASM);
++#       ifdef XMRIG_SECURE_JIT
++        VirtualMemory::protectRX(ctx[0]->generated_code, 0x4000);
++#       endif
+ 
+         ctx[0]->generated_code_data = { ALGO, height };
+     }
+@@ -1054,7 +1067,13 @@ inline void cryptonight_double_hash_asm(
+     if (props.isR() && !ctx[0]->generated_code_data.match(ALGO, height)) {
+         V4_Instruction code[256];
+         const int code_size = v4_random_math_init<ALGO>(code, height);
++#       ifdef XMRIG_SECURE_JIT
++        VirtualMemory::protectRW(ctx[0]->generated_code, 0x4000);
++#       endif
+         cn_r_compile_code_double<ALGO>(code, code_size, reinterpret_cast<void*>(ctx[0]->generated_code), ASM);
++#       ifdef XMRIG_SECURE_JIT
++        VirtualMemory::protectRX(ctx[0]->generated_code, 0x4000);
++#       endif
+ 
+         ctx[0]->generated_code_data = { ALGO, height };
+     }

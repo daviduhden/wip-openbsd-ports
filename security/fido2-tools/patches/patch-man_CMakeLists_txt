@@ -1,5 +1,8 @@
---- a/man/CMakeLists.txt
-+++ b/man/CMakeLists.txt
+# Build only the command line tool manual pages.
+
+Index: man/CMakeLists.txt
+--- man/CMakeLists.txt.orig
++++ man/CMakeLists.txt
 @@ -3,317 +3,19 @@
  # license that can be found in the LICENSE file.
  # SPDX-License-Identifier: BSD-2-Clause

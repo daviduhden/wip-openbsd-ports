@@ -1,4 +1,4 @@
-# Use the system termios ABI for PIN input.
+Use the system termios ABI for PIN input.
 
 Index: token2-piv-gui/src-tauri/src/bin/fido2-manage.rs
 --- token2-piv-gui/src-tauri/src/bin/fido2-manage.rs.orig

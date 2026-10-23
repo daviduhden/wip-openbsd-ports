@@ -1,4 +1,4 @@
-# Skip GUI and PIV links for CLI builds.
+Skip GUI and PIV links for CLI builds.
 
 Index: token2-piv-gui/src-tauri/build.rs
 --- token2-piv-gui/src-tauri/build.rs.orig

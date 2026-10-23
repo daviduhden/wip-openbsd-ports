@@ -1,4 +1,4 @@
-# Use native libfido2 for the CLI.
+Use native libfido2 for the CLI.
 
 Index: token2-piv-gui/src-tauri/src/fido.rs
 --- token2-piv-gui/src-tauri/src/fido.rs.orig

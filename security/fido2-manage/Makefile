@@ -34,8 +34,6 @@ do-install:
 		${PREFIX}/share/doc/fido2-manage/FIDO2-MANAGE.md
 	${INSTALL_DATA} ${WRKSRC}/token2-piv-tool/COPYING \
 		${PREFIX}/share/doc/fido2-manage/COPYING
-	${INSTALL_DATA} ${.CURDIR}/README.port \
-		${PREFIX}/share/doc/fido2-manage/PORTING.md
 
 .if exists(${.CURDIR}/crates.inc)
 .include "crates.inc"

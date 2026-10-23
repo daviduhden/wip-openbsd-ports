@@ -1,4 +1,4 @@
-# Exclude GUI modules from CLI builds.
+Exclude GUI modules from CLI builds.
 
 Index: token2-piv-gui/src-tauri/src/lib.rs
 --- token2-piv-gui/src-tauri/src/lib.rs.orig

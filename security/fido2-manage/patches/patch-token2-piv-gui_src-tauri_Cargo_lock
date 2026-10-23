@@ -1,4 +1,4 @@
-# Record libc as a direct CLI dependency.
+Record libc as a direct CLI dependency.
 
 Index: token2-piv-gui/src-tauri/Cargo.lock
 --- token2-piv-gui/src-tauri/Cargo.lock.orig

@@ -1,4 +1,4 @@
-# Separate CLI and GUI Cargo features.
+Separate CLI and GUI Cargo features.
 
 Index: token2-piv-gui/src-tauri/Cargo.toml
 --- token2-piv-gui/src-tauri/Cargo.toml.orig

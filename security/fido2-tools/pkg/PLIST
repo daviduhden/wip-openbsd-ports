@@ -1,0 +1,6 @@
+@bin bin/fido2-assert
+@bin bin/fido2-cred
+@bin bin/fido2-token
+@man man/man1/fido2-assert.1
+@man man/man1/fido2-cred.1
+@man man/man1/fido2-token.1

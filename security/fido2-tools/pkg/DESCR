@@ -1,0 +1,9 @@
+The fido2-tools package provides command-line utilities for interacting
+with FIDO2 authenticators:
+
+ fido2-token  inspect and manage authenticator configuration and tokens
+ fido2-cred   create and inspect credentials
+ fido2-assert create and verify assertions
+
+The tools use the OpenBSD base libfido2 library and its native /dev/fido
+backend.

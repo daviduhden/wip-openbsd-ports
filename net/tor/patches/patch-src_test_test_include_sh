@@ -1,0 +1,20 @@
+The OpenBSD sandbox in this port is restricted to package paths such as
+/var/tor.  This test uses a temporary data directory, so do not enable that
+sandbox while testing configuration includes.
+
+Index: src/test/test_include.sh
+--- src/test/test_include.sh.orig
++++ src/test/test_include.sh
+@@ -99,7 +99,11 @@
+ echo "NodeFamily 4" > "$torrcd/folder/04_four.conf"
+ echo "NodeFamily 5" > "$torrcd/folder/05_five.conf"
+ torrc="$configdir/torrc"
+-echo "Sandbox 1" > "$torrc"
++if test "$UNAME_OS" = 'OpenBSD'; then
++    echo "Sandbox 0" > "$torrc"
++else
++    echo "Sandbox 1" > "$torrc"
++fi
+ echo "
+ %include $torrcd/*.conf
+ %include $torrcd/f*

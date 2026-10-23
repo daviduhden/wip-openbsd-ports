@@ -1,6 +1,5 @@
-Implement Tor’s OpenBSD sandbox with unveil path permissions and a
-pledge promise set, allowing the packaged daemon to restrict filesystem
-and system-call access when Sandbox 1 is configured.
+# Add OpenBSD unveil and pledge support for Tor's Sandbox option.
+# The profile covers packaged defaults and does not grant pledge's exec.
 
 Index: src/lib/sandbox/sandbox.c
 --- src/lib/sandbox/sandbox.c.orig
@@ -16,7 +15,7 @@ Index: src/lib/sandbox/sandbox.c
  #include "lib/sandbox/sandbox.h"
  #include "lib/container/map.h"
  #include "lib/err/torerr.h"
-@@ -47,6 +51,57 @@
+@@ -47,6 +51,58 @@
  
  #define DEBUGGING_CLOSE
  
@@ -27,7 +26,8 @@ Index: src/lib/sandbox/sandbox.c
 +openbsd_unveil_path(const char *path, const char *permissions)
 +{
 +  if (unveil(path, permissions) == -1) {
-+    log_warn(LD_GENERAL, "unveil(%s) failed: %s", path, strerror(errno));
++    log_warn(LD_GENERAL, "unveil(%s) failed: %s",
++             path, strerror(errno));
 +    return -1;
 +  }
 +  return 0;
@@ -41,8 +41,8 @@ Index: src/lib/sandbox/sandbox.c
 +    const char *permissions;
 +  } rules[] = {
 +    /*
-+     * This profile is limited to the OpenBSD port defaults. Custom paths
-+     * must not enable Sandbox: they are deliberately not unveiled here.
++     * This profile covers only OpenBSD port defaults. Custom paths must
++     * not enable Sandbox; those paths are deliberately not unveiled here.
 +     */
 +    { "/etc/tor/torrc", "r" },
 +    { "/var/tor", "rwc" },
@@ -74,7 +74,7 @@ Index: src/lib/sandbox/sandbox.c
  #if defined(USE_LIBSECCOMP)
  
  #include <sys/mman.h>
-@@ -2308,6 +2363,10 @@ sandbox_init(sandbox_cfg_t *cfg)
+@@ -2308,6 +2364,10 @@ sandbox_init(sandbox_cfg_t *cfg)
             "libseccomp and its necessary header files (e.g. seccomp.h).");
    return 0;
  
@@ -85,7 +85,7 @@ Index: src/lib/sandbox/sandbox.c
  #else
    (void)cfg;
    log_warn(LD_GENERAL,
-@@ -2370,7 +2429,11 @@ sandbox_cfg_allow_rename(sandbox_cfg_t *
+@@ -2370,7 +2430,11 @@ sandbox_cfg_allow_rename(sandbox_cfg_t *
  int
  sandbox_is_active(void)
  {

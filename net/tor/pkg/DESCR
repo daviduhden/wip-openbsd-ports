@@ -1,2 +1,10 @@
 Tor is a connection-based low-latency anonymous communication system that
 protects TCP streams: web browsing, instant messaging, irc, ssh, etc.
+
+On OpenBSD, the packaged default torrc enables Sandbox 1, which applies
+unveil(2) and pledge(2). The process running Tor does not receive pledge's
+exec or error promise. Managed pluggable transports (ClientTransportPlugin
+or ServerTransportPlugin with exec) are therefore rejected by Tor while
+Sandbox is enabled. External SOCKS4/SOCKS5 client proxies and external server
+proxies do not require Tor to execute a program and remain supported under
+the sandbox profile when their endpoints are accessible.

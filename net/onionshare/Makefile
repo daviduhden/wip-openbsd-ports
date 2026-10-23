@@ -22,7 +22,7 @@ MODPY_PYBUILD =		poetry-core
 MODPY_BUILD_DIR =	${WRKSRC}/cli
 
 RUN_DEPENDS-main =	devel/py-colorama \
-			devel/py-gevent \
+			devel/py-gevent>=26.5.0,<27.0.0 \
 			graphics/py-qrcode \
 			net/py-gevent-websocket \
 			net/py-socks \

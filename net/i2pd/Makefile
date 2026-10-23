@@ -40,10 +40,15 @@ post-install:
 	${INSTALL_DATA} ${WRKDIST}/contrib/certificates/${dir}/* \
 		${WRKINST}${LOCALSTATEDIR}/i2pd/certificates/${dir}
 .endfor
-	${SUBST_DATA} ${WRKDIST}/contrib/i2pd.conf \
+	${SUBST_DATA} ${FILESDIR}/i2pd.conf \
 		${PREFIX}/share/examples/i2pd/i2pd.conf
-	${INSTALL_DATA} ${WRKDIST}/contrib/tunnels.conf \
+	${INSTALL_DATA} ${FILESDIR}/tunnels.conf \
 		${PREFIX}/share/examples/i2pd/tunnels.conf
+	${INSTALL_DATA} ${FILESDIR}/torrents.conf \
+		${PREFIX}/share/examples/i2pd/torrents.conf
+	${INSTALL_DATA_DIR} ${WRKINST}${LOCALSTATEDIR}/i2pd/torrents/web
+	${INSTALL_DATA} ${WRKDIST}/contrib/torrents/web/* \
+		${WRKINST}${LOCALSTATEDIR}/i2pd/torrents/web
 
 do-test:
 	cd ${WRKDIST}/tests && ${MAKE_PROGRAM} CXX="${CXX}" \

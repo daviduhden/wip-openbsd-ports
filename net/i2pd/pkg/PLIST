@@ -158,6 +158,7 @@ lib/cmake/i2pd/i2pdConfigVersion.cmake
 share/doc/pkg-readmes/${PKGSTEM}
 share/examples/i2pd/
 share/examples/i2pd/i2pd.conf
+share/examples/i2pd/torrents.conf
 @mode 0750
 @owner _i2pd
 @group _i2pd
@@ -210,3 +211,8 @@ i2pd/certificates/reseed/reseed_at_diva.exchange.crt
 i2pd/certificates/reseed/reseedserver_at_mail.i2p.crt
 i2pd/certificates/reseed/sahil_at_mail.i2p.crt
 i2pd/certificates/reseed/vserod1488_at_proton.me.crt
+i2pd/torrents/
+i2pd/torrents/web/
+i2pd/torrents/web/index.html
+i2pd/torrents/web/main.js
+i2pd/torrents/web/rpc.js

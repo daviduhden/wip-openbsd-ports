@@ -80,6 +80,18 @@ If you want to use this interface anyway, you can reenable it in
 ${SYSCONFDIR}/i2pd/i2pd.conf under the [http] section.
 
 
+BitTorrent client
+=================
+
+The optional BitTorrent tunnel configuration is installed at
+${TRUEPREFIX}/share/examples/i2pd/torrents.conf. To enable the client,
+add its [torrents] section to ${SYSCONFDIR}/i2pd/tunnels.conf and
+uncomment the settings you want. The RPC example listens on localhost.
+The package installs the web interface files under
+${LOCALSTATEDIR}/i2pd/torrents/web.
+
+
+
 Graceful shutdown
 =================
 

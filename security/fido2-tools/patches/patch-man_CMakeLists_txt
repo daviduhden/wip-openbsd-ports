@@ -324,3 +324,28 @@ Index: man/CMakeLists.txt
  
  list(LENGTH MAN_ALIAS MAN_ALIAS_LEN)
  math(EXPR MAN_ALIAS_MAX "${MAN_ALIAS_LEN} - 2")
+@@ -363,14 +65,16 @@ foreach(f ${MAN_SOURCES})
+ endforeach()
+ 
+ macro(define_symlink_target NAME EXT)
+-	foreach(i RANGE 0 ${MAN_ALIAS_MAX} 2)
+-		math(EXPR j "${i} + 1")
+-		list(GET MAN_ALIAS ${i} SRC)
+-		list(GET MAN_ALIAS ${j} DST)
+-		add_custom_command(OUTPUT ${DST}.${EXT}
+-			COMMAND ln -sf ${SRC}.${EXT} ${DST}.${EXT})
+-		list(APPEND ${NAME}_LINK_FILES ${DST}.${EXT})
+-	endforeach()
++	if(MAN_ALIAS)
++		foreach(i RANGE 0 ${MAN_ALIAS_MAX} 2)
++			math(EXPR j "${i} + 1")
++			list(GET MAN_ALIAS ${i} SRC)
++			list(GET MAN_ALIAS ${j} DST)
++			add_custom_command(OUTPUT ${DST}.${EXT}
++				COMMAND ln -sf ${SRC}.${EXT} ${DST}.${EXT})
++			list(APPEND ${NAME}_LINK_FILES ${DST}.${EXT})
++		endforeach()
++	endif()
+ 	add_custom_target(${NAME} DEPENDS ${${NAME}_LINK_FILES})
+ endmacro()
+ 

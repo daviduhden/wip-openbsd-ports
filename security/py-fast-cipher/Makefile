@@ -1,9 +1,8 @@
 COMMENT =	format-preserving encryption in pure Python
 
-MODPY_DISTV =	0.2.2
+MODPY_DISTV =	0.3.0
 DISTNAME =	fast_cipher-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
-REVISION =       0
 
 CATEGORIES =	security
 

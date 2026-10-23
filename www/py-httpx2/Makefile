@@ -1,6 +1,6 @@
 COMMENT =	The next generation HTTP client.
 
-MODPY_DISTV =	2.13.1
+MODPY_DISTV =	2.16.0
 DISTNAME =	httpx2-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 
@@ -16,12 +16,12 @@ MODPY_PYBUILD =	hatchling
 RUN_DEPENDS =	net/py-anyio>=4.10 \
 		net/py-idna>=3.18 \
 		security/py-truststore>=0.10 \
-		www/py-httpcore2=2.13.1
+		www/py-httpcore2=2.16.0
 
 BUILD_DEPENDS +=	devel/py-uv-dynamic-versioning>=0.14.1 \
 		devel/py-hatch-fancy-pypi-readme
 
-MAKE_ENV +=	UV_DYNAMIC_VERSIONING_BYPASS=2.13.1
+MAKE_ENV +=	UV_DYNAMIC_VERSIONING_BYPASS=2.16.0
 
 # No tests in the PyPI sdist.
 NO_TEST =	Yes

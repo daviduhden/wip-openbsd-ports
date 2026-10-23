@@ -1,0 +1,100 @@
+Manifiestos generados que faltan en wip-openbsd-ports
+=====================================================
+
+Fecha: 2026-10-22
+Ámbito: los 99 ports del repo (los directorios con Makefile, excluyendo
+logs/, tools/ e infrastructure/).  sysutils/uutils no cuenta: su Makefile es
+de tipo SUBDIR (.include <bsd.port.subdir.mk>).
+
+Un manifiesto se considera "por generar" cuando el fichero no existe o está
+vacío (0 bytes).  El .inc esperado se deduce del propio port: lang/go ->
+modules.inc, devel/cargo o CONFIGURE_STYLE=cargo -> crates.inc,
+devel/cabal -> cabal.inc. Para MULTI_PACKAGES, el PLIST requerido es
+pkg/PLIST-<subpaquete>, no pkg/PLIST.
+
+
+Resultado
+---------
+
+* distinfo por generar: 0
+* pkg/PLIST por generar: 0
+* modules.inc, crates.inc o cabal.inc por generar: 0
+
+Notas
+-----
+
+* La comprobación es estática: sólo examina Makefile y existencia/tamaño de
+  manifiestos; no ejecuta make, descarga fuentes ni construye ports.
+* tools/gen-manifests-and-test.pl aplica la misma distinción para
+  MULTI_PACKAGES. Así, los PLIST-main/PLIST-server/PLIST-data de
+  games/assaultcube y los PLIST-main/PLIST-gui de net/onionshare satisfacen
+  correctamente sus manifiestos.
+
+Actualizaciones que requieren validación en OpenBSD
+==================================================
+
+Fecha: 2026-10-23
+Ámbito: actualizaciones de versiones y dependencias preparadas mediante
+análisis estático en este checkout. No se ejecutaron make, compilaciones ni
+pruebas locales.
+
+Ports actualizados
+------------------
+
+Los siguientes ports necesitan validación en OpenBSD. Ejecutar `make makesum`
+para regenerar y verificar distinfo, `make patch` donde haya parches,
+`make configure` y `make build`; ejecutar `make update-plist` para revisar el
+manifiesto generado. Después, comprobar dependencias con
+`make port-lib-depends-check` y generar el paquete con `make package`.
+
+* devel/py-google-api-core
+* devel/py-google-cloud-aiplatform
+* devel/py-google-genai
+* devel/py-protobuf
+* devel/swival
+* net/py-boto3
+* net/py-grpc-google-iam-v1
+* net/py-grpcio
+* net/py-grpcio-status
+* net/py-ripe.atlas.cousteau
+* net/py-websockets
+* security/py-fast-cipher
+* www/py-httpcore2
+* www/py-httpx2
+* www/py-starlette
+
+La inspección de los archivos fuente indica cambios de contenido instalado en
+`net/py-websockets` y `www/py-httpx2`; sus PLIST se actualizaron de forma
+estática. Los otros trece ports no muestran cambios de rutas instaladas, pero
+`make update-plist` sigue pendiente para confirmar el resultado del empaquetado
+en OpenBSD. `net/py-grpcio` requiere especial atención durante compilación y
+enlazado por sus extensiones nativas.
+
+Dependencias nuevas o elevadas que requieren cotejo con el árbol completo de
+ports: `net/py-boto3` requiere `net/py-botocore>=1.43.118,<1.44.0`, y
+`net/py-ripe.atlas.cousteau` requiere Requests `>=2.34.2,<2.35.0` y Certifi
+`>=2026.10.19`. Estos ports de dependencia no están en este checkout; confirmar
+que las versiones disponibles en `/usr/ports` satisfacen esos requisitos.
+
+Ports todavía pendientes de actualización upstream
+--------------------------------------------------
+
+Estos ports siguen por debajo de la versión estable upstream y requieren
+trabajo adicional antes de cambiar sus distfiles o manifiestos:
+
+* converters/py-html-to-markdown: la versión nueva requiere regenerar el
+  conjunto grande de dependencias Rust.
+* devel/codex y devel/codex-m: Codex 0.164.0 actualiza V8 e ICU; los parches
+  locales apuntan a V8 150.4.0 y necesitan rebasarse sobre V8 152.2.0.
+* devel/py-huggingface-hub: Litellm limita esta dependencia a `<2`.
+* devel/py-importlib-metadata: Litellm limita esta dependencia a `<9`.
+* devel/py-litellm: su nueva versión requiere actualizar el grafo Rust, y
+  Swival 1.0.48 fija Litellm a `<1.106`.
+* sysutils/py-filelock: Litellm limita esta dependencia a `<4`.
+* devel/soft-serve: la nueva versión cambia el grafo Go; regenerar
+  `modules.inc` y `distinfo` de manera coordinada.
+
+Para estos ports, `make makesum`, `make update-plist` y la validación de
+dependencias se deben ejecutar después de resolver el bloqueo y preparar el
+nuevo distfile. No se declara que sus manifiestos actuales estén ausentes:
+siguen completos para las versiones actualmente configuradas.

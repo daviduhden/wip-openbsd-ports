@@ -1,12 +1,11 @@
 COMMENT =	Python bindings for the RIPE Atlas API
 
-MODPY_DISTV =	2.3.0
+MODPY_DISTV =	2.3.1
 GH_ACCOUNT =	RIPE-NCC
 GH_PROJECT =	ripe-atlas-cousteau
 GH_TAGNAME =	v${MODPY_DISTV}
 
 PKGNAME =	py-ripe.atlas.cousteau-${MODPY_DISTV}
-REVISION =       0
 
 CATEGORIES =	net
 HOMEPAGE =	https://github.com/RIPE-NCC/ripe-atlas-cousteau
@@ -17,9 +16,10 @@ PERMIT_PACKAGE =	Yes
 MODULES =	lang/python
 MODPY_PYBUILD =	setuptools
 
-RUN_DEPENDS =	devel/py-dateutil \
+RUN_DEPENDS =	devel/py-certifi>=2026.10.19 \
+		devel/py-dateutil \
 		devel/py-typing-extensions \
-		net/py-websocket-client \
-		www/py-requests
+		net/py-websocket-client>=1.9.0,<2.0.0 \
+		www/py-requests>=2.34.2,<3.0.0
 
 .include <bsd.port.mk>

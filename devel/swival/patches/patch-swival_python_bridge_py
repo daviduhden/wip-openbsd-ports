@@ -1,4 +1,4 @@
-Avoid overflowing the OpenBSD thread stack on deeply nested bridge JSON.
+Bound JSON nesting before the decoder can exhaust the thread stack.
 
 Index: swival/python_bridge.py
 --- swival/python_bridge.py.orig
@@ -11,14 +11,13 @@ Index: swival/python_bridge.py
  MAX_RESPONSE_BYTES = 10 << 20
  MAX_TOTAL_BYTES = 64 << 20
  # Keeps a looping snippet from growing the report without end.
-@@ -44,6 +45,29 @@
- _FAILED = frozenset({"refused", "error", "timeout"})
- 
+@@ -46,6 +47,31 @@ _FAILED = frozenset({"refused", "error",
  _HEADER = struct.Struct(">I")
-+
-+
+ 
+ 
 +def _check_json_depth(frame: bytes) -> None:
-+    """Bound C JSON decoder recursion before it can exhaust a thread stack."""
++    """Bound JSON decoder recursion before it exhausts the
++    thread stack."""
 +    depth = 0
 +    quoted = False
 +    escaped = False
@@ -35,13 +34,16 @@ Index: swival/python_bridge.py
 +        elif char in (91, 123):
 +            depth += 1
 +            if depth > MAX_JSON_DEPTH:
-+                raise ValueError("the request JSON nesting is too deep")
++                raise ValueError(
++                    "the request JSON nesting is too deep")
 +        elif char in (93, 125):
 +            depth -= 1
- 
- 
++
++
  class _ProtocolError(Exception):
-@@ -383,6 +407,7 @@
+     pass
+ 
+@@ -383,6 +409,7 @@ class PythonBridge:
  
      def _handle(self, frame: bytes) -> bytes:
          try:

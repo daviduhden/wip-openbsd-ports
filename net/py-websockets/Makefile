@@ -1,9 +1,8 @@
 COMMENT =	Python library for building WebSocket servers and clients
 
-MODPY_DISTV =	16.1.1
+MODPY_DISTV =	17.3
 DISTNAME =	websockets-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME}
-REVISION =       0
 
 CATEGORIES =	net
 
@@ -30,7 +29,7 @@ GH_ACCOUNT = python-websockets
 GH_PROJECT = websockets
 GH_TAGNAME = ${MODPY_DISTV}
 
-# Google GenAI requires websockets <17.
-PORTROACH =	limit:^16\.
+# Google GenAI requires websockets <18.
+PORTROACH =	limit:^17\.
 
 .include <bsd.port.mk>

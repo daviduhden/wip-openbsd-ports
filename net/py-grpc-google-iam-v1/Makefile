@@ -1,6 +1,6 @@
 COMMENT =	IAM API client library
 
-MODPY_DISTV =	0.14.5
+MODPY_DISTV =	0.14.6
 DISTNAME =	grpc_google_iam_v1-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 

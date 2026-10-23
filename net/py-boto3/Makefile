@@ -1,9 +1,8 @@
 COMMENT =		AWS SDK for Python
 
-MODPY_DISTV =	1.43.114
+MODPY_DISTV =	1.43.118
 DISTNAME =	boto3-${MODPY_DISTV}
 PKGNAME =		py-${DISTNAME}
-REVISION =       0
 
 CATEGORIES =		net devel
 
@@ -20,7 +19,7 @@ MODPY_PI =		Yes
 MODPY_PYBUILD =	setuptools
 
 RUN_DEPENDS =	devel/py-jmespath>=0.7.1,<2.0.0 \
-		net/py-botocore>=1.43.111,<1.44.0 \
+		net/py-botocore>=1.43.118,<1.44.0 \
 		net/py-s3transfer>=0.19.0,<0.20.0
 
 # No tests in the PyPI sdist.

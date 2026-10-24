@@ -1,7 +1,7 @@
 Adapt the ChaCha20-Poly1305 setup to crypton 2.1, where
 ChaChaPoly1305.initialize takes an opaque Key built by
-ChaChaPoly1305.key instead of the raw key, and no longer
-returns CryptoFailable.
+ChaChaPoly1305.key instead of the raw key, and no longer returns
+CryptoFailable.
 
 Index: Network/TLS/Extra/Cipher.hs
 --- Network/TLS/Extra/Cipher.hs.orig

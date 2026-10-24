@@ -59,8 +59,8 @@ post-install:
 		mv $$b fvwm3-$${b#fvwm-}; done
 	mv ${WRKINST}/${TRUEPREFIX}/bin/FvwmCommand{,3}
 
-.include <bsd.port.mk>
+# bsd.port.mk converts CFLAGS_<chosen compiler> into CFLAGS. Assigning
+# CFLAGS after the include would be too late for the build environment.
+CFLAGS_base-clang =	-Wno-error=int-conversion
 
-.if ${CHOSEN_COMPILER} == "base-clang"
-CFLAGS +=		-Wno-error=int-conversion
-.endif
+.include <bsd.port.mk>

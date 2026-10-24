@@ -1,5 +1,5 @@
-# OpenBSD has no huge-page mapping flags in this allocator.
-# Use anonymous read/write pages and report no large pages.
+# OpenBSD has no huge-page mapping flags in this allocator. Use
+# anonymous read/write pages and report no large pages.
 
 Index: src/crypto/common/VirtualMemory_unix.cpp
 --- src/crypto/common/VirtualMemory_unix.cpp.orig

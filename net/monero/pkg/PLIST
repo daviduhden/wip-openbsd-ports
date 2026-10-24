@@ -27,5 +27,7 @@ share/examples/monero/monerod.conf
 @sample ${SYSCONFDIR}/monero/monerod.conf
 @owner _monerod
 @group _monerod
+@mode 0700
 @sample ${LOCALSTATEDIR}/monero/
 @sample ${LOCALSTATEDIR}/log/monero/
+@mode

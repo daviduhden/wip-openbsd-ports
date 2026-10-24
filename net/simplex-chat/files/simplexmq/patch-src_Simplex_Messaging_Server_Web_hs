@@ -1,8 +1,8 @@
-Build the static-file TLS handler against the warp-tls version selected by
-this port.  With warp 3.4.15 and warp-tls 3.4.14, attachConn takes the TVar
-counting in-progress applications as an additional argument; the guard keeps
-the two-argument call used with older warp-tls (as in the simplexmq port)
-working.
+Build the static-file TLS handler against the warp-tls version selected
+by this port.  With warp 3.4.15 and warp-tls 3.4.14, attachConn takes
+the TVar counting in-progress applications as an additional argument;
+the guard keeps the two-argument call used with older warp-tls (as in
+the simplexmq port) working.
 
 Index: src/Simplex/Messaging/Server/Web.hs
 --- src/Simplex/Messaging/Server/Web.hs.orig

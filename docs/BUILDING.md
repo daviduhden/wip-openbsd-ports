@@ -2,10 +2,10 @@
 
 Ports use the same `category/port` layout as the OpenBSD ports tree,
 including nested subports grouped under a shared directory
-(`category/group/port`, like `sysutils/uutils/awk`).
-The categories currently present are `databases`, `devel`, `editors`,
-`games`, `graphics`, `mail`, `misc`, `multimedia`, `net`, `security`,
-`shells`, `sysutils`, `textproc`, `www` and `x11`.
+(`category/group/port`, like `sysutils/uutils/awk`). The installable
+paths and their categories are whatever the helper reports; do not rely
+on a static category list:
+
 List the installable paths without checking out or changing anything:
 
 ```sh
@@ -13,9 +13,10 @@ List the installable paths without checking out or changing anything:
 ```
 
 Ports creating daemon accounts also need their entries from `user.list`.
-The copy helper merges these entries into the cloned tree, preserving
-upstream entries and refusing conflicting IDs or account names. Do not
-overwrite a newer tree's complete registry with this repository's snapshot.
+The copy helper merges the entries for the selected ports into the cloned
+tree, preserving upstream entries and refusing conflicting IDs or account
+names. Do not overwrite a newer tree's complete registry with this
+repository's snapshot.
 
 ## Prerequisites
 
@@ -40,16 +41,21 @@ category directory. Replaced ports are saved under
 `TREE/.wip-backups/category-port.XXXXXXXX/port` (the category slashes are
 replaced by underscores for a nested subport); nested CVS metadata is
 preserved. Before the swap the script records the files that are about to
-be removed and added in `TREE/.wip-changes/category-port.created.txt` and
-`TREE/.wip-changes/category-port.deleted.txt` (one path per line, relative
-to the port root, CVS metadata excluded), so `cvs add`, `cvs remove` and a
-later `cvs diff` can be driven from them. Copying a nested subport also
-installs the files its group shares with the subports, for example
-`Makefile.inc`, without touching any sibling port. Stale patches are not
-carried into the new copy. Paths that name categories, traverse parents or
-use symlinked port roots are rejected. The local account entries from
-`user.list` are merged as well. Files become readable by the ports build
-user even when the Git checkout is private.
+be removed and added in `TREE/.wip-changes/category-port.created.txt`,
+`TREE/.wip-changes/category-port.deleted.txt`, and
+`TREE/.wip-changes/category-port.created-dirs.txt` (one path per line,
+relative to the port root, CVS metadata excluded), so `cvs add`,
+`cvs remove` and a later `cvs diff` can be driven from them. Copying a
+nested subport also installs the files its group shares with the
+subports, for example `Makefile.inc`, without touching any sibling port.
+Existing shared files are saved under
+`TREE/.wip-backups/<label>.shared.XXXXXXXX/`; they are not part of the
+child port's change lists. Stale patches are not carried into the new
+copy. Paths that name categories, traverse parents or use symlinked port
+roots are rejected. The local account entries from `user.list` for the
+selected ports are merged as well. Files become readable by the ports
+build user even when the Git checkout is private. Top-level `audit/` and
+`logs/` directories inside a port are not copied.
 
 Without arguments the script retains its interactive OpenBSD bootstrap
 workflow, which replaces the ports checkout and configures the host.
@@ -61,9 +67,14 @@ and configuring doas:
 doas ./fetch-ports.ksh --no-provision
 ```
 
-Every patch has one target file and an `Index:` header. Dependency
-sources requiring LF conversion are normalized with `dos2unix` before
-dependency patches.
+Every patch has one target file, one `Index:` header with a relative
+path, and a short comment above the header wrapped to 72 columns. Patches
+are generated with `make update-patches`, which uses `diff -u -p`, writes
+`--- path.orig` / `+++ path`, and names the file `patch-...`. New files use
+`--- /dev/null`. Dependency sources requiring LF conversion are normalized
+with `dos2unix` before dependency patches. Check changed patches with
+`.agents/skills/openbsd-port-patches/scripts/check-patch-style.ksh` and
+apply them with a fresh `make patch`.
 
 ## General Workflow
 
@@ -72,7 +83,8 @@ From the port directory:
 ```sh
 make clean
 make fetch
-make makesum
+make checksum
+make extract
 make patch
 make configure
 make build
@@ -83,49 +95,61 @@ make package
 ```
 
 Not every target is always useful for every port, but this is the
-standard order when you are refreshing or validating a port.
+standard order when you are validating an existing version. Use
+`make makesum` only when the downloaded inputs changed and the new
+checksums have been reviewed; it rewrites `distinfo` instead of
+verifying it. `make test` runs the framework test target after preparing
+`TEST_DEPENDS`; `make do-test` invokes the port target directly.
 
 ## Updating Ports
 
 Ports that use `devel/cargo`, `lang/go` or `devel/cabal` keep generated
-dependency data next to the `Makefile`:
+dependency data next to the `Makefile`. The actual set is not fixed; find
+it instead of relying on a list here:
 
-- `editors/msedit` uses `devel/cargo` and `crates.inc`.
-- `sysutils/uutils` is a group of subports (`coreutils`, `findutils`,
-  `diffutils`, `grep`, `sed`, `awk`, `tar`); each builds one project
-  and keeps its own `crates.inc`.
-- `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/gum`,
-  `devel/sequin`, `devel/shfmt`, `devel/soft-serve`, `net/wishlist`,
-  `net/xd-torrent` and the other Charm CLI/TUI ports under `databases`,
-  `graphics`, `mail`, `misc`, `multimedia`, `security` and `textproc`
-  use `lang/go` and `modules.inc`.
-- `devel/fourmolu`, `net/simplexmq` and `net/simplex-chat` use
-  `devel/cabal` and `cabal.inc`.
+```sh
+git ls-files '*/crates.inc' '*/modules.inc' '*/cabal.inc'
+```
+
+`sysutils/uutils` is a group of subports, each building one project and
+keeping its own `crates.inc`. Other ports use `crates.inc`,
+`modules.inc`, or `cabal.inc` according to the module present in their
+`Makefile`.
 
 Never edit these files by hand. Regenerating them needs network access,
-while the regular build must stay offline. The short form for each
-module:
+while the regular build must stay offline. Write generator output to a
+temporary file and move it into place only after checking the exit status
+and contents; redirecting directly into an include can truncate it.
+`devel/fourmolu` filters its generator output and replaces `cabal.inc`
+itself, while the SimpleX ports merge executable and test plans through
+`files/cabal-deps-merge.pl`. The short form for each module:
 
 ```sh
 # devel/cargo, for example editors/msedit
 make clean
 make makesum
 make extract
+make patch
 make modcargo-gen-crates > /tmp/crates.inc
-cp /tmp/crates.inc crates.inc
+mv /tmp/crates.inc crates.inc
 make clean
 make makesum
+make extract
+make patch
+make configure
 make modcargo-gen-crates-licenses > /tmp/crates.inc
 mv /tmp/crates.inc crates.inc
 
 # lang/go, for example net/xd-torrent
 make clean
-make modgo-gen-modules > modules.inc
+make modgo-gen-modules > /tmp/modules.inc
+mv /tmp/modules.inc modules.inc
 make makesum
 
 # devel/cabal, for example net/simplexmq
 make clean
 make makesum
+make patch
 make cabal-inc
 make makesum
 ```
@@ -151,7 +175,8 @@ Recommended workflow:
 cd /usr/ports/net/monero
 make clean
 make fetch
-make makesum
+make checksum
+make extract
 make patch
 make configure
 make build
@@ -184,7 +209,8 @@ Recommended workflow:
 cd /usr/ports/net/xd-torrent
 make clean
 make fetch
-make makesum
+make checksum
+make extract
 make patch
 make configure
 make build
@@ -197,7 +223,8 @@ make package
 When upstream `go.mod` or `go.sum` changes:
 
 ```sh
-make modgo-gen-modules > modules.inc
+make modgo-gen-modules > /tmp/modules.inc
+mv /tmp/modules.inc modules.inc
 make makesum
 ```
 
@@ -225,7 +252,8 @@ Recommended workflow:
 cd /usr/ports/editors/msedit
 make clean
 make fetch
-make makesum
+make checksum
+make extract
 make patch
 make configure
 make build
@@ -274,6 +302,7 @@ When upstream releases are updated or `MODCABAL_MANIFEST` drifts:
 cd /usr/ports/net/simplexmq
 make clean
 make makesum
+make patch
 make cabal-inc
 make makesum
 ```
@@ -323,6 +352,7 @@ available when the binary starts.
 cd /usr/ports/net/simplex-chat
 make clean
 make makesum
+make patch
 make cabal-inc
 make makesum
 ```
@@ -355,8 +385,9 @@ OpenBSD they must be regenerated once and installed from `files/`:
 ```sh
 cd /usr/ports/net/simplex-chat
 make do-test SIMPLEX_UPDATE_QUERY_PLANS=1
-cp /usr/obj/ports/simplex-chat-*/simplex-chat-*/src/Simplex/Chat/Store/SQLite/Migrations/chat_query_plans.txt files/
-cp /usr/obj/ports/simplex-chat-*/simplex-chat-*/src/Simplex/Chat/Store/SQLite/Migrations/agent_query_plans.txt files/
+src=$(make show=WRKSRC)
+cp "$src"/src/Simplex/Chat/Store/SQLite/Migrations/chat_query_plans.txt files/
+cp "$src"/src/Simplex/Chat/Store/SQLite/Migrations/agent_query_plans.txt files/
 make clean && make do-test
 ```
 

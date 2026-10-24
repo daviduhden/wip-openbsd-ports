@@ -1,5 +1,5 @@
-Select the versioned LLVM 22 C++ compiler before CMake configures
-the independent Monero-LWS project on OpenBSD.
+Select the versioned LLVM 22 C++ compiler before CMake configures the
+independent Monero-LWS project on OpenBSD.
 
 Index: CMakeLists.txt
 --- CMakeLists.txt.orig

@@ -4,69 +4,42 @@ Resolve the helper executable with getexecpath(3), never a PATH search.
 Index: codex-rs/sandboxing/src/manager.rs
 --- codex-rs/sandboxing/src/manager.rs.orig
 +++ codex-rs/sandboxing/src/manager.rs
-@@ -52,6 +52,8 @@ pub fn get_platform_sandbox(windows_sand
-         Some(SandboxType::MacosSeatbelt)
-     } else if cfg!(target_os = "linux") {
-         Some(SandboxType::LinuxSeccomp)
-+    } else if cfg!(target_os = "openbsd") {
-+        Some(SandboxType::OpenBsdPledgeUnveil)
-     } else if cfg!(target_os = "windows") {
-         if windows_sandbox_enabled {
-             Some(SandboxType::WindowsRestrictedToken)
-@@ -198,6 +200,12 @@ pub enum SandboxTransformError {
+@@ -189,6 +189,8 @@ impl PendingSandboxedExecRequest {
+ 
+ #[derive(Debug)]
+ pub enum SandboxTransformError {
++    #[cfg(target_os = "openbsd")]
++    OpenBsdSandboxUnavailable,
+     InvalidCommandCwd {
+         cwd: PathUri,
          source: io::Error,
-     },
-     MissingLinuxSandboxExecutable,
-+    #[cfg(target_os = "openbsd")]
-+    MissingOpenBsdSandboxExecutable,
-+    #[cfg(target_os = "openbsd")]
-+    OpenBsdPreparation(String),
-+    #[cfg(not(target_os = "openbsd"))]
-+    OpenBsdUnavailable,
-     WindowsMxcPreparation(String),
-     EnvironmentNetworkProxy(String),
-     #[cfg(target_os = "macos")]
-@@ -226,6 +234,21 @@ impl std::fmt::Display for SandboxTransf
-             Self::MissingLinuxSandboxExecutable => {
-                 write!(f, "missing codex-linux-sandbox executable path")
-             }
+@@ -213,6 +215,11 @@ pub enum SandboxTransformError {
+ impl std::fmt::Display for SandboxTransformError {
+     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+         match self {
 +            #[cfg(target_os = "openbsd")]
-+            Self::MissingOpenBsdSandboxExecutable => {
-+                write!(f, "missing codex-openbsd-sandbox helper executable path")
-+            }
-+            #[cfg(target_os = "openbsd")]
-+            Self::OpenBsdPreparation(err) => {
-+                write!(f, "failed to prepare OpenBSD unveil sandbox: {err}")
-+            }
-+            #[cfg(not(target_os = "openbsd"))]
-+            Self::OpenBsdUnavailable => {
-+                write!(
-+                    f,
-+                    "openbsd unveil sandbox is only available on OpenBSD"
-+                )
-+            }
-             Self::WindowsMxcPreparation(err) => {
-                 write!(f, "failed to prepare MXC sandbox: {err}")
-             }
-@@ -254,6 +277,12 @@ impl std::error::Error for SandboxTransf
-             Self::InvalidCommandCwd { source, .. }
-             | Self::InvalidSandboxPolicyCwd { source, .. } => Some(source),
++            Self::OpenBsdSandboxUnavailable => write!(
++                f,
++                "OpenBSD has no supported command sandbox; select explicit danger-full-access or provide external isolation"
++            ),
+             Self::InvalidCommandCwd { cwd, source } => {
+                 write!(
+                     f,
+@@ -256,6 +263,8 @@ impl std::error::Error for SandboxTransf
              Self::MissingLinuxSandboxExecutable => None,
-+            #[cfg(target_os = "openbsd")]
-+            Self::MissingOpenBsdSandboxExecutable => None,
-+            #[cfg(target_os = "openbsd")]
-+            Self::OpenBsdPreparation(_) => None,
-+            #[cfg(not(target_os = "openbsd"))]
-+            Self::OpenBsdUnavailable => None,
              Self::WindowsMxcPreparation(_) => None,
              Self::EnvironmentNetworkProxy(_) => None,
++            #[cfg(target_os = "openbsd")]
++            Self::OpenBsdSandboxUnavailable => None,
              #[cfg(target_os = "macos")]
-@@ -375,6 +404,32 @@ impl SandboxManager {
+             Self::SeatbeltPreparation(_) => None,
+             #[cfg(target_os = "linux")]
+@@ -375,6 +384,29 @@ impl SandboxManager {
              network.and_then(NetworkProxy::managed_mitm_ca_trust_bundle_path);
          let base_effective_permission_profile =
              effective_permission_profile(permissions, additional_permissions.as_ref());
-+        // OpenBSD has no command sandbox that can enforce restricted profiles.
-+        // Never let a managed request reach a backend or run without isolation.
++        // OpenBSD has no upstream sandbox backend. Never interpret a missing
++        // backend as permission to run a restricted request without isolation.
 +        #[cfg(target_os = "openbsd")]
 +        {
 +            let (file_system_policy, network_policy) =
@@ -85,61 +58,9 @@ Index: codex-rs/sandboxing/src/manager.rs
 +                    enforce_managed_network,
 +                )
 +            {
-+                return Err(SandboxTransformError::OpenBsdPreparation(
-+                    "OpenBSD cannot enforce a managed sandbox; select explicit danger-full-access or external isolation"
-+                        .to_string(),
-+                ));
++                return Err(SandboxTransformError::OpenBsdSandboxUnavailable);
 +            }
 +        }
          let pending_sandboxed_request = PendingSandboxedExecRequest::new(
              &command.cwd,
              sandbox_policy_cwd,
-@@ -474,6 +529,48 @@ impl SandboxManager {
-             }
-             #[cfg(not(target_os = "macos"))]
-             SandboxType::MacosSeatbelt => return Err(SandboxTransformError::SeatbeltUnavailable),
-+            #[cfg(target_os = "openbsd")]
-+            SandboxType::OpenBsdPledgeUnveil => {
-+                let pending = pending_sandboxed_request?;
-+                // The helper is the Codex executable itself, re-invoked through
-+                // the `codex-openbsd-sandbox` arg0 alias. Prefer the helper path
-+                // supplied by the caller; otherwise this process *is* the
-+                // helper, so its own executable path is the helper path.
-+                let exe = match sandbox_exe {
-+                    Some(path) if path.is_absolute() => path.to_path_buf(),
-+                    Some(_) => {
-+                        return Err(SandboxTransformError::OpenBsdPreparation(
-+                            "sandbox helper executable path must be absolute".to_string(),
-+                        ));
-+                    }
-+                    // getexecpath(3), added in OpenBSD 8.0, reports the canonical
-+                    // pathname directly. std::env::current_exe() is documented as
-+                    // best-effort on OpenBSD: it reports argv[0], which is a bare
-+                    // program name when Codex itself was found through PATH.
-+                    None => crate::openbsd::sandbox_executable()
-+                        .map_err(|_| SandboxTransformError::MissingOpenBsdSandboxExecutable)?,
-+                };
-+                let mut args = crate::openbsd::create_openbsd_sandbox_command_args(
-+                    argv,
-+                    pending.native_command_cwd.as_path(),
-+                    pending.native_sandbox_policy_cwd.as_path(),
-+                    &pending.effective_permission_profile,
-+                    enforce_managed_network,
-+                )
-+                .map_err(|err| SandboxTransformError::OpenBsdPreparation(err.to_string()))?;
-+                let mut full_command = Vec::with_capacity(1 + args.len());
-+                full_command.push(os_string_to_command_component(exe.into_os_string()));
-+                full_command.append(&mut args);
-+                (
-+                    full_command,
-+                    Some(crate::openbsd::CODEX_OPENBSD_SANDBOX_ARG0.to_string()),
-+                    Some(pending),
-+                )
-+            }
-+            #[cfg(not(target_os = "openbsd"))]
-+            SandboxType::OpenBsdPledgeUnveil => {
-+                return Err(SandboxTransformError::OpenBsdUnavailable);
-+            }
-             SandboxType::LinuxSeccomp => {
-                 let pending = pending_sandboxed_request?;
-                 let exe =

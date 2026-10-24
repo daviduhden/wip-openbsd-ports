@@ -1,14 +1,16 @@
 Provide a restartable stop operation that joins the statistics finalizer
-before the store is closed. Serialize stop, resume and disposal so a second
-closer cannot return while the first is still using SQLite. Route acceptance
-to the reply server when the receive queue is already secured, and keep the
-local LET command independent of receive-server ACK retries.
+before the store is closed. Serialize stop, resume and disposal so a
+second closer cannot return while the first is still using SQLite. Route
+acceptance to the reply server when the receive queue is already
+secured, and keep the local LET command independent of receive-server
+ACK retries.
 
 Recheck pending deliveries after retry delays and join replaced queue
-workers. Avoid retrying cached messages deleted while the server was offline.
+workers. Avoid retrying cached messages deleted while the server was
+offline.
 
-Stop XFTP workers before their transports; recheck cached deliveries after
-both retry delays and suspension/network waits.
+Stop XFTP workers before their transports; recheck cached deliveries
+after both retry delays and suspension/network waits.
 
 Serialize async ACK registration with receive/delete processing; do not
 queue a second ACK for an already acknowledged stored message. Preserve

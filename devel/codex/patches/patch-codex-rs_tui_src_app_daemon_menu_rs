@@ -8,7 +8,7 @@ Index: codex-rs/tui/src/app/daemon_menu.rs
              Some(
                  "Manage this server on its host. Local daemon updates are unavailable for remote connections.",
              )
-+        } else if codex_app_server_daemon::system_daemon_path().is_some() {
++        } else if cfg!(target_os = "openbsd") {
 +            Some(
 +                "The daemon is installed by the system package manager. Use pkg_add -u, then codex app-server daemon restart.",
 +            )
@@ -21,7 +21,7 @@ Index: codex-rs/tui/src/app/daemon_menu.rs
          };
 -        if matches!(self.app_server_target, AppServerTarget::Remote { .. }) {
 +        if matches!(self.app_server_target, AppServerTarget::Remote { .. })
-+            || codex_app_server_daemon::system_daemon_path().is_some()
++            || cfg!(target_os = "openbsd")
 +        {
              return;
          }

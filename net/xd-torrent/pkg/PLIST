@@ -5,8 +5,10 @@
 bin/XD-CLI
 @owner _xd
 @group _xd
+@mode 0700
 @sample ${LOCALSTATEDIR}/xd/
 @sample ${LOCALSTATEDIR}/xd/downloads/
 @sample ${LOCALSTATEDIR}/xd/metadata/
 @sample ${LOCALSTATEDIR}/xd/seeding/
 @sample ${LOCALSTATEDIR}/xd/storage/
+@mode

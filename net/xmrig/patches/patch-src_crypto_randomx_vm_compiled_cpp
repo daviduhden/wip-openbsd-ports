@@ -1,5 +1,5 @@
-# Make the common RandomX path switch generated code between
-# writable and executable permissions when secure JIT mode is enabled.
+# Make the common RandomX path switch generated code between writable
+# and executable permissions when secure JIT mode is enabled.
 
 Index: src/crypto/randomx/vm_compiled.cpp
 --- src/crypto/randomx/vm_compiled.cpp.orig

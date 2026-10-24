@@ -1,5 +1,5 @@
-# Add OpenBSD unveil and pledge support for Tor's Sandbox option.
-# The profile covers packaged defaults and does not grant pledge's exec.
+# Add OpenBSD unveil and pledge support for Tor's Sandbox option. The
+# profile covers packaged defaults and does not grant pledge's exec.
 
 Index: src/lib/sandbox/sandbox.c
 --- src/lib/sandbox/sandbox.c.orig

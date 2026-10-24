@@ -1,5 +1,5 @@
-Adapt ccpInit to crypton 2.1, where ChaChaPoly1305.initialize takes
-an opaque Key built by ChaChaPoly1305.key and is total.
+Adapt ccpInit to crypton 2.1, where ChaChaPoly1305.initialize takes an
+opaque Key built by ChaChaPoly1305.key and is total.
 
 Index: src/Crypto/Store/CMS/Algorithms.hs
 --- src/Crypto/Store/CMS/Algorithms.hs.orig

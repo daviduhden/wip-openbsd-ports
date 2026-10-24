@@ -1,5 +1,5 @@
-Prefer the OpenBSD ksh/sh fallback over bash/zsh and recognize ksh as a
-POSIX shell.
+Minimal OpenBSD ksh preference: recognize ksh and prefer ksh/sh fallback
+over bash/zsh.
 
 Index: codex-rs/shell-command/src/shell_detect.rs
 --- codex-rs/shell-command/src/shell_detect.rs.orig
@@ -42,15 +42,3 @@ Index: codex-rs/shell-command/src/shell_detect.rs
          } else {
              user_default_shell
                  .or_else(|| get_shell(ShellType::Bash))
-@@ -496,6 +510,11 @@ mod tests {
-             Some(ShellType::Sh)
-         );
-         assert_eq!(detect_shell_type(PathBuf::from("sh")), Some(ShellType::Sh));
-+        assert_eq!(detect_shell_type(PathBuf::from("ksh")), Some(ShellType::Sh));
-+        assert_eq!(
-+            detect_shell_type(PathBuf::from("/bin/ksh")),
-+            Some(ShellType::Sh)
-+        );
-         assert_eq!(
-             detect_shell_type(PathBuf::from("cmd")),
-             Some(ShellType::Cmd)

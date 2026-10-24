@@ -1,4 +1,5 @@
-Unmask owned worker bodies while keeping publication and completion callbacks masked.
+Unmask owned worker bodies while keeping publication and completion
+callbacks masked.
 
 Preserve cancellation in catchAll and catchAll_ as in tryAllErrors.
 

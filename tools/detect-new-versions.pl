@@ -53,7 +53,10 @@ $LOGDIR //= tempdir(
     DIR => '/tmp' );
 make_path($LOGDIR) unless -d $LOGDIR;
 my $REPORT = "$LOGDIR/report.txt";
-if ( -e $REPORT || -l $REPORT ) {
+if ( -l $REPORT ) {
+    die "refusing to replace symlink $REPORT\n";
+}
+if ( -e $REPORT ) {
     unlink $REPORT or die "unlink $REPORT: $!";
 }
 
@@ -262,7 +265,13 @@ sub find_ports {
             {
                 wanted => sub {
                     return unless basename($_) eq 'Makefile';
-                    return if $File::Find::name =~ m{/(CVS|files|patches)/};
+                    return
+                      if $File::Find::name =~
+                      m{/(CVS|files|patches|audit|logs)/};
+                    open( my $fh, '<', $_ ) or die "$_: $!";
+                    my $t = do { local $/ = undef; <$fh> // q{} };
+                    close $fh or die "close $_: $!";
+                    return if $t =~ /bsd\.port\.subdir\.mk/;
                     my $rel = File::Spec->abs2rel( $File::Find::name, $WIP );
                     ( my $dir = dirname($rel) ) =~ s{^\./}{};
                     push @ports, $dir;
@@ -280,6 +289,8 @@ sub find_ports {
 
 my @ports = find_ports();
 @ports = grep { $_ eq $ONLY } @ports if length $ONLY;
+die "--only $ONLY does not name an installable port\n"
+  if length($ONLY) && !@ports;
 out( "# new versions report - " . strftime( '%Y-%m-%d %H:%M:%S', localtime ) );
 out("# collection: $WIP");
 out("");

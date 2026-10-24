@@ -1,10 +1,14 @@
 @newgroup _softserve:909
-@newuser _softserve:909:909::Soft Serve account:${LOCALSTATEDIR}/soft-serve:/sbin/nologin
+@newuser _softserve:909:909::Soft Serve account:${LOCALSTATEDIR}/db/soft-serve:/sbin/nologin
 @rcscript ${RCDIR}/soft_serve
 @bin bin/soft
 share/doc/pkg-readmes/${PKGSTEM}
 share/doc/soft-serve/
 share/doc/soft-serve/README.md
+@mode 700
 @owner _softserve
 @group _softserve
-@sample ${LOCALSTATEDIR}/soft-serve/
+@sample ${LOCALSTATEDIR}/db/soft-serve/
+@mode
+@owner
+@group

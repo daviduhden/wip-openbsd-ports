@@ -1,11 +1,11 @@
-Track the agent lifecycle and original background mode. Make every worker
-closer join its published action. Foreground requests retry transient
-connection errors against the network; background requests retain the
-cached error and its configured backoff.
+Track the agent lifecycle and original background mode. Make every
+worker closer join its published action. Foreground requests retry
+transient connection errors against the network; background requests
+retain the cached error and its configured backoff.
 
-Read activity and enqueue disconnection events in the same STM transaction
-so shutdown releases callbacks blocked by a full event queue. Include the
-local XFTP completion worker in worker diagnostics.
+Read activity and enqueue disconnection events in the same STM
+transaction so shutdown releases callbacks blocked by a full event
+queue. Include the local XFTP completion worker in worker diagnostics.
 
 Index: src/Simplex/Messaging/Agent/Client.hs
 --- src/Simplex/Messaging/Agent/Client.hs.orig

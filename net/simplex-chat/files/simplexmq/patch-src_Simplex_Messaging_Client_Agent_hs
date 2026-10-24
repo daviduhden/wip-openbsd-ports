@@ -1,9 +1,11 @@
-Wait for proxy-agent reconnect workers and protocol clients during shutdown,
-publish worker/client creation atomically, and reject connections completed
-after shutdown began.  Detached relay TLS sessions could otherwise survive
-their owner and overlap a subsequent server instance.
+Wait for proxy-agent reconnect workers and protocol clients during
+shutdown, publish worker/client creation atomically, and reject
+connections completed after shutdown began.  Detached relay TLS sessions
+could otherwise survive their owner and overlap a subsequent server
+instance.
 
-Unmask the reconnect body while publishing its ownership atomically with shutdown.
+Unmask the reconnect body while publishing its ownership atomically with
+shutdown.
 
 Index: src/Simplex/Messaging/Client/Agent.hs
 --- src/Simplex/Messaging/Client/Agent.hs.orig

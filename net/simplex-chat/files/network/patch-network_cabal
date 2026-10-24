@@ -1,4 +1,5 @@
-Use the static config header installed by the port instead of running configure.
+Use the static config header installed by the port instead of running
+configure.
 
 Index: network.cabal
 --- network.cabal.orig

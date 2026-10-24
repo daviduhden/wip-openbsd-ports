@@ -13,27 +13,23 @@ DPB_PROPERTIES =	parallel
 USE_WXNEEDED =		Yes
 
 V =			0.163.0
-REVISION =		0
 GH_ACCOUNT =		openai
 GH_PROJECT =		codex
 GH_TAGNAME =		rust-v${V}
+# Installs the upstream codex paths and binaries.
 PKGNAME =		codex-${V}
 
-# only build the Rust workspace (the repo also contains JS tooling).
+# Only build the Rust workspace (the upstream tree also contains JS tooling).
 WRKSRC =		${WRKDIST}/codex-rs
 
-DIST_TUPLE +=		github openai-oss-forks crossterm ed1cdab335221515706178d68495bba2aed1924f ./crossterm
-DIST_TUPLE +=		github openai-oss-forks tokio-tungstenite 0e5b2d73aa18dd9f0a50ee9ff199d5aef7594186 ./tokio-tungstenite
-DIST_TUPLE +=		github openai-oss-forks tungstenite-rs 4fffad30fe373adbdcffab9545e9e9bf4f2fc19f ./tungstenite
-DIST_TUPLE +=		github helix-editor nucleo 4253de9faabb4e5c6d81d946a5e35a90f87347ee ./nucleo
-DIST_TUPLE +=		github dzbarsky rules_rust b56cbaa8465e74127f1ea216f813cd377295ad81 ./runfiles
-DIST_TUPLE +=		github microsoft mxc 6cd3d58f05d3447e67109cfb75e042803b843ca4 ./mxc
-DIST_TUPLE +=		github hyperium h3 e07e69412876f7e26f026bd75a48b2704d8c8283 ./h3
-DIST_TUPLE +=		github modelcontextprotocol rust-sdk 4048ac40e958fb1a7d614617a2ae8d26666ee2fa ./rust-sdk
-# OpenBSD pledge(2)/unveil(2) bindings for the sandbox backend, pinned to the
-# selected revision. The backend enables the crate's
-# `openbsd-8-0` feature (getexecpath(3)), so the port requires OpenBSD 8.0.
-DIST_TUPLE +=		github daviduhden rust-openbsd 1984b9510937cc40f0a483a52311630721aa8dcd ./rust-openbsd
+DIST_TUPLE += github nornagon crossterm ed1cdab335221515706178d68495bba2aed1924f ./crossterm
+DIST_TUPLE += github openai-oss-forks tokio-tungstenite 0e5b2d73aa18dd9f0a50ee9ff199d5aef7594186 ./tokio-tungstenite
+DIST_TUPLE += github openai-oss-forks tungstenite-rs 4fffad30fe373adbdcffab9545e9e9bf4f2fc19f ./tungstenite
+DIST_TUPLE += github helix-editor nucleo 4253de9faabb4e5c6d81d946a5e35a90f87347ee ./nucleo
+DIST_TUPLE += github modelcontextprotocol rust-sdk 4048ac40e958fb1a7d614617a2ae8d26666ee2fa ./rmcp
+DIST_TUPLE += github dzbarsky rules_rust b56cbaa8465e74127f1ea216f813cd377295ad81 ./runfiles
+DIST_TUPLE += github microsoft mxc 6cd3d58f05d3447e67109cfb75e042803b843ca4 ./mxc
+DIST_TUPLE += github hyperium h3 e07e69412876f7e26f026bd75a48b2704d8c8283 ./h3
 
 MAINTAINER =		Kirill A. Korinsky <kirill@korins.ky>
 
@@ -44,11 +40,11 @@ HOMEPAGE =		https://github.com/openai/codex
 # Apache 2.0
 PERMIT_PACKAGE =	Yes
 
-# uses pledge() and unveil()
-WANTLIB +=		${MODCARGO_WANTLIB} bz2 crypto dbus-1 execinfo lzma
-WANTLIB +=		m onig ssl util
+WANTLIB += ${MODCARGO_WANTLIB} bz2 crypto dbus-1 execinfo lzma
+WANTLIB += m onig ssl util
 
 BUILD_DEPENDS =		devel/cmake/core \
+			devel/git \
 			devel/gn \
 			devel/ninja \
 			devel/protobuf \
@@ -65,7 +61,7 @@ RUN_DEPENDS =		devel/git \
 
 MODULES =		devel/cargo
 
-CONFIGURE_STYLE =	cargo
+CONFIGURE_STYLE = 	cargo
 
 COMPILER =		base-clang
 
@@ -75,7 +71,8 @@ MODCARGO_ENV +=		CLANG_BASE_PATH=/usr \
 			LIBCLANG_PATH=${LOCALBASE}/llvm${MODCLANG_VERSION}/lib \
 			LD_LIBRARY_PATH=${LOCALBASE}/llvm${MODCLANG_VERSION}/lib
 
-MODCARGO_CRATES_KEEP +=	libsqlite3-sys zstd-sys
+MODCARGO_CRATES_KEEP +=	libsqlite3-sys
+MODCARGO_CRATES_KEEP +=	zstd-sys
 
 MODCARGO_ENV +=		V8_FROM_SOURCE=1 \
 			GN=${LOCALBASE}/bin/gn \
@@ -95,25 +92,12 @@ MODCARGO_ENV +=		V8_FROM_SOURCE=1 \
 # Makes the build look more alive while compiling v8
 MODCARGO_BUILD_ARGS +=	-vv
 
-# Cargo release builds carry no debug info by default.  Produce it when the
-# framework builds debug packages (dpb -d, make DEBUG_PACKAGES=...).
-.if !empty(DEBUG_PACKAGES)
-MODCARGO_ENV +=		CARGO_PROFILE_RELEASE_DEBUG=true
-.endif
-
-MODCARGO_INSTALL_TARGET_PATHS =	cli code-mode-host
+MODCARGO_INSTALL_TARGET_PATHS = cli code-mode-host
 
 MODCARGO_BUILD_ARGS +=	-p codex-cli \
 			-p codex-code-mode-host \
 			--bin codex \
 			--bin codex-code-mode-host
-
-# The CLI and daemon share one executable and the same package metadata.
-# Only pkg_add installs or replaces it; Codex owns the per-user process.
-MODCARGO_ENV +=		CODEX_SYSTEM_DAEMON_PATH=${LOCALBASE}/libexec/codex/bin/codex
-
-CODEX_TARGET =		${MACHINE_ARCH:S/amd64/x86_64/}-unknown-openbsd
-SUBST_VARS +=		V CODEX_TARGET
 
 MAKE_ENV =		${MODCARGO_ENV}
 
@@ -126,36 +110,17 @@ V8_CARGO_V =		150.4.0
 V8_DISTDIR =		${MODCARGO_VENDOR_DIR}/v8-${V8_CARGO_V}
 
 post-patch:
-	# Idempotent: repatching and repeated builds must not fail on an
-	# already staged directory.
-	mkdir -p ${V8_DISTDIR}/third_party/icu/common
+	mkdir ${V8_DISTDIR}/third_party/icu/common
 	cp ${MODCARGO_VENDOR_DIR}/deno_core_icudata-${DENO_CORE_ICUDATA_V}/src/icudtl.dat \
-		${V8_DISTDIR}/third_party/icu/common/
+	    ${V8_DISTDIR}/third_party/icu/common/
 
 post-build:
-	${SUBST_CMD} -m 644 -c ${FILESDIR}/codex-package.json \
-		${WRKBUILD}/codex-package.json
 .for s in bash fish zsh
 	cd ${WRKBUILD}/target/release && \
 		./codex completion $s > codex.$s
 .endfor
 
 post-install:
-	${INSTALL_DATA_DIR} ${PREFIX}/libexec/codex/bin
-	# Guarded and idempotent: a second install pass (debug packages, repackage)
-	# must not fail on the files and symlinks left by the first one.
-	@if [ -f ${PREFIX}/bin/codex ] && [ ! -L ${PREFIX}/bin/codex ]; then \
-		mv ${PREFIX}/bin/codex ${PREFIX}/libexec/codex/bin/; \
-	fi
-	@if [ -f ${PREFIX}/bin/codex-code-mode-host ] && \
-		[ ! -L ${PREFIX}/bin/codex-code-mode-host ]; then \
-		mv ${PREFIX}/bin/codex-code-mode-host ${PREFIX}/libexec/codex/bin/; \
-	fi
-	ln -sf ../libexec/codex/bin/codex ${PREFIX}/bin/codex
-	ln -sf ../libexec/codex/bin/codex-code-mode-host \
-		${PREFIX}/bin/codex-code-mode-host
-	${INSTALL_DATA} ${WRKBUILD}/codex-package.json \
-		${PREFIX}/libexec/codex/
 	@if [ -f ${PREFIX}/bin/logs_client ]; then \
 		mv ${PREFIX}/bin/logs_client ${PREFIX}/bin/codex-logs-client; \
 	fi
@@ -168,8 +133,8 @@ post-install:
 		${PREFIX}/share/fish/vendor_completions.d/
 	${INSTALL_DATA} ${WRKBUILD}/target/release/codex.zsh \
 		${PREFIX}/share/zsh/site-functions/_codex
-	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/${PKGSTEM}
-	cd ${WRKDIST}/docs && ${INSTALL_DATA} * ${PREFIX}/share/doc/${PKGSTEM}/
+	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/codex
+	cp -r ${WRKDIST}/docs/* ${PREFIX}/share/doc/codex/
 
 .include "crates.inc"
 

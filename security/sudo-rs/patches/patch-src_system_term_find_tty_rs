@@ -5,7 +5,7 @@ to avoid treating an invalid terminal device as a match.
 Index: src/system/term/find_tty.rs
 --- src/system/term/find_tty.rs.orig
 +++ src/system/term/find_tty.rs
-@@ -25,4 +25,6 @@
+@@ -25,6 +25,8 @@
  }
  
  fn is_our_tty(metadata: fs::Metadata, tty_dev: DeviceId) -> bool {

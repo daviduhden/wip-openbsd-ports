@@ -3,7 +3,10 @@
 +-------------------------------------------------------------------------------
 
 xmsm uses BSD Authentication for screen unlocking. It is installed setgid
-auth and does not need to be setuid root.
+auth and does not need to be setuid root. The effective auth group is
+dropped before the window manager, launcher or session script is started,
+and is reacquired only around auth_userokay(3). Child processes therefore
+do not inherit the auth group.
 
 To enable shutdown and reboot, the user should be in _shutdown group:
 

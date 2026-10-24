@@ -155,11 +155,3 @@ Index: codex-rs/utils/pty/src/pty.rs
  pub(crate) fn close_inherited_fds_except(preserved_fds: &[RawFd]) {
      if let Ok(dir) = std::fs::read_dir("/dev/fd") {
          let mut fds = Vec::new();
-@@ -677,3 +799,7 @@
- #[cfg(all(test, target_os = "linux"))]
- #[path = "pty_linux_tests.rs"]
- mod linux_tests;
-+
-+#[cfg(all(test, target_os = "openbsd"))]
-+#[path = "pty_openbsd_tests.rs"]
-+mod openbsd_tests;

@@ -1,92 +1,64 @@
 Use a distributor-owned executable with the normal daemon lifecycle and
-IPC. Reject binary self-updates and incompatible running daemons;
-installation and replacement belong to pkg_add.
+IPC. Reject binary self-updates, internal update entry points and
+incompatible running daemons; installation and replacement belong to
+pkg_add.
 
 Index: codex-rs/app-server-daemon/src/lib.rs
 --- codex-rs/app-server-daemon/src/lib.rs.orig
 +++ codex-rs/app-server-daemon/src/lib.rs
-@@ -225,6 +225,12 @@ enum RestartDecision {
-     Restart,
- }
- 
-+/// A distributor-owned daemon is installed and updated outside Codex.
-+/// Process lifecycle and IPC still use the normal managed-daemon backend.
-+pub fn system_daemon_path() -> Option<&'static Path> {
-+    managed_install::system_codex_bin()
-+}
-+
- pub async fn run(command: LifecycleCommand) -> Result<LifecycleOutput> {
-     ensure_supported_platform()?;
-     #[cfg(windows)]
-@@ -282,6 +288,10 @@ pub async fn run_pid_update_loop(
+@@ -282,6 +282,10 @@ pub async fn run_pid_update_loop(
      restore_release: Option<String>,
  ) -> Result<()> {
      ensure_supported_platform()?;
 +    anyhow::ensure!(
-+        managed_install::system_codex_bin().is_none(),
++        !cfg!(target_os = "openbsd"),
 +        "the daemon is managed by the system package manager; use pkg_add -u"
 +    );
      #[cfg(windows)]
      backend::windows::ensure_not_elevated()?;
      update_loop::run(http_client_factory, restore_release).await
-@@ -291,6 +301,20 @@ pub async fn update(
+@@ -291,6 +295,10 @@ pub async fn update(
      http_client_factory: codex_http_client::HttpClientFactory,
  ) -> Result<UpdateOutput> {
      ensure_supported_platform()?;
-+    if let Some(path) = managed_install::system_codex_bin() {
-+        let daemon = Daemon::from_environment()?;
-+        return Ok(UpdateOutput {
-+            status: UpdateStatus::Unsupported,
-+            managed_codex_path: path.to_path_buf(),
-+            installed_version: daemon.managed_codex_version_best_effort().await,
-+            running_version: client::probe(&daemon.socket_path)
-+                .await
-+                .ok()
-+                .map(|info| info.app_server_version),
-+            message: "The daemon is managed by the system package manager; use pkg_add -u."
-+                .to_string(),
-+        });
-+    }
++    anyhow::ensure!(
++        !cfg!(target_os = "openbsd"),
++        "the daemon is managed by the system package manager; use pkg_add -u"
++    );
      #[cfg(windows)]
      backend::windows::ensure_not_elevated()?;
      update_loop::request_manual_update(&Daemon::from_environment()?, http_client_factory).await
-@@ -448,6 +472,15 @@ impl Daemon {
-                 self.wait_until_ready().await?,
-             )
-         };
-+        if managed_install::system_codex_bin().is_some() {
-+            anyhow::ensure!(
-+                info.app_server_version == env!("CARGO_PKG_VERSION"),
-+                "system-managed daemon is running version {} but this CLI requires {}; \
-+                 run `codex app-server daemon restart` after pkg_add -u",
-+                info.app_server_version,
-+                env!("CARGO_PKG_VERSION")
-+            );
-+        }
-         if backend.is_some()
-             && let Err(err) = managed.ensure_managed_updater(&settings).await
-         {
-@@ -892,6 +925,11 @@ impl Daemon {
+@@ -328,7 +336,7 @@ impl Daemon {
+             .as_path()
+             .to_path_buf();
+         let state_dir = codex_home.as_path().join(STATE_DIR_NAME);
+-        let managed_codex_bin = managed_codex_bin(codex_home.as_path());
++        let managed_codex_bin = std::env::current_exe()?;
+         // Old CLIs must not mistake a daemon-owned installation for their backend.
+         let (pid_file, update_pid_file) =
+             if managed_codex_bin.starts_with(codex_home.as_path().join("packages/standalone")) {
+@@ -892,6 +900,11 @@ impl Daemon {
  
      async fn ensure_managed_updater(&self, settings: &DaemonSettings) -> Result<bool> {
          let updater = backend::pid_update_loop_backend(self.backend_paths(settings));
-+        if managed_install::system_codex_bin().is_some() {
-+            // Best effort: a stale or invalid record must not prevent daemon start.
++        if cfg!(target_os = "openbsd") {
++            // Best effort: an invalid stale record must not prevent daemon start.
 +            let _ = updater.stop().await;
 +            return Ok(false);
 +        }
          if !settings.auto_update_enabled {
              updater.stop().await?;
              return Ok(false);
-@@ -981,6 +1019,11 @@ impl Daemon {
-         }
- 
-         let managed_codex_path = self.managed_codex_bin.display();
-+        if managed_install::system_codex_bin().is_some() {
-+            return Err(anyhow!(
-+                "system daemon executable not found at {managed_codex_path}; reinstall the codex package with pkg_add"
-+            ));
-+        }
-         Err(anyhow!(
-             "daemon executable not found at {managed_codex_path}; repair the existing installation, or run `codex app-server daemon start` to install a missing daemon"
+@@ -941,6 +954,12 @@ impl Daemon {
          ))
+     }
+ 
++    #[cfg(target_os = "openbsd")]
++    fn current_managed_codex_bin(&self) -> Result<PathBuf> {
++        Ok(self.managed_codex_bin.clone())
++    }
++
++    #[cfg(not(target_os = "openbsd"))]
+     fn current_managed_codex_bin(&self) -> Result<PathBuf> {
+         // An installer can move a legacy binary into bin/ while this updater runs.
+         let home = self

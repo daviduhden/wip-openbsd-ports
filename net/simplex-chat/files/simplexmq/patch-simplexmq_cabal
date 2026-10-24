@@ -1,5 +1,5 @@
-Use the crypton-era ASN.1 packages, time-hourglass, ram byte arrays,
-and the tls 2.4 API targeted by the OpenBSD compatibility patches.
+Use the crypton-era ASN.1 packages, time-hourglass, ram byte arrays, and
+the tls 2.4 API targeted by the OpenBSD compatibility patches.
 
 Index: simplexmq.cabal
 --- simplexmq.cabal.orig

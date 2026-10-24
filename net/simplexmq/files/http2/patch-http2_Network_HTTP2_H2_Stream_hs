@@ -1,9 +1,10 @@
 Keep a streaming chunk queued while its builder continuation still has
-bytes to send. syncWithSender uses queue emptiness as its readiness signal;
-removing the chunk before serializing it can stop the sender between DATA
-frames when the producer is waiting for the peer to consume that chunk.
-Advance the queue only when the body reader asks for the next chunk. This
-preserves bounded backpressure and lets the sender flush before waiting.
+bytes to send. syncWithSender uses queue emptiness as its readiness
+signal; removing the chunk before serializing it can stop the sender
+between DATA frames when the producer is waiting for the peer to consume
+that chunk. Advance the queue only when the body reader asks for the
+next chunk. This preserves bounded backpressure and lets the sender
+flush before waiting.
 
 Index: Network/HTTP2/H2/Stream.hs
 --- Network/HTTP2/H2/Stream.hs.orig

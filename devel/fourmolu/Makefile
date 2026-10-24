@@ -28,8 +28,10 @@ BUILD_DEPENDS =	devel/cabal-bundler \
 
 CABAL_INC_HOME ?=	${WRKDIR}/.cabal-inc-home
 
-# Print the MODCABAL_MANIFEST with the devel/cabal module's cabal-bundler:
-#	cabal-bundler --openbsd fourmolu-0.21.0.0
+# Generate the MODCABAL_MANIFEST with the devel/cabal module's cabal-bundler.
+# The bundler repeats MODCABAL_STEM and MODCABAL_VERSION; drop those lines so
+# this Makefile remains the single source of truth, then replace cabal.inc
+# atomically after a successful run.
 cabal-inc:
 	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}
 	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}/.cabal
@@ -44,7 +46,12 @@ cabal-inc:
 	env HOME=${CABAL_INC_HOME} CABAL_DIR=${CABAL_INC_HOME}/.cabal \
 		LC_ALL=en_US.UTF-8 \
 		${LOCALBASE}/bin/cabal-bundler --openbsd \
-			${MODCABAL_STEM}-${MODCABAL_VERSION}
+			${MODCABAL_STEM}-${MODCABAL_VERSION} \
+			> ${WRKDIR}/cabal.inc.raw
+	sed -e '/^MODCABAL_STEM[[:space:]]*=/d' \
+		-e '/^MODCABAL_VERSION[[:space:]]*=/d' \
+		${WRKDIR}/cabal.inc.raw > ${WRKDIR}/cabal.inc.new
+	mv ${WRKDIR}/cabal.inc.new ${.CURDIR}/cabal.inc
 
 .include "cabal.inc"
 

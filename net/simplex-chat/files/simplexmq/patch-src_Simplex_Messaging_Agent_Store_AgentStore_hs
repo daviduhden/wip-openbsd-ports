@@ -3,7 +3,8 @@ that do not have a send queue yet. Check that cached deliveries still
 exist before retrying them after connection deletion.
 
 Select fully uploaded files for recoverable local completion, including
-after restart. Only select chunks for upload after preparation is committed.
+after restart. Only select chunks for upload after preparation is
+committed.
 
 Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
 --- src/Simplex/Messaging/Agent/Store/AgentStore.hs.orig

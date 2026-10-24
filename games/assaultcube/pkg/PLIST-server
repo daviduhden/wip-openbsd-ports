@@ -1,2 +1,3 @@
 bin/assaultcube-server
 @bin libexec/assaultcube-server
+share/doc/pkg-readmes/assaultcube-server

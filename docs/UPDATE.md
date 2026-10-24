@@ -1,13 +1,17 @@
 # Updating These Ports on OpenBSD
 
 This document describes how to update a port that uses one of the
-dependency-tracking port modules:
+dependency-tracking port modules. The generated include is part of the
+port, not a fixed property of the module:
 
-| Module | Ports | Generated file |
-| --- | --- | --- |
-| `devel/cargo` | `editors/msedit`, `sysutils/uutils` | `crates.inc` |
-| `lang/go` | `devel/checkmake`, `devel/crush`, `devel/github-cli`, `devel/shfmt`, `net/xd-torrent` and the Charm CLI/TUI ports (`devel/gum`, `devel/sequin`, `devel/soft-serve`, `net/wishlist`, `textproc/glow`, ...) | `modules.inc` |
-| `devel/cabal` | `devel/fourmolu`, `net/simplexmq`, `net/simplex-chat` | `cabal.inc` |
+| Module | Generated file |
+| --- | --- |
+| `devel/cargo` | `crates.inc` |
+| `lang/go` | `modules.inc` |
+| `devel/cabal` | `cabal.inc` |
+
+Find the actual users with `git ls-files '*/crates.inc' '*/modules.inc'
+'*/cabal.inc'`; do not rely on a static port list in this document.
 
 The generated file lists every dependency the build is allowed to use.
 It is derived from upstream metadata, never edited by hand, and always
@@ -26,18 +30,32 @@ stay offline and must reproduce the build from `distinfo` alone.
 
 2. Bump the version variables in the `Makefile`. Do not touch the
    generated dependency file in this step.
-3. Regenerate the dependency file with the module target described
-   below. The per-module section shows where `make makesum` sits in
-   the sequence.
-4. Make sure `distinfo` covers every new file. The generated file and
-   `distinfo` must always change together.
-5. Refresh the patches under `patches/` and, for the cabal ports, the
-   dependency patches under `files/`. Keep the repository convention:
-   one target file per patch and an `Index:` header.
-6. Run the full validation workflow:
+3. For a changed upstream release, record and review the new inputs
+   before extracting:
 
    ```sh
    make clean=all
+   make makesum
+   make checksum
+   ```
+
+   `make makesum` rewrites `distinfo`; `make checksum` verifies it. Do not
+   use `makesum` to hide an unexplained mismatch.
+4. Regenerate the dependency file with the module target described
+   below. The per-module section shows where `make makesum` sits in
+   the sequence.
+5. Make sure `distinfo` covers every new file. The generated file and
+   `distinfo` must always change together.
+6. Refresh the patches under `patches/` and, for the cabal ports, the
+   dependency patches under `files/`. Keep the repository convention:
+   one target file per patch, `diff -u -p` output, an `Index:` header,
+   and a comment above it wrapped to 72 columns. Add an SPDX identifier
+   only when the licensing of the authored material is established.
+7. Run the full validation workflow:
+
+   ```sh
+   make clean=all
+   make checksum
    make extract
    make patch
    make configure
@@ -48,9 +66,10 @@ stay offline and must reproduce the build from `distinfo` alone.
    make package
    ```
 
-7. Run the test suite where the port provides one (`make do-test`) and
-   smoke-test the installed binaries.
-8. Keep this repository in sync with what was tested: it is the source
+8. Run the test suite where the port provides one (`make test`, or the
+   documented `make do-test` target) and smoke-test the installed
+   binaries.
+9. Keep this repository in sync with what was tested: it is the source
    that `fetch-ports.ksh` installs, and `Makefile`, `distinfo`, the
    generated file, patches and `pkg/PLIST` must match the ports tree.
 
@@ -70,19 +89,21 @@ Regenerate the crate list:
 ```sh
 cd /usr/ports/editors/msedit
 make clean=all
+make makesum
 make extract
 make patch
-make makesum
-make modcargo-gen-crates
 make modcargo-gen-crates > /tmp/crates.inc
-cp /tmp/crates.inc crates.inc
+# Inspect /tmp/crates.inc, then install the candidate.
+mv /tmp/crates.inc crates.inc
 make clean=all
+make makesum
 make extract
 make patch
-make makesum
-make modcargo-gen-crates-licenses
+make configure
 make modcargo-gen-crates-licenses > /tmp/crates.inc
+# Inspect licenses and versions, then install the candidate.
 mv /tmp/crates.inc crates.inc
+make clean=all
 ```
 
 Notes:
@@ -90,13 +111,16 @@ Notes:
 - `make modcargo-gen-crates` reads upstream `Cargo.lock` and prints
   one `MODCARGO_CRATES` line per registry crate, without license
   comments. It needs the new upstream distfile, hence the first
-  `make makesum`.
+  `make makesum` and `make extract`.
 - `make modcargo-gen-crates-licenses` prints the same list annotated
   with the license found in each vendored `Cargo.toml`. It depends on
-  the crates being downloaded, hence the second `make makesum`. Fix
-  any `XXX missing license` entry by checking the crate tarball.
+  the crates being downloaded and configured, hence the second
+  `make makesum` after the first candidate is installed. Fix any
+  `XXX missing license` entry by checking the crate tarball; do not
+  accept it as complete.
 - Write to a temporary file first: redirecting into `crates.inc`
-  truncates a file that `make` is reading.
+  truncates a file that `make` is reading. Check the generator's exit
+  status and output before moving the file into place.
 - `make modcargo-metadata` regenerates the vendored crate metadata
   after manual crate changes; the wrapper target runs it as the build
   user.
@@ -141,10 +165,11 @@ Regenerate the module list:
 ```sh
 cd /usr/ports/net/xd-torrent
 make clean=all
+make makesum
 make extract
 make patch
-make modgo-gen-modules
 make modgo-gen-modules > /tmp/modules.inc
+# Inspect /tmp/modules.inc, then install the candidate.
 mv /tmp/modules.inc modules.inc
 make makesum
 ```
@@ -154,7 +179,7 @@ Notes:
 - To find the newest upstream version, run
 
   ```sh
-  make MODGO_VERSION=latest modgo-gen-modules > modules.inc
+  make MODGO_VERSION=latest modgo-gen-modules > /tmp/modules.inc
   ```
 
   The helper resolves the latest version through `proxy.golang.org`
@@ -181,9 +206,10 @@ Notes:
 Examples: `devel/fourmolu`, `net/simplexmq` and `net/simplex-chat`.
 
 `cabal.inc` records `MODCABAL_MANIFEST`, the Hackage dependency set.
-It is produced by a port-specific `cabal-inc` target that calls
-`cabal-bundler --openbsd` and merges the result through
-`files/cabal-deps-merge.pl`.
+Each port has its own `cabal-inc` target. `net/simplexmq` and
+`net/simplex-chat` merge executables and test plans through
+`files/cabal-deps-merge.pl`; `devel/fourmolu` filters the bundler output
+and replaces its `cabal.inc`. All three write the manifest themselves.
 
 Bump the following before regenerating:
 
@@ -202,26 +228,29 @@ Regenerate the manifest:
 ```sh
 cd /usr/ports/net/simplexmq
 make clean=all
+make makesum
 make extract
 make patch
-make makesum
 make cabal-inc
 make clean=all
+make makesum
 make extract
 make patch
-make makesum
 ```
 
 Notes:
 
 - The first `make makesum` records checksums for the new upstream and
-  `DIST_TUPLE` snapshots; `cabal-inc` depends on `patch`, which needs
-  them. The second one adds the Hackage tarballs listed in the new
-  `cabal.inc` and drops stale entries.
+  `DIST_TUPLE` snapshots; `make patch` then prepares the source that
+  `cabal-inc` inspects. The second one adds the Hackage tarballs listed
+  in the new `cabal.inc` and drops stale entries.
 - `make cabal-inc` runs `cabal update`, computes the executable and
   test build plans, and writes `cabal.inc` in the port directory. It
   requires network access, `devel/cabal-install`, `lang/ghc` and
   `cabal-bundler`.
+- For `devel/fourmolu`, `cabal-inc` filters the bundler's duplicate
+  `MODCABAL_STEM` and `MODCABAL_VERSION` lines and replaces `cabal.inc`
+  itself. Inspect the result and run `make makesum`.
 - `CABAL_INC_HOME` keeps the temporary cabal home inside `WRKDIR`.
   `CABAL_INC_SKIP` and `CABAL_INC_EXTRA` control which packages are
   replaced by patched sources or forced to a fixed version.
@@ -243,7 +272,7 @@ time (`net/simplexmq` builds two servers and a library and is around
 two hours on amd64 with four jobs). Run the test suite with:
 
 ```sh
-make do-test
+make test
 ```
 
 The test plan must have been produced by the last `cabal-inc` run; the
@@ -253,12 +282,15 @@ first run needs network access for test-only dependencies.
 
 - [ ] Version variables bumped in the `Makefile`.
 - [ ] Generated file regenerated with the module target.
-- [ ] `make makesum` run in the order the module section describes.
+- [ ] `make makesum` run in the order the module section describes and
+      `make checksum` verified.
 - [ ] `make patch` applies cleanly, stale patches dropped.
 - [ ] Patches follow the repository format (one target file, `Index:`
-      header, SPDX identifier).
+      header, `diff -u -p` output, comment at most 72 columns, and an
+      SPDX identifier only when established).
 - [ ] `make update-plist` run if the installed file set changed.
 - [ ] `make port-lib-depends-check` passes.
 - [ ] `make package` succeeds.
-- [ ] `make do-test` passes where available.
+- [ ] `make test` (or the documented `do-test` target) passes where
+      available.
 - [ ] Package installs and the main binaries start.

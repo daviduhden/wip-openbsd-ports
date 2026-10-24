@@ -5,8 +5,16 @@
 share/examples/monero-lws/
 @sample ${SYSCONFDIR}/monero-lws/
 share/examples/monero-lws/monero-lws.conf
-@sample ${SYSCONFDIR}/monero-lws/monero-lws.conf
+@mode 0640
 @owner _monerod
 @group _monerod
+@sample ${SYSCONFDIR}/monero-lws/monero-lws.conf
+@mode
+@owner
+@group
+@owner _monerod
+@group _monerod
+@mode 0700
 @sample ${LOCALSTATEDIR}/monero-lws/
 @sample ${LOCALSTATEDIR}/log/monero-lws/
+@mode

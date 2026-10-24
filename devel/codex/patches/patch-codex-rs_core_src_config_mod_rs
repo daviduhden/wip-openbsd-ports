@@ -1,11 +1,25 @@
 Default to package-manager updates rather than checking upstream
-releases at startup. An explicit user setting still overrides this
-default.
+releases at startup, and reject managed trusted-snapshot replacement on
+OpenBSD. An explicit user setting still overrides the default.
 
 Index: codex-rs/core/src/config/mod.rs
 --- codex-rs/core/src/config/mod.rs.orig
 +++ codex-rs/core/src/config/mod.rs
-@@ -4199,7 +4199,7 @@ impl Config {
+@@ -407,6 +407,13 @@ impl Permissions {
+         &mut self,
+         snapshot: PermissionProfileSnapshot,
+     ) -> ConstraintResult<()> {
++        #[cfg(target_os = "openbsd")]
++        if matches!(
++            snapshot.permission_profile(),
++            PermissionProfile::Managed { .. }
++        ) {
++            return Err(codex_config::ConstraintError::OpenBsdManagedSandboxUnavailable);
++        }
+         let permission_profile = Constrained::allow_only(snapshot.permission_profile().clone());
+         self.permission_profile_state =
+             PermissionProfileState::from_constrained_snapshot(permission_profile, snapshot)?;
+@@ -4199,7 +4206,7 @@ impl Config {
          let compact_prompt = compact_prompt.or(file_compact_prompt);
          let review_model = override_review_model.or(cfg.review_model);
  

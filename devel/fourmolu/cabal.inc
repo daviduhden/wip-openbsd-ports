@@ -1,5 +1,3 @@
-MODCABAL_STEM		= fourmolu
-MODCABAL_VERSION	= 0.21.0.0
 MODCABAL_MANIFEST	= \
 	Cabal-syntax	3.16.1.0	2	\
 	Diff	2.0.1	0	\

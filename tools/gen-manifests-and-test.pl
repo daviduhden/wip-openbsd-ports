@@ -122,6 +122,32 @@ sub shell_quote {
     return "'$value'";
 }
 
+# Write a generated include to a sibling temporary file and replace the
+# destination only after a successful, non-empty generation.
+sub regenerate_include {
+    my ( $log, $dir, $target, $command ) = @_;
+    my $qdir  = shell_quote($dir);
+    my $tmp   = "$dir/.$target.$$";
+    my $qtmp  = shell_quote($tmp);
+    my $rc    = sh( $log, "cd $qdir && $command > $qtmp" );
+    if ($rc) {
+        unlink $tmp;
+        return $rc;
+    }
+    if ( !-s $tmp ) {
+        unlink $tmp;
+        logmsg("  generator produced an empty $target");
+        return 1;
+    }
+    if ( !rename( $tmp, "$dir/$target" ) ) {
+        my $err = $!;
+        unlink $tmp;
+        logmsg("  cannot replace $target: $err");
+        return 1;
+    }
+    return 0;
+}
+
 sub cap {
     my ($cmd) = @_;
     return '' if $DRYRUN;
@@ -156,7 +182,9 @@ sub find_ports {
             {
                 wanted => sub {
                     return unless basename($_) eq 'Makefile';
-                    return if $File::Find::name =~ m{/(CVS|files|patches)/};
+                    return
+                      if $File::Find::name =~
+                      m{/(CVS|files|patches|audit|logs)/};
                     open( my $fh, '<', $_ ) or die "$_: $!";
                     my $t = do { local $/ = undef; <$fh> // q{} };
                     close $fh or die "close $_: $!";
@@ -193,9 +221,12 @@ sub plists {
     open( my $fh, '<', "$dir/Makefile" ) or return ('PLIST');
     my $t = do { local $/ = undef; <$fh> // q{} };
     close $fh or die "close file: $!";
-    my ($packages) = $t =~ /^MULTI_PACKAGES\s*=\s*(.*)$/m;
-    return ('PLIST') unless defined $packages;
-    return map { "PLIST$_" } split /\s+/, $packages;
+    my @packages;
+    while ( $t =~ /^MULTI_PACKAGES\s*\+?=\s*(.*)$/mg ) {
+        push @packages, split /\s+/, $1;
+    }
+    return ('PLIST') unless @packages;
+    return map { "PLIST$_" } @packages;
 }
 
 # expected module manifests for a port, from its Makefile
@@ -225,7 +256,9 @@ sub port_deps {
     for my $var (qw(BUILD_DEPENDS LIB_DEPENDS RUN_DEPENDS TEST_DEPENDS)) {
         my $val = cap("cd $qdir && $MAKE show=$var");
         for my $tok ( split /\s+/, $val ) {
-            $deps{$1} = 1 if $tok =~ m{^([A-Za-z0-9_.+-]+/[A-Za-z0-9_.+-]+)};
+            $deps{$1} = 1
+              if $tok =~
+              m{^([A-Za-z0-9_.+-]+/[A-Za-z0-9_.+-]+(?:/[A-Za-z0-9_.+-]+)?)};
         }
     }
     return sort keys %deps;
@@ -261,6 +294,8 @@ my @ports = find_ports();
 die "no ports found under $PORTS\n" unless @ports;
 my %wip = map { $_ => 1 } @ports;
 @ports = grep { $_ eq $ONLY } @ports if length $ONLY;
+die "--only $ONLY does not name an installable port\n"
+  if length($ONLY) && !@ports;
 
 my @todo;
 if ($ALL) {
@@ -288,10 +323,11 @@ for my $item (@todo) {
       if grep { $_ eq 'distinfo' } @missing;
     $grc |= sh( $plog, "cd $qdir && $MAKE update-plist" )
       if grep { /^PLIST(?:-.+)?$/ } @missing;
-    $grc |= sh( $plog, "cd $qdir && $MAKE modgo-gen-modules > modules.inc" )
+    $grc |= regenerate_include( $plog, $dir, 'modules.inc',
+        "$MAKE modgo-gen-modules" )
       if grep { $_ eq 'modules.inc' } @missing;
-    $grc |= sh( $plog,
-"cd $qdir && { $MAKE modcargo-gen-crates-licenses || $MAKE modcargo-gen-crates; } > crates.inc"
+    $grc |= regenerate_include( $plog, $dir, 'crates.inc',
+        "{ $MAKE modcargo-gen-crates-licenses || $MAKE modcargo-gen-crates; }"
     ) if grep { $_ eq 'crates.inc' } @missing;
     $grc |= sh( $plog, "cd $qdir && $MAKE cabal-inc" )
       if grep { $_ eq 'cabal.inc' } @missing;
@@ -322,7 +358,7 @@ for my $item (@todo) {
     # 3. build and test
     my $brc = sh( $plog, "cd $qdir && $MAKE clean && $ENVM$MAKE $BUILD" );
     $r->{build} = $brc ? "FAIL($brc)" : 'ok';
-    if ($TESTS) {
+    if ( $TESTS && !$brc ) {
         my $no_test = cap("cd $qdir && $MAKE show=NO_TEST");
         if ( $no_test eq 'Yes' ) {
             $r->{test} = 'skip (NO_TEST)';

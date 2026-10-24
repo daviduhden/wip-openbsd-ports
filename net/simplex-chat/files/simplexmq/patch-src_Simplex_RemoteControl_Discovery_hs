@@ -1,16 +1,19 @@
-Bind multicast receivers to the wildcard address and join the group on each
-usable IPv4 interface.  OpenBSD associates membership with one interface, so
-INADDR_ANY alone is not sufficient on multihomed hosts.  Select the invitation
-address as the outgoing multicast interface as well, ensuring the datagram
-source matches the address authenticated by XRCP.
+Bind multicast receivers to the wildcard address and join the group on
+each usable IPv4 interface.  OpenBSD associates membership with one
+interface, so INADDR_ANY alone is not sufficient on multihomed hosts.
+Select the invitation address as the outgoing multicast interface as
+well, ensuring the datagram source matches the address authenticated by
+XRCP.
 
-Construct the listener directly because network-udp's wildcard path requires
-IP_PKTINFO, which OpenBSD does not have; recvfrom is sufficient here because
-discovery only needs the peer address.  Use SO_REUSEPORT as well as
-SO_REUSEADDR so concurrent listeners can bind the discovery port.
+Construct the listener directly because network-udp's wildcard path
+requires IP_PKTINFO, which OpenBSD does not have; recvfrom is sufficient
+here because discovery only needs the peer address.  Use SO_REUSEPORT as
+well as SO_REUSEADDR so concurrent listeners can bind the discovery
+port.
 
-Join INADDR_ANY only as a fallback, rather than repeating membership on an
-already joined default interface. Retain explicit multihomed memberships.
+Join INADDR_ANY only as a fallback, rather than repeating membership on
+an already joined default interface. Retain explicit multihomed
+memberships.
 
 Index: src/Simplex/RemoteControl/Discovery.hs
 --- src/Simplex/RemoteControl/Discovery.hs.orig

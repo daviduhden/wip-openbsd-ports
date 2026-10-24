@@ -4,12 +4,14 @@ condition.
 Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/linux/BUILD.gn
 --- codex-rs/modcargo-crates/v8-150.4.0/build/config/linux/BUILD.gn.orig
 +++ codex-rs/modcargo-crates/v8-150.4.0/build/config/linux/BUILD.gn
-@@ -41,7 +41,7 @@ config("runtime_library") {
+@@ -40,10 +40,6 @@ config("runtime_library") {
+     defines = [ "OS_CHROMEOS" ]
    }
  
-   if ((!is_chromeos || default_toolchain != "//build/toolchain/cros:target") &&
+-  if ((!is_chromeos || default_toolchain != "//build/toolchain/cros:target") &&
 -      (!use_custom_libcxx || current_cpu == "mipsel")) {
-+      (!use_custom_libcxx || current_cpu == "mipsel") && !is_bsd) {
-     libs = [ "atomic" ]
-   }
+-    libs = [ "atomic" ]
+-  }
  }
+ 
+ config("libcap") {

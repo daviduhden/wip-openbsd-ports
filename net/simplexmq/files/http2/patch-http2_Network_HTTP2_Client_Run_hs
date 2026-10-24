@@ -1,12 +1,13 @@
-Use the managed sender in runIO, as run already does. The IO sender requeues
-output without waiting for stream credit or body input. An empty producer
-queue or exhausted stream window can keep outputQ nonempty, spin, and leave
-partial DATA buffered while the peer waits for it before granting credit.
-Retain runIO response ownership: SimpleX consumes response bodies after
-cioReadResponse returns, so switching back to run would discard file bytes.
+Use the managed sender in runIO, as run already does. The IO sender
+requeues output without waiting for stream credit or body input. An
+empty producer queue or exhausted stream window can keep outputQ
+nonempty, spin, and leave partial DATA buffered while the peer waits for
+it before granting credit. Retain runIO response ownership: SimpleX
+consumes response bodies after cioReadResponse returns, so switching
+back to run would discard file bytes.
 
-nextForStreaming now retains the current chunk until its builder finishes;
-initialize that state once for each request body.
+nextForStreaming now retains the current chunk until its builder
+finishes; initialize that state once for each request body.
 
 Index: Network/HTTP2/Client/Run.hs
 --- Network/HTTP2/Client/Run.hs.orig

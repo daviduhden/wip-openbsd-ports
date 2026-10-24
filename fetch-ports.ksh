@@ -377,7 +377,7 @@ write_change_lists() {
 # shares with its subports (for example Makefile.inc) without touching any
 # sibling port.
 copy_directory() {
-	typeset category name target stage backup="" cvs topcat group label
+	typeset category name target stage backup="" cvs topcat group label shared_backup
 	validate_port_path "$DIRECTORY" || return 1
 	category=${DIRECTORY%/*}
 	name=${DIRECTORY##*/}
@@ -405,7 +405,23 @@ copy_directory() {
 		mkdir -p "$TARGET_TREE/$group" || return 1
 		for cvs in "$group"/*; do
 			[ -f "$cvs" ] || continue
+			# Shared group files are outside the child port's backup and
+			# change lists. Keep a separate copy before replacing one.
+			if [ -f "$TARGET_TREE/$group/${cvs##*/}" ]; then
+				if [ -L "$TARGET_TREE/.wip-backups" ]; then
+					error "Refusing symlinked backup directory"
+					return 1
+				fi
+				mkdir -p "$TARGET_TREE/.wip-backups" || return 1
+				shared_backup=$(mktemp -d \
+					"$TARGET_TREE/.wip-backups/$label.shared.XXXXXXXX") ||
+					return 1
+				cp -Rp "$TARGET_TREE/$group/${cvs##*/}" \
+					"$shared_backup/" || return 1
+				log "Previous shared file saved in $shared_backup"
+			fi
 			cp -Rp "$cvs" "$TARGET_TREE/$group/" || return 1
+			chmod a+r,go-w "$TARGET_TREE/$group/${cvs##*/}" || return 1
 		done
 		group=${group%/*}
 	done
@@ -414,6 +430,8 @@ copy_directory() {
 		return 1
 	}
 	cp -Rp "$DIRECTORY" "$stage/port" || return 1
+	# Ignored analysis and logs are not part of a port and must not reach CVS.
+	rm -rf "$stage/port/audit" "$stage/port/logs" || return 1
 	# A private Git checkout may be 0700/0600; _pbuild must read the port.
 	find "$stage/port" -type d -exec chmod a+rx,go-w {} + || return 1
 	find "$stage/port" -type f -exec chmod a+r,go-w {} + || return 1
@@ -466,8 +484,9 @@ copy_selected_directories() {
 	done
 }
 
-# Merge only accounts belonging to ports in this repository. Never replace
-# the cloned tree's registry with our potentially older upstream snapshot.
+# Merge only accounts belonging to the selected ports (or all local ports
+# when no scope is given). Never replace the cloned tree's registry with our
+# potentially older upstream snapshot.
 copy_user_list() {
 	typeset registry="$TARGET_TREE/infrastructure/db/user.list" stage ports
 	if [ ! -f user.list ]; then
@@ -480,45 +499,88 @@ copy_user_list() {
 		error "Missing or symlinked user registry: $registry"
 		return 1
 	fi
-	ports=$(list_all_directories) || return 1
+	if [ "$#" -gt 0 ]; then
+		ports=$(printf '%s\n' "$@")
+	else
+		ports=$(list_all_directories) || return 1
+	fi
 	stage=$(mktemp "$TARGET_TREE/infrastructure/db/.user.list.XXXXXXXX") ||
 		return 1
 	cp -p "$registry" "$stage" || return 1
 	if ! awk -v ports="$ports" '
 		BEGIN {
-			n = split(ports, paths, "\n")
-			for (i = 1; i <= n; i++) present[paths[i]] = 1
+			FS = "\t"
+			n = split(ports, paths, /[[:space:]]+/)
+			for (i = 1; i <= n; i++)
+				if (paths[i] != "") present[paths[i]] = 1
 		}
-		function localport(path, pos, prefix, count, names, j) {
-			if (path in present) return 1
+		function trim(value) {
+			sub(/^[ \t]+/, "", value)
+			sub(/[ \t]+$/, "", value)
+			return value
+		}
+		# The registry aligns columns with tabs but leaves some cells empty.
+		# Keep non-empty tab fields and split the first one into id and user.
+		function parse(   value, n, i, fields, iduser) {
+			n = 0
+			for (i = 1; i <= NF; i++) {
+				value = trim($i)
+				if (value != "") fields[++n] = value
+			}
+			pid = puser = pgroup = pport = ""
+			if (n < 2) return 0
+			split(fields[1], iduser, /[ \t]+/)
+			if (iduser[1] !~ /^[0-9]+$/) return 0
+			pid = iduser[1]
+			puser = iduser[2]
+			if (n >= 3) {
+				pgroup = fields[2]
+				pport = fields[3]
+				for (i = 4; i <= n; i++) pport = pport " " fields[i]
+			} else {
+				pport = fields[2]
+			}
+			return 1
+		}
+		function localport(path,   n, i, token, pos, prefix, names, j, count, toks) {
+			path = trim(path)
+			# Expand one brace group, for example net/{monero,monero-lws}.
 			pos = index(path, "{")
-			if (!pos || substr(path, length(path)) != "}") return 0
-			prefix = substr(path, 1, pos - 1)
-			count = split(substr(path, pos + 1, length(path) - pos - 1), names, ",")
-			for (j = 1; j <= count; j++)
-				if ((prefix names[j]) in present) return 1
+			if (pos && substr(path, length(path)) == "}") {
+				prefix = substr(path, 1, pos - 1)
+				count = split(substr(path, pos + 1, length(path) - pos - 1), names, ",")
+				for (j = 1; j <= count; j++)
+					if ((prefix names[j]) in present) return 1
+			}
+			# A row may list several ports separated by commas.
+			n = split(path, toks, ",")
+			for (i = 1; i <= n; i++) {
+				token = trim(toks[i])
+				if (token in present) return 1
+			}
 			return 0
 		}
 		NR == FNR {
-			if ($1 ~ /^[0-9]+$/ && localport($NF)) {
-				ids[++total] = $1
-				rows[$1] = $0
-				users[$1] = $2
-				groups[$1] = $3
+			if (parse() && localport(pport)) {
+				ids[++total] = pid
+				rows[pid] = $0
+				users[pid] = puser
+				groups[pid] = pgroup
 			}
 			next
 		}
-		$1 ~ /^[0-9]+$/ {
-			for (id in rows) {
-				if (($1 == id && ($2 != users[id] || $3 != groups[id])) ||
-					($1 != id && ($2 == users[id] || $3 == groups[id]))) {
-					print "Account ID/name conflict for local port: " rows[id] > "/dev/stderr"
-					bad = 1
+		{
+			if (parse()) {
+				for (id in rows) {
+					if ((pid == id && (puser != users[id] || pgroup != groups[id])) || (pid != id && ((puser != "" && puser == users[id]) || (pgroup != "" && pgroup == groups[id])))) {
+						print "Account ID/name conflict for local port: " rows[id] > "/dev/stderr"
+						bad = 1
+					}
 				}
+				seen[pid] = 1
 			}
-			seen[$1] = 1
+			print
 		}
-		{ print }
 		END {
 			if (bad) exit 1
 			for (i = 1; i <= total; i++)
@@ -620,7 +682,7 @@ main() {
 			SELECTED_DIRECTORIES="$*"
 			copy_selected_directories || return 1
 		fi
-		copy_user_list
+		copy_user_list "$@"
 		return $?
 		;;
 	--no-provision)
@@ -647,14 +709,16 @@ main() {
 		TARGET_TREE=$(canonical_target_tree "$TARGET_TREE") || return 1
 		if [ "${COPY_ALL:-0}" -eq 1 ]; then
 			copy_all_directories || return 1
+			copy_user_list || return 1
 		elif [ "${COPY_LIST:-0}" -eq 1 ]; then
 			prompt_selected_directories
 			copy_selected_directories || return 1
+			copy_user_list "$SELECTED_DIRECTORIES" || return 1
 		else
 			list_directories
 			copy_directory || return 1
+			copy_user_list "$DIRECTORY" || return 1
 		fi
-		copy_user_list || return 1
 	else
 		log "Skipping copy from wip-openbsd-ports."
 	fi

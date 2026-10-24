@@ -35,6 +35,10 @@ do-install:
 	${INSTALL_DATA} ${WRKSRC}/token2-piv-tool/COPYING \
 		${PREFIX}/share/doc/fido2-manage/COPYING
 
+# crates.inc is generated from the upstream Cargo.lock on OpenBSD. Keep the
+# conditional include so `make modcargo-gen-crates` can parse the Makefile
+# before the manifest exists; the generated file must be present before any
+# fetch or build.
 .if exists(${.CURDIR}/crates.inc)
 .include "crates.inc"
 .endif

@@ -238,7 +238,8 @@ cabal-inc: patch
 		perl ${FILESDIR}/cabal-deps-merge.pl \
 		${WRKDIR}/simplexmq.smp.inc ${WRKDIR}/simplexmq.xftp.inc \
 			${WRKDIR}/simplexmq.test.plan.json \
-			> ${.CURDIR}/cabal.inc
+			> ${WRKDIR}/cabal.inc.new
+	mv ${WRKDIR}/cabal.inc.new ${.CURDIR}/cabal.inc
 
 post-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/${PKGSTEM}

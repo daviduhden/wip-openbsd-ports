@@ -165,6 +165,34 @@ sub show_var {
     return cap("cd $qdir && $MAKE show=$var");
 }
 
+# Run a generator that must produce one include file. Write to a sibling
+# temporary file so a failed or interrupted run cannot truncate the include
+# that make is currently reading; replace the destination only on success.
+sub regenerate_include {
+    my ( $log, $dir, $target, $command ) = @_;
+    my $qdir  = shell_quote($dir);
+    my $tmp   = "$dir/.$target.$$";
+    my $qtmp  = shell_quote($tmp);
+    my $qdest = shell_quote("$dir/$target");
+    my $rc    = sh( $log, "cd $qdir && $command > $qtmp" );
+    if ($rc) {
+        unlink $tmp;
+        return $rc;
+    }
+    if ( !-s $tmp ) {
+        unlink $tmp;
+        logmsg("  generator produced an empty $target");
+        return 1;
+    }
+    if ( !rename( $tmp, "$dir/$target" ) ) {
+        my $err = $!;
+        unlink $tmp;
+        logmsg("  cannot replace $target: $err");
+        return 1;
+    }
+    return 0;
+}
+
 # every directory under the collection that carries a Makefile is a port
 sub find_ports {
     my @ports;
@@ -182,7 +210,13 @@ sub find_ports {
             {
                 wanted => sub {
                     return unless basename($_) eq 'Makefile';
-                    return if $File::Find::name =~ m{/(CVS|files|patches)/};
+                    return
+                      if $File::Find::name =~
+                      m{/(CVS|files|patches|audit|logs)/};
+                    open( my $fh, '<', $_ ) or die "$_: $!";
+                    my $t = do { local $/ = undef; <$fh> // q{} };
+                    close $fh or die "close $_: $!";
+                    return if $t =~ /bsd\.port\.subdir\.mk/;
                     my $rel = File::Spec->abs2rel( $File::Find::name, $WIP );
                     ( my $dir = dirname($rel) ) =~ s{^\./}{};
                     push @ports, $dir;
@@ -203,7 +237,9 @@ sub port_deps {
     my %deps;
     for my $var (qw(BUILD_DEPENDS LIB_DEPENDS RUN_DEPENDS TEST_DEPENDS)) {
         for my $tok ( split /\s+/, show_var( $dir, $var ) ) {
-            $deps{$1} = 1 if $tok =~ m{^([A-Za-z0-9_.+-]+/[A-Za-z0-9_.+-]+)};
+            $deps{$1} = 1
+              if $tok =~
+              m{^([A-Za-z0-9_.+-]+/[A-Za-z0-9_.+-]+(?:/[A-Za-z0-9_.+-]+)?)};
         }
     }
     return sort keys %deps;
@@ -211,6 +247,10 @@ sub port_deps {
 
 sub ensure_tree {
     return if $SKIPCVS;
+    if ($DRYRUN) {
+        logmsg("dry-run: not creating or refreshing $PORTS");
+        return;
+    }
     my $qports   = shell_quote($PORTS);
     my $qcvsroot = shell_quote($CVSROOT);
     if ( !-d "$PORTS/CVS" ) {
@@ -229,6 +269,7 @@ sub ensure_tree {
 
 sub sync_ports {
     my (@ports) = @_;
+    return if $DRYRUN;
     my $has_rsync = length cap('command -v rsync');
     for my $p (@ports) {
         my $src = File::Spec->catdir( $WIP,   split m{/}, $p );
@@ -237,10 +278,13 @@ sub sync_ports {
         my $qsrc          = shell_quote("$src/");
         my $qsrc_contents = shell_quote("$src/.");
         my $qdst          = shell_quote("$dst/");
+        # Preserve the destination's CVS metadata. The source tree is a Git
+        # overlay and may also contain ignored audit/log material that must
+        # not be copied into a ports checkout.
         my $cmd =
           $has_rsync
-          ? "rsync -a --delete $qsrc $qdst"
-          : "cp -Rp $qsrc_contents $qdst";
+          ? "rsync -a --delete --exclude=CVS --exclude=audit --exclude=logs $qsrc $qdst"
+          : "find $qdst -mindepth 1 -maxdepth 1 ! -name CVS -exec rm -rf -- {} + && cp -Rp $qsrc_contents $qdst";
         sh( $MASTER, $cmd ) == 0 or die "port overlay failed: $p\n";
     }
     return;
@@ -281,6 +325,8 @@ my @all_ports = find_ports();
 die "no ports found under $WIP\n" unless @all_ports;
 my %wip   = map                  { $_ => 1 } @all_ports;
 my @ports = length($ONLY) ? grep { $_ eq $ONLY } @all_ports : @all_ports;
+die "--only $ONLY does not name an installable port\n"
+  if length($ONLY) && !@ports;
 logmsg( "ports to build: " . scalar(@ports) );
 
 ensure_tree();
@@ -300,12 +346,12 @@ for my $p (@order) {
     my $mrc = 0;
     $mrc |= sh( $plog, "cd $qdir && $ENVM$MAKE makesum" );
     if ( -e "$dir/modules.inc" ) {
-        $mrc |=
-          sh( $plog, "cd $qdir && $MAKE modgo-gen-modules > modules.inc" );
+        $mrc |= regenerate_include( $plog, $dir, 'modules.inc',
+            "$MAKE modgo-gen-modules" );
     }
     if ( -e "$dir/crates.inc" ) {
-        $mrc |= sh( $plog,
-"cd $qdir && { $MAKE modcargo-gen-crates-licenses || $MAKE modcargo-gen-crates; } > crates.inc"
+        $mrc |= regenerate_include( $plog, $dir, 'crates.inc',
+            "{ $MAKE modcargo-gen-crates-licenses || $MAKE modcargo-gen-crates; }"
         );
     }
     if ( -e "$dir/cabal.inc" ) {
@@ -339,8 +385,8 @@ for my $p (@order) {
     $brc ||= sh( $plog, "cd $qdir && $ENVM$MAKE $BUILDTGT" );
     $r->{build} = $brc ? "FAIL($brc)" : 'ok';
 
-    # 4. tests
-    if ($TESTS) {
+    # 4. tests, only after a successful build
+    if ( $TESTS && !$brc ) {
         my $no_test = show_var( $dir, 'NO_TEST' );
         if ( $no_test eq 'Yes' ) {
             $r->{test} = 'skip (NO_TEST)';

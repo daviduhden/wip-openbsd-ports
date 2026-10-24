@@ -1,54 +1,29 @@
 Validate the system package manifest and executable version without
-copying a CLI package into CODEX_HOME. Reject explicit --from-cli
-replacement of an executable owned by the system package manager.
+copying a CLI package into CODEX_HOME. Reject --from-cli replacement of
+an executable owned by the system package manager.
 
 Index: codex-rs/app-server-daemon/src/prepare_install.rs
 --- codex-rs/app-server-daemon/src/prepare_install.rs.orig
 +++ codex-rs/app-server-daemon/src/prepare_install.rs
-@@ -26,6 +26,37 @@ pub struct InstallRequest {
+@@ -24,6 +24,12 @@ pub struct InstallRequest {
+     pub restart_required: bool,
+ }
  
++#[cfg(target_os = "openbsd")]
++pub(super) async fn prepare(daemon: &Daemon, _settings: &DaemonSettings) -> Result<()> {
++    daemon.ensure_managed_codex_bin()
++}
++
++#[cfg(not(target_os = "openbsd"))]
  /// Prepare a missing package while the caller holds the daemon operation lock.
  pub(super) async fn prepare(daemon: &Daemon, settings: &DaemonSettings) -> Result<()> {
-+    if let Some(path) = managed_install::system_codex_bin() {
-+        daemon.ensure_managed_codex_bin()?;
-+        let context = InstallContext::from_exe(
-+            cfg!(target_os = "macos"),
-+            Some(path),
-+            /*method_override*/ None,
-+        );
-+        let manifest = context.package_manifest().with_context(|| {
-+            format!(
-+                "system Codex package metadata missing or invalid for {}; reinstall the codex package with pkg_add",
-+                path.display()
-+            )
-+        })?;
-+        let expected = env!("CARGO_PKG_VERSION");
-+        anyhow::ensure!(
-+            manifest.version.to_string() == expected,
-+            "system Codex package version {} differs from CLI version {expected}; update the codex package with pkg_add -u",
-+            manifest.version
-+        );
-+        let version = tokio::time::timeout(
-+            std::time::Duration::from_secs(5),
-+            managed_install::managed_codex_version(path),
-+        )
-+        .await
-+        .context("timed out checking the system Codex executable version")??;
-+        anyhow::ensure!(
-+            version == expected,
-+            "system Codex executable version {version} differs from CLI version {expected}; update the codex package with pkg_add -u"
-+        );
-+        return Ok(());
-+    }
      let source = InstallContext::current().package_layout.as_ref();
-     // Keep package replacement state out of the CLI dispatcher's async stack frame.
-     Box::pin(prepare_from_package(
-@@ -46,6 +77,10 @@ pub async fn update_from_cli(
+@@ -46,6 +52,10 @@ pub async fn update_from_cli(
      confirm: impl FnOnce(&InstallRequest) -> Result<bool>,
  ) -> Result<Option<crate::UpdateOutput>> {
      crate::ensure_supported_platform()?;
 +    anyhow::ensure!(
-+        managed_install::system_codex_bin().is_none(),
++        !cfg!(target_os = "openbsd"),
 +        "the daemon is managed by the system package manager; use pkg_add -u"
 +    );
      #[cfg(windows)]

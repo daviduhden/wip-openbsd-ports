@@ -1,13 +1,14 @@
-Adapt to http2 5.x without returning streamed bodies from H.run's callback:
-H.run drains queued DATA when that callback returns, while SimpleX passes
-the body reader to another thread. Use the explicit stream-ownership API;
-normal body reads still update flow-control windows. The optional Aux
-stream/ping helpers are not used by SimpleX.
+Adapt to http2 5.x without returning streamed bodies from H.run's
+callback: H.run drains queued DATA when that callback returns, while
+SimpleX passes the body reader to another thread. Use the explicit
+stream-ownership API; normal body reads still update flow-control
+windows. The optional Aux stream/ping helpers are not used by SimpleX.
 
 Own setup workers across cancellation and failed acquisition, and unmask
-their bodies even when the caller brackets client creation. Error publication
-must not block behind an already published client. Join workers on failure
-and close with interruptible cancel so TLS shutdown deadlines can fire.
+their bodies even when the caller brackets client creation. Error
+publication must not block behind an already published client. Join
+workers on failure and close with interruptible cancel so TLS shutdown
+deadlines can fire.
 
 Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
 --- src/Simplex/Messaging/Transport/HTTP2/Client.hs.orig

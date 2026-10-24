@@ -16,12 +16,13 @@ To validate the actual sandbox after building/installing Codex on OpenBSD:
 
 That separate native suite compiles small C/Rust/Cargo fixtures.
 
-The local Perl::Critic installation can be used without persistent changes:
+The local Perl::Critic installation can be used without persistent changes.
+Adjust the paths if your local install uses a different prefix:
 
-    env PATH=/var/home/david/perl5/bin:$PATH \
-        PERL5LIB=/var/home/david/perl5/lib/perl5 \
+    env PATH="$HOME/perl5/bin:$PATH" \
+        PERL5LIB="$HOME/perl5/lib/perl5" \
         perlcritic --severity 1 tools/*.pl tools/t/*.t \
         devel/codex/files/*.pl net/simplex-chat/files/*.pl net/simplexmq/files/*.pl
 
 No critic policy exclusions are installed. Remaining default-policy findings
-are adjudicated in the local audit/perl-critic/report.md maintenance report.
+are recorded in local maintenance notes under `audit/`, which is not tracked.

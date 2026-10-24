@@ -14,15 +14,6 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
  
    # This switch is used to enable -Wexit-time-destructors by default. This
    # warning serves as a flip switch to allow a gradual migration of targets
-@@ -296,7 +296,7 @@ assert(is_bot ||
- #
- # Since this is referenced both when passing the file and when deciding which
- # warnings to enable, store it in a separate variable here.
--use_clang_warning_suppression_file =
-+use_clang_warning_suppression_file = !is_bsd &&
-     is_clang && clang_warning_suppression_file != ""
- 
- # default_include_dirs ---------------------------------------------------------
 @@ -314,13 +314,16 @@ config("default_include_dirs") {
  # Compiler instrumentation can introduce dependencies in DSOs to symbols in
  # the executable they are loaded into, so they are unresolved at link-time.
@@ -118,13 +109,10 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
  }
  
  config("rustc_revision") {
-@@ -1930,13 +1939,17 @@ config("default_warnings") {
-       # TODO(crbug.com/376641662): Fix and re-enable.
-       "-Wno-nontrivial-memcall",
+@@ -1933,10 +1942,15 @@ config("default_warnings") {
+       # TODO(crbug.com/432275627): Fix and re-enable.
+       "-Wno-uninitialized-const-pointer",
  
--      # TODO(crbug.com/432275627): Fix and re-enable.
--      "-Wno-uninitialized-const-pointer",
--
 -      # TODO(crbug.com/495753203): Fix and re-enable.
 -      "-Wno-unused-but-set-global",
      ]
@@ -133,15 +121,13 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
 +      cflags += [
 +        # TODO(crbug.com/495753203): Fix and re-enable.
 +        "-Wno-unused-but-set-global",
-+        # TODO(crbug.com/432275627): Fix and re-enable.
-+        "-Wno-uninitialized-const-pointer",
 +      ]
 +    }
 +
      cflags_cc += [
        # TODO(crbug.com/328490295): Fix and re-enable for C flags.
        "-Wenum-compare-conditional",
-@@ -2304,8 +2317,8 @@ config("export_dynamic") {
+@@ -2304,8 +2318,8 @@ config("export_dynamic") {
  # 2. Remove the thin_archive config, so that the .a file actually contains all
  #    .o files, instead of just references to .o files in the build directoy
  config("thin_archive") {
@@ -152,7 +138,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
      # The macOS and iOS linker ld64.ldd doesn't support thin archive without
      # symbol table, gcc on linux also throws the error `archive has no index`.
      # AIX does support -s option, not -S option.
-@@ -2748,7 +2761,7 @@ config("afdo_optimize_size") {
+@@ -2748,7 +2762,7 @@ config("afdo_optimize_size") {
  # There are some targeted places that AFDO regresses, so we provide a separate
  # config to allow AFDO to be disabled per-target.
  config("afdo") {
@@ -161,7 +147,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
      cflags = []
      if (clang_emit_debug_info_for_profiling) {
        # Add the following flags to generate debug info for profiling.
-@@ -2775,7 +2788,7 @@ config("afdo") {
+@@ -2775,7 +2789,7 @@ config("afdo") {
        cflags += [ "-Wno-backend-plugin" ]
        inputs = [ _clang_sample_profile ]
      }
@@ -170,7 +156,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
      cflags = [ "-fauto-profile=${auto_profile_path}" ]
      inputs = [ auto_profile_path ]
    }
-@@ -2827,10 +2840,6 @@ config("split_dwarf") {
+@@ -2827,10 +2841,6 @@ config("split_dwarf") {
    # thinlto requires -gsplit-dwarf in ldflags.
    if (use_thin_lto && !is_apple) {
      ldflags = split_dwarf_flags
@@ -181,7 +167,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
    }
  }
  
-@@ -2909,7 +2918,7 @@ config("symbols") {
+@@ -2909,7 +2919,7 @@ config("symbols") {
      }
  
      if (current_os != "zos") {
@@ -190,7 +176,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
      }
  
      if (is_clang && !is_tsan && !is_asan && !use_dwarf5) {
-@@ -2932,7 +2941,7 @@ config("symbols") {
+@@ -2932,7 +2942,7 @@ config("symbols") {
      # Disable debugger index for Android, which uses lldb. lldb can create (and
      # cache) its own index in about 20 seconds, so there's no need to pay the
      # price of an index on every link.
@@ -199,7 +185,7 @@ Index: codex-rs/modcargo-crates/v8-150.4.0/build/config/compiler/BUILD.gn
                          (use_lld || use_mold) && !is_wasm && !is_android
      if (_add_symbol_index) {
        if (use_dwarf5) {
-@@ -2972,7 +2981,7 @@ config("symbols") {
+@@ -2972,7 +2982,7 @@ config("symbols") {
      cflags += [ "-gomit-unreferenced-methods" ]
    }
  

@@ -1,4 +1,5 @@
-Do not add liblzma to libunwind on OpenBSD; base libunwind does not need it.
+Do not add liblzma to libunwind on OpenBSD; base libunwind does not need
+it.
 
 Index: cmake/FindLibunwind.cmake
 --- cmake/FindLibunwind.cmake.orig

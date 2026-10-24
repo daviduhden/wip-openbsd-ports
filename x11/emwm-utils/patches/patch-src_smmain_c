@@ -3,8 +3,10 @@ reading password hashes with getpwnam_shadow(3) and crypt(3), so xmsm
 does not need setuid-root privileges. The package installs xmsm setgid
 auth so auth_userokay(3) can use the auth-xmsm authentication style.
 
-Keep upstream authentication and privilege handling unchanged for other
-operating systems.
+Drop the effective auth group before starting children, and reacquire it
+only around auth_userokay(3). This prevents the window manager, launcher
+and session script from inheriting group auth. Keep upstream
+authentication and privilege handling unchanged for other systems.
 
 Index: src/smmain.c
 --- src/smmain.c.orig
@@ -19,7 +21,31 @@ Index: src/smmain.c
  #endif
  #include "smglobal.h"
  #include "smconf.h"
-@@ -417,7 +420,9 @@ static void lock_screen(void)
+@@ -200,6 +203,9 @@ XtResource xrdb_resources[]={
+ #define log_msg(fmt,...) fprintf(stderr,"[XMSM] "fmt,##__VA_ARGS__)
+ 
+ char *bin_name = NULL;
++#ifdef __OpenBSD__
++static gid_t auth_gid;
++#endif
+ static Atom xa_mgr;
+ static Atom xa_pid;
+ static Atom xa_cmd;
+@@ -239,6 +245,13 @@ int main(int argc, char **argv)
+ 	
+ 	bin_name = argv[0];
+ 
++#ifdef __OpenBSD__
++	auth_gid = getegid();
++	if(setegid(getgid()) == -1){
++		log_msg("Cannot drop authentication group: %s\n",strerror(errno));
++		return EXIT_FAILURE;
++	}
++#endif
+ 	set_privileges(False);
+ 		
+ 	rsignal(SIGCHLD, sigchld_handler);
+@@ -417,7 +430,9 @@ static void lock_screen(void)
  {
  	Boolean can_auth = False;
  	char *login;
@@ -29,7 +55,7 @@ Index: src/smmain.c
  	
  	if(scr_locked) return;
  	
-@@ -429,6 +434,11 @@ static void lock_screen(void)
+@@ -429,6 +444,11 @@ static void lock_screen(void)
  		app_res.enable_locking = False;
  		return;
  	}
@@ -41,7 +67,7 @@ Index: src/smmain.c
  	
  	if(set_privileges(True)) {
  
-@@ -451,6 +461,7 @@ static void lock_screen(void)
+@@ -451,6 +471,7 @@ static void lock_screen(void)
  
  		set_privileges(False);
  	}
@@ -49,7 +75,7 @@ Index: src/smmain.c
  
  	if(!can_auth){
  		if(!app_res.silent) XBell(XtDisplay(wshell), 100);
-@@ -873,13 +884,30 @@ static int local_x_err_handler(Display *dpy, XErrorEve
+@@ -873,13 +894,38 @@ static int local_x_err_handler(Display *
  static void passwd_enter_cb(Widget w,
  	XtPointer client_data, XtPointer call_data)
  {
@@ -68,7 +94,15 @@ Index: src/smmain.c
  	login = get_login();
 +
 +#ifdef __OpenBSD__
++	if(setegid(auth_gid) == -1){
++		log_msg("Cannot enable authentication group: %s\n",strerror(errno));
++		return;
++	}
 +	auth_result = auth_userokay(login, NULL, "auth-xmsm", pwb);
++	if(setegid(getgid()) == -1){
++		log_msg("Cannot drop authentication group: %s\n",strerror(errno));
++		return;
++	}
 +	if (auth_result) {
 +		unlock_screen();
 +		set_unlock_message(NULL);
@@ -80,7 +114,7 @@ Index: src/smmain.c
  	
  	set_privileges(True);
  	
-@@ -915,6 +943,7 @@ static void passwd_enter_cb(Widget w,
+@@ -915,6 +961,7 @@ static void passwd_enter_cb(Widget w,
  		if(!app_res.silent) XBell(XtDisplay(w),100);
  		set_unlock_message(MSG_NOACCESS);
  	}
@@ -88,7 +122,7 @@ Index: src/smmain.c
  
  	memset(pwb,0,strlen(pwb));
  	XmTextFieldSetString(wpasswd,"");
-@@ -1009,8 +1038,12 @@ static Boolean set_privileges(Boolean elevate)
+@@ -1009,8 +1056,12 @@ static Boolean set_privileges(Boolean el
  		orig_gid = getegid();
  
  		if(orig_uid != 0){
@@ -101,3 +135,23 @@ Index: src/smmain.c
  			initialized = True;
  			can_elevate = False;
  			return False;
+@@ -1110,8 +1161,8 @@ static int launch_process(const char *pa
+ 		setpgrp(fpid,fpid);
+ 		#endif /* __linux__ || __svr4__ */
+ 		
+-		setuid(geteuid());
+-		setgid(getegid());
++		setuid(getuid());
++		setgid(getgid());
+ 
+ 		if(execv(argv[0], argv) == (-1)) errval = errno;
+ 		_exit(0);
+@@ -1165,6 +1216,8 @@ static void process_sessionetc(void)
+ 		setpgrp(fpid,fpid);
+ 		#endif /* __linux__ || __svr4__ */
+ 				
++		setgid(getgid());
++		setuid(getuid());
+ 		if(execvp("sh",argv) == (-1)) errval = errno;
+ 		_exit(0);
+ 	}else if(pid == (-1)){

@@ -1,6 +1,6 @@
-Use LLVM 22 for C and C++, LLVM MC for raw assembly, and
-OpenBSD libedit for readline-compatible console editing. Set C++17
-and conservative release flags, and detect OpenBSD system libraries.
+Use LLVM 22 for C and C++, LLVM MC for raw assembly, and OpenBSD libedit
+for readline-compatible console editing. Set C++17 and conservative
+release flags, and detect OpenBSD system libraries.
 
 Index: CMakeLists.txt
 --- CMakeLists.txt.orig

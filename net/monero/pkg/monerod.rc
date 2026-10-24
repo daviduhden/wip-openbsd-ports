@@ -8,6 +8,5 @@ daemon_flags="--detach --config-file=${SYSCONFDIR}/monero/monerod.conf"
 
 rc_bg=YES
 rc_reload=NO
-rc_stop_signal=KILL
 
 rc_cmd "$1"

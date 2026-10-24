@@ -1,5 +1,5 @@
-Build and link epee_readline when OpenBSD libedit supplies the
-readline API, and install the target when GUI dependencies are built.
+Build and link epee_readline when OpenBSD libedit supplies the readline
+API, and install the target when GUI dependencies are built.
 
 Index: contrib/epee/src/CMakeLists.txt
 --- contrib/epee/src/CMakeLists.txt.orig

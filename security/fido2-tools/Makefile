@@ -11,7 +11,7 @@ HOMEPAGE =	https://github.com/Yubico/libfido2
 # BSD 2-Clause
 PERMIT_PACKAGE =	Yes
 
-WANTLIB +=	cbor crypto fido2 z c
+WANTLIB +=	cbor crypto fido2 z
 
 MODULES =	devel/cmake
 COMPILER =	base-clang

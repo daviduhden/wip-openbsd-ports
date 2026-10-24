@@ -56,7 +56,6 @@ completed.
 
 Index: tests/AgentTests/FunctionalAPITests.hs
 
-Index: tests/AgentTests/FunctionalAPITests.hs
 --- tests/AgentTests/FunctionalAPITests.hs.orig
 +++ tests/AgentTests/FunctionalAPITests.hs
 @@ -33,6 +33,8 @@ module AgentTests.FunctionalAPITests

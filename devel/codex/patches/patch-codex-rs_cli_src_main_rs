@@ -1,6 +1,7 @@
 Raise the CLI macro recursion limit and dispatch codex sandbox on
 OpenBSD. Include OpenBSD in the common sandbox argument parser
-regressions.
+regressions. Reject the package-manager update path with an explicit
+pkg_add message.
 
 Index: codex-rs/cli/src/main.rs
 --- codex-rs/cli/src/main.rs.orig
@@ -11,136 +12,13 @@ Index: codex-rs/cli/src/main.rs
  use clap::Args;
  use clap::CommandFactory;
  use clap::Parser;
-@@ -480,11 +482,23 @@ type HostSandboxArgs = codex_cli::Seatbe
- type HostSandboxArgs = codex_cli::LandlockCommand;
- #[cfg(target_os = "windows")]
- type HostSandboxArgs = codex_cli::WindowsCommand;
-+#[cfg(target_os = "openbsd")]
-+type HostSandboxArgs = codex_cli::OpenBsdCommand;
+@@ -872,6 +874,9 @@ fn resolve_windows_update_command_from_p
+ }
  
--#[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
-+#[cfg(not(any(
-+    target_os = "macos",
-+    target_os = "linux",
-+    target_os = "windows",
-+    target_os = "openbsd"
-+)))]
- type HostSandboxArgs = UnsupportedSandboxArgs;
- 
--#[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
-+#[cfg(not(any(
-+    target_os = "macos",
-+    target_os = "linux",
-+    target_os = "windows",
-+    target_os = "openbsd"
-+)))]
- #[derive(Debug, Parser)]
- struct UnsupportedSandboxArgs {
-     /// Layer $CODEX_HOME/<name>.config.toml on top of the base user config.
-@@ -1717,6 +1731,8 @@ async fn cli_main(
-                 loader_overrides,
-             )
-             .await?;
-+            #[cfg(target_os = "openbsd")]
-+            codex_cli::run_command_under_openbsd(sandbox_cli, loader_overrides).await?;
-             #[cfg(target_os = "windows")]
-             codex_cli::run_command_under_windows_sandbox(
-                 sandbox_cli,
-@@ -1724,7 +1740,12 @@ async fn cli_main(
-                 loader_overrides,
-             )
-             .await?;
--            #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
-+            #[cfg(not(any(
-+                target_os = "macos",
-+                target_os = "linux",
-+                target_os = "windows",
-+                target_os = "openbsd"
-+            )))]
-             {
-                 let _ = loader_overrides;
-                 anyhow::bail!("`codex sandbox` is not supported on this operating system");
-@@ -3649,7 +3670,12 @@ enabled = true
-         }
-     }
- 
--    #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
-+    #[cfg(any(
-+        target_os = "macos",
-+        target_os = "linux",
-+        target_os = "windows",
-+        target_os = "openbsd"
-+    ))]
-     #[test]
-     fn sandbox_parses_permission_profile() {
-         let cli = MultitoolCli::try_parse_from([
-@@ -3670,7 +3696,12 @@ enabled = true
-         assert_eq!(command.command, vec!["echo"]);
-     }
- 
--    #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
-+    #[cfg(any(
-+        target_os = "macos",
-+        target_os = "linux",
-+        target_os = "windows",
-+        target_os = "openbsd"
-+    ))]
-     #[test]
-     fn sandbox_parses_legacy_permissions_profile_alias() {
-         let cli = MultitoolCli::try_parse_from([
-@@ -3691,7 +3722,12 @@ enabled = true
-         assert_eq!(command.command, vec!["echo"]);
-     }
- 
--    #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
-+    #[cfg(any(
-+        target_os = "macos",
-+        target_os = "linux",
-+        target_os = "windows",
-+        target_os = "openbsd"
-+    ))]
-     #[test]
-     fn sandbox_help_only_shows_singular_permission_profile() {
-         let help = help_from_args(&["codex", "sandbox", "--help"]);
-@@ -3699,7 +3735,12 @@ enabled = true
-         assert!(!help.contains("--permissions-profile"), "{help}");
-     }
- 
--    #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
-+    #[cfg(any(
-+        target_os = "macos",
-+        target_os = "linux",
-+        target_os = "windows",
-+        target_os = "openbsd"
-+    ))]
-     #[test]
-     fn sandbox_parses_permissions_profile_short_alias() {
-         let cli =
-@@ -3714,7 +3755,12 @@ enabled = true
-         assert_eq!(command.command, vec!["echo"]);
-     }
- 
--    #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
-+    #[cfg(any(
-+        target_os = "macos",
-+        target_os = "linux",
-+        target_os = "windows",
-+        target_os = "openbsd"
-+    ))]
-     #[test]
-     fn sandbox_parses_config_profile() {
-         let cli =
-@@ -3729,7 +3775,12 @@ enabled = true
-         assert_eq!(command.command, vec!["echo"]);
-     }
- 
--    #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
-+    #[cfg(any(
-+        target_os = "macos",
-+        target_os = "linux",
-+        target_os = "windows",
-+        target_os = "openbsd"
-+    ))]
-     #[test]
-     fn sandbox_rejects_explicit_profile_controls_without_profile() {
-         let err = MultitoolCli::try_parse_from(["codex", "sandbox", "-C", "/tmp"])
+ fn run_update_command() -> anyhow::Result<()> {
++    if cfg!(target_os = "openbsd") {
++        anyhow::bail!("Codex is managed by OpenBSD packages; update with pkg_add -u, then restart the daemon");
++    }
+     #[cfg(debug_assertions)]
+     {
+         anyhow::bail!(

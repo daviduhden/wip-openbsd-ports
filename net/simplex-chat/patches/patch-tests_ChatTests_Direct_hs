@@ -30,7 +30,6 @@ asserting the one OpenBSD happened to report.
 
 Index: tests/ChatTests/Direct.hs
 
-Index: tests/ChatTests/Direct.hs
 --- tests/ChatTests/Direct.hs.orig
 +++ tests/ChatTests/Direct.hs
 @@ -15,18 +15,23 @@ import ChatTests.DBUtils

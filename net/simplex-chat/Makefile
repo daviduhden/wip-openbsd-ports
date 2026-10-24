@@ -308,7 +308,8 @@ cabal-inc: patch
 		perl ${FILESDIR}/cabal-deps-merge.pl \
 		${WRKDIR}/simplex-chat.raw.inc \
 			${WRKDIR}/simplex-chat.test.plan.json \
-			> ${.CURDIR}/cabal.inc
+			> ${WRKDIR}/cabal.inc.new
+	mv ${WRKDIR}/cabal.inc.new ${.CURDIR}/cabal.inc
 
 post-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/${PKGSTEM}

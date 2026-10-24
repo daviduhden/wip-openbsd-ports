@@ -51,7 +51,7 @@ Index: token2-piv-gui/src-tauri/src/bin/fido2-manage.rs
      let mut out = String::new();
      let mut byte = [0u8; 1];
      let mut stdin = std::io::stdin();
-@@ -204,11 +208,11 @@ fn read_masked() -> R<String> {
+@@ -204,10 +208,10 @@ fn read_masked() -> R<String> {
          match byte[0] {
              b'\r' | b'\n' => break,
              8 | 127 => { if out.pop().is_some() { eprint!("\u{8} \u{8}"); std::io::stderr().flush().ok(); } }

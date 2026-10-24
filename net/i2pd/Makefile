@@ -40,6 +40,7 @@ post-install:
 	${INSTALL_DATA} ${WRKDIST}/contrib/certificates/${dir}/* \
 		${WRKINST}${LOCALSTATEDIR}/i2pd/certificates/${dir}
 .endfor
+	${INSTALL_DATA_DIR} ${WRKINST}${SYSCONFDIR}/i2pd/tunnels.d
 	${SUBST_DATA} ${FILESDIR}/i2pd.conf \
 		${PREFIX}/share/examples/i2pd/i2pd.conf
 	${INSTALL_DATA} ${FILESDIR}/tunnels.conf \

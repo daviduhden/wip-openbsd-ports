@@ -1,4 +1,5 @@
-Replace random's removed genByteString helper with a small local equivalent.
+Replace random's removed genByteString helper with a small local
+equivalent.
 
 Index: src/Simplex/Messaging/Server/MsgStore/Journal.hs
 --- src/Simplex/Messaging/Server/MsgStore/Journal.hs.orig

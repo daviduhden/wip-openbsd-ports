@@ -1,5 +1,5 @@
-Point depends-mode CMake at OpenBSD base libedit and curses; use
-bundled dependency paths for other target systems.
+Point depends-mode CMake at OpenBSD base libedit and curses; use bundled
+dependency paths for other target systems.
 
 Index: contrib/depends/toolchain.cmake.in
 --- contrib/depends/toolchain.cmake.in.orig

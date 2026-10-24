@@ -1,5 +1,6 @@
-Backport Monero c93c4fc: use std::make_unsigned instead of the Boost trait
-that Clang 21 and newer reject for enums whose valid range excludes -1.
+Backport Monero c93c4fc: use std::make_unsigned instead of the Boost
+trait that Clang 21 and newer reject for enums whose valid range
+excludes -1.
 
 Index: src/serialization/binary_archive.h
 --- src/serialization/binary_archive.h.orig

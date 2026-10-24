@@ -2,39 +2,53 @@
 | Running ${PKGSTEM} on OpenBSD
 +-----------------------------------------------------------------------
 
-The OpenBSD command sandbox is currently unavailable without the legacy
-execution promise. Restricted filesystem profiles are rejected before command
-execution, including profiles with network access enabled explicitly.
+Codex is a terminal-based coding agent. This package includes the OpenBSD
+platform patches, including V8/Code Mode, and installs the upstream names
+and default ~/.codex state.
 
-The kernel clears unveil rules on execve unless execpromises are installed.
-Using unveil alone in a launcher would therefore run the target with no
-filesystem restrictions. The backend checks this limitation in both the
-controller and helper and fails closed. It does not request exec or error.
-Network isolation and managed-proxy containment are also unsupported.
+No local command sandbox is available. Managed sandbox profiles are
+rejected, including profile changes during sessions. To authorize ordinary
+user access explicitly, use:
 
-The danger-full-access profile is an explicit opt-out and continues to run
-commands without a sandbox. This package does not silently select it when a
-restricted profile fails. getexecpath(3) is still used to resolve helper paths.
-The internal OpenBsdPledgeUnveil identifier is retained for compatibility.
+    codex --sandbox danger-full-access
 
-Managed/restricted sessions are rejected at session creation, before hooks,
-MCP or shell snapshots run. Configuration-only commands such as login, doctor
-and MCP administration can still load configuration. The app-server/daemon has
-no --sandbox switch of its own; to start a session through it, set
-sandbox_mode = "danger-full-access" in ~/.codex/config.toml or declare an
-external sandbox. Do not use the daemon to obtain isolation it does not have.
+Commands, hooks and MCP servers then have the user's ordinary authority.
+Approvals and the V8 isolate do not provide OS isolation for subprocesses.
+Use a dedicated virtual machine when needed. external-sandbox declares an
+external boundary; Codex does not create or verify it.
 
-The regression script reports unsupported sandbox execution with exit 77;
-it must not be interpreted as a passing security test. --quick omits compiler
-invocations when a compatible implementation is available in the future.
+The app-server/daemon has no `--sandbox` switch of its own. For sessions
+started through it, select the same explicit mode in ~/.codex/config.toml,
+for example `sandbox_mode = "danger-full-access"`, or use a declared external
+sandbox. Without an explicit non-managed profile, a session that requests the
+default managed profile is rejected before hooks, MCP or shell setup run.
 
-The installed executables carry the WXNEEDED flag, because V8 compiles with
-W^X, so the filesystem holding ${LOCALBASE} must be mounted with the wxallowed
-option. Check it with
+The daemon uses the installed executable, following the official port:
 
-	mount | grep wxallowed
+    codex app-server daemon start
+    codex app-server daemon version
+    codex app-server daemon restart
+    codex app-server daemon stop
 
-and, if it is missing, add wxallowed to the /usr/local line in /etc/fstab.
+Automatic startup defaults to disabled, as in the official port. Its
+upstream flag remains available. The daemon runs as the invoking user,
+inherits the starting environment and does not use an rc.d service.
+State lives under CODEX_HOME; sockets use /tmp/codex-daemon-<uid>.
+
+Update with pkg_add -u and restart the daemon. Internal updates (`codex
+update`), `--from-cli` replacement and the updater loop are rejected. No
+separate daemon package or private manifest is installed in
+CODEX_HOME/packages.
+
+The installed binaries require the WXNEEDED property for V8. The filesystem
+containing ${LOCALBASE} must allow wxallowed. Python is a runtime dependency,
+and Git is declared because repository and worktree features execute it.
+Optional npm plugins, MCP servers and hooks may require other separately
+packaged executables. Plugin metadata, explicit installation, marketplace
+operations and the upstream synchronisation paths are retained. The package
+adds no hidden downloader or binary installer. Review plugin and MCP sources
+before enabling executable content, and do not use automatic binary
+installers as MCP launchers.
 
 You may use OpenAI commercial services or misc/llama.cpp, for the last
 one you should add into ~/.codex/config.toml:
@@ -48,61 +62,21 @@ one you should add into ~/.codex/config.toml:
 	base_url = "http://127.0.0.1:8080/v1"
 	wire_api = "responses"
 
-Codex uses a lot of memory, it starts with 256Mb per agent/worker
+${PKGSTEM} uses a lot of memory, it starts with 256Mb per agent/worker
 thread, and you may need to bump your limits (`ulimit -d`) or raise
 datasize limit in used login class..
 
-Also, Codex may use a lot of open files, you may need to raise both
+Also, ${PKGSTEM} may use a lot of open files, you may need to raise both
 the system-wide maxfiles and used login class limits.
 
-Git, Node.js (npm) and xdg-utils are installed as runtime dependencies. Git
-is used by repository/worktree/apply operations; npm by explicitly configured
-npm plugins; and xdg-open by browser login/OAuth. Plugins and marketplaces are
-disabled by default; enable features.plugins=true to permit upstream
-synchronization, installation or marketplace add/upgrade. Other MCP servers
-and hooks may require separately packaged executables. Browser login prints
-the URL if the launcher fails, and device-auth remains usable.
-OpenBSD ksh is recognized as the POSIX shell and preferred over bash/zsh when
-the user shell is not an explicit choice. Shell snapshots are limited to
-bash/zsh; the ksh/sh path runs commands without a snapshot. Clipboard access
-uses X11 when DISPLAY is set, and Secret Service needs a D-Bus session and
-provider.
+Secret Service storage needs a D-Bus session and compatible provider.
+Protect CODEX_HOME and credential backups, including file-backed auth.
+Browser login uses xdg-open when available; the URL is printed otherwise and
+`codex login --device-auth` remains available. Shell snapshots are limited to
+bash/zsh; the default OpenBSD shells run commands without a snapshot. Clipboard
+access uses the X11 backend when DISPLAY is set. These optional helpers are not
+added as runtime dependencies by this port.
 
-The local app-server daemon is enabled for eligible interactive sessions by
-upstream's daemon_auto_start feature (enabled by default). It uses the same
-executable as the CLI, installed at:
-
-	${LOCALBASE}/libexec/codex/bin/codex
-
-${LOCALBASE}/bin/codex is a link to that executable. The code-mode host is
-installed beside it, and ${LOCALBASE}/libexec/codex/codex-package.json records
-the package's version and native OpenBSD target. Codex checks the manifest and
-executable versions before a new daemon start; no npm or Node.js is needed.
-
-The daemon runs as the invoking user. Codex starts it on demand, detaches it
-from the terminal, and leaves it running for other clients. Lifecycle commands:
-
-	codex app-server daemon start
-	codex app-server daemon version
-	codex app-server daemon restart
-	codex app-server daemon stop
-
-PID records, logs, settings, and recovery data remain under CODEX_HOME
-(default ~/.codex). The advertised socket is under app-server-control there;
-on Unix it points to a protected socket under /tmp/codex-daemon-<uid>.
-The daemon inherits the environment of the terminal that starts it, shared
-by later clients. There is no system rc.d service and no restart after reboot.
-
-The package manager owns the executable, host, and manifest. Use pkg_add -u
-to update them, then `codex app-server daemon restart`. A running process keeps
-its old image; an incompatible daemon version is reported with restart
-instructions rather than being silently reused or internally replaced.
-Restart also picks up port revisions with an unchanged upstream version.
-
-Codex's daemon updater and --from-cli package replacement are disabled, not
-the daemon. The /daemon update menu directs updates to pkg_add. No daemon
-executable or package manifest is copied to ~/.codex/packages. Other optional
-user-installed components and existing packages are left alone.
-
-When migrating from an internally managed daemon, stop it with the old CLI
-before replacing the package. No user-managed package files are deleted.
+Only static review has been performed. Compilation, generated package
+contents, V8, daemon, PTY, keyring and permission rejection require actual
+OpenBSD validation. No claim of runtime correctness is made here.

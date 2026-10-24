@@ -1,6 +1,7 @@
-LibreSSL's openssl(1) does not implement ED448.  Use ED25519 as the portable
-default for notification-server TLS certificate generation; ED448 remains
-selectable when a compatible command-line implementation is installed.
+LibreSSL's openssl(1) does not implement ED448.  Use ED25519 as the
+portable default for notification-server TLS certificate generation;
+ED448 remains selectable when a compatible command-line implementation
+is installed.
 
 Index: src/Simplex/Messaging/Notifications/Server/Main.hs
 --- src/Simplex/Messaging/Notifications/Server/Main.hs.orig

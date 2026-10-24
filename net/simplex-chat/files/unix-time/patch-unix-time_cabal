@@ -1,4 +1,5 @@
-Use the config header installed by the port instead of running configure.
+Use the config header installed by the port instead of running
+configure.
 
 Index: unix-time.cabal
 --- unix-time.cabal.orig

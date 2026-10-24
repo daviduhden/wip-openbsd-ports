@@ -29,7 +29,6 @@ do-build:
 	${MODCARGO_CARGO_RUN} build --release ${MODCARGO_BUILD_ARGS}
 
 .include "crates.inc"
-MODPY_PYTEST_ARGS =	bindings/python/tests
 
 # Documentation tutorials require datasets and large online corpora.
 MODPY_TEST_DIR = ${WRKSRC}/bindings/python

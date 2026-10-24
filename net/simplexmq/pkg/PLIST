@@ -15,7 +15,7 @@
 share/doc/pkg-readmes/${PKGSTEM}
 share/doc/${PKGSTEM}/
 share/doc/${PKGSTEM}/LICENSE
-@mode 755
+@mode 0750
 @owner _${MODCABAL_STEM}
 @group _${MODCABAL_STEM}
 @sample ${SYSCONFDIR}/simplex/
@@ -24,3 +24,4 @@ share/doc/${PKGSTEM}/LICENSE
 @sample ${LOCALSTATEDIR}/simplex/
 @sample ${LOCALSTATEDIR}/simplex/smp-server/
 @sample ${LOCALSTATEDIR}/simplex/xftp-server/
+@mode

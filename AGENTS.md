@@ -131,3 +131,63 @@ what was tested, what was not, and which checks require a real OpenBSD host.
 - Keep this documentation out of release tracking and version inventories.
   Update it as part of the change that alters the convention, without
   rewriting unaffected sections.
+
+## Continuous Agent & Skills Maintenance
+
+Agent instructions and skills are living repository artifacts.
+
+Every repository modification MUST include an agent/skills synchronization step.
+
+Before completing any task, inspect the applicable AGENTS.md and SKILL.md files, update the affected instructions, and validate their consistency with the implementation.
+
+A code change without the corresponding agent knowledge maintenance is considered incomplete.
+
+Never claim completion when the synchronization step has been skipped or has failed.
+
+This applies to source, port metadata, dependencies, patches, tests, tools,
+workflows, and documentation, including changes to this policy itself. At the
+end of each task, inspect all tracked `AGENTS.md`, `.agents/skills/**/SKILL.md`,
+and any tool-specific agent/skill files present in the repository. Map changed
+paths to the nearest owning instructions and the skills table above; review
+cross-cutting skills when the workflow or shared tooling changed.
+
+Update an existing skill when a reusable procedure, assumption, command,
+configuration, or validation step changed or was learned. Create a skill only
+for a distinct recurring workflow not covered by an existing skill; otherwise
+extend the closest skill. Keep specialized agent instructions aligned with
+their linked skills. There are currently no checked-in specialized agent files.
+Never add cosmetic edits, timestamps, or empty changes to satisfy enforcement.
+
+After editing instructions, verify frontmatter and required headings, inspect
+local Markdown links and referenced paths, run
+`perl tools/check-agent-sync.pl`, and review `git diff --check`, status, and the
+complete diff. The validator checks changed paths, substantive instruction
+diffs, basic skill structure, and resolvable local Markdown links; it cannot
+judge semantic relevance, which requires human review. Its default comparison
+is against `HEAD`; set `AGENT_SYNC_BASE` to a Git base ref for CI or review of a
+branch range. This repository currently has no checked-in CI pipeline, so run
+the validator locally; CI integration can invoke the same command once a CI is
+introduced.
+
+Every task is blocked from completion until repository changes include at
+least one relevant, substantive instruction or skill update, the validator
+passes, references are reviewed, and semantic relevance is confirmed. If
+these conditions cannot be met, explain why and report the task as incomplete.
+When the instructions themselves change, perform one complete consistency
+review at the end; repeat validation only after correcting a detected error.
+
+### Mandatory Definition of Done
+
+- [ ] Repository changes implemented.
+- [ ] Relevant agent instructions reviewed.
+- [ ] Relevant skills reviewed.
+- [ ] Affected AGENTS.md / SKILL.md files updated.
+- [ ] Obsolete knowledge removed.
+- [ ] New reusable knowledge incorporated.
+- [ ] Agent and skill references validated.
+- [ ] Automated maintenance checks passed.
+- [ ] Final synchronization status reported.
+
+Final reports must include **Agent & Skills Synchronization** with agents and
+skills reviewed, instruction files updated, knowledge added or corrected,
+validations run, and PASS / FAIL. Never report an unrun check as passed.

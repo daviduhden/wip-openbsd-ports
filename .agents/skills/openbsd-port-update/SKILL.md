@@ -157,3 +157,15 @@ in `SUBST_VARS`. A port can use several at once.
   [packages-specs(7)](https://man.openbsd.org/packages-specs.7)
 - [OpenBSD porting special topics](https://www.openbsd.org/faq/ports/specialtopics.html)
 - Repository: `docs/UPDATE.md`, `docs/BUILDING.md`, and the port's own history.
+
+## Maintenance & Continuous Learning
+
+When this skill is used to modify the repository, review this skill after the
+work. Update it when procedures, tools, configurations, project behavior, or
+assumptions have changed, and add reusable knowledge that improves future use.
+Correct instructions that proved wrong; keep examples and validation commands
+current, and remove obsolete or duplicated guidance. Do not record one-off
+execution details. Review linked skills and applicable `AGENTS.md` files for
+consistency, validate local references, and run `perl tools/check-agent-sync.pl` after instruction edits. The automated check covers
+structure and change presence; a person must still judge whether the update is
+relevant. Include the synchronization result in the final report.

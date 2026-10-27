@@ -52,3 +52,15 @@ Accept when the requested paths and shared files match the intended sources, des
 For rejected paths, verify the path appears in `--list` and the destination is a real existing tree. For account conflicts, compare both registries and resolve allocation against the current official registry; do not force an overwrite. For copy failures, inspect logged staging/backup paths and completed replacements before restoring selected files; do not delete metadata or blindly repeat the entire collection copy.
 
 References: [OpenBSD ports setup](https://www.openbsd.org/faq/ports/ports.html), [cvs(1)](https://man.openbsd.org/cvs.1), and [openbsd-port-cvs](../openbsd-port-cvs/SKILL.md).
+
+## Maintenance & Continuous Learning
+
+When this skill is used to modify the repository, review this skill after the
+work. Update it when procedures, tools, configurations, project behavior, or
+assumptions have changed, and add reusable knowledge that improves future use.
+Correct instructions that proved wrong; keep examples and validation commands
+current, and remove obsolete or duplicated guidance. Do not record one-off
+execution details. Review linked skills and applicable `AGENTS.md` files for
+consistency, validate local references, and run `perl tools/check-agent-sync.pl` after instruction edits. The automated check covers
+structure and change presence; a person must still judge whether the update is
+relevant. Include the synchronization result in the final report.

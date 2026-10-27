@@ -87,3 +87,15 @@ Read [UPDATE.md](../../../docs/UPDATE.md) and the port's Makefile, existing patc
   generation, `Index:` headers, and the `diff -u -p` format.
 - [bsd.port.mk(5)](https://man.openbsd.org/bsd.port.mk.5): patch stages and `update-patches`.
 - Repository examples: `net/i2pd/patches/patch-libi2pd_Crypto_cpp` and `net/simplexmq/files/tls/` for compatibility and documented backports.
+
+## Maintenance & Continuous Learning
+
+When this skill is used to modify the repository, review this skill after the
+work. Update it when procedures, tools, configurations, project behavior, or
+assumptions have changed, and add reusable knowledge that improves future use.
+Correct instructions that proved wrong; keep examples and validation commands
+current, and remove obsolete or duplicated guidance. Do not record one-off
+execution details. Review linked skills and applicable `AGENTS.md` files for
+consistency, validate local references, and run `perl tools/check-agent-sync.pl` after instruction edits. The automated check covers
+structure and change presence; a person must still judge whether the update is
+relevant. Include the synchronization result in the final report.

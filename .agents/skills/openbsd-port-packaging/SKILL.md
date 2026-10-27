@@ -132,3 +132,15 @@ regenerating a PLIST. Packaging changes still require a real `make fake` and
   [useradd(8)](https://man.openbsd.org/useradd.8)
 - Repository: `net/simplexmq/pkg/`, `net/tor/pkg/`, `net/i2pd/pkg/`, and
   `games/assaultcube/pkg/` show working annotations and subpackages.
+
+## Maintenance & Continuous Learning
+
+When this skill is used to modify the repository, review this skill after the
+work. Update it when procedures, tools, configurations, project behavior, or
+assumptions have changed, and add reusable knowledge that improves future use.
+Correct instructions that proved wrong; keep examples and validation commands
+current, and remove obsolete or duplicated guidance. Do not record one-off
+execution details. Review linked skills and applicable `AGENTS.md` files for
+consistency, validate local references, and run `perl tools/check-agent-sync.pl` after instruction edits. The automated check covers
+structure and change presence; a person must still judge whether the update is
+relevant. Include the synchronization result in the final report.

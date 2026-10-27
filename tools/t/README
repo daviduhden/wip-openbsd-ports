@@ -26,3 +26,19 @@ Adjust the paths if your local install uses a different prefix:
 
 No critic policy exclusions are installed. Remaining default-policy findings
 are recorded in local maintenance notes under `audit/`, which is not tracked.
+
+## Agent and skill synchronization
+
+Every repository change must include a substantive, relevant agent or skill
+instruction update. Run the structural checker from the repository root:
+
+    perl tools/check-agent-sync.pl
+
+It compares the working tree with `HEAD`; for CI or branch review, set
+`AGENT_SYNC_BASE` to the base ref, for example `AGENT_SYNC_BASE=origin/main`.
+The checker rejects changes without instruction updates and empty/trivial
+instruction diffs, then checks skill frontmatter, required maintenance headings,
+and local Markdown link targets. It uses Perl core modules and Git only. It
+cannot assess semantic relevance, so reviewers must still confirm the changed
+instructions teach reusable, accurate knowledge. Run `prove -v
+tools/t/perl-tools.t` when changing Perl tools, including this checker.

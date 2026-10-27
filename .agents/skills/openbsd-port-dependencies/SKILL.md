@@ -44,3 +44,15 @@ The dependency graph resolves for the selected architecture and subpackages, gen
 - Missing tests or licensed crate data: record the limitation and repair the source/generation procedure rather than claiming coverage or permission.
 
 See [BUILDING.md](../../../docs/BUILDING.md), [UPDATE.md](../../../docs/UPDATE.md), [bsd.port.mk(5)](https://man.openbsd.org/bsd.port.mk.5), and [port-modules(5)](https://man.openbsd.org/port-modules.5). The reference contains ecosystem-specific module sources.
+
+## Maintenance & Continuous Learning
+
+When this skill is used to modify the repository, review this skill after the
+work. Update it when procedures, tools, configurations, project behavior, or
+assumptions have changed, and add reusable knowledge that improves future use.
+Correct instructions that proved wrong; keep examples and validation commands
+current, and remove obsolete or duplicated guidance. Do not record one-off
+execution details. Review linked skills and applicable `AGENTS.md` files for
+consistency, validate local references, and run `perl tools/check-agent-sync.pl` after instruction edits. The automated check covers
+structure and change presence; a person must still judge whether the update is
+relevant. Include the synchronization result in the final report.

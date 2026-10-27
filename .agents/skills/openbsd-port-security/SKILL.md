@@ -34,3 +34,15 @@ For failures, inspect checked syscall errors and, where authorized, trace the fa
 - [pledge(2)](https://man.openbsd.org/pledge.2), [unveil(2)](https://man.openbsd.org/unveil.2), [ktrace(1)](https://man.openbsd.org/ktrace.1), and [kdump(1)](https://man.openbsd.org/kdump.1).
 - [rc.subr(8)](https://man.openbsd.org/rc.subr.8) and [doas.conf(5)](https://man.openbsd.org/doas.conf.5).
 - Repository behavior: `devel/codex/pkg/README`, `net/tor/pkg/DESCR`, `net/i2pd/patches/`, and `security/veracrypt/pkg/README`.
+
+## Maintenance & Continuous Learning
+
+When this skill is used to modify the repository, review this skill after the
+work. Update it when procedures, tools, configurations, project behavior, or
+assumptions have changed, and add reusable knowledge that improves future use.
+Correct instructions that proved wrong; keep examples and validation commands
+current, and remove obsolete or duplicated guidance. Do not record one-off
+execution details. Review linked skills and applicable `AGENTS.md` files for
+consistency, validate local references, and run `perl tools/check-agent-sync.pl` after instruction edits. The automated check covers
+structure and change presence; a person must still judge whether the update is
+relevant. Include the synchronization result in the final report.

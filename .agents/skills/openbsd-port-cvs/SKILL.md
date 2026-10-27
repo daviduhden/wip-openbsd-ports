@@ -53,3 +53,15 @@ Deliver the artifact location, official baseline, affected paths, exact validati
 Missing new files usually mean they were untracked and omitted by CVS; compare the staged inventory with status and the artifact. Rejected hunks usually indicate a wrong baseline, strip level, or stale patch: reproduce against the recorded revision rather than forcing application. Review CVS conflicts before producing a final artifact. Neither Git diffs nor the helper's change lists alone establish a complete official submission.
 
 References: [OpenBSD porting guide](https://www.openbsd.org/faq/ports/guide.html), [cvs(1)](https://man.openbsd.org/cvs.1), [diff(1)](https://man.openbsd.org/diff.1), [patch(1)](https://man.openbsd.org/patch.1), and [openbsd-ports-sync](../openbsd-ports-sync/SKILL.md).
+
+## Maintenance & Continuous Learning
+
+When this skill is used to modify the repository, review this skill after the
+work. Update it when procedures, tools, configurations, project behavior, or
+assumptions have changed, and add reusable knowledge that improves future use.
+Correct instructions that proved wrong; keep examples and validation commands
+current, and remove obsolete or duplicated guidance. Do not record one-off
+execution details. Review linked skills and applicable `AGENTS.md` files for
+consistency, validate local references, and run `perl tools/check-agent-sync.pl` after instruction edits. The automated check covers
+structure and change presence; a person must still judge whether the update is
+relevant. Include the synchronization result in the final report.

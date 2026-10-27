@@ -1,0 +1,3 @@
+[validator]
+contract_version = "1.0.0"
+minimum_changed_lines = 1

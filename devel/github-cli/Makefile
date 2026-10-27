@@ -1,12 +1,11 @@
 COMMENT =	command-line access to github pull requests, issues and more
 
-V =		2.102.0
+V =		2.103.3
 MODGO_MODNAME =	github.com/cli/cli/v${V:R:R}
 MODGO_VERSION =	v${V}
 
 DISTNAME =	cli-${MODGO_VERSION}
 PKGNAME =	github-cli-${V}
-REVISION =       0
 
 # replace "survey" module with a patched version that uses ioctl
 # instead of unnecessary direct syscall() calls

@@ -5,9 +5,9 @@ app-server startup remain usable.
 Index: codex-rs/core/src/session/mod.rs
 --- codex-rs/core/src/session/mod.rs.orig
 +++ codex-rs/core/src/session/mod.rs
-@@ -593,6 +593,15 @@ impl Session {
- 
-     async fn spawn_internal(args: SessionSpawnArgs) -> CodexResult<(Arc<Self>, SessionIo)> {
+@@ -600,6 +600,15 @@ impl Session {
+             .config_layer_stack
+             .ensure_config_server_applied()?;
          args.config.validate_windows_mxc_requirement()?;
 +        #[cfg(target_os = "openbsd")]
 +        if matches!(

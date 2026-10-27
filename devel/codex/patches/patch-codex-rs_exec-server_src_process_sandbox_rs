@@ -5,10 +5,10 @@ OpenBSD has no supported command sandbox.
 Index: codex-rs/exec-server/src/process_sandbox.rs
 --- codex-rs/exec-server/src/process_sandbox.rs.orig
 +++ codex-rs/exec-server/src/process_sandbox.rs
-@@ -95,6 +95,14 @@ pub(crate) async fn prepare_exec_request
-     network_policy_audit_observer: Option<NetworkPolicyAuditObserver>,
+@@ -121,6 +121,14 @@ pub(crate) async fn prepare_exec_request
      telemetry: &ProcessTelemetry,
  ) -> Result<PreparedExecRequest, JSONRPCErrorError> {
+     let network_proxy = params.network_proxy.clone();
 +    // A proxy environment cannot enforce egress policy without a command
 +    // sandbox. Check before the sandbox=None native-launch shortcut too.
 +    #[cfg(target_os = "openbsd")]

@@ -5,7 +5,7 @@ an executable owned by the system package manager.
 Index: codex-rs/app-server-daemon/src/prepare_install.rs
 --- codex-rs/app-server-daemon/src/prepare_install.rs.orig
 +++ codex-rs/app-server-daemon/src/prepare_install.rs
-@@ -24,6 +24,12 @@ pub struct InstallRequest {
+@@ -26,6 +26,12 @@ pub struct InstallRequest {
      pub restart_required: bool,
  }
  
@@ -18,7 +18,7 @@ Index: codex-rs/app-server-daemon/src/prepare_install.rs
  /// Prepare a missing package while the caller holds the daemon operation lock.
  pub(super) async fn prepare(daemon: &Daemon, settings: &DaemonSettings) -> Result<()> {
      let source = InstallContext::current().package_layout.as_ref();
-@@ -46,6 +52,10 @@ pub async fn update_from_cli(
+@@ -48,6 +54,10 @@ pub async fn update_from_cli(
      confirm: impl FnOnce(&InstallRequest) -> Result<bool>,
  ) -> Result<Option<crate::UpdateOutput>> {
      crate::ensure_supported_platform()?;

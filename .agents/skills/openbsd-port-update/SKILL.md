@@ -44,7 +44,11 @@ in `SUBST_VARS`. A port can use several at once.
 2. Read upstream release notes and the full source diff for the new version.
    Identify removed or renamed binaries, configuration keys, data formats,
    services, licenses, and dependencies. Check for security fixes that make a
-   local patch obsolete.
+   local patch obsolete. When an official ports update exists, inspect its
+   exact CVS/Git commit and compare the port files individually; use its
+   generated metadata and patches as reviewed inputs, not as a blind directory
+   replacement. Preserve local-only behavior and packaging changes unless the
+   new source makes them obsolete.
 
 3. Bump the version variables. If the upstream version changes, remove
    `REVISION` or set it to the conventional initial value; a new upstream
@@ -119,6 +123,18 @@ in `SUBST_VARS`. A port can use several at once.
 10. Finish [openbsd-port-validation](../openbsd-port-validation/SKILL.md) and
     synchronize only the tested result with
     [openbsd-ports-sync](../openbsd-ports-sync/SKILL.md).
+
+## Static analysis with explicitly deferred generated files
+
+When the task explicitly defers `distinfo`, `pkg/PLIST*`, or generated dependency
+includes such as `crates.inc`, `modules.inc`, or `cabal.inc`, do not regenerate
+them. Still inspect upstream manifests and source metadata for changed inputs,
+record which artifacts remain stale, and report that the update is not yet
+package-ready until those files are regenerated and validated on a matching
+OpenBSD ports tree. Static patch applicability can be checked against the exact
+upstream source archive in a temporary directory with zero fuzz; regenerate
+patches that require offsets or fuzz, and remove patches whose upstream change
+makes them unnecessary.
 
 ## Checks and acceptance
 

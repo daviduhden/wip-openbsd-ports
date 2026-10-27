@@ -6,7 +6,7 @@ cannot be safely closed.
 Index: codex-rs/utils/pty/src/child_command.rs
 --- codex-rs/utils/pty/src/child_command.rs.orig
 +++ codex-rs/utils/pty/src/child_command.rs
-@@ -300,9 +300,15 @@
+@@ -300,9 +300,15 @@ impl Command {
              #[cfg(not(target_os = "linux"))]
              let parent_pid: Option<i32> = None;
              if new_session || explicit_fds || !targets.is_empty() || parent_pid.is_some() {
@@ -24,7 +24,7 @@ Index: codex-rs/utils/pty/src/child_command.rs
                  // allocation-after-fork risk documented on close_inherited_fds_except.
                  unsafe {
                      self.inner.pre_exec(move || {
-@@ -312,6 +318,11 @@
+@@ -312,6 +318,11 @@ impl Command {
                          if let Some(parent_pid) = parent_pid {
                              crate::process_group::set_parent_death_signal(parent_pid)?;
                          }

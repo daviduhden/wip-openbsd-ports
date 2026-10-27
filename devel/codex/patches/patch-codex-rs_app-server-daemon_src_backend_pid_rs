@@ -6,7 +6,7 @@ platforms are unchanged.
 Index: codex-rs/app-server-daemon/src/backend/pid.rs
 --- codex-rs/app-server-daemon/src/backend/pid.rs.orig
 +++ codex-rs/app-server-daemon/src/backend/pid.rs
-@@ -746,8 +746,11 @@ async fn read_process_start_time(pid: u3
+@@ -755,8 +755,11 @@ async fn read_process_start_time(pid: u3
  
  #[cfg(unix)]
  async fn read_process_details(pid: u32) -> Result<(String, String)> {

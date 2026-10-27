@@ -5,7 +5,7 @@ version.
 Index: pyproject.toml
 --- pyproject.toml.orig
 +++ pyproject.toml
-@@ -186,11 +186,6 @@ proxy-runtime = [
+@@ -189,11 +189,6 @@ proxy-runtime = [
      "detect-secrets>=1.5.0,<2.0",
  ]
  

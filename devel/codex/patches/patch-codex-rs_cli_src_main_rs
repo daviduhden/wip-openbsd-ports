@@ -12,7 +12,7 @@ Index: codex-rs/cli/src/main.rs
  use clap::Args;
  use clap::CommandFactory;
  use clap::Parser;
-@@ -872,6 +874,9 @@ fn resolve_windows_update_command_from_p
+@@ -884,6 +886,9 @@ fn resolve_windows_update_command_from_p
  }
  
  fn run_update_command() -> anyhow::Result<()> {

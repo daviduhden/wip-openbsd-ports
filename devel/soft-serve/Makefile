@@ -1,7 +1,7 @@
 COMMENT =		self-hosted Git server for the command line
 
 MODGO_MODNAME =		github.com/charmbracelet/soft-serve
-MODGO_VERSION =		v0.12.3
+MODGO_VERSION =		v0.12.4
 
 DISTNAME =		soft-serve-${MODGO_VERSION}
 

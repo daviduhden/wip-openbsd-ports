@@ -19,5 +19,7 @@ share/doc/codex/sandbox.md
 share/doc/codex/skills.md
 share/doc/codex/slash_commands.md
 share/doc/pkg-readmes/${PKGSTEM}
+share/fish/
+share/fish/vendor_completions.d/
 share/fish/vendor_completions.d/codex.fish
 share/zsh/site-functions/_codex

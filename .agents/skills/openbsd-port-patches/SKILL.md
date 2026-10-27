@@ -71,6 +71,16 @@ Read [UPDATE.md](../../../docs/UPDATE.md) and the port's Makefile, existing patc
     generally does not need OpenBSD package layout or ports-only dependency
     policy.
 
+When the host cannot run OpenBSD `make update-patches`, rebase local-only
+changes on a pristine extraction of the exact new upstream sources in a
+temporary directory. Save the pristine target, apply the reviewed changes,
+then generate each patch with `diff -u -p` and the repository's `Index:` and
+`.orig` labels. Do not copy an official patch set over local patches without
+comparing their behavior: retain needed local changes, drop fixes superseded
+upstream, and update vendor-version paths. This source-level regeneration is
+static evidence only; verify the resulting patch set with a fresh OpenBSD
+`make patch` before claiming validation.
+
 ## Acceptance and diagnosis
 
 - No unexpected targets, absolute workstation paths, generated build noise, or unrelated changes appear in the diff. Backports identify their upstream commit and retain relevant notices.

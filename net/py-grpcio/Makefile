@@ -1,6 +1,6 @@
 COMMENT =		HTTP/2-based RPC framework
 
-MODPY_DISTV =	1.84.1
+MODPY_DISTV =	1.85.0
 DISTNAME =	grpcio-${MODPY_DISTV}
 PKGNAME =		py-${DISTNAME}
 CATEGORIES =		net
@@ -65,7 +65,7 @@ MODPY_PYBUILD =	setuptools
 
 BUILD_DEPENDS =		devel/abseil-cpp:patch \
 			devel/py-wheel \
-			lang/cython \
+			lang/cython>=3.2 \
 			sysutils/xxhash
 
 LIB_DEPENDS =		devel/abseil-cpp \

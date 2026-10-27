@@ -8,7 +8,7 @@ spawning on cleanup errors.
 Index: codex-rs/utils/pty/src/pty.rs
 --- codex-rs/utils/pty/src/pty.rs.orig
 +++ codex-rs/utils/pty/src/pty.rs
-@@ -397,6 +397,8 @@
+@@ -397,6 +397,8 @@ async fn spawn_process_preserving_fds(
          }
          let inherited_fds = inherited_fds.to_vec();
          // The child sees the same terminal on stdin, stdout, and stderr.
@@ -17,7 +17,7 @@ Index: codex-rs/utils/pty/src/pty.rs
          unsafe {
              command
                  .stdin(Stdio::from(slave.try_clone()?))
-@@ -404,6 +406,9 @@
+@@ -404,6 +406,9 @@ async fn spawn_process_preserving_fds(
                  .stderr(Stdio::from(slave.try_clone()?))
                  .pre_exec(move || {
                      configure_child_terminal()?;
@@ -27,7 +27,7 @@ Index: codex-rs/utils/pty/src/pty.rs
                      close_inherited_fds_except(&inherited_fds);
                      make_fds_inheritable(&inherited_fds)?;
                      Ok(())
-@@ -606,9 +611,126 @@
+@@ -606,9 +611,126 @@ pub fn close_inherited_fds_except(preser
      }
  }
  

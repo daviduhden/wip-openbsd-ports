@@ -1,6 +1,6 @@
 COMMENT =	uniform API for multiple LLM providers
 
-MODPY_DISTV =	1.105.1
+MODPY_DISTV =	1.106.4
 DISTNAME =	litellm-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME}
 
@@ -18,7 +18,8 @@ MODPY_PYBUILD =	maturin
 
 TEST_DEPENDS =	www/py-fastapi
 
-RUN_DEPENDS =	devel/py-click>=8.0.0,<9.0 \
+RUN_DEPENDS =	devel/py-certifi>=2026.10.19 \
+		devel/py-click>=8.0.0,<9.0 \
 		devel/py-fastuuid>=0.14.0,<1.0 \
 		devel/py-huggingface-hub>=0.34.0,<2.0 \
 		devel/py-importlib-metadata>=8.0.0,<9.0 \
@@ -26,7 +27,8 @@ RUN_DEPENDS =	devel/py-click>=8.0.0,<9.0 \
 		devel/py-openai>=2.20.0,<3.0.0 \
 		devel/py-pydantic>=2.12.0,<3.0.0 \
 		devel/py-pydantic-settings>=2.14.1,<3.0 \
-		net/py-boto3>=1.43.1,<2.0 \
+		devel/py-typing-extensions>=4.13.0,<5.0 \
+		net/py-boto3>=1.43.117,<2.0 \
 		sysutils/py-dotenv>=1.0.0,<2.0 \
 		sysutils/py-filelock>=3.16.1,<4.0 \
 		sysutils/py-packaging>=24.0 \

@@ -6,7 +6,7 @@ pkg_add.
 Index: codex-rs/app-server-daemon/src/lib.rs
 --- codex-rs/app-server-daemon/src/lib.rs.orig
 +++ codex-rs/app-server-daemon/src/lib.rs
-@@ -282,6 +282,10 @@ pub async fn run_pid_update_loop(
+@@ -294,6 +294,10 @@ pub async fn run_pid_update_loop(
      restore_release: Option<String>,
  ) -> Result<()> {
      ensure_supported_platform()?;
@@ -17,7 +17,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
      #[cfg(windows)]
      backend::windows::ensure_not_elevated()?;
      update_loop::run(http_client_factory, restore_release).await
-@@ -291,6 +295,10 @@ pub async fn update(
+@@ -317,6 +321,10 @@ pub async fn update(
      http_client_factory: codex_http_client::HttpClientFactory,
  ) -> Result<UpdateOutput> {
      ensure_supported_platform()?;
@@ -28,7 +28,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
      #[cfg(windows)]
      backend::windows::ensure_not_elevated()?;
      update_loop::request_manual_update(&Daemon::from_environment()?, http_client_factory).await
-@@ -328,7 +336,7 @@ impl Daemon {
+@@ -354,7 +362,7 @@ impl Daemon {
              .as_path()
              .to_path_buf();
          let state_dir = codex_home.as_path().join(STATE_DIR_NAME);
@@ -37,7 +37,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          // Old CLIs must not mistake a daemon-owned installation for their backend.
          let (pid_file, update_pid_file) =
              if managed_codex_bin.starts_with(codex_home.as_path().join("packages/standalone")) {
-@@ -892,6 +900,11 @@ impl Daemon {
+@@ -988,6 +996,11 @@ impl Daemon {
  
      async fn ensure_managed_updater(&self, settings: &DaemonSettings) -> Result<bool> {
          let updater = backend::pid_update_loop_backend(self.backend_paths(settings));
@@ -49,7 +49,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          if !settings.auto_update_enabled {
              updater.stop().await?;
              return Ok(false);
-@@ -941,6 +954,12 @@ impl Daemon {
+@@ -1037,6 +1050,12 @@ impl Daemon {
          ))
      }
  

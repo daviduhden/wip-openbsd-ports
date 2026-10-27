@@ -40,9 +40,10 @@ update`), `--from-cli` replacement and the updater loop are rejected. No
 separate daemon package or private manifest is installed in
 CODEX_HOME/packages.
 
-The installed binaries require the WXNEEDED property for V8. The filesystem
-containing ${LOCALBASE} must allow wxallowed. Python is a runtime dependency,
-and Git is declared because repository and worktree features execute it.
+The installed binaries require the WXNEEDED property for V8 152.2.0. The
+filesystem containing ${LOCALBASE} must allow wxallowed. Python and Bash are
+runtime dependencies; Git is declared because repository and worktree features
+execute it.
 Optional npm plugins, MCP servers and hooks may require other separately
 packaged executables. Plugin metadata, explicit installation, marketplace
 operations and the upstream synchronisation paths are retained. The package

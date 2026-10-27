@@ -1,9 +1,8 @@
 COMMENT =		coding agent with a rich terminal UI
 
 MODGO_MODNAME =		github.com/charmbracelet/crush
-MODGO_VERSION =		v0.98.1
+MODGO_VERSION =		v0.98.2
 
-REVISION =       0
 DISTNAME =		crush-${MODGO_VERSION}
 WRKDIST = 		${WRKDIR}/${MODGO_MODNAME}@${MODGO_VERSION}
 
@@ -28,7 +27,7 @@ RUN_DEPENDS =		textproc/ripgrep
 
 # goreleaser embeds internal/version.Version from {{.Version}}, which is the
 # tag with its leading "v" stripped, so the release binaries report the numeric
-# form ("0.98.1").  Strip the prefix the same way here.
+# form ("0.98.2").  Strip the prefix the same way here.
 MODGO_LDFLAGS +=	-X github.com/charmbracelet/crush/internal/version.Version=${MODGO_VERSION:S/^v//}
 
 .include "modules.inc"

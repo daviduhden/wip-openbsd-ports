@@ -51,6 +51,6 @@ assumptions have changed, and add reusable knowledge that improves future use.
 Correct instructions that proved wrong; keep examples and validation commands
 current, and remove obsolete or duplicated guidance. Do not record one-off
 execution details. Review linked skills and applicable `AGENTS.md` files for
-consistency, validate local references, and run `perl tools/check-agent-sync.pl` after instruction edits. The automated check covers
+consistency, validate local references, and run `python3 scripts/validate-agent-knowledge.py --scope worktree` after instruction edits. The automated check covers
 structure and change presence; a person must still judge whether the update is
 relevant. Include the synchronization result in the final report.

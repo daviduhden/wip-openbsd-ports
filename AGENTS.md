@@ -160,7 +160,7 @@ Never add cosmetic edits, timestamps, or empty changes to satisfy enforcement.
 
 After editing instructions, verify frontmatter and required headings, inspect
 local Markdown links and referenced paths, run
-`perl tools/check-agent-sync.pl`, and review `git diff --check`, status, and the
+`python3 scripts/validate-agent-knowledge.py --scope worktree`, and review `git diff --check`, status, and the
 complete diff. The validator checks changed paths, substantive instruction
 diffs, basic skill structure, and resolvable local Markdown links; it cannot
 judge semantic relevance, which requires human review. Its default comparison
@@ -175,6 +175,27 @@ passes, references are reviewed, and semantic relevance is confirmed. If
 these conditions cannot be met, explain why and report the task as incomplete.
 When the instructions themselves change, perform one complete consistency
 review at the end; repeat validation only after correcting a detected error.
+
+### Shared Agent Knowledge Validation Contract
+
+Use `python3 scripts/validate-agent-knowledge.py --scope worktree` for local
+changes and `python3 -m unittest discover -s tests/agent_knowledge_validator -v`
+for its contract tests. The validator requires Python 3.11+ and Git, uses only
+the Python standard library, and publishes contract version `1.0.0`. All
+adopting repositories share the same CLI, AK001-AK006 identifiers, output
+schema, and exit codes (`0` pass, `1` policy failure, `2` execution/configuration
+error). For a pull request, pass both revisions with
+`--scope range --base BASE_REF --head HEAD_REF`; compare from their merge base.
+
+Read [Agent Knowledge Validation Contract](docs/agent-knowledge-validation.md)
+for the complete rules, JSON schema, optional repository configuration,
+warning semantics, and extension process. AK004 and AK006 can require human
+review; their warnings do not prove or disprove semantic correctness. Keep the
+canonical script and black-box unittest suite byte-identical across adopting
+repositories. Repository-specific requirements belong in the documented TOML
+configuration or a stable `AKX...` extension, never in a private fork of the
+shared rules. The GitHub PR workflow runs the same tests and range command;
+it does not edit files or require secrets.
 
 ### Mandatory Definition of Done
 

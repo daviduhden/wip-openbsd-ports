@@ -32,7 +32,7 @@ are recorded in local maintenance notes under `audit/`, which is not tracked.
 Every repository change must include a substantive, relevant agent or skill
 instruction update. Run the structural checker from the repository root:
 
-    perl tools/check-agent-sync.pl
+    python3 scripts/validate-agent-knowledge.py --scope worktree
 
 It compares the working tree with `HEAD`; for CI or branch review, set
 `AGENT_SYNC_BASE` to the base ref, for example `AGENT_SYNC_BASE=origin/main`.

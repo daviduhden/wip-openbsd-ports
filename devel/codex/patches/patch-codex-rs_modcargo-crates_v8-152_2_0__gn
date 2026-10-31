@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Disable V8 GN features unsupported by the ports Rust and C++ build.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/.gn
 --- codex-rs/modcargo-crates/v8-152.2.0/.gn.orig

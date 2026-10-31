@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Apply OpenBSD W^X permissions to embedded V8 code.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/v8/src/execution/isolate.cc
 --- codex-rs/modcargo-crates/v8-152.2.0/v8/src/execution/isolate.cc.orig

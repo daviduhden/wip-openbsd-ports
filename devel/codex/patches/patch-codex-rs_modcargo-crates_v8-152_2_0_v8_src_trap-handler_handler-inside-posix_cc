@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Adapt V8's trap handler to OpenBSD signal interfaces.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/v8/src/trap-handler/handler-inside-posix.cc
 --- codex-rs/modcargo-crates/v8-152.2.0/v8/src/trap-handler/handler-inside-posix.cc.orig

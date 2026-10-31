@@ -5,7 +5,7 @@ against the original deadline rather than extending the timeout.
 Index: codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs
 --- codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs.orig
 +++ codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs
-@@ -7,6 +7,7 @@ use std::os::unix::io::{AsRawFd, IntoRawFd, RawFd};
+@@ -7,6 +7,7 @@ use std::os::unix::io::{AsRawFd, IntoRaw
  use std::path::Path;
  use std::ptr;
  use std::time::Duration;
@@ -49,7 +49,7 @@ Index: codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs
          let ret = self.delete_kevents(Ident::Fd(fd), filter);
          let close_err = unsafe { close(fd) };
          if close_err != 0 {
-@@ -575,31 +577,47 @@ fn find_file_ident(watcher: &Watcher, fd: RawFd) -> Op
+@@ -575,31 +577,47 @@ fn find_file_ident(watcher: &Watcher, fd
  }
  
  fn get_event(watcher: &Watcher, timeout: Option<Duration>) -> Option<Event> {
@@ -69,16 +69,8 @@ Index: codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs
 -                1,
 -                &duration_to_timespec(ts),
 -            )
--        }
--    } else {
--        unsafe { kevent(watcher.queue, ptr::null(), 0, &mut kev, 1, ptr::null()) }
--    };
 +    let started_at = Instant::now();
- 
--    match ret {
--        -1 => Some(Event::from_error(kev, watcher)),
--        0 => None, // timeout expired
--        _ => Some(Event::new(kev, watcher)),
++
 +    loop {
 +        let mut kev = kevent::new(
 +            0,
@@ -117,7 +109,15 @@ Index: codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs
 +                }
 +                return Some(Event::new(kev, watcher));
 +            }
-+        }
+         }
+-    } else {
+-        unsafe { kevent(watcher.queue, ptr::null(), 0, &mut kev, 1, ptr::null()) }
+-    };
+-
+-    match ret {
+-        -1 => Some(Event::from_error(kev, watcher)),
+-        0 => None, // timeout expired
+-        _ => Some(Event::new(kev, watcher)),
      }
  }
  

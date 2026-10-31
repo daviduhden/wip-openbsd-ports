@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Use OpenBSD platform definitions in bundled Abseil.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/third_party/abseil-cpp/absl/base/internal/sysinfo.cc
 --- codex-rs/modcargo-crates/v8-152.2.0/third_party/abseil-cpp/absl/base/internal/sysinfo.cc.orig

@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Read V8 system information through OpenBSD interfaces.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/v8/src/base/sys-info.cc
 --- codex-rs/modcargo-crates/v8-152.2.0/v8/src/base/sys-info.cc.orig

@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Use V8's portable SIMD implementation on OpenBSD.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/v8/src/objects/simd.cc
 --- codex-rs/modcargo-crates/v8-152.2.0/v8/src/objects/simd.cc.orig

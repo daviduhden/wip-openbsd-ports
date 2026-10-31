@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Protect frozen V8 flags with OpenBSD mimmutable(2).
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/v8/src/flags/flags.cc
 --- codex-rs/modcargo-crates/v8-152.2.0/v8/src/flags/flags.cc.orig

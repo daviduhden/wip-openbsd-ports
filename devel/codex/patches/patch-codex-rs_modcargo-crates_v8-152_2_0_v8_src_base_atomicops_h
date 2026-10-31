@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Use pointer-sized 64-bit atomics for OpenBSD's ABI.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/v8/src/base/atomicops.h
 --- codex-rs/modcargo-crates/v8-152.2.0/v8/src/base/atomicops.h.orig

@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Avoid Linux-only build assumptions in V8's OpenBSD port.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/build/config/linux/pkg-config.py
 --- codex-rs/modcargo-crates/v8-152.2.0/build/config/linux/pkg-config.py.orig

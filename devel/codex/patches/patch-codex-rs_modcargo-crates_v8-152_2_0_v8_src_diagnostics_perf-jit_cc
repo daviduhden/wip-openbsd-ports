@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Disable unsupported Linux perf JIT integration on OpenBSD.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/v8/src/diagnostics/perf-jit.cc
 --- codex-rs/modcargo-crates/v8-152.2.0/v8/src/diagnostics/perf-jit.cc.orig

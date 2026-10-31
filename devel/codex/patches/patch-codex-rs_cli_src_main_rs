@@ -12,12 +12,14 @@ Index: codex-rs/cli/src/main.rs
  use clap::Args;
  use clap::CommandFactory;
  use clap::Parser;
-@@ -884,6 +886,9 @@ fn resolve_windows_update_command_from_p
+@@ -880,6 +882,11 @@ fn resolve_windows_update_command_from_p
  }
  
  fn run_update_command() -> anyhow::Result<()> {
 +    if cfg!(target_os = "openbsd") {
-+        anyhow::bail!("Codex is managed by OpenBSD packages; update with pkg_add -u, then restart the daemon");
++        anyhow::bail!(
++            "Codex is managed by OpenBSD packages; update with pkg_add -u, then restart the daemon"
++        );
 +    }
      #[cfg(debug_assertions)]
      {

@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Use system GN and Ninja; avoid fetching V8 toolchains during builds.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/build.rs
 --- codex-rs/modcargo-crates/v8-152.2.0/build.rs.orig

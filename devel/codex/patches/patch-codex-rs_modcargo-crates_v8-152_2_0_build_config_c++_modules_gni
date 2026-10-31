@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Use V8's system C++ toolchain and module settings on OpenBSD.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/build/config/c++/modules.gni
 --- codex-rs/modcargo-crates/v8-152.2.0/build/config/c++/modules.gni.orig

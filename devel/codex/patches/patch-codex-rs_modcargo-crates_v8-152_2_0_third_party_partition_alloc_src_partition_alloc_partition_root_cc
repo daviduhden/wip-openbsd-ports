@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Use OpenBSD-compatible address-space and stack allocation.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/third_party/partition_alloc/src/partition_alloc/partition_root.cc
 --- codex-rs/modcargo-crates/v8-152.2.0/third_party/partition_alloc/src/partition_alloc/partition_root.cc.orig

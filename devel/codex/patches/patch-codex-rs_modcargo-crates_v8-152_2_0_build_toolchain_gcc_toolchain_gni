@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Configure V8's GN build for OpenBSD ports tools.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/build/toolchain/gcc_toolchain.gni
 --- codex-rs/modcargo-crates/v8-152.2.0/build/toolchain/gcc_toolchain.gni.orig

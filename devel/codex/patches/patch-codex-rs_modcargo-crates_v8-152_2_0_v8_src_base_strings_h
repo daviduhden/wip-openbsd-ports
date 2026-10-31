@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Include the standard varargs declarations used by V8 strings.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/v8/src/base/strings.h
 --- codex-rs/modcargo-crates/v8-152.2.0/v8/src/base/strings.h.orig

@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Use OpenBSD-compatible address-space and stack allocation.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/v8/build_overrides/partition_alloc.gni
 --- codex-rs/modcargo-crates/v8-152.2.0/v8/build_overrides/partition_alloc.gni.orig

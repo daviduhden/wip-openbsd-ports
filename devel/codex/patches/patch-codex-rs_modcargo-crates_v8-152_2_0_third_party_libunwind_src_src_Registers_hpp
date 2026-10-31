@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Build V8 against the OpenBSD base C++ runtime.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/third_party/libunwind/src/src/Registers.hpp
 --- codex-rs/modcargo-crates/v8-152.2.0/third_party/libunwind/src/src/Registers.hpp.orig

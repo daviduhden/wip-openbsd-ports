@@ -1,4 +1,4 @@
-Adjust V8 152.2.0 for OpenBSD.
+Limit V8's address-space sandbox size for OpenBSD userland.
 
 Index: codex-rs/modcargo-crates/v8-152.2.0/v8/include/v8-internal.h
 --- codex-rs/modcargo-crates/v8-152.2.0/v8/include/v8-internal.h.orig

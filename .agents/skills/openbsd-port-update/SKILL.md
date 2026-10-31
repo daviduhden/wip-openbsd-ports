@@ -147,6 +147,63 @@ pending. The required source comparison in [UPDATE.md](../../../docs/UPDATE.md)
 records stable upstream and official `-current` versions, adopted or declined
 official changes, and local behavior retained or retired.
 
+### Local-only and header-only ports
+
+Some overlay ports have no official `-current` counterpart.  Confirm that
+absence from the official tree instead of assuming a local directory is new.
+For a single-header port, compare the release tree with the installed file
+set, compile one translation unit with the implementation macro enabled, and
+keep `pkg/PLIST` unchanged when the header and license are still the only
+installed files.
+
+If `distinfo` cannot be regenerated with OpenBSD `make makesum`, derive the
+SHA-256 and size from the exact release tarball, record the source URL and
+method in the handoff, and require `make checksum` on OpenBSD before
+packaging.  Do not carry an old checksum for a new tag.
+
+### XERJ (`devel/xerj`)
+
+`devel/xerj` pins a prerelease tag and builds only the `xerj-server`
+package from the `engine/` Cargo workspace.  Before any update:
+
+1. Re-check upstream tags, releases, the selected tag's commit and whether
+   a stable release now exists.
+2. Read `engine/Cargo.toml`, every workspace member reachable from
+   `xerj-server`, and the complete `engine/Cargo.lock`.  Confirm which
+   package still produces `xerj`.
+3. Review added/removed crates, optional features, target-specific
+   dependencies and build scripts.  Keep the neural/decide feature
+   selection explicit and documented.
+4. Re-audit OpenBSD cfg branches, libc/nix/rustix usage and Linux-only
+   constants or syscalls.  `RLIMIT_AS` and the Linux errno accessor are
+   known non-portable examples; do not add a patch until the exact call
+   site is verified.
+5. Check target-cpu, ISA and assembly requirements; never add
+   `target-cpu=native` to a distributable package.
+6. Keep ports patches separate from upstreamable fixes.  Rebase with
+   `diff -u -p`, one target per `Index:`, and keep comment lines at most
+   72 columns.
+7. Re-check system-library decisions: SQLite uses the system library,
+   zstd uses `archivers/zstd`, and the Rust `openssl` crate must not
+   vendor OpenSSL (`OPENSSL_NO_VENDOR=1`).
+8. Keep TLS, authentication and validation enabled by default.  Do not
+   add a service or user until runtime permissions and pledge/unveil
+   behavior have been tested.  Document feature losses, packaging
+   decisions and pending OpenBSD checks in the port `README` and update
+   report.
+9. Enable tests package-scoped to `xerj-server` and give them a writable
+   `HOME`.  The integration tests use loopback listeners and temporary
+   directories.  Do not run workspace-wide tests until the
+   `xerj-autoindex` test module's Linux-only `RLIMIT_AS` references are
+   gated.
+10. Do not generate `crates.inc`, `distinfo` or `pkg/PLIST` outside
+    OpenBSD.  Record `make modcargo-gen-crates`, `make makesum`,
+    `make update-plist` and `make port-lib-depends-check` as pending.
+11. Use independent read-only subagents for architecture, Cargo graph,
+    native dependencies, OpenBSD compatibility and security questions.
+12. Report static inspection separately from `make build`, `make test` and
+    runtime evidence.
+
 ### Codex CLI (`devel/codex`)
 
 When subagents are available, delegate read-only reviews in parallel for the

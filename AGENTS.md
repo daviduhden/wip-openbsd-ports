@@ -153,6 +153,43 @@ When changing `lang/node` or a port with a similar LibreSSL adaptation:
    Base-LibreSSL linkage, pledge/unveil, W^X, libc++ and the OpenBSD package
    still require native validation.
 
+## XERJ port (devel/xerj)
+
+`devel/xerj` is a Cargo-workspace port pinned to an upstream prerelease.
+Its manifest is `engine/Cargo.toml`, and only the `xerj-server` package
+provides the installed `xerj` binary.  Preserve that selection unless a
+tested change requires otherwise.
+
+When maintaining it:
+
+1. Check upstream tags, releases and the pinned commit before updating.
+2. Read the whole `engine` workspace and `Cargo.lock`; do not assume the
+   whole workspace must be built.
+3. Review new and removed crates, features and native build scripts.
+4. Re-audit OpenBSD cfg branches and Linux-only syscalls/constants.
+5. Check target-cpu/ISA requirements and do not use `target-cpu=native`.
+6. Keep OpenBSD-specific patches separate, rebase them on pristine
+   upstream, and use `diff -u -p` with an `Index:` header and comments
+   wrapped to 72 columns.
+7. Keep `Makefile` dependencies and feature flags current, including the
+   system SQLite/zstd choice and the `OPENSSL_NO_VENDOR` setting.
+8. Keep unavailable or unverified features fail-closed; do not disable
+   TLS, authentication or validation to make a build pass.  Document
+   packaging decisions, feature losses and pending OpenBSD checks in the
+   port `README` and update report.
+9. Never generate `distinfo`, `pkg/PLIST` or a Cargo `*.inc` outside an
+   OpenBSD ports tree.  Record their absence and the exact regeneration
+   targets.
+10. Use independent read-only subagents for upstream, Cargo, native,
+    architecture, security and packaging questions.
+11. Separate static findings from real OpenBSD build/runtime evidence.
+12. Run tests package-scoped to `xerj-server` with a writable `HOME`;
+    workspace-wide tests also compile `xerj-autoindex` tests that still
+    reference the Linux-only `RLIMIT_AS`.
+
+The detailed update checklist is in
+`.agents/skills/openbsd-port-update/SKILL.md`.
+
 ## Verification and delivery
 
 Choose the checks that match the change and record the exact commands,

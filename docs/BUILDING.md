@@ -398,6 +398,40 @@ example only writes the plans and does not assert, so the default
 `files/agent_query_plans.txt` exist, `post-patch` installs them and the
 example verifies them (`SIMPLEX_QUERY_PLANS_PLATFORM=1`).
 
+## Node.js and LibreSSL
+
+`lang/node` uses the base-system LibreSSL rather than `security/openssl`.
+The port carries a small patch series in `lang/node/patches/` for the
+legacy OpenSSL interfaces Node still expects.  Node selects its
+`deps/ncrypto` legacy backend because LibreSSL reports
+`OPENSSL_VERSION_NUMBER 0x20000000L` and has no `OPENSSL_VERSION_MAJOR`;
+do not fake an OpenSSL 3 version to select provider code.
+
+Keep these rules when updating the port:
+
+- Compare against the official `lang/node` port and preserve its OpenBSD,
+  V8, CET, pledge/unveil and W^X patches.  Only the eopenssl rpath in
+  `patch-common_gypi` is OpenSSL-specific.
+- Keep `--shared-openssl`, `WANTLIB += crypto ssl`, and no
+  `security/openssl` dependency.  Do not reintroduce `EOPENSSL_*` paths.
+- Rebase the LibreSSL patches against pristine upstream sources with
+  `diff -u -p`.  Do not patch an already-patched tree.
+- `process.versions.openssl` reports `LibreSSL <version>`; test helpers
+  must not treat that as an OpenSSL feature level.
+- Known unavailable features are documented in `lang/node/README`.
+  Do not replace them with permissive stubs.  In particular, keep
+  `--secure-heap`, `pskCallback` and asynchronous certificate callbacks
+  fail-closed.
+- Do not regenerate `distinfo`, `pkg/PLIST`, or generated `*.inc` files
+  outside a matching OpenBSD ports tree.
+
+A local Linux build against Homebrew LibreSSL is useful for compile and
+runtime work but does not validate OpenBSD linkage, pledge/unveil, W^X,
+libc++, or the base LibreSSL ABI.  Repeat `make patch`, `make build`,
+`make test`, `make fake`, and `make port-lib-depends-check` on OpenBSD.
+The TLS 1.3 first-write retry added for LibreSSL is still unvalidated;
+HTTPS must be exercised explicitly before the port is treated as tested.
+
 ## Practical Validation
 
 After packaging, the important checks are:

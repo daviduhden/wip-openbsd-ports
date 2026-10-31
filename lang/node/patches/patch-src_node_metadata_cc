@@ -1,0 +1,25 @@
+Report LibreSSL in process.versions.openssl.
+
+Index: src/node_metadata.cc
+--- src/node_metadata.cc.orig
++++ src/node_metadata.cc
+@@ -63,6 +63,11 @@ static inline std::string GetOpenSSLVers
+   // sample openssl version string format
+   // for reference: "OpenSSL 1.1.0i 14 Aug 2018"
+   const char* version = OpenSSL_version(OPENSSL_VERSION);
++#ifdef LIBRESSL_VERSION_NUMBER
++  // Report the library and version truthfully instead of presenting LibreSSL
++  // as an OpenSSL release.
++  return std::string(version);
++#else
+   const size_t first_space = search(version, ' ');
+ 
+   // When Node.js is linked to an alternative library implementing the
+@@ -75,6 +80,7 @@ static inline std::string GetOpenSSLVers
+   const size_t start = first_space + 1;
+   const size_t len = search(&version[start], ' ');
+   return std::string(version, start, len);
++#endif  // LIBRESSL_VERSION_NUMBER
+ }
+ #endif  // HAVE_OPENSSL
+ 

@@ -1,0 +1,15 @@
+Include the LibreSSL compatibility header from ncrypto.
+
+Index: deps/ncrypto/ncrypto.h
+--- deps/ncrypto/ncrypto.h.orig
++++ deps/ncrypto/ncrypto.h
+@@ -12,6 +12,9 @@
+ #include <openssl/rsa.h>
+ #include <openssl/ssl.h>
+ #include <openssl/x509.h>
++#ifdef LIBRESSL_VERSION_NUMBER
++#include "libressl_compat.h"
++#endif
+ #include <array>
+ #include <cstddef>
+ #include <cstdint>

@@ -1,0 +1,63 @@
+Do not advertise algorithms that LibreSSL does not implement.
+
+Index: lib/internal/crypto/util.js
+--- lib/internal/crypto/util.js.orig
++++ lib/internal/crypto/util.js
+@@ -22,6 +22,7 @@ const {
+   PromiseWithResolvers,
+   SafeMap,
+   SafeSet,
++  StringPrototypeIncludes,
+   StringPrototypeToUpperCase,
+   Symbol,
+   TypedArrayPrototypeGetBuffer,
+@@ -488,24 +489,28 @@ const kAlgorithmDefinitions = {
+ };
+ 
+ // Conditionally supported algorithms
++const isLibreSSL =
++  StringPrototypeIncludes(process.versions.openssl, 'LibreSSL');
+ const pqcKeyTypes = getPqcKeyTypes();
+ 
+ const conditionalAlgorithms = {
+-  'AES-OCB': !!hasAesOcbMode,
++  'AES-OCB': !isLibreSSL && !!hasAesOcbMode,
+   'Argon2d': !!Argon2Job,
+   'Argon2i': !!Argon2Job,
+   'Argon2id': !!Argon2Job,
+   'ChaCha20-Poly1305': process.features.openssl_is_boringssl ||
+     ArrayPrototypeIncludes(getCiphers(), 'chacha20-poly1305'),
+-  'cSHAKE128': !process.features.openssl_is_boringssl ||
+-    ArrayPrototypeIncludes(getHashes(), 'shake128'),
+-  'cSHAKE256': !process.features.openssl_is_boringssl ||
+-    ArrayPrototypeIncludes(getHashes(), 'shake256'),
+-  'Ed448': !process.features.openssl_is_boringssl,
++  'cSHAKE128': !isLibreSSL &&
++    (!process.features.openssl_is_boringssl ||
++     ArrayPrototypeIncludes(getHashes(), 'shake128')),
++  'cSHAKE256': !isLibreSSL &&
++    (!process.features.openssl_is_boringssl ||
++     ArrayPrototypeIncludes(getHashes(), 'shake256')),
++  'Ed448': !isLibreSSL && !process.features.openssl_is_boringssl,
+   'KMAC128': !!KmacJob,
+   'KMAC256': !!KmacJob,
+-  'KT128': !isFips,
+-  'KT256': !isFips,
++  'KT128': !isLibreSSL && !isFips,
++  'KT256': !isLibreSSL && !isFips,
+   'ML-DSA-44': ArrayPrototypeIncludes(pqcKeyTypes, 'ML-DSA-44'),
+   'ML-DSA-65': ArrayPrototypeIncludes(pqcKeyTypes, 'ML-DSA-65'),
+   'ML-DSA-87': ArrayPrototypeIncludes(pqcKeyTypes, 'ML-DSA-87'),
+@@ -530,9 +535,9 @@ const conditionalAlgorithms = {
+     ArrayPrototypeIncludes(getHashes(), 'sha3-384'),
+   'SHA3-512': !process.features.openssl_is_boringssl ||
+     ArrayPrototypeIncludes(getHashes(), 'sha3-512'),
+-  'TurboSHAKE128': !isFips,
+-  'TurboSHAKE256': !isFips,
+-  'X448': !process.features.openssl_is_boringssl,
++  'TurboSHAKE128': !isLibreSSL && !isFips,
++  'TurboSHAKE256': !isLibreSSL && !isFips,
++  'X448': !isLibreSSL && !process.features.openssl_is_boringssl,
+ };
+ 
+ // Experimental algorithms

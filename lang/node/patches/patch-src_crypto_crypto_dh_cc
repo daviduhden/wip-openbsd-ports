@@ -1,0 +1,14 @@
+Do not include the OpenSSL-only bnerr.h with LibreSSL.
+
+Index: src/crypto/crypto_dh.cc
+--- src/crypto/crypto_dh.cc.orig
++++ src/crypto/crypto_dh.cc
+@@ -7,7 +7,7 @@
+ #include "memory_tracker-inl.h"
+ #include "ncrypto.h"
+ #include "node_errors.h"
+-#ifndef OPENSSL_IS_BORINGSSL
++#if !defined(OPENSSL_IS_BORINGSSL) && !defined(LIBRESSL_VERSION_NUMBER)
+ #include "openssl/bnerr.h"
+ #endif
+ #include "openssl/dh.h"

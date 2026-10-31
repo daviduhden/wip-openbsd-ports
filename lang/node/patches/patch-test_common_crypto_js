@@ -1,0 +1,26 @@
+Treat LibreSSL as not being an OpenSSL release for feature tests.
+
+Index: test/common/crypto.js
+--- test/common/crypto.js.orig
++++ test/common/crypto.js
+@@ -112,9 +112,12 @@ const opensslVersionNumber = (major = 0,
+   return (major << 28) | (minor << 20) | (patch << 4);
+ };
+ 
++const isLibreSSL = /LibreSSL/.test(process.versions.openssl);
+ let OPENSSL_VERSION_NUMBER;
+ const hasOpenSSL = (major = 0, minor = 0, patch = 0) => {
+   if (!common.hasCrypto) return false;
++  // LibreSSL is not an OpenSSL release; never satisfy OpenSSL feature gates.
++  if (isLibreSSL) return false;
+   if (OPENSSL_VERSION_NUMBER === undefined) {
+     const regexp = /(?<m>\d+)\.(?<n>\d+)\.(?<p>\d+)/;
+     const { m, n, p } = process.versions.openssl.match(regexp).groups;
+@@ -147,6 +150,7 @@ module.exports = {
+   hasOpenSSL,
+   hasFIPS,
+   isBoringSSL,
++  isLibreSSL,
+   get hasOpenSSL3() {
+     return hasOpenSSL(3);
+   },

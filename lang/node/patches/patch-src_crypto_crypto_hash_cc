@@ -1,0 +1,47 @@
+Handle the absence of XOF digests in LibreSSL.
+
+Index: src/crypto/crypto_hash.cc
+--- src/crypto/crypto_hash.cc.orig
++++ src/crypto/crypto_hash.cc
+@@ -360,6 +360,10 @@ const EVP_MD* GetDigestImplementation(
+ void MarkInvalidXofLength() {
+ #if NCRYPTO_USE_OPENSSL3_PROVIDER
+   ERR_raise(ERR_LIB_EVP, EVP_R_NOT_XOF_OR_INVALID_LENGTH);
++#elif defined(LIBRESSL_VERSION_NUMBER)
++  // LibreSSL has no XOF implementation or matching reason code.
++  ERR_put_error(
++      ERR_LIB_EVP, 0, EVP_R_INVALID_DIGEST, __FILE__, __LINE__);
+ #else
+   EVPerr(EVP_F_EVP_DIGESTFINALXOF, EVP_R_NOT_XOF_OR_INVALID_LENGTH);
+ #endif
+@@ -379,7 +383,12 @@ void OneShotDigestWithMD(Environment* en
+ 
+   enum encoding output_enc = ParseEncoding(isolate, args[4], args[5], HEX);
+ 
++#ifdef LIBRESSL_VERSION_NUMBER
++  // LibreSSL does not implement XOF digests.
++  bool is_xof = false;
++#else
+   bool is_xof = (EVP_MD_flags(md) & EVP_MD_FLAG_XOF) != 0;
++#endif
+   int output_length = EVP_MD_size(md);
+ 
+   // This is to cause hash() to fail when an incorrect
+@@ -833,11 +842,17 @@ Maybe<void> HashTraits::AdditionalConfig
+         static_cast<uint32_t>(args[offset + 2].As<Uint32>()->Value()) /
+         CHAR_BIT;
+     if (params->length != expected) {
++#ifdef LIBRESSL_VERSION_NUMBER
++      // No XOF digests are available with LibreSSL.
++      THROW_ERR_CRYPTO_INVALID_DIGEST(env, "Digest method not supported");
++      return Nothing<void>();
++#else
+       if ((EVP_MD_flags(params->digest.get()) & EVP_MD_FLAG_XOF) == 0)
+           [[unlikely]] {
+         THROW_ERR_CRYPTO_INVALID_DIGEST(env, "Digest method not supported");
+         return Nothing<void>();
+       }
++#endif
+     }
+   }
+ 

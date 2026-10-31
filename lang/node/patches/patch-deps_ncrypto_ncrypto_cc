@@ -1,0 +1,274 @@
+Adapt ncrypto to legacy APIs that LibreSSL does not provide.
+Keep unsupported features failing closed instead of returning
+fabricated success.
+
+Index: deps/ncrypto/ncrypto.cc
+--- deps/ncrypto/ncrypto.cc.orig
++++ deps/ncrypto/ncrypto.cc
+@@ -33,7 +33,8 @@
+ #endif
+ #endif
+ // EVP_PKEY_CTX_set_dsa_paramgen_q_bits was added in OpenSSL 1.1.1e.
+-#if OPENSSL_VERSION_NUMBER < 0x1010105fL
++// LibreSSL reports an OpenSSL 2.0 version number but does not expose it.
++#if OPENSSL_VERSION_NUMBER < 0x1010105fL || defined(LIBRESSL_VERSION_NUMBER)
+ #define EVP_PKEY_CTX_set_dsa_paramgen_q_bits(ctx, qbits)                       \
+   EVP_PKEY_CTX_ctrl((ctx),                                                     \
+                     EVP_PKEY_DSA,                                              \
+@@ -422,6 +423,13 @@ size_t DataPointer::GetSecureHeapUsed()
+ 
+ DataPointer::InitSecureHeapResult DataPointer::TryInitSecureHeap(size_t amount,
+                                                                  size_t min) {
++#ifdef LIBRESSL_VERSION_NUMBER
++  // LibreSSL does not implement OpenSSL's secure heap.  Fail closed so that
++  // --secure-heap is rejected instead of silently using ordinary memory.
++  (void)amount;
++  (void)min;
++  return InitSecureHeapResult::FAILED;
++#else
+   switch (CRYPTO_secure_malloc_init(amount, min)) {
+     case 0:
+       return InitSecureHeapResult::FAILED;
+@@ -432,6 +440,7 @@ DataPointer::InitSecureHeapResult DataPo
+     default:
+       return InitSecureHeapResult::FAILED;
+   }
++#endif  // LIBRESSL_VERSION_NUMBER
+ }
+ 
+ DataPointer DataPointer::Copy(const Buffer<const void>& buffer) {
+@@ -499,9 +508,17 @@ DataPointer DataPointer::resize(size_t l
+   auto buf = release();
+   if (actual_len == 0) return DataPointer(buf.data, actual_len);
+ 
+-  buf.data = OPENSSL_realloc(buf.data, actual_len);
+-  buf.len = actual_len;
+-  return DataPointer(buf);
++  // LibreSSL does not expose OPENSSL_realloc.  Allocate a fresh buffer and
++  // copy the retained prefix so the pointer stays compatible with
++  // OPENSSL_free/OPENSSL_clear_free.
++  void* resized = OPENSSL_malloc(actual_len);
++  if (resized == nullptr) {
++    OPENSSL_clear_free(buf.data, buf.len);
++    return {};
++  }
++  std::memcpy(resized, buf.data, actual_len);
++  OPENSSL_clear_free(buf.data, buf.len);
++  return DataPointer(resized, actual_len);
+ }
+ 
+ // ============================================================================
+@@ -2942,7 +2959,15 @@ bool ScryptDerive(const Buffer<const cha
+ #endif
+ 
+ bool checkScryptParams(uint64_t N, uint64_t r, uint64_t p, uint64_t maxmem) {
+-#if NCRYPTO_USE_OPENSSL3_PROVIDER
++#ifdef OPENSSL_NO_SCRYPT
++  // LibreSSL does not provide a scrypt implementation.  Report the
++  // parameters as invalid so callers fail cleanly instead of deriving a key.
++  (void)N;
++  (void)r;
++  (void)p;
++  (void)maxmem;
++  return false;
++#elif NCRYPTO_USE_OPENSSL3_PROVIDER
+   // A null output validates the parameters without deriving a key.
+   return ScryptDerive({nullptr, 0}, {nullptr, 0}, N, r, p, maxmem, nullptr, 0);
+ #else
+@@ -2958,6 +2983,16 @@ DataPointer scrypt(const Buffer<const ch
+                    uint64_t p,
+                    uint64_t maxmem,
+                    size_t length) {
++#ifdef OPENSSL_NO_SCRYPT
++  (void)pass;
++  (void)salt;
++  (void)N;
++  (void)r;
++  (void)p;
++  (void)maxmem;
++  (void)length;
++  return {};
++#else
+   if (pass.len > INT_MAX || salt.len > INT_MAX) {
+     return {};
+   }
+@@ -2982,6 +3017,7 @@ DataPointer scrypt(const Buffer<const ch
+   }
+ 
+   return {};
++#endif  // OPENSSL_NO_SCRYPT
+ }
+ 
+ DataPointer pbkdf2(const Digest& md,
+@@ -3309,8 +3345,10 @@ const LegacyKeyAlgorithm kLegacyKeyAlgor
+     {KeyAlgorithm::X25519.name(), EVP_PKEY_X25519},
+ #endif
+     {"HKDF", EVP_PKEY_HKDF},
++#ifndef LIBRESSL_VERSION_NUMBER
+     {KeyAlgorithm::ED448.name(), EVP_PKEY_ED448},
+     {KeyAlgorithm::X448.name(), EVP_PKEY_X448},
++#endif
+ #ifndef OPENSSL_NO_SM2
+     {KeyAlgorithm::SM2.name(), EVP_PKEY_SM2},
+ #endif
+@@ -4922,7 +4960,13 @@ bool SSLPointer::setSniContext(const SSL
+     // SSL_use_certificate replaces only the certificate matching the key
+     // type. Clear all existing certificates so credentials from the default
+     // context cannot be selected for a different key type.
++    //
++    // LibreSSL keeps a single certificate and private key per SSL object and
++    // SSL_use_certificate() replaces them, so there is no per-key-type set to
++    // clear.
++#ifndef LIBRESSL_VERSION_NUMBER
+     SSL_certs_clear(get());
++#endif
+     err = SSL_use_certificate(get(), x509);
+   }
+   if (err == 1) err = SSL_use_PrivateKey(get(), pkey);
+@@ -4941,9 +4985,12 @@ std::optional<uint32_t> SSLPointer::veri
+   // Allow no-cert for PSK authentication in TLS1.2 and lower.
+   // In TLS1.3 check that session was reused because TLS1.3 PSK
+   // looks like session resumption.
+-  if (SSL_CIPHER_get_auth_nid(curr_cipher) == NID_auth_psk ||
+-      (SSL_SESSION_get_protocol_version(sess) == TLS1_3_VERSION &&
+-       SSL_session_reused(get()))) {
++#ifndef OPENSSL_NO_PSK
++  if (SSL_CIPHER_get_auth_nid(curr_cipher) == NID_auth_psk)
++    return X509_V_OK;
++#endif
++  if (SSL_SESSION_get_protocol_version(sess) == TLS1_3_VERSION &&
++      SSL_session_reused(get())) {
+     return X509_V_OK;
+   }
+ 
+@@ -5016,7 +5063,13 @@ std::optional<std::string_view> SSLPoint
+ std::optional<std::string_view> SSLPointer::getCipherStandardName() const {
+   auto cipher = getCipher();
+   if (cipher == nullptr) return std::nullopt;
++#ifdef LIBRESSL_VERSION_NUMBER
++  // LibreSSL does not implement the IANA cipher-name mapping.  Fall back to
++  // the OpenSSL name rather than inventing a standard name.
++  return SSL_CIPHER_get_name(cipher);
++#else
+   return SSL_CIPHER_standard_name(cipher);
++#endif
+ }
+ 
+ std::optional<std::string_view> SSLPointer::getCipherVersion() const {
+@@ -5461,7 +5514,7 @@ const Cipher& Cipher::AES_256_KW() {
+   return GetPredefinedCipher<NID_id_aes256_wrap>();
+ }
+ 
+-#ifndef OPENSSL_IS_BORINGSSL
++#if !defined(OPENSSL_IS_BORINGSSL) && !defined(OPENSSL_NO_OCB)
+ const Cipher& Cipher::AES_128_OCB() {
+   return GetPredefinedCipher<NID_aes_128_ocb>();
+ }
+@@ -5509,8 +5562,12 @@ bool Cipher::isCtsMode() const {
+ }
+ 
+ bool Cipher::isOcbMode() const {
++#ifdef OPENSSL_NO_OCB
++  return false;
++#else
+   if (!cipher_) return false;
+   return getMode() == EVP_CIPH_OCB_MODE;
++#endif
+ }
+ 
+ bool Cipher::isSivMode() const {
+@@ -5581,8 +5638,10 @@ std::string_view Cipher::getModeLabel()
+       return "ecb";
+     case EVP_CIPH_GCM_MODE:
+       return "gcm";
++#ifndef OPENSSL_NO_OCB
+     case EVP_CIPH_OCB_MODE:
+       return "ocb";
++#endif
+     case EVP_CIPH_OFB_MODE:
+       return "ofb";
+ #if OPENSSL_WITH_AES_SIV
+@@ -5776,8 +5835,12 @@ bool CipherCtxPointer::isGcmMode() const
+ }
+ 
+ bool CipherCtxPointer::isOcbMode() const {
++#ifdef OPENSSL_NO_OCB
++  return false;
++#else
+   if (!ctx_) return false;
+   return getMode() == EVP_CIPH_OCB_MODE;
++#endif
+ }
+ 
+ bool CipherCtxPointer::isCcmMode() const {
+@@ -6695,7 +6758,9 @@ EVPKeyPointer EVPKeyCtxPointer::paramgen
+ bool EVPKeyCtxPointer::publicCheck() const {
+   if (!ctx_) return false;
+ #ifndef OPENSSL_IS_BORINGSSL
+-#if OPENSSL_VERSION_MAJOR >= 3
++#if defined(LIBRESSL_VERSION_NUMBER)
++  return ncrypto_evp_pkey_public_check(ctx_.get()) == 1;
++#elif OPENSSL_VERSION_MAJOR >= 3
+   return EVP_PKEY_public_check_quick(ctx_.get()) == 1;
+ #else
+   return EVP_PKEY_public_check(ctx_.get()) == 1;
+@@ -6711,7 +6776,11 @@ bool EVPKeyCtxPointer::publicCheck() con
+ bool EVPKeyCtxPointer::privateCheck() const {
+   if (!ctx_) return false;
+ #ifndef OPENSSL_IS_BORINGSSL
++#if defined(LIBRESSL_VERSION_NUMBER)
++  return ncrypto_evp_pkey_private_check(ctx_.get()) == 1;
++#else
+   return EVP_PKEY_check(ctx_.get()) == 1;
++#endif
+ #else
+   // Boringssl appears not to support this operation.
+   // TODO(jasnell): Is there an alternative approach that Boringssl does
+@@ -7054,7 +7123,7 @@ const Rsa::OtherPrimeInfos Rsa::getOther
+   for (const auto& info : other_prime_infos_) {
+     infos.push_back({info.r.get(), info.d.get(), info.t.get()});
+   }
+-#elif NCRYPTO_USE_LEGACY_OPENSSL
++#elif NCRYPTO_USE_LEGACY_OPENSSL && !defined(LIBRESSL_VERSION_NUMBER)
+   if (rsa_ == nullptr) return infos;
+   const int count = RSA_get_multi_prime_extra_count(rsa_);
+   if (count <= 0) return infos;
+@@ -7233,7 +7302,7 @@ bool Rsa::setPrivateKey(BignumPointer&&
+   dq.release();
+   qi.release();
+ 
+-#if NCRYPTO_USE_LEGACY_OPENSSL
++#if NCRYPTO_USE_LEGACY_OPENSSL && !defined(LIBRESSL_VERSION_NUMBER)
+   if (!other_prime_infos.empty()) {
+     std::vector<BIGNUM*> factors;
+     std::vector<BIGNUM*> exponents;
+@@ -7797,9 +7866,16 @@ bool EVPMDCtxPointer::digestFinalInto(Bu
+ 
+   auto ptr = static_cast<unsigned char*>(buf->data);
+ 
++#ifdef LIBRESSL_VERSION_NUMBER
++  // LibreSSL has no XOF finalisation primitive.  Only fixed-size digests can
++  // be returned; callers requesting a longer output must fail.
++  if (buf->len != getExpectedSize()) return false;
++  int ret = EVP_DigestFinal_ex(ctx_.get(), ptr, nullptr);
++#else
+   int ret = (buf->len == getExpectedSize())
+                 ? EVP_DigestFinal_ex(ctx_.get(), ptr, nullptr)
+                 : EVP_DigestFinalXOF(ctx_.get(), ptr, buf->len);
++#endif
+ 
+   if (ret != 1) [[unlikely]]
+     return false;
+@@ -7822,8 +7898,12 @@ const EVP_MD* EVPMDCtxPointer::getDigest
+ }
+ 
+ bool EVPMDCtxPointer::hasXofFlag() const {
++#ifdef LIBRESSL_VERSION_NUMBER
++  return false;
++#else
+   if (!ctx_) return false;
+   return (EVP_MD_flags(getDigest()) & EVP_MD_FLAG_XOF) == EVP_MD_FLAG_XOF;
++#endif
+ }
+ 
+ bool EVPMDCtxPointer::copyTo(const EVPMDCtxPointer& other) const {

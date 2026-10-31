@@ -1,0 +1,78 @@
+Initialise LibreSSL without OPENSSL_INIT_SETTINGS and map its
+available error libraries.  Reject --secure-heap fail-closed.
+
+Index: src/crypto/crypto_util.cc
+--- src/crypto/crypto_util.cc.orig
++++ src/crypto/crypto_util.cc
+@@ -23,6 +23,11 @@
+ #include "openssl/provider.h"
+ #endif
+ 
++#ifdef LIBRESSL_VERSION_NUMBER
++#include <openssl/conf.h>
++#include <cstdlib>
++#endif
++
+ #if !defined(OPENSSL_IS_BORINGSSL) && OPENSSL_VERSION_PREREQ(3, 4)
+ #include <openssl/indicator.h>
+ #endif
+@@ -504,6 +509,14 @@ void InitCryptoOnce() {
+   Mutex::ScopedLock lock(per_process::cli_options_mutex);
+   Mutex::ScopedLock fips_lock(fips_mutex);
+ #ifndef OPENSSL_IS_BORINGSSL
++#ifdef LIBRESSL_VERSION_NUMBER
++  // LibreSSL has no OPENSSL_INIT_SETTINGS object.  Apply --openssl-config
++  // through OPENSSL_config() and initialise the library with no settings.
++  if (!per_process::cli_options->openssl_config.empty()) {
++    OPENSSL_config(per_process::cli_options->openssl_config.c_str());
++  }
++  OPENSSL_init_ssl(0, nullptr);
++#else
+   OPENSSL_INIT_SETTINGS* settings = OPENSSL_INIT_new();
+   CHECK_NOT_NULL(settings);
+ 
+@@ -526,11 +539,14 @@ void InitCryptoOnce() {
+ #endif
+ 
+   OPENSSL_init_ssl(0, settings);
++#endif
+   InstallFipsIndicatorCallback();
+ 
+   ncrypto::ConfigurePqcEncoding();
++#ifndef LIBRESSL_VERSION_NUMBER
+   OPENSSL_INIT_free(settings);
+   settings = nullptr;
++#endif
+ 
+ #ifndef _WIN32
+   if (per_process::cli_options->secure_heap != 0) {
+@@ -539,6 +555,12 @@ void InitCryptoOnce() {
+         per_process::cli_options->secure_heap_min)) {
+       case DataPointer::InitSecureHeapResult::FAILED:
+         fprintf(stderr, "Unable to initialize openssl secure heap.\n");
++#ifdef LIBRESSL_VERSION_NUMBER
++        // LibreSSL has no secure heap.  Refuse to run rather than silently
++        // keeping supposedly protected secrets on the ordinary heap.
++        fflush(stderr);
++        exit(1);
++#endif
+         break;
+       case DataPointer::InitSecureHeapResult::UNABLE_TO_MEMORY_MAP:
+         // Not a fatal error but worthy of a warning.
+@@ -939,6 +961,16 @@ Maybe<void> Decorate(Environment* env,
+ 
+ #ifdef OPENSSL_IS_BORINGSSL
+ #define OSSL_ERROR_CODES_MAP_OPENSSL_ONLY(V)
++#elif defined(LIBRESSL_VERSION_NUMBER)
++// LibreSSL has no OSSL_STORE, ASYNC, or SM2 error library identifiers.
++#define OSSL_ERROR_CODES_MAP_OPENSSL_ONLY(V)                                   \
++  V(PKCS12)                                                                    \
++  V(DSO)                                                                       \
++  V(STORE)                                                                     \
++  V(FIPS)                                                                      \
++  V(TS)                                                                        \
++  V(CT)                                                                        \
++  V(KDF)
+ #else
+ #define OSSL_ERROR_CODES_MAP_OPENSSL_ONLY(V)                                   \
+   V(PKCS12)                                                                    \

@@ -1,0 +1,28 @@
+Do not accept cSHAKE context parameters on LibreSSL.
+
+Index: lib/internal/crypto/webidl.js
+--- lib/internal/crypto/webidl.js.orig
++++ lib/internal/crypto/webidl.js
+@@ -6,6 +6,7 @@ const {
+   NumberParseInt,
+   ObjectPrototypeHasOwnProperty,
+   StringPrototypeCharCodeAt,
++  StringPrototypeIncludes,
+   StringPrototypeSplit,
+   StringPrototypeStartsWith,
+   StringPrototypeToLowerCase,
+@@ -686,6 +687,14 @@ converters.ContextParams = createDiction
+ 
+           if (process.features.openssl_is_boringssl) {
+             this.validator = validateLength;
++          } else if (StringPrototypeIncludes(process.versions.openssl,
++                                             'LibreSSL')) {
++            // LibreSSL does not implement cSHAKE context parameters.
++            const validateEmpty = validateZeroLength('ContextParams.context');
++            this.validator = (V, dict) => {
++              validateLength(V);
++              validateEmpty(V, dict);
++            };
+           } else {
+             let { 0: major, 1: minor } =
+               StringPrototypeSplit(process.versions.openssl, '.');

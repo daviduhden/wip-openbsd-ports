@@ -1,0 +1,45 @@
+Enable CET/IBT on OpenBSD, use -idirafter for local includes, and
+keep W^X.  The external OpenSSL rpath is no longer needed because
+this port uses the base-system LibreSSL.
+
+Index: common.gypi
+--- common.gypi.orig
++++ common.gypi
+@@ -46,6 +46,9 @@
+ 
+     ##### V8 defaults for Node.js #####
+ 
++    # Enable CET / IBT
++    'v8_enable_cet_ibt': 'true',
++
+     # Turn on SipHash for hash seed generation, addresses HashWick
+     'v8_use_siphash': 'true',
+ 
+@@ -203,7 +206,6 @@
+             }],
+           ],
+         },
+-        'cflags': [ '-O3' ],
+         'conditions': [
+           ['enable_lto=="true"', {
+             'cflags': ['<(lto)'],
+@@ -596,8 +598,8 @@
+             'standalone_static_library': 1,
+           }],
+           ['OS=="openbsd"', {
+-            'cflags': [ '-I/usr/local/include' ],
+-            'ldflags': [ '-Wl,-z,wxneeded' ],
++            'cflags': [ '-idirafter /usr/local/include' ],
++            'ldflags': [ '-Wl,-z,wxneeded' ],
+           }],
+           ['_toolset=="host"', {
+             'conditions': [
+@@ -609,7 +613,7 @@
+                 'cflags': [ '-m64' ],
+                 'ldflags': [ '-m64' ],
+               }],
+-              [ 'host_arch=="ppc64" and OS not in "aix os400"', {
++              [ 'host_arch=="ppc64" and OS not in "aix os400 openbsd"', {
+                 'conditions': [
+                   [ 'clang==0', {
+                     'cflags': [ '-mminimal-toc' ],

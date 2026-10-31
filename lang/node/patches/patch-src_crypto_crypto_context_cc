@@ -1,0 +1,33 @@
+Disable TLS interfaces that LibreSSL does not implement.
+setSigalgs now reports an unsupported operation.
+
+Index: src/crypto/crypto_context.cc
+--- src/crypto/crypto_context.cc.orig
++++ src/crypto/crypto_context.cc
+@@ -1951,6 +1951,11 @@ void SecureContext::SetNewSessionCallbac
+ void SecureContext::SetClientHelloCallback(ClientHelloCb cb) {
+ #ifdef OPENSSL_IS_BORINGSSL
+   SSL_CTX_set_select_certificate_cb(ctx_.get(), cb);
++#elif defined(LIBRESSL_VERSION_NUMBER)
++  // LibreSSL has no ClientHello callback.  The early ClientHello hook is only
++  // used for server-side resumeSession bookkeeping; session tickets continue
++  // to work through LibreSSL's own session handling.
++  (void)cb;
+ #else
+   SSL_CTX_set_client_hello_cb(ctx_.get(), cb, nullptr);
+ #endif
+@@ -2027,8 +2032,14 @@ void SecureContext::SetSigalgs(const Fun
+ 
+   const Utf8Value sigalgs(env->isolate(), args[0]);
+ 
++#ifdef LIBRESSL_VERSION_NUMBER
++  // LibreSSL does not expose signature algorithm list configuration.
++  return THROW_ERR_CRYPTO_UNSUPPORTED_OPERATION(
++      env, "setSigalgs is not supported with LibreSSL");
++#else
+   if (!SSL_CTX_set1_sigalgs_list(sc->ctx_.get(), *sigalgs))
+     return ThrowCryptoError(env, ERR_get_error());
++#endif
+ }
+ 
+ #ifndef OPENSSL_NO_ENGINE

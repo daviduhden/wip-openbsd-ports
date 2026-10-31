@@ -1,0 +1,57 @@
+Index: tools/v8_gypfiles/v8.gyp
+--- tools/v8_gypfiles/v8.gyp.orig
++++ tools/v8_gypfiles/v8.gyp
+@@ -736,7 +736,7 @@
+               }],
+               ['v8_enable_webassembly==1', {
+                 'conditions': [
+-                  ['OS in "linux mac ios freebsd openharmony"', {
++                  ['OS in "linux mac ios freebsd openharmony openbsd"', {
+                     'sources': [
+                       '<(V8_ROOT)/src/trap-handler/handler-inside-posix.h',
+                     ],
+@@ -779,7 +779,7 @@
+               }],
+               ['v8_enable_webassembly==1', {
+                 'conditions': [
+-                  ['((_toolset=="host" and host_arch=="arm64" or _toolset=="target" and target_arch=="arm64") and (OS in "linux mac openharmony")) or ((_toolset=="host" and host_arch=="x64" or _toolset=="target" and target_arch=="x64") and (OS in "linux mac openharmony"))', {
++                  ['((_toolset=="host" and host_arch=="arm64" or _toolset=="target" and target_arch=="arm64") and (OS in "linux mac openharmony openbsd")) or ((_toolset=="host" and host_arch=="x64" or _toolset=="target" and target_arch=="x64") and (OS in "linux mac openharmony openbsd"))', {
+                     'sources': [
+                       '<(V8_ROOT)/src/trap-handler/handler-inside-posix.h',
+                     ],
+@@ -1156,7 +1156,7 @@
+             }],
+             ['v8_enable_webassembly==1', {
+               'conditions': [
+-                ['OS in "linux mac ios freebsd openharmony"', {
++                ['OS in "linux mac ios freebsd openharmony openbsd"', {
+                   'sources': [
+                     '<(V8_ROOT)/src/trap-handler/handler-inside-posix.cc',
+                     '<(V8_ROOT)/src/trap-handler/handler-outside-posix.cc',
+@@ -1184,7 +1184,7 @@
+           'conditions': [
+             ['v8_enable_webassembly==1', {
+               'conditions': [
+-                ['((_toolset=="host" and host_arch=="arm64" or _toolset=="target" and target_arch=="arm64") and (OS in "linux mac ios openharmony")) or ((_toolset=="host" and host_arch=="x64" or _toolset=="target" and target_arch=="x64") and (OS in "linux mac openharmony"))', {
++                ['((_toolset=="host" and host_arch=="arm64" or _toolset=="target" and target_arch=="arm64") and (OS in "linux mac ios openharmony openbsd")) or ((_toolset=="host" and host_arch=="x64" or _toolset=="target" and target_arch=="x64") and (OS in "linux mac openharmony openbsd"))', {
+                   'sources': [
+                     '<(V8_ROOT)/src/trap-handler/handler-inside-posix.cc',
+                     '<(V8_ROOT)/src/trap-handler/handler-outside-posix.cc',
+@@ -1232,7 +1232,7 @@
+           'conditions': [
+             ['v8_enable_webassembly==1', {
+               'conditions': [
+-                ['((_toolset=="host" and host_arch=="riscv64" or _toolset=="target" and target_arch=="riscv64") and (OS=="linux")) or ((_toolset=="host" and host_arch=="x64" or _toolset=="target" and target_arch=="x64") and (OS=="linux"))', {
++                ['((_toolset=="host" and host_arch=="riscv64" or _toolset=="target" and target_arch=="riscv64") and (OS=="linux" or OS=="openbsd")) or ((_toolset=="host" and host_arch=="x64" or _toolset=="target" and target_arch=="x64") and (OS=="linux"))', {
+                   'sources': [
+                     '<(V8_ROOT)/src/trap-handler/handler-inside-posix.cc',
+                     '<(V8_ROOT)/src/trap-handler/handler-outside-posix.cc',
+@@ -1327,7 +1327,7 @@
+         # Platforms that don't have Compare-And-Swap (CAS) support need to link atomic library
+         # to implement atomic memory access.
+         # Clang needs it for some atomic operations (https://clang.llvm.org/docs/Toolchain.html#atomics-library).
+-        ['(OS=="linux" and clang==1) or (v8_current_cpu in ["mips64", "mips64el", "arm", "riscv64", "loong64"])', {
++        ['(OS=="linux" and clang==1) or (v8_current_cpu in [])', {
+           'link_settings': {
+             'libraries': ['-latomic', ],
+           },

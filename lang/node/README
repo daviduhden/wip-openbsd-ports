@@ -1,0 +1,107 @@
+Node.js with the base-system LibreSSL
+=====================================
+
+Maintainer notes.  This file is not installed; user-facing notes would go
+in `pkg/README`, which would change the package file list.
+
+This port builds Node.js v24.22.2 against the LibreSSL shipped in the
+OpenBSD base system.  It no longer depends on security/openssl and does
+not install or link a private copy of OpenSSL.
+
+Why patches are required
+------------------------
+
+Node.js upstream supports OpenSSL 3 and BoringSSL.  LibreSSL implements
+most of the OpenSSL 1.1 API but not the OpenSSL 3 provider API.  Node's
+`deps/ncrypto` library has a legacy OpenSSL backend that is selected when
+`OPENSSL_VERSION_NUMBER` is below 3.0.0 (LibreSSL reports 0x20000000L), so
+the provider, OSSL_PARAM, EVP_MAC and EVP_KDF paths are not compiled.
+The remaining incompatibilities are legacy interfaces that LibreSSL does
+not provide.
+
+The patches in `patches/` add a small compatibility header and guard the
+affected call sites.  They do not emulate providers, do not weaken
+certificate validation, and do not disable TLS or cryptographic checks.
+
+Compatibility summary
+---------------------
+
+Validated on Linux before the final TLS retry patch:
+  - hashes, HMAC, AES-CBC/CTR/GCM, ChaCha20-Poly1305
+  - RSA, RSA-PSS, ECDSA, Ed25519, X25519, DH and DSA key operations
+  - PBKDF2, HKDF, random bytes, key import/export
+  - X.509 parsing, chain verification, hostname and IP checks
+  - TLS 1.2 and TLS 1.3 client and server handshakes, ALPN
+  - WebCrypto for the algorithms above
+  - rejection of self-signed chains and explicit CA acceptance
+
+Partially validated:
+  - SNI contexts and ALPN use the LibreSSL context path.  Asynchronous
+    `SNICallback`, `OCSPRequest` and `cert` functions are rejected.
+  - A TLS 1.3 client that writes from the same tick as `secureConnect`
+    exposed a write-ordering problem in the Linux build: the first
+    application record could be queued before pending handshake data was
+    consumed.  The patch series adds a retry after draining that data,
+    but this revision has not been built or retested since the change.
+    HTTPS therefore remains pending validation on OpenBSD.
+
+Not available with LibreSSL:
+  - OpenSSL 3 providers, FIPS mode and property queries
+  - scrypt (LibreSSL has no scrypt implementation)
+  - AES-OCB, SM2, Ed448, X448
+  - multi-prime RSA keys
+  - XOF digests (cSHAKE, TurboSHAKE, KT128/KT256)
+  - KMAC, GMAC, Argon2
+  - `tls.setSigalgs()`, `tlsSocket.getSharedSigalgs()`
+  - asynchronous certificate/OCSP callbacks (`SSL_set_cert_cb`)
+  - early ClientHello session lookup used by server `resumeSession`
+  - raw TLS ticket access (`tlsSocket.getTLSTicket()`)
+  - the OpenSSL secure heap (`--secure-heap` fails closed)
+
+The `pskCallback` option is rejected because LibreSSL is built with
+`OPENSSL_NO_PSK`; it is not silently ignored.
+
+Build notes
+-----------
+
+The port keeps `--shared-openssl` but uses the base include and library
+paths.  `WANTLIB` lists plain `crypto` and `ssl`.  No rpath is needed.
+Tests use `/usr/bin/openssl` from the base system.
+
+`distinfo` and `pkg/PLIST` are the official copies because the version and
+installed file set are unchanged.  Regenerate them on OpenBSD after any
+version or file-set change:
+  - `distinfo`
+  - `pkg/PLIST`
+  - any generated `*.inc` file
+
+The 52 unmodified official patches retain the official OpenBSD style.  Run
+the patch style checker on the added or modified LibreSSL patches only; all
+of those pass.
+
+Linux development build
+-----------------------
+
+A LibreSSL build can be reproduced outside OpenBSD with Homebrew
+LibreSSL.  Use a private prefix and do not modify the system Node.js:
+
+    L=$(brew --prefix libressl)
+    LDFLAGS="-Wl,-rpath,$L/lib" ./configure \
+      --prefix="$HOME/node-libressl" \
+      --shared-openssl \
+      --shared-openssl-includes="$L/include" \
+      --shared-openssl-libpath="$L/lib"
+    make -j"$(nproc)"
+    ldd out/Release/node | grep -E 'libssl|libcrypto'
+
+Validate against the base system LibreSSL on OpenBSD with the normal
+ports targets:
+
+    make clean=all
+    make patch
+    make configure
+    make build
+    make test
+
+Runtime and crypto checks must be repeated on OpenBSD; Linux results do
+not prove pledge/unveil, W^X, libc++ or base-LibreSSL behaviour.

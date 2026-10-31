@@ -1,0 +1,172 @@
+Adapt TLS callbacks, tickets and reads to LibreSSL.
+Drain application data left buffered after a TLS 1.3 handshake.
+
+Index: src/crypto/crypto_tls.cc
+--- src/crypto/crypto_tls.cc.orig
++++ src/crypto/crypto_tls.cc
+@@ -120,7 +120,7 @@ ssl_select_cert_result_t EarlyClientHell
+              ? ssl_select_cert_success
+              : ssl_select_cert_retry;
+ }
+-#else
++#elif !defined(LIBRESSL_VERSION_NUMBER)
+ int EarlyClientHelloCallback(SSL* s, int* al, void* arg) {
+   TLSWrap* w = static_cast<TLSWrap*>(SSL_get_app_data(s));
+   if (!w->should_suspend_for_client_hello()) return SSL_CLIENT_HELLO_SUCCESS;
+@@ -415,7 +415,9 @@ TLSWrap::TLSWrap(Environment* env,
+   ssl_ = sc_->CreateSSL();
+   CHECK(ssl_);
+ 
++#ifndef LIBRESSL_VERSION_NUMBER
+   sc_->SetClientHelloCallback(EarlyClientHelloCallback);
++#endif
+   sc_->SetGetSessionCallback(GetSessionCallback);
+   sc_->SetNewSessionCallback(NewSessionCallback);
+ 
+@@ -589,7 +591,13 @@ void TLSWrap::InitSSL() {
+ 
+   ConfigureSecureContext(sc_.get());
+ 
++#ifndef LIBRESSL_VERSION_NUMBER
+   SSL_set_cert_cb(ssl_.get(), SSLCertCallback, this);
++#else
++  // LibreSSL has no per-connection certificate callback.  Static
++  // certificates and SSL_CTX-based SNI selection still work; the asynchronous
++  // 'cert'/'OCSPRequest' callbacks are rejected by EnableCertCb() below.
++#endif
+ 
+   if (is_server()) {
+     SSL_set_accept_state(ssl_.get());
+@@ -872,6 +880,7 @@ void TLSWrap::ClearOut() {
+ 
+   char out[kClearOutChunkSize];
+   int read;
++drain:
+   for (;;) {
+     {
+       SSLLibraryCallScope ssl_library_call_scope(this);
+@@ -965,6 +974,15 @@ void TLSWrap::ClearOut() {
+         }
+         break;
+ 
++      case SSL_ERROR_WANT_READ:
++      case SSL_ERROR_WANT_WRITE:
++        // LibreSSL can complete a TLS 1.3 handshake and leave already
++        // decrypted application data buffered inside the SSL object while
++        // SSL_read() reports WANT_READ.  Drain that data before waiting for
++        // more socket input.
++        if (SSL_pending(ssl_.get()) > 0) goto drain;
++        return;
++
+       default:
+         return;
+     }
+@@ -1200,6 +1218,18 @@ int TLSWrap::DoWrite(WriteWrap* w,
+       SSLLibraryCallScope ssl_library_call_scope(this);
+       written = SSL_write(ssl_.get(), bs->Data(), length);
+     }
++    if (written == -1 && ssl_ != nullptr) {
++      int err = SSL_get_error(ssl_.get(), written);
++      if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE) {
++        // LibreSSL can require pending handshake data to be consumed before
++        // it accepts the first application record after a TLS 1.3 handshake.
++        ClearOut();
++        if (ssl_ != nullptr) {
++          SSLLibraryCallScope ssl_library_call_scope(this);
++          written = SSL_write(ssl_.get(), bs->Data(), length);
++        }
++      }
++    }
+   } else {
+     // Only one buffer: try to write directly, only store if it fails
+     uv_buf_t* buf = &bufs[nonempty_i];
+@@ -1209,6 +1239,17 @@ int TLSWrap::DoWrite(WriteWrap* w,
+       written = SSL_write(ssl_.get(), buf->base, buf->len);
+     }
+ 
++    if (written == -1 && ssl_ != nullptr) {
++      int err = SSL_get_error(ssl_.get(), written);
++      if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE) {
++        ClearOut();
++        if (ssl_ != nullptr) {
++          SSLLibraryCallScope ssl_library_call_scope(this);
++          written = SSL_write(ssl_.get(), buf->base, buf->len);
++        }
++      }
++    }
++
+     if (written == -1) {
+       bs = ArrayBuffer::NewBackingStore(
+           env()->isolate(),
+@@ -1462,7 +1503,15 @@ void TLSWrap::Destroy() {
+ void TLSWrap::EnableCertCb(const FunctionCallbackInfo<Value>& args) {
+   TLSWrap* wrap;
+   ASSIGN_OR_RETURN_UNWRAP(&wrap, args.This());
++#ifdef LIBRESSL_VERSION_NUMBER
++  // LibreSSL cannot suspend a handshake for an asynchronous certificate or
++  // OCSP callback.  Fail instead of silently ignoring the callback.
++  return THROW_ERR_CRYPTO_UNSUPPORTED_OPERATION(
++      wrap->env(),
++      "asynchronous certificate callbacks are not supported with LibreSSL");
++#else
+   wrap->WaitForCertCb(ResumeAfterCertCb, wrap);
++#endif
+ }
+ 
+ void TLSWrap::WaitForCertCb(CertCb cb, void* arg) {
+@@ -1553,10 +1602,15 @@ int TLSWrap::SelectSNIContextCallback(SS
+ }
+ 
+ int TLSWrap::SetCACerts(SecureContext* sc) {
++#ifndef LIBRESSL_VERSION_NUMBER
+   int err = SSL_set1_verify_cert_store(ssl_.get(),
+                                        SSL_CTX_get_cert_store(sc->ctx().get()));
+   if (err != 1)
+     return err;
++#else
++  // LibreSSL has no per-SSL certificate store setter.  SSL_set_SSL_CTX()
++  // already switched the connection to the SNI context, including its store.
++#endif
+ 
+   STACK_OF(X509_NAME)* list =
+       SSL_dup_CA_list(SSL_CTX_get_client_CA_list(sc->ctx().get()));
+@@ -2052,6 +2106,10 @@ void TLSWrap::GetSharedSigalgs(const Fun
+   TLSWrap* w;
+   ASSIGN_OR_RETURN_UNWRAP(&w, args.This());
+ 
++#ifdef LIBRESSL_VERSION_NUMBER
++  return THROW_ERR_CRYPTO_UNSUPPORTED_OPERATION(
++      env, "getSharedSigalgs is not supported with LibreSSL");
++#else
+   SSL* ssl = w->ssl_.get();
+   int nsig = SSL_get_shared_sigalgs(ssl, 0, nullptr, nullptr, nullptr, nullptr,
+                                     nullptr);
+@@ -2124,6 +2182,7 @@ void TLSWrap::GetSharedSigalgs(const Fun
+ 
+   args.GetReturnValue().Set(
+                  Array::New(env->isolate(), ret_arr.out(), ret_arr.length()));
++#endif  // LIBRESSL_VERSION_NUMBER
+ }
+ 
+ void TLSWrap::ExportKeyingMaterial(const FunctionCallbackInfo<Value>& args) {
+@@ -2190,6 +2249,12 @@ void TLSWrap::GetTLSTicket(const Functio
+   if (sess == nullptr)
+     return;
+ 
++#ifdef LIBRESSL_VERSION_NUMBER
++  // LibreSSL does not expose the raw TLS ticket bytes.
++  (void)env;
++  (void)sess;
++  return;
++#else
+   const unsigned char* ticket;
+   size_t length;
+   SSL_SESSION_get0_ticket(sess, &ticket, &length);
+@@ -2199,6 +2264,7 @@ void TLSWrap::GetTLSTicket(const Functio
+         Buffer::Copy(env, reinterpret_cast<const char*>(ticket), length)
+             .FromMaybe(Local<Object>()));
+   }
++#endif  // LIBRESSL_VERSION_NUMBER
+ }
+ 
+ void TLSWrap::NewSessionDone(const FunctionCallbackInfo<Value>& args) {

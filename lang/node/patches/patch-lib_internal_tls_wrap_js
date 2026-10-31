@@ -1,0 +1,20 @@
+Reject pskCallback when LibreSSL has no PSK support.
+
+Index: lib/internal/tls/wrap.js
+--- lib/internal/tls/wrap.js.orig
++++ lib/internal/tls/wrap.js
+@@ -1043,6 +1043,14 @@ TLSSocket.prototype._init = function(soc
+   if (options.ALPNProtocols)
+     ssl.setALPNProtocols(options.ALPNProtocols);
+ 
++  if (options.pskCallback && !ssl.enablePskCallback) {
++    // LibreSSL is built without PSK support.  Reject the option instead of
++    // silently negotiating without the requested authentication mode.
++    throw new ERR_INVALID_ARG_VALUE(
++      'options.pskCallback', options.pskCallback,
++      'is not supported with LibreSSL');
++  }
++
+   if (options.pskCallback && ssl.enablePskCallback) {
+     validateFunction(options.pskCallback, 'pskCallback');
+ 

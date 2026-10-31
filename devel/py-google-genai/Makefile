@@ -1,6 +1,6 @@
 COMMENT =	GenAI Python SDK
 
-MODPY_DISTV =	2.33.0
+MODPY_DISTV =	2.34.0
 DISTNAME =	google_genai-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 

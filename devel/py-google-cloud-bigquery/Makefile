@@ -1,6 +1,6 @@
 COMMENT =	Google BigQuery API client library
 
-MODPY_DISTV =	3.46.2
+MODPY_DISTV =	3.47.0
 DISTNAME =	google_cloud_bigquery-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 

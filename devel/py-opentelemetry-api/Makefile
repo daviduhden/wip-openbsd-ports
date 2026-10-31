@@ -1,6 +1,6 @@
 COMMENT =	OpenTelemetry Python API
 
-MODPY_DISTV =	1.45.1
+MODPY_DISTV =	1.45.2
 DISTNAME =	opentelemetry_api-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 

@@ -3,305 +3,80 @@ Use native libfido2 for the CLI.
 Index: token2-piv-gui/src-tauri/src/fido.rs
 --- token2-piv-gui/src-tauri/src/fido.rs.orig
 +++ token2-piv-gui/src-tauri/src/fido.rs
-@@ -9,6 +9,7 @@ use std::ffi::{CStr, CString};
- use std::os::raw::{c_char, c_int, c_void};
- use std::ptr;
- use std::sync::Mutex;
+@@ -11,0 +12 @@ use std::sync::Mutex;
 +#[cfg(feature = "gui")]
- use tauri::State;
-
- // ---------------------------------------------------------------- FFI ------
-@@ -51,6 +52,7 @@ extern "C" {
-     fn fido_dev_new() -> *mut fido_dev_t;
-     fn fido_dev_free(dev: *mut *mut fido_dev_t);
-     fn fido_dev_open(dev: *mut fido_dev_t, path: *const c_char) -> c_int;
+@@ -53,0 +55 @@ extern "C" {
 +    #[cfg(feature = "gui")]
-     fn fido_dev_token2_apdu(dev: *mut fido_dev_t, apdu: *const u8, apdu_len: usize, rx: *mut u8, rx_len: *mut usize) -> c_int;
-     fn fido_dev_close(dev: *mut fido_dev_t) -> c_int;
-     fn fido_dev_cancel(dev: *mut fido_dev_t) -> c_int;
-@@ -210,6 +212,7 @@ static INIT: std::sync::Once = std::sync
- /// Read the serial from a HID FIDO key  using
- /// the vendor APDU 80 E3 EE 80 00 over CTAPHID_MSG. The reply is a TLV where tag 82
- /// holds the serial as ASCII digits. Returns "" if unavailable.
+@@ -212,0 +215 @@ static INIT: std::sync::Once = std::sync
 +#[cfg(feature = "gui")]
- fn hid_serial(path: &str) -> String {
-     let dev = unsafe { fido_dev_new() };
-     if dev.is_null() { return String::new(); }
-@@ -300,6 +303,7 @@ pub struct FidoSession {
- }
- pub struct FidoState(pub Mutex<FidoSession>);
-
+@@ -302,0 +306 @@ pub struct FidoState(pub Mutex<FidoSessi
 +#[cfg(feature = "gui")]
- fn with_dev<T>(state: &State<FidoState>, f: impl FnOnce(*mut fido_dev_t) -> R<T>) -> R<T> {
-     let s = state.0.lock().map_err(|_| "state lock poisoned")?;
-     let d = s.dev.as_ref().ok_or("No FIDO2 device connected")?;
-@@ -317,7 +321,7 @@ pub struct FidoDevice {
-     pub transport: String, // "ccid" (PC/SC: USB smart-card channel or NFC) | "hid"
- }
-
+@@ -320 +324 @@ pub struct FidoDevice {
 -#[tauri::command]
 +#[cfg_attr(feature = "gui", tauri::command)]
- pub fn fido_list_devices() -> R<Vec<FidoDevice>> {
-     ensure_init();
-     let cap = 64usize;
-@@ -457,6 +461,7 @@ fn read_info(dev: *mut fido_dev_t, path:
-     Ok(info)
- }
-
+@@ -459,0 +464 @@ fn read_info(dev: *mut fido_dev_t, path:
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_connect(state: State<'_, FidoState>, path: String) -> R<FidoInfo> {
-     ensure_init();
-@@ -485,6 +490,7 @@ pub async fn fido_connect(state: State<'
-     Ok(info)
- }
-
+@@ -487,0 +493 @@ pub async fn fido_connect(state: State<'
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub fn fido_disconnect(state: State<FidoState>) -> R<()> {
-     let mut s = state.0.lock().map_err(|_| "state lock poisoned")?;
-@@ -493,6 +499,7 @@ pub fn fido_disconnect(state: State<Fido
-     Ok(())
- }
-
+@@ -495,0 +502 @@ pub fn fido_disconnect(state: State<Fido
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_info(state: State<'_, FidoState>) -> R<FidoInfo> {
-     let s = state.0.lock().map_err(|_| "state lock poisoned")?;
-@@ -500,6 +507,7 @@ pub async fn fido_info(state: State<'_,
-     read_info(d.dev, &d.path)
- }
-
+@@ -502,0 +510 @@ pub async fn fido_info(state: State<'_,
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_set_pin(state: State<'_, FidoState>, new_pin: String, old_pin: Option<String>) -> R<()> {
-     let n = CString::new(new_pin).map_err(|e| e.to_string())?;
-@@ -507,18 +515,21 @@ pub async fn fido_set_pin(state: State<'
-     with_dev(&state, |d| rc(unsafe { fido_dev_set_pin(d, n.as_ptr(), pin_ptr(&o)) }))
- }
-
+@@ -509,0 +518 @@ pub async fn fido_set_pin(state: State<'
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_set_min_pin_len(state: State<'_, FidoState>, len: usize, pin: String) -> R<()> {
-     let p = pin_or_uv(&pin)?;
-     with_dev(&state, |d| rc(unsafe { fido_dev_set_pin_minlen(d, len, pin_ptr(&p)) }))
- }
-
+@@ -515,0 +525 @@ pub async fn fido_set_min_pin_len(state:
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_force_pin_change(state: State<'_, FidoState>, pin: String) -> R<()> {
-     let p = pin_or_uv(&pin)?;
-     with_dev(&state, |d| rc(unsafe { fido_dev_force_pin_change(d, pin_ptr(&p)) }))
- }
-
+@@ -521,0 +532 @@ pub async fn fido_force_pin_change(state
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_toggle_always_uv(state: State<'_, FidoState>, pin: String) -> R<()> {
-     {
-@@ -542,6 +553,7 @@ pub async fn fido_toggle_always_uv(state
-
- /// Factory reset. Most authenticators require this within ~10 s of power-up
- /// and a touch; the UI explains that.
+@@ -544,0 +556 @@ pub async fn fido_toggle_always_uv(state
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_reset(state: State<'_, FidoState>) -> R<()> {
-     with_dev(&state, |d| rc(unsafe { fido_dev_reset(d) }))
-@@ -678,6 +690,7 @@ fn run_cli(args: &[&std::ffi::OsStr], pi
-
- /// Reader path (pcsc://slotN) for the current session, releasing+reopening the
- /// libfido2 session around `f` so the CLI is the sole PC/SC owner.
+@@ -680,0 +693 @@ fn run_cli(args: &[&std::ffi::OsStr], pi
 +#[cfg(feature = "gui")]
- fn with_cli_reader<T>(state: &State<FidoState>, f: impl FnOnce(&str) -> R<T>) -> R<T> {
-     let path = {
-         let mut s = state.0.lock().map_err(|_| "state lock poisoned")?;
-@@ -699,6 +712,7 @@ fn with_cli_reader<T>(state: &State<Fido
-     result
- }
-
+@@ -701,0 +715 @@ fn with_cli_reader<T>(state: &State<Fido
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_note_get(state: State<'_, FidoState>) -> R<Option<String>> {
-     use std::ffi::OsStr;
-@@ -723,6 +737,7 @@ pub async fn fido_note_get(state: State<
-     })
- }
-
+@@ -725,0 +740 @@ pub async fn fido_note_get(state: State<
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_note_set(state: State<'_, FidoState>, text: String, pin: String) -> R<()> {
-     use std::ffi::OsStr;
-@@ -741,6 +756,7 @@ pub async fn fido_note_set(state: State<
-     res
- }
-
+@@ -743,0 +759 @@ pub async fn fido_note_set(state: State<
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_note_clear(state: State<'_, FidoState>, pin: String) -> R<()> {
-     use std::ffi::OsStr;
-@@ -777,6 +793,7 @@ pub struct PasskeyInventory {
-     pub rps: Vec<RelyingParty>,
- }
-
+@@ -779,0 +796 @@ pub struct PasskeyInventory {
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_list_passkeys(state: State<'_, FidoState>, pin: String) -> R<PasskeyInventory> {
-     let p = pin_or_uv(&pin)?;
-@@ -860,6 +877,7 @@ unsafe fn list_passkeys_ptr(d: *mut fido
- }
-
- /// Update user name / display name of a passkey (CTAP 2.1 credential management).
+@@ -862,0 +880 @@ unsafe fn list_passkeys_ptr(d: *mut fido
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_update_passkey(state: State<'_, FidoState>, cred_id: String, user_id: String, user_name: String, display_name: String, pin: String) -> R<()> {
-     let id = hex::decode(cred_id).map_err(|e| e.to_string())?;
-@@ -879,6 +897,7 @@ pub async fn fido_update_passkey(state:
-     })
- }
-
+@@ -881,0 +900 @@ pub async fn fido_update_passkey(state:
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_delete_passkey(state: State<'_, FidoState>, cred_id: String, pin: String) -> R<()> {
-     let id = hex::decode(cred_id).map_err(|e| e.to_string())?;
-@@ -899,6 +918,7 @@ pub struct BioInfo {
-     pub templates: Vec<BioTemplate>,
- }
-
+@@ -901,0 +921 @@ pub struct BioInfo {
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_list_bio(state: State<'_, FidoState>, pin: String) -> R<BioInfo> {
-     let p = pin_or_uv(&pin)?;
-@@ -950,6 +970,7 @@ fn template_with_id(id_hex: &str, name:
-     Ok(t)
- }
-
+@@ -952,0 +973 @@ fn template_with_id(id_hex: &str, name:
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_rename_bio(state: State<'_, FidoState>, id: String, name: String, pin: String) -> R<()> {
-     let p = pin_or_uv(&pin)?;
-@@ -960,6 +981,7 @@ pub async fn fido_rename_bio(state: Stat
-     res
- }
-
+@@ -962,0 +984 @@ pub async fn fido_rename_bio(state: Stat
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_delete_bio(state: State<'_, FidoState>, id: String, pin: String) -> R<()> {
-     let p = pin_or_uv(&pin)?;
-@@ -1018,6 +1040,7 @@ fn enroll_step(s: &FidoSession) -> R<Enr
- }
-
- /// Start fingerprint enrollment; captures the first sample (blocks until touch or timeout).
+@@ -1020,0 +1043 @@ fn enroll_step(s: &FidoSession) -> R<Enr
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_enroll_begin(state: State<'_, FidoState>, name: String, pin: String) -> R<EnrollStep> {
-     let p = pin_or_uv(&pin)?;
-@@ -1040,6 +1063,7 @@ pub async fn fido_enroll_begin(state: St
- }
-
- /// Capture the next sample (blocks until touch or timeout).
+@@ -1042,0 +1066 @@ pub async fn fido_enroll_begin(state: St
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_enroll_continue(state: State<'_, FidoState>) -> R<EnrollStep> {
-     let mut s = state.0.lock().map_err(|_| "state lock poisoned")?;
-@@ -1069,6 +1093,7 @@ pub async fn fido_enroll_continue(state:
-     Ok(step)
- }
-
+@@ -1071,0 +1096 @@ pub async fn fido_enroll_continue(state:
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_enroll_cancel(state: State<'_, FidoState>) -> R<()> {
-     let mut s = state.0.lock().map_err(|_| "state lock poisoned")?;
-@@ -1080,6 +1105,7 @@ pub async fn fido_enroll_cancel(state: S
- }
-
- /// Round-trip for the "touch your key" hint on NFC vs USB.
+@@ -1082,0 +1108 @@ pub async fn fido_enroll_cancel(state: S
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub fn fido_libfido2_version() -> String {
-     "libfido2 (upstream, PC/SC backend)".into()
-@@ -1102,6 +1128,7 @@ pub struct ReaderProbe {
-
- /// Probe every PC/SC reader the way libfido2's manifest does, but report the
- /// outcome instead of silently dropping failures.
+@@ -1104,0 +1131 @@ pub struct ReaderProbe {
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_diagnose(state: State<'_, FidoState>) -> R<Vec<ReaderProbe>> {
-     ensure_init();
-@@ -1158,6 +1185,7 @@ pub struct KeyCapabilities {
- /// Transmit an APDU and follow 61xx (more-data) via GET RESPONSE, returning the
- /// response payload without the trailing SW. Applets on Token2 keys answer with
- /// 61xx on T=0 contact readers.
+@@ -1160,0 +1188 @@ pub struct KeyCapabilities {
 +#[cfg(feature = "gui")]
- fn transmit_apdu(card: &pcsc::Card, apdu: &[u8]) -> Result<Vec<u8>, String> {
-     let mut cmd = apdu.to_vec();
-     let mut data = Vec::new();
-@@ -1180,6 +1208,7 @@ fn transmit_apdu(card: &pcsc::Card, apdu
- /// `busy_reader`: a reader with a live session that must NOT be probed
- /// (probing issues ResetCard, which would break that session). For a reader
- /// that is busy we infer applet presence from the session that owns it instead.
+@@ -1182,0 +1211 @@ fn transmit_apdu(card: &pcsc::Card, apdu
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub fn key_capabilities(busy_reader: Option<String>, busy_has_piv: Option<bool>, busy_has_otp: Option<bool>) -> R<KeyCapabilities> {
-     use pcsc::{Context, Protocols, Scope, ShareMode};
-@@ -1344,12 +1373,14 @@ pub struct Presence {
- ///
- ///
- const TOKEN2_VID: u16 = 0x349e;
+@@ -1354,0 +1384 @@ const TOKEN2_VID: u16 = 0x349e;
 +#[cfg(feature = "gui")]
- fn has_token2_vid() -> bool {
-     fido_list_devices().map(|v| v.iter().any(|d| d.vendor_id == TOKEN2_VID)).unwrap_or(false)
- }
-
- /// One cheap call the UI polls: what readers and FIDO devices exist right now.
- /// Does not open or reset anything, so it is safe to call while sessions are live.
+@@ -1360,0 +1391 @@ fn has_token2_vid() -> bool {
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub fn presence() -> Presence {
-     use pcsc::{Context, Scope};
-@@ -1392,6 +1423,7 @@ pub fn presence() -> Presence {
- /// Report whether the PC/SC smart-card service is reachable. On Linux this is the
- /// pcscd daemon; when it is down, FIDO and PIV (which use pcsc://) silently fail,
- /// so the UI uses this to show an actionable message instead of nothing.
+@@ -1402,0 +1434 @@ pub fn presence() -> Presence {
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub fn pcsc_health() -> PcscHealth {
-     use pcsc::{Context, Scope};
-@@ -1413,6 +1445,7 @@ pub fn pcsc_health() -> PcscHealth {
- #[derive(Serialize, Clone)]
- pub struct PcscHealth { pub available: bool, pub message: String }
-
+@@ -1423,0 +1456 @@ pub struct PcscHealth { pub available: b
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub fn cards_present() -> usize {
-     use pcsc::{Context, Scope, ReaderState, State as PcscState};
-@@ -1439,6 +1472,7 @@ pub fn cards_present() -> usize {
- /// Connect FIDO over CCID by reader index, without running the PC/SC manifest
- /// (which would select the OTP applet on every reader). libfido2 opens
- /// `pcsc://slotN` directly. Returns the FIDO info on success.
+@@ -1449,0 +1483 @@ pub fn cards_present() -> usize {
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub async fn fido_connect_ccid(state: State<'_, FidoState>, slot: usize) -> R<FidoInfo> {
-     ensure_init();
-@@ -1493,6 +1527,7 @@ pub fn is_elevated() -> bool {
- #[cfg(not(windows))]
- pub fn is_elevated() -> bool { true } // Linux/macOS: HID FIDO works without special elevation
-
+@@ -1503,0 +1538 @@ pub fn is_elevated() -> bool { true } //
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub fn fido_environment() -> FidoEnvironment {
-     FidoEnvironment {
-@@ -1516,6 +1551,7 @@ pub struct FidoEnvironment { pub elevate
-
- /// Diagnostic: probe each applet and report the SELECT status word + model, so
- /// capability-detection issues can be seen directly (T2_FIDO_DEBUG or the UI).
+@@ -1526,0 +1562 @@ pub struct FidoEnvironment { pub elevate
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub fn capabilities_debug() -> String {
-     use pcsc::{Context, Protocols, Scope, ShareMode};
-@@ -1609,6 +1645,7 @@ pub fn capabilities_debug() -> String {
- /// reachable, Ok(false) if it is installed but not running, and an explanatory
- /// string the UI can show. On Windows/macOS the service is built in and normally
- /// always available.
+@@ -1619,0 +1656 @@ pub fn capabilities_debug() -> String {
 +#[cfg(feature = "gui")]
- #[tauri::command]
- pub fn pcsc_status() -> PcscStatus {
-     use pcsc::{Context, Scope};

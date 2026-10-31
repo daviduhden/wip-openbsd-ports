@@ -3,15 +3,9 @@ Separate CLI and GUI Cargo features.
 Index: token2-piv-gui/src-tauri/Cargo.toml
 --- token2-piv-gui/src-tauri/Cargo.toml.orig
 +++ token2-piv-gui/src-tauri/Cargo.toml
-@@ -13,42 +13,56 @@ path = "src/lib.rs"
- [[bin]]
- name = "token2-key-manager"
- path = "src/main.rs"
+@@ -16,0 +17 @@ path = "src/main.rs"
 +required-features = ["gui"]
-
- [[bin]]
- name = "fido2-manage"
- path = "src/bin/fido2-manage.rs"
+@@ -20,0 +22,12 @@ path = "src/bin/fido2-manage.rs"
 +required-features = ["cli"]
 +
 +[features]
@@ -24,17 +18,12 @@ Index: token2-piv-gui/src-tauri/Cargo.toml
 +    "dep:pbkdf2", "dep:base32", "dep:rand", "dep:url", "dep:rqrr",
 +    "dep:image", "dep:p256", "dep:aes", "dep:cbc", "dep:sec1", "dep:windows"
 +]
-
- [build-dependencies]
- tauri-build = { version = "2", features = [] }
-
- [dependencies]
+@@ -26 +39 @@ tauri-build = { version = "2", features
 -tauri = { version = "2", features = [] }
 +tauri = { version = "2", features = [] , optional = true }
- serde = { version = "1", features = ["derive"] }
- serde_json = "1"
+@@ -28,0 +42 @@ serde_json = "1"
 +libc = "0.2"
- hex = "0.4"
+@@ -30,23 +44,23 @@ hex = "0.4"
 -hidapi = "2"
 -rfd = "0.15"
 -rsa = "0.9"
@@ -81,12 +70,6 @@ Index: token2-piv-gui/src-tauri/Cargo.toml
 +aes = { version = "0.8", optional = true }
 +cbc = { version = "0.1", features = ["alloc"] , optional = true }
 +sec1 = { version = "0.7", features = ["der", "std"] , optional = true }
-
- [profile.dev]
- incremental = true
-@@ -66,4 +80,4 @@ lto = true
- codegen-units = 1
-
- [target.'cfg(windows)'.dependencies]
+@@ -70 +84 @@ codegen-units = 1
 -windows = { version = "0.58", features = ["Win32_Graphics_Gdi", "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_Security", "Win32_System_Threading"] }
 +windows = { version = "0.58", features = ["Win32_Graphics_Gdi", "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_Security", "Win32_System_Threading"], optional = true }

@@ -1,6 +1,6 @@
 COMMENT =	FIDO2 authenticator management CLI
 
-V =		0.2.0
+V =		0.2.1
 DISTNAME =	fido2-manage-${V}
 GH_ACCOUNT =	token2
 GH_PROJECT =	fido2-manage

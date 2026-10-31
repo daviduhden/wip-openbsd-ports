@@ -1,7 +1,7 @@
 COMMENT=	anonymity service using onion routing
 
 DISTNAME=	tor-0.4.9.15
-REVISION=	2
+REVISION=	0
 CATEGORIES=	net
 HOMEPAGE=	https://www.torproject.org/
 

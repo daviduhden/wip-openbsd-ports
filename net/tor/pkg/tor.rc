@@ -2,7 +2,7 @@
 
 daemon="${TRUEPREFIX}/bin/tor"
 daemon_user="_tor"
-daemon_flags="--RunAsDaemon 0"
+daemon_flags="--RunAsDaemon 1"
 daemon_timeout=60
 
 # Run tor in the foreground under rc.subr as _tor. The packaged torrc still

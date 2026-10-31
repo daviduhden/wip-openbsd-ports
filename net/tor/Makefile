@@ -1,6 +1,7 @@
 COMMENT=	anonymity service using onion routing
 
-DISTNAME=	tor-0.4.9.14
+DISTNAME=	tor-0.4.9.15
+REVISION=	1
 CATEGORIES=	net
 HOMEPAGE=	https://www.torproject.org/
 
@@ -13,8 +14,6 @@ PERMIT_PACKAGE=	Yes
 WANTLIB += c crypto event_core event_extra execinfo m pthread ssl z
 
 SITES=		https://www.torproject.org/dist/
-
-BUILD_DEPENDS=	devel/metaauto
 
 AUTOCONF_VERSION=2.69
 CONFIGURE_STYLE=autoconf

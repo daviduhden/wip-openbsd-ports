@@ -64,6 +64,11 @@ Read [UPDATE.md](../../../docs/UPDATE.md) and the port's Makefile, existing patc
    automatically maintain them. Cargo vendored-source patches likewise depend
    on the module's actual extraction layout. Keep dependency versions and
    patch roots aligned.
+   Codex V8 patches target
+   `codex-rs/modcargo-crates/v8-<version>/...`; obtain that exact crate from
+   the Cargo module's extraction and compare it with upstream's V8 source pin
+   and official port mapping. Coordinate source selection with
+   [openbsd-port-dependencies](../openbsd-port-dependencies/SKILL.md).
 10. Regenerate affected manifests through their supported module procedure,
     then verify a fresh `make patch`. Rebuild/test the affected behavior using
     [openbsd-port-validation](../openbsd-port-validation/SKILL.md). Port

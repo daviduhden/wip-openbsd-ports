@@ -64,6 +64,20 @@ for version updates. The specialized procedures are in `.agents/skills/`:
    from ports-only patches, and keep `files/<dependency>/` patches relative to
    that dependency's extraction root. Run the patch style check described in
    the patches skill after editing or rebasing.
+   For every version update, first establish the newest stable upstream
+   release and inspect the matching port in official OpenBSD `-current`.
+   Compare official changes with local changes file by file; preserve local
+   behavior unless evidence shows it is obsolete. Regenerate retained patches
+   against pristine upstream sources with `diff -u -p`, an `Index:` header,
+   and a rationale whose lines are at most 72 columns. Review the port's
+   `Makefile` and `README` after the source change. See `docs/UPDATE.md`.
+   Outside OpenBSD, do not regenerate `distinfo`, `pkg/PLIST*`, or generated
+   `*.inc` files. Record each deferred artifact and the checks still needed.
+   For `devel/codex`, use read-only subagents for independent upstream,
+   official-port, local-patch, Cargo/V8, and OpenBSD process-security reviews
+   when available. Reconcile their evidence before editing. Follow the
+   Codex-specific gates in the update, dependency, and security skills; keep
+   daemon/package-manager behavior and fail-closed sandbox handling intact.
 7. Do not add dependencies, flavors, modules, or custom download mechanisms
    without a demonstrated need. Prefer official binary packages for tools and
    dependencies that do not need to be rebuilt. Use pinned `DIST_TUPLE`
@@ -90,6 +104,9 @@ for version updates. The specialized procedures are in `.agents/skills/`:
 - When a port has an official counterpart, compare against a current official
   checkout instead of assuming the local copy is authoritative. A missing local
   directory does not prove that a port is new.
+- For a customized port with an official counterpart, compare effective
+  `REVISION` values and set the local value above the official one to avoid
+  package-name collisions. An omitted official `REVISION` means zero.
 - New ports need a `pkg/DESCR`, a reviewed `pkg/PLIST`, a `distinfo`, and an
   account allocation when they create users or groups. Check the official
   `infrastructure/db/user.list`, not only this repository's snapshot.

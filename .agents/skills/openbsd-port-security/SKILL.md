@@ -27,6 +27,17 @@ Read the selected port's Makefile, patches, configuration, `pkg/README`, `pkg/DE
    command sandbox, reject it before any native-launch shortcut and at both
    session creation and exec preparation so app-server and direct CLI paths
    cannot bypass the guard.
+   For Codex updates, separately audit config loading, session creation,
+   direct CLI execution, app-server/daemon execution, and PTY child launches.
+   The current OpenBSD port has no native command sandbox: managed filesystem
+   and network profiles must fail closed, while explicit `danger-full-access`
+   runs with the invoking user's ordinary authority. An external sandbox is
+   only declared by the user; Codex does not create or verify it. Keep daemon
+   updates under `pkg_add` ownership, reject Codex self-update/replacement,
+   and do not add a `sudo` dependency where the port uses OpenBSD tooling.
+   Reconfirm each behavior against the selected release and tests before
+   retaining these statements; do not infer `pledge`/`unveil` containment of
+   executed children.
 7. Examine executable memory requirements before adding `USE_WXNEEDED`. Codex/V8 is an existing exception requiring investigation, not a default for Rust or other ports. Do not weaken W^X globally or edit mounts/fstab automatically. Review privilege separation rather than applying setuid mechanically: emwm-utils uses setgid `auth`, drops the effective auth group before starting children, and reacquires it only around `auth_userokay(3)`; sudo-rs requires OpenPAM and has an explicitly unvalidated privilege path; VeraCrypt delegates a core helper through doas.
 8. Run positive and negative tests on an authorized isolated OpenBSD host: normal initialization and functionality, denied paths/network operations as applicable, child execution, failure handling, and reload/shutdown. Privileged installation, doas rules, service activation, kernel limits, and mount changes require explicit authorization. Use [openbsd-port-validation](../openbsd-port-validation/SKILL.md) to record build/package/runtime evidence separately.
 

@@ -52,10 +52,13 @@ in `SUBST_VARS`. A port can use several at once.
 
 3. Bump the version variables. If the upstream version changes, remove
    `REVISION` or set it to the conventional initial value; a new upstream
-   version starts a new package revision. If only packaging changes and the
-   upstream version is unchanged, bump `REVISION` (add `REVISION = 0` when it
-   was absent). Use `EPOCH` only when the version ordering genuinely moves
-   backwards, not as a substitute for a correct version.
+   version starts a new package revision. For a customized overlay with an
+   official counterpart, compare the official effective `REVISION` and set
+   the local value higher to prevent package-name collisions; an omitted
+   official value is zero. If only packaging changes and the upstream version
+   is unchanged, bump `REVISION` (add `REVISION = 0` when it was absent). Use
+   `EPOCH` only when the version ordering genuinely moves backwards, not as a
+   substitute for a correct version.
 
 4. Fetch and review the new inputs before extraction:
 
@@ -135,6 +138,29 @@ OpenBSD ports tree. Static patch applicability can be checked against the exact
 upstream source archive in a temporary directory with zero fuzz; regenerate
 patches that require offsets or fuzz, and remove patches whose upstream change
 makes them unnecessary.
+
+For each deferred update, name every pending `distinfo`, `pkg/PLIST*`, or
+generated `*.inc` file and its OpenBSD regeneration target in the handoff.
+Never modify those files from a non-OpenBSD host for a task that defers them.
+Review the port `Makefile` and `README` even while package metadata remains
+pending. The required source comparison in [UPDATE.md](../../../docs/UPDATE.md)
+records stable upstream and official `-current` versions, adopted or declined
+official changes, and local behavior retained or retired.
+
+### Codex CLI (`devel/codex`)
+
+When subagents are available, delegate read-only reviews in parallel for the
+upstream release, official `-current` port, local patch stack, Cargo/native
+dependencies, and OpenBSD process/security behavior. Reconcile their evidence
+before editing. Compare all three source states; use the official patch set as
+a reviewed update, not a replacement for local behavior. Recheck daemon
+lifecycle and package-manager ownership, V8 source/version and GN patches,
+PTY/exec behavior, and every sandbox fail-closed guard. The security skill
+defines supported sandbox claims; the dependency skill covers Cargo/V8 source
+mapping. Review `pkg/README` even when it needs no edit. Never claim OpenBSD
+sandboxing works unless a supported kernel-enforced backend is implemented
+and tested. Outside OpenBSD, leave `distinfo`, `pkg/PLIST`, and `crates.inc`
+to the framework and list each pending file.
 
 ## Checks and acceptance
 

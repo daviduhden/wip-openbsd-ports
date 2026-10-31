@@ -22,6 +22,35 @@ stay offline and must reproduce the build from `distinfo` alone.
 
 ## Common Steps
 
+### Required source and official-port review
+
+Before changing a port, establish its current local version, patches, README,
+and other local behavior. Identify the newest stable upstream release from the
+project's release source; do not infer it from a port version or select a
+development snapshot unless that port intentionally tracks one. Then inspect
+the same port in the current official OpenBSD ports tree (prefer `-current`)
+and compare its `Makefile`, patches, README, and packaging changes with the
+local overlay. Incorporate applicable maintainer fixes while preserving local
+changes that remain necessary. Record the upstream version/source, official
+version/source, local changes retained or retired, and any official changes
+not adopted with a reason. The official port is a reviewed reference, not a
+replacement directory.
+
+Review and update the port `Makefile` and `README` after each update. Rebase
+every retained patch against pristine sources for the selected upstream
+version, one source target per patch, using `diff -u -p`, a relative `Index:`
+line, conventional `.orig`/target headers, and a specific rationale above the
+header. Every rationale line must be at most 72 columns. Remove obsolete or
+empty patches only after confirming the upstream source or another retained
+change provides their behavior. Check the patch style and applicability.
+
+When the task or host defers framework-generated files, do not regenerate
+`distinfo`, `pkg/PLIST*`, or any generated `*.inc` outside a matching OpenBSD
+ports tree. List each stale/deferred file and the OpenBSD target/check required
+to refresh it. A source update with these files pending is not package-ready;
+state that build, package, and runtime checks remain outstanding unless they
+were actually run on OpenBSD.
+
 1. Copy the port into the ports tree if it is not there yet:
 
    ```sh

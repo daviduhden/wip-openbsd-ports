@@ -31,6 +31,13 @@ Read the target Makefile, inherited `Makefile.inc`, generated includes, upstream
 2. Prefer official packages for available tools and dependencies that need no changes. Once installation is within the authorized task, use `doas pkg_add package-name` with a verified package name and matching repository. Build only dependencies requiring new ports or changes. A dependency such as `devel/libev:configure` or `devel/abseil-cpp:patch` requires source-stage work; a binary package alone may not satisfy it. Do not set global package or make configuration for convenience.
 3. Select the existing module's mechanism. Regenerate `crates.inc`, `modules.inc`, and `cabal.inc`; do not hand-edit generated lists. Treat generator output as a candidate: check successful completion, unexpected diagnostic text, licenses, replacements, and added or removed dependencies before replacing an include.
 4. Keep non-registry dependencies reproducible. Use immutable upstream revisions with `DIST_TUPLE`, appropriate extraction paths, local source replacement patches or module mechanisms, and `distinfo`. Examples are Git Cargo dependencies in uutils and codex, and github-cli's local survey replacement. Do not introduce build-time Git clones, `pip install`, `go get`, or arbitrary package-manager downloads.
+   For `devel/codex`, inspect upstream `Cargo.toml`, `Cargo.lock`,
+   `rust-toolchain.toml`, `crates.inc`, and official `-current` together.
+   Upstream may pin V8 to a Git fork while the port maps it to a matching
+   registry crate and carries a targeted V8 backport. Verify the exact source,
+   commit, version, and patch paths before changing that mapping. Do not edit
+   `crates.inc` or `distinfo` outside OpenBSD. Check the upstream Rust toolchain
+   pin against the available OpenBSD ports toolchain.
 5. Update `LIB_DEPENDS` for native libraries and `WANTLIB` for actual linkage; language source manifests do not replace either. Preserve compiler modules and justified bundled-library exceptions. Validate from a fresh work directory after generation; ordinary configure/build must use fetched, checksummed inputs without new network dependency resolution.
 
 ## Acceptance and diagnosis

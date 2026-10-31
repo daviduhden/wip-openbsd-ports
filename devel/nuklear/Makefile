@@ -2,7 +2,7 @@ COMMENT =		immediate-mode GUI toolkit in a single C header
 
 GH_ACCOUNT =		Immediate-Mode-UI
 GH_PROJECT =		Nuklear
-GH_TAGNAME =		v4.13.3
+GH_TAGNAME =		v4.13.4
 PKGNAME =		nuklear-${GH_TAGNAME:S/v//}
 CATEGORIES =		devel
 HOMEPAGE =		https://github.com/Immediate-Mode-UI/Nuklear

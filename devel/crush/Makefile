@@ -1,9 +1,10 @@
 COMMENT =		coding agent with a rich terminal UI
 
 MODGO_MODNAME =		github.com/charmbracelet/crush
-MODGO_VERSION =		v0.98.2
+MODGO_VERSION =		v0.99.0
 
 DISTNAME =		crush-${MODGO_VERSION}
+REVISION =		1
 WRKDIST = 		${WRKDIR}/${MODGO_MODNAME}@${MODGO_VERSION}
 
 CATEGORIES =		devel

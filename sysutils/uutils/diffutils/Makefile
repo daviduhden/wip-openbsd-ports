@@ -1,6 +1,6 @@
 COMMENT =	alternative implementation of GNU diffutils
 
-V =		0.5.0
+V =		0.6.0
 PKGNAME =	uutils-diffutils-$V
 
 WANTLIB += ${MODCARGO_WANTLIB}

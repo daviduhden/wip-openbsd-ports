@@ -14,4 +14,4 @@ Index: src/main.rs
 +        OsString::from(s.strip_prefix("uu-").unwrap_or_else(|| s.as_ref()))
      };
  
-     match util_name.to_str() {
+     match util_name.as_encoded_bytes() {

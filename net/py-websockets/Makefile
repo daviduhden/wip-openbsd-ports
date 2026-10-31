@@ -1,8 +1,9 @@
 COMMENT =	Python library for building WebSocket servers and clients
 
-MODPY_DISTV =	17.3
+MODPY_DISTV =	17.4
 DISTNAME =	websockets-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME}
+REVISION =	1
 
 CATEGORIES =	net
 

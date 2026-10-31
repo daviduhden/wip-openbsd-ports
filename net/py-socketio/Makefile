@@ -1,6 +1,6 @@
 COMMENT =	client/server implementation of Socket.IO
 
-MODPY_DISTV =	5.17.0
+MODPY_DISTV =	5.17.1
 DISTNAME =	python_socketio-${MODPY_DISTV}
 PKGNAME =	py-socketio-${MODPY_DISTV}
 

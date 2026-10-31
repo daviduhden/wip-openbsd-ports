@@ -1,0 +1,44 @@
+XERJ - first start, service use, and security
+=============================================
+
+XERJ is a local search engine and MCP server.  The package installs the
+`xerj` binary and an example configuration at:
+
+    /usr/local/share/examples/xerj/xerj.toml
+
+There is no default configuration search path.  A server must be given
+`--config /path/to/xerj.toml` (or use XERJ_CONFIG); a bare `xerj` uses
+compiled defaults and creates `./data` in the current directory.
+
+Authentication and TLS
+----------------------
+
+Upstream defaults are authentication ON and TLS OFF.  The first start
+creates an admin key at `<data_dir>/admin.key` with mode 0600.  Every
+client must send that key, including `xerj autoindex`.  Do not use
+`--insecure`: it disables both authentication and TLS.  Keep the default
+loopback bind unless TLS or a TLS-terminating proxy is in front of every
+listener.
+
+The gRPC listener on port 8081 is cleartext h2c even when the REST
+listeners use TLS.  Do not expose port 8081 outside a trusted host or a
+TLS-terminating proxy.  A self-signed certificate is generated only when
+TLS is enabled without certificate paths; supply a real certificate for
+any non-local service.
+
+Data and model downloads
+------------------------
+
+The data directory is supplied by the administrator and should be
+writable only by the account running XERJ.  Back it up as sensitive
+data: it contains the admin key, session material and index contents.
+
+The package keeps upstream's default `neural` and `decide-local`
+features, but the default embedding mode is lexical.  A neural model
+(~90 MB) is downloaded only when `--embed-mode neural` is selected (or
+configured), and is cached outside the data directory.  Pre-download it
+or use a local model directory if the service has no outbound network.
+
+No rc.d service or dedicated user is installed in this initial port.
+Runtime permissions, HOME-dependent pointer files, signal handling and
+pledge/unveil behaviour still need validation on OpenBSD.

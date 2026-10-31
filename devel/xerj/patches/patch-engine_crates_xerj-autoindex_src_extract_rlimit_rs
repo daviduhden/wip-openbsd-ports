@@ -1,0 +1,78 @@
+OpenBSD has no RLIMIT_AS.  Skip the address-space crash cap
+instead of referencing an undefined libc constant, and use the
+OpenBSD __errno() accessor.  The RLIMIT_CPU cap is unchanged.
+
+Index: engine/crates/xerj-autoindex/src/extract/rlimit.rs
+--- engine/crates/xerj-autoindex/src/extract/rlimit.rs.orig
++++ engine/crates/xerj-autoindex/src/extract/rlimit.rs
+@@ -59,6 +59,10 @@ pub(crate) fn classify_address_space_cap
+ 
+ /// Install `bytes` as both the soft and hard `RLIMIT_AS`. Safe to call from
+ /// `pre_exec`: on the refusal path it reads `errno` and does not allocate.
++///
++/// OpenBSD does not define RLIMIT_AS; extraction workers run without this
++/// crash-isolation cap there.
++#[cfg(not(target_os = "openbsd"))]
+ pub(crate) fn apply_address_space_cap(bytes: u64) -> AddressSpaceCap {
+     let limit = libc::rlimit {
+         rlim_cur: bytes as libc::rlim_t,
+@@ -70,6 +74,11 @@ pub(crate) fn apply_address_space_cap(by
+     classify_address_space_cap(rc, if rc == 0 { 0 } else { errno_raw() })
+ }
+ 
++#[cfg(target_os = "openbsd")]
++pub(crate) fn apply_address_space_cap(_bytes: u64) -> AddressSpaceCap {
++    AddressSpaceCap::Skipped
++}
++
+ /// `true` when this OS accepted a 1536 MiB `RLIMIT_AS` in a forked child.
+ ///
+ /// The probe runs in the parent, once. The child calls `setrlimit` and
+@@ -100,6 +109,7 @@ pub(crate) fn warning_if_refused(support
+ /// Whether the calling process currently has `RLIMIT_AS` pinned to `bytes`.
+ /// The worker reports this in its containment string, so a platform that
+ /// refused the cap does not claim the cap is in force.
++#[cfg(not(target_os = "openbsd"))]
+ pub(crate) fn current_address_space_is_capped(bytes: u64) -> bool {
+     let mut current = libc::rlimit {
+         rlim_cur: 0,
+@@ -111,10 +121,15 @@ pub(crate) fn current_address_space_is_c
+     current.rlim_cur == bytes as libc::rlim_t && current.rlim_max == bytes as libc::rlim_t
+ }
+ 
++#[cfg(target_os = "openbsd")]
++pub(crate) fn current_address_space_is_capped(_bytes: u64) -> bool {
++    false
++}
++
+ pub(crate) fn errno_raw() -> i32 {
+-    // `__error` on the BSDs (including macOS); `__errno_location` on Linux
+-    // and Android. Both are async-signal-safe. OpenBSD's `___errno` is not
+-    // covered; this crate's CI is Linux, macOS, and Windows.
++    // `__error` on the BSDs (including macOS), `__errno` on OpenBSD, and
++    // `__errno_location` on Linux and Android. All are async-signal-safe.
++    // OpenBSD is not covered by the upstream CI matrix.
+     #[cfg(any(
+         target_os = "macos",
+         target_os = "ios",
+@@ -128,6 +143,10 @@ pub(crate) fn errno_raw() -> i32 {
+     unsafe {
+         *libc::__error()
+     }
++    #[cfg(target_os = "openbsd")]
++    unsafe {
++        *libc::__errno()
++    }
+     #[cfg(not(any(
+         target_os = "macos",
+         target_os = "ios",
+@@ -136,7 +155,8 @@ pub(crate) fn errno_raw() -> i32 {
+         target_os = "visionos",
+         target_os = "freebsd",
+         target_os = "dragonfly",
+-        target_os = "netbsd"
++        target_os = "netbsd",
++        target_os = "openbsd"
+     )))]
+     unsafe {
+         *libc::__errno_location()

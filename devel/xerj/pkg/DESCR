@@ -1,0 +1,5 @@
+XERJ is a local search engine and MCP server for AI agents. It indexes
+code, documentation, logs, JSONL/CSV and PDF files and exposes BM25,
+vector and hybrid search through native and Elasticsearch-compatible
+APIs. A single binary also provides CLI ingestion, autoindexing and an
+MCP stdio server.

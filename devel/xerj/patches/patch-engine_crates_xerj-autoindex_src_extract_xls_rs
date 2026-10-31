@@ -1,0 +1,30 @@
+Do not apply RLIMIT_AS on OpenBSD, which has no such resource
+limit.  The CPU limit and process-group isolation remain in force.
+
+Index: engine/crates/xerj-autoindex/src/extract/xls.rs
+--- engine/crates/xerj-autoindex/src/extract/xls.rs.orig
++++ engine/crates/xerj-autoindex/src/extract/xls.rs
+@@ -534,12 +534,17 @@ fn set_worker_rlimits() -> std::io::Resu
+             }
+         }};
+     }
+-    clamp!(
+-        libc::RLIMIT_AS,
+-        WORKER_ADDRESS_SPACE,
+-        WORKER_ADDRESS_SPACE,
+-        true
+-    );
++    // OpenBSD has no RLIMIT_AS.  The extraction worker still gets the
++    // CPU limit below; the address-space cap is crash isolation only.
++    #[cfg(not(target_os = "openbsd"))]
++    {
++        clamp!(
++            libc::RLIMIT_AS,
++            WORKER_ADDRESS_SPACE,
++            WORKER_ADDRESS_SPACE,
++            true
++        );
++    }
+     // Soft limit sends SIGXCPU; hard limit (a touch higher) escalates to SIGKILL.
+     clamp!(
+         libc::RLIMIT_CPU,

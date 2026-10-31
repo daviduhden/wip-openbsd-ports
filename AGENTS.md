@@ -122,6 +122,37 @@ for version updates. The specialized procedures are in `.agents/skills/`:
   security, CVS) when they are available. Give each a read-only scope, require
   file/line evidence, and reconcile contradictions before editing.
 
+## LibreSSL-native ports
+
+`lang/node` is intentionally built against the base-system LibreSSL, not
+`security/openssl`.  Its LibreSSL patches live in `lang/node/patches/` and
+rely on Node's legacy `deps/ncrypto` backend, which is selected because
+LibreSSL reports `OPENSSL_VERSION_NUMBER 0x20000000L` and does not define
+`OPENSSL_VERSION_MAJOR`.
+
+When changing `lang/node` or a port with a similar LibreSSL adaptation:
+
+1. Preserve the official OpenBSD patches for platform, V8, CET, memory,
+   pledge/unveil, W^X and build integration.  Only the `eopenssl` rpath in
+   `patch-common_gypi` is OpenSSL-specific.
+2. Keep `--shared-openssl` with base paths, `WANTLIB += crypto ssl`, and no
+   `security/openssl` dependency unless a new API requirement is demonstrated
+   and documented.
+3. Rebase compatibility patches against pristine upstream sources with
+   `diff -u -p`; never generate a patch from an already-patched tree.
+4. Do not emulate OpenSSL 3 providers or fake a version number to make
+   configure pass.  Prefer the real LibreSSL primitive, then a guarded
+   feature removal, then a small adapter.  Never weaken certificate or key
+   validation to obtain a build.
+5. Keep `--secure-heap`, `pskCallback`, asynchronous certificate/OCSP
+   callbacks and other unavailable features fail-closed.  Document every
+   functional loss in the port `README`.
+6. Treat `process.versions.openssl` as `LibreSSL <version>`; test helpers and
+   JS feature gates must not parse it as an OpenSSL release.
+7. A Linux build against Homebrew LibreSSL is compile/runtime evidence only.
+   Base-LibreSSL linkage, pledge/unveil, W^X, libc++ and the OpenBSD package
+   still require native validation.
+
 ## Verification and delivery
 
 Choose the checks that match the change and record the exact commands,

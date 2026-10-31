@@ -57,19 +57,26 @@ Read [UPDATE.md](../../../docs/UPDATE.md) and the port's Makefile, existing patc
    treat a context-line identifier as patch metadata, or rewrite unrelated
    patches to normalize headers. Resolve uncertain licensing before
    distribution.
-9. For Cabal dependencies, inspect the existing `DIST_TUPLE` and
-   `post-patch` handling in `net/simplexmq` or `net/simplex-chat`. Their
-   `files/<dependency>/patch-*` paths are relative to each dependency's
-   extraction root; ordinary `update-patches` on the main source does not
-   automatically maintain them. Cargo vendored-source patches likewise depend
-   on the module's actual extraction layout. Keep dependency versions and
-   patch roots aligned.
-   Codex V8 patches target
-   `codex-rs/modcargo-crates/v8-<version>/...`; obtain that exact crate from
-   the Cargo module's extraction and compare it with upstream's V8 source pin
-   and official port mapping. Coordinate source selection with
-   [openbsd-port-dependencies](../openbsd-port-dependencies/SKILL.md).
-10. Regenerate affected manifests through their supported module procedure,
+9. For a LibreSSL-native port, keep compatibility patches separate from
+   OpenBSD platform patches and identify the LibreSSL primitive used by each
+   hunk.  Never fake `OPENSSL_VERSION_NUMBER`/`OPENSSL_VERSION_MAJOR` or add
+   empty functions to satisfy the compiler.  When an API cannot be emulated
+   safely, guard the call site so the feature fails closed and document the
+   loss in the port `README`.  Recheck that `process.versions.openssl` and
+   test feature gates do not treat `LibreSSL <version>` as OpenSSL 3.
+10. For Cabal dependencies, inspect the existing `DIST_TUPLE` and
+    `post-patch` handling in `net/simplexmq` or `net/simplex-chat`. Their
+    `files/<dependency>/patch-*` paths are relative to each dependency's
+    extraction root; ordinary `update-patches` on the main source does not
+    automatically maintain them. Cargo vendored-source patches likewise
+    depend on the module's actual extraction layout. Keep dependency versions
+    and patch roots aligned.
+    Codex V8 patches target
+    `codex-rs/modcargo-crates/v8-<version>/...`; obtain that exact crate from
+    the Cargo module's extraction and compare it with upstream's V8 source pin
+    and official port mapping. Coordinate source selection with
+    [openbsd-port-dependencies](../openbsd-port-dependencies/SKILL.md).
+11. Regenerate affected manifests through their supported module procedure,
     then verify a fresh `make patch`. Rebuild/test the affected behavior using
     [openbsd-port-validation](../openbsd-port-validation/SKILL.md). Port
     patches and an upstream-ready diff are separate deliverables: upstream

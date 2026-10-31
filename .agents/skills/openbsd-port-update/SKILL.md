@@ -162,6 +162,29 @@ sandboxing works unless a supported kernel-enforced backend is implemented
 and tested. Outside OpenBSD, leave `distinfo`, `pkg/PLIST`, and `crates.inc`
 to the framework and list each pending file.
 
+### LibreSSL-native ports
+
+For a port that deliberately links the base-system LibreSSL, such as
+`lang/node`, compare the official port and the local patch stack as usual, but
+also verify that the build still selects the supported legacy backend rather
+than pretending to be OpenSSL 3.  LibreSSL reports
+`OPENSSL_VERSION_NUMBER 0x20000000L` and has no `OPENSSL_VERSION_MAJOR`; do
+not define either to a newer value.
+
+- Keep the OpenBSD and V8 patches; only external-OpenSSL paths, rpaths and
+  link dependencies are candidates for removal.
+- Rebase the LibreSSL compatibility patches against pristine upstream with
+  `diff -u -p`, one file per patch, and keep them separate from upstreamable
+  fixes.
+- Check that unavailable features fail closed and are documented: secure
+  heap, PSK, asynchronous certificate/OCSP callbacks, scrypt, XOF, Ed448,
+  X448, SM2, OCB and multi-prime RSA.
+- Check that `process.versions.openssl` and JS/test feature gates handle a
+  `LibreSSL <version>` string without enabling OpenSSL 3 branches.
+- Linux results against Homebrew LibreSSL prove only compile/runtime
+  behaviour.  Base-LibreSSL linkage, `port-lib-depends-check`, pledge/unveil,
+  W^X and libc++ remain OpenBSD checks.
+
 ## Checks and acceptance
 
 - Every version carrier agrees, the package name is newer, and `REVISION` /

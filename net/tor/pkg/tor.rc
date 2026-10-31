@@ -14,7 +14,7 @@ daemon_timeout=60
 rc_stop_signal=INT
 
 rc_configtest() {
-	${daemon} ${daemon_flags} --verify-config
+	rc_exec "${daemon} ${daemon_flags} --verify-config"
 }
 
-rc_cmd $1
+rc_cmd "$1"

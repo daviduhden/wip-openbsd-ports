@@ -1,6 +1,6 @@
 COMMENT =	High-performance HTML to Markdown converter
 
-MODPY_DISTV =	3.18.7
+MODPY_DISTV =	3.19.0
 DISTNAME =	html_to_markdown-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 

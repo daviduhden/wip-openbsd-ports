@@ -2,26 +2,28 @@
 | Running ${PKGSTEM} on OpenBSD
 +-----------------------------------------------------------------------
 
-Codex is a terminal-based coding agent. This package includes the OpenBSD
-platform patches, including V8/Code Mode, and installs the upstream names
-and default ~/.codex state.
+Codex is a terminal-based coding agent. This package includes the
+OpenBSD platform patches, including V8/Code Mode, and installs the
+upstream names and default ~/.codex state.
 
 No local command sandbox is available. Managed sandbox profiles are
-rejected, including profile changes during sessions. To authorize ordinary
-user access explicitly, use:
+rejected, including profile changes during sessions. To authorize
+ordinary user access explicitly, use:
 
     codex --sandbox danger-full-access
 
 Commands, hooks and MCP servers then have the user's ordinary authority.
-Approvals and the V8 isolate do not provide OS isolation for subprocesses.
-Use a dedicated virtual machine when needed. external-sandbox declares an
-external boundary; Codex does not create or verify it.
+Approvals and the V8 isolate do not provide OS isolation for
+subprocesses. Use a dedicated virtual machine when needed.
+external-sandbox declares an external boundary; Codex does not create or
+verify it.
 
 The app-server/daemon has no `--sandbox` switch of its own. For sessions
-started through it, select the same explicit mode in ~/.codex/config.toml,
-for example `sandbox_mode = "danger-full-access"`, or use a declared external
-sandbox. Without an explicit non-managed profile, a session that requests the
-default managed profile is rejected before hooks, MCP or shell setup run.
+started through it, select the same explicit mode in
+~/.codex/config.toml, for example `sandbox_mode = "danger-full-access"`,
+or use a declared external sandbox. Without an explicit non-managed
+profile, a session that requests the default managed profile is rejected
+before hooks, MCP or shell setup run.
 
 The daemon uses the installed executable, following the official port:
 
@@ -41,15 +43,16 @@ separate daemon package or private manifest is installed in
 CODEX_HOME/packages.
 
 The installed binaries require the WXNEEDED property for V8 152.2.0. The
-filesystem containing ${LOCALBASE} must allow wxallowed. Python and Bash are
-runtime dependencies; Git is declared because repository and worktree features
-execute it.
-Optional npm plugins, MCP servers and hooks may require other separately
-packaged executables. Plugin metadata, explicit installation, marketplace
-operations and the upstream synchronisation paths are retained. The package
-adds no hidden downloader or binary installer. Review plugin and MCP sources
-before enabling executable content, and do not use automatic binary
-installers as MCP launchers.
+filesystem containing ${LOCALBASE} must allow wxallowed. Python and Git
+are runtime dependencies; repository and worktree features execute Git.
+OpenBSD uses its base /bin/ksh by default, so Bash is not a runtime
+dependency. Bash, Fish and Zsh completion files are generated and
+installed as data. Optional npm plugins, MCP servers and hooks may
+require other separately packaged executables. Plugin metadata, explicit
+installation, marketplace operations and the upstream synchronisation
+paths are retained. The package adds no hidden downloader or binary
+installer. Review plugin and MCP sources before enabling executable
+content, and do not use automatic binary installers as MCP launchers.
 
 You may use OpenAI commercial services or misc/llama.cpp, for the last
 one you should add into ~/.codex/config.toml:
@@ -72,12 +75,13 @@ the system-wide maxfiles and used login class limits.
 
 Secret Service storage needs a D-Bus session and compatible provider.
 Protect CODEX_HOME and credential backups, including file-backed auth.
-Browser login uses xdg-open when available; the URL is printed otherwise and
-`codex login --device-auth` remains available. Shell snapshots are limited to
-bash/zsh; the default OpenBSD shells run commands without a snapshot. Clipboard
-access uses the X11 backend when DISPLAY is set. These optional helpers are not
-added as runtime dependencies by this port.
+Browser login uses xdg-open when available; the URL is printed otherwise
+and `codex login --device-auth` remains available. Shell snapshots are
+limited to bash/zsh; the default OpenBSD shells run commands without a
+snapshot. Clipboard access uses the X11 backend when DISPLAY is set.
+These optional helpers are not added as runtime dependencies by this
+port.
 
 Only static review has been performed. Compilation, generated package
-contents, V8, daemon, PTY, keyring and permission rejection require actual
-OpenBSD validation. No claim of runtime correctness is made here.
+contents, V8, daemon, PTY, keyring and permission rejection require
+actual OpenBSD validation. No claim of runtime correctness is made here.

@@ -21,6 +21,23 @@ the official `infrastructure/db/user.list`. Inspect uncommitted changes before
 regenerating a PLIST. Packaging changes still require a real `make fake` and
 `make package` on OpenBSD to be considered validated.
 
+### Repository description style
+
+Keep `COMMENT` concise, without the package name or a trailing period.
+Write `pkg/DESCR` as concise package-specific prose and wrap ordinary text
+at 80 columns; preserve unbreakable URLs, commands and meaningful list
+structure. Every installed `pkg/README` starts with the canonical banner:
+
+```text
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+```
+
+Wrap README prose consistently, but leave commands, fenced examples, tables,
+paths and other fixed-format content intact. Do not impose this installed
+README format on maintainer documentation.
+
 ## Procedure
 
 1. Review `COMMENT` (short, no package name, no trailing period), `pkg/DESCR`

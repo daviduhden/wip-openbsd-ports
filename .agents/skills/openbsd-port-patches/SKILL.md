@@ -110,6 +110,17 @@ static evidence only; verify the resulting patch set with a fresh OpenBSD
 - [bsd.port.mk(5)](https://man.openbsd.org/bsd.port.mk.5): patch stages and `update-patches`.
 - Repository examples: `net/i2pd/patches/patch-libi2pd_Crypto_cpp` and `net/simplexmq/files/tls/` for compatibility and documented backports.
 
+### Audited OpenBSD compatibility patches
+
+For ports such as `www/lynx` and `devel/codex`, regenerate a changed patch
+against the pristine source for the exact port version, not against an
+already patched tree. Include one correct relative `Index:` target, `.orig`
+and destination headers, and a concise rationale with each comment line at
+most 72 columns. Review all patch targets, including vendored `DIST_TUPLE`
+sources, and statically apply the complete patch stack to a fresh extraction.
+Preserve unrelated OpenBSD and local patches; remove one only with evidence
+that its behavior is upstream or otherwise obsolete.
+
 ## Maintenance & Continuous Learning
 
 When this skill is used to modify the repository, review this skill after the

@@ -147,6 +147,16 @@ pending. The required source comparison in [UPDATE.md](../../../docs/UPDATE.md)
 records stable upstream and official `-current` versions, adopted or declined
 official changes, and local behavior retained or retired.
 
+### Codex release and OpenBSD review
+
+For `devel/codex`, compare the exact upstream tag and `Cargo.lock` with the
+official current port and every local OpenBSD patch. Trace shell selection,
+PTY/process launch, app-server and daemon paths, and fail-closed sandbox
+policy before changing patches. Verify `distinfo` and generated Cargo
+inventories match that tag; when regeneration is deferred, record the exact
+stale artifact and do not call the port package-ready. Preserve explicit
+user shell choices and prefer base `/bin/ksh` then `/bin/sh` on OpenBSD.
+
 ### Port README placement
 
 Use `pkg/README` for user-facing package notes and begin it with the

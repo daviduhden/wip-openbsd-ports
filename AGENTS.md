@@ -297,3 +297,25 @@ it does not edit files or require secrets.
 Final reports must include **Agent & Skills Synchronization** with agents and
 skills reviewed, instruction files updated, knowledge added or corrected,
 validations run, and PASS / FAIL. Never report an unrun check as passed.
+
+### LibreSSL and Codex audit follow-through
+
+For LibreSSL-sensitive ports such as `www/lynx`, inspect the actual base
+LibreSSL headers for the target release, preserve certificate-chain and
+identity validation, and review any explicit user override separately from
+default rejection. When unveil is active, include only the configured CA and
+client identity files actually read. For `devel/codex`, compare the exact
+upstream tag and lockfile with official `-current` and local generated Cargo
+metadata; do not hand-edit reserved generated files outside OpenBSD. Trace
+shell, daemon and sandbox policy through process launch, and never imply that
+pledge/unveil confines exec children without verified exec restrictions.
+
+### Port description style
+
+Keep port `COMMENT` values concise and follow the packaging skill: no package
+name and no trailing period. Keep `pkg/DESCR` concise, with ordinary prose
+wrapped to 80 columns; preserve indivisible URLs, command examples and
+meaningful list structure. Start every installed `pkg/README` with the
+canonical `${PKGSTEM}` OpenBSD banner. Wrap ordinary prose consistently, but
+preserve code blocks, tables, paths and command arguments. Maintainer READMEs
+remain separate from installed package instructions.

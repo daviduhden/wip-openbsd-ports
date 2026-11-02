@@ -27,6 +27,18 @@ needs a dedicated account or a service. Inspect the closest existing official
 port and the module that actually matches upstream metadata; do not choose a
 module by analogy.
 
+## Static-only initial drafts
+
+When the task explicitly prohibits builds or execution, a port may be prepared
+as an unvalidated draft using source and framework inspection only. Record the
+exact upstream tag/commit, inspect the install rules and native link inputs,
+and statically check patch application against pristine sources. Do not run
+configure, compilers, linkers, tests, or installation targets. Do not invent
+`distinfo` or `pkg/PLIST`: list the supported OpenBSD targets still needed to
+generate and verify them. Mark CMake discovery, `WANTLIB`, and runtime behavior
+as provisional until checked on the matching OpenBSD ports tree. A successful
+patch dry-run is not configure, build, package, or runtime evidence.
+
 ## Procedure
 
 1. Select the primary category from the existing tree and choose

@@ -18,6 +18,10 @@ Read the selected port's Makefile, patches, configuration, `pkg/README`, `pkg/DE
 3. Use dedicated service accounts and minimal directory permissions appropriate to real state/key paths. Reconcile IDs with both `user.list` and the official `infrastructure/db/user.list`. Review listener addresses and authentication individually: confettysh exposes a public demonstration service by default, while soft-serve restricts selected endpoints. Keep secrets out of process arguments and logs.
 4. Before proposing restrictions, study the syscall and process lifecycle. On an authorized OpenBSD test host, `trace_dir=$(mktemp -d /tmp/port-security.XXXXXXXX)` creates a private trace directory; then `ktrace -f "$trace_dir/trace" command arguments` and `kdump -f "$trace_dir/trace"` can help identify operations. Trace files may contain secrets, and traces cover only exercised behavior. Retain or remove the trace directory according to the authorized test plan. Do not trace production credentials or infer a complete policy from one startup run.
 5. Apply native restrictions at the correct lifecycle point, check return values, and lock unveil rules when appropriate. Account for DNS, TLS, Unix sockets, logs, temporary files, key rotation, workers, and reload. Avoid broad promises just to silence failures. Verify the target kernel's exec and inheritance behavior: current `unveil(2)` documents removal of unveils on exec. A constrained launcher does not establish containment of an executed child. Filesystem visibility restrictions do not establish network, descriptor, process, or full syscall isolation.
+   When the policy removes `proc` or `exec`, explicitly disable optional
+   build-time features that fork or launch helpers; do not rely on configure
+   defaults. A direct call blocked only by `pledge` may terminate the whole
+   application instead of refusing the requested operation cleanly.
 6. Treat existing implementations separately. Tor's in-process profile rejects
    managed transports requiring exec. Codex's restricted command backend
    currently fails closed rather than claiming child containment; its
@@ -52,7 +56,45 @@ Read the selected port's Makefile, patches, configuration, `pkg/README`, `pkg/DE
    path-prefix checks for `/` and shorter paths; never install a `/` rule.
    Disclose remaining writable roots such as `/tmp` and any loss of arbitrary
    local-file browsing.
-9. Run positive and negative tests on an authorized isolated OpenBSD host: normal initialization and functionality, denied paths/network operations as applicable, child execution, failure handling, and reload/shutdown. Privileged installation, doas rules, service activation, kernel limits, and mount changes require explicit authorization. Use [openbsd-port-validation](../openbsd-port-validation/SKILL.md) to record build/package/runtime evidence separately.
+9. For interactive clients whose configuration selects files and commands at
+   runtime, map the configuration parser, included files, hooks, mailbox or
+   workspace backends, caches, certificates, temporary files, and helper
+   launch paths before proposing `unveil`. A fixed startup allowlist can break
+   legitimate user-selected paths; a broad root rule may provide no useful
+   filesystem boundary. If paths are opened after configuration or can change
+   through commands, either add a reviewed path-registration design or state
+   why a locked policy cannot preserve that behavior. For mail clients, audit
+   IMAP/POP/SMTP, local mailbox formats, GPGME, Notmuch, SASL, and TLS
+   separately. Libraries and helpers may open files, sockets, or processes
+   outside the visible call site. User-configured editors, mailcap handlers,
+   sendmail, tunnels, and shell escapes are an explicit execution boundary:
+   `unveil` is removed on exec, so parent rules do not confine the helper.
+   Check `pledge` child promises independently and do not describe them as
+   filesystem containment. A pledged launcher can retain `proc` and `exec`
+   while leaving `execpromises` unset; OpenBSD then starts executed children
+   without pledge restrictions. Do not pass `NULL` after an earlier call has
+   already set restrictive exec promises, because `NULL` preserves that
+   existing policy.
+10. Run positive and negative tests on an authorized isolated OpenBSD host: normal initialization and functionality, denied paths/network operations as applicable, child execution, failure handling, and reload/shutdown. Privileged installation, doas rules, service activation, kernel limits, and mount changes require explicit authorization. Use [openbsd-port-validation](../openbsd-port-validation/SKILL.md) to record build/package/runtime evidence separately.
+
+### LibreSSL client and sandbox reviews
+
+For TLS clients, check the target base LibreSSL headers and implementation
+for each used API. Review peer-chain failure policy, DNS SAN precedence, IP
+SAN handling, SNI, resource ownership and error paths. Keep explicit user
+acceptance of an invalid certificate distinct from default policy; do not
+turn a no-prompt/reject setting into acceptance. When `unveil` is locked,
+allow only configured CA and client certificate/key files required by the
+TLS path. For base OpenBSD LibreSSL, default trust paths are
+`/etc/ssl/certs.pem` and `/etc/ssl/certs`; avoid unveiling `/etc/ssl`
+wholesale when those exact paths suffice. Prefer a per-run, owner-only
+temporary directory over granting all of `/tmp`; replace application
+`tmpfile(3)` call sites that bypass the configured private temp root when
+necessary. Require writable roots to be canonical directories owned by the
+invoking user with private permissions, and refuse privileged execution
+when the sandbox assumes an ordinary user. Do not widen `pledge` or claim
+spawned-process confinement without verifying exec promises and inheritance
+for the target OpenBSD release.
 
 ## Acceptance and diagnosis
 

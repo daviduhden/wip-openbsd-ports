@@ -12,19 +12,20 @@ explicit configuration file:
 
     xerj --config /path/to/xerj.toml
 
-Without `--config`, compiled defaults are used and `./data` is created in
-the current directory.  Keep that directory outside any folder you later
-index, or XERJ will index its own storage.
+Without `--config`, compiled defaults are used and `./data` is created
+in the current directory.  Keep that directory outside any folder you
+later index, or XERJ will index its own storage.
 
 Authentication and TLS
 ----------------------
 
-Authentication is enabled by default and TLS is disabled by default.  The
-first start creates an admin key at `<data_dir>/admin.key` with mode 0600.
-Every client must send that key, including `xerj autoindex`.  Do not use
-`--insecure`: it disables both authentication and TLS.  Keep the default
-loopback bind unless TLS or a TLS-terminating proxy protects every
-listener; a cleartext non-loopback bind requires an explicit opt-in.
+Authentication is enabled by default and TLS is disabled by default.
+The first start creates an admin key at `<data_dir>/admin.key` with mode
+0600. Every client must send that key, including `xerj autoindex`.  Do
+not use `--insecure`: it disables both authentication and TLS.  Keep the
+default loopback bind unless TLS or a TLS-terminating proxy protects
+every listener; a cleartext non-loopback bind requires an explicit
+opt-in.
 
 The gRPC listener on port 8081 is cleartext h2c even when the REST
 listeners use TLS.  Do not expose port 8081 outside a trusted host or a

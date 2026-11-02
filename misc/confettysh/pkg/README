@@ -1,12 +1,11 @@
-+--------+
-|Confettysh|
-+--------+
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
 
 Confettysh runs an SSH server that plays terminal visual effects for
 connecting clients.  It is a public, unauthenticated demonstration
-service: anyone who can reach the port can connect and view the
-effects.  Do not run it on an untrusted network without a packet
-filter rule.
+service: anyone who can reach the port can connect and view the effects.
+Do not run it on an untrusted network without a packet filter rule.
 
 The rc.d(8) script runs the server as the _confettysh user with
 /var/db/confettysh as the working directory.  Host keys are written to

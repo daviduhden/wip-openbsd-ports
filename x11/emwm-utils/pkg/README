@@ -1,20 +1,19 @@
-+-------------------------------------------------------------------------------
++-----------------------------------------------------------------------
 | Running ${PKGSTEM} on OpenBSD
-+-------------------------------------------------------------------------------
++-----------------------------------------------------------------------
 
-xmsm uses BSD Authentication for screen unlocking. It is installed setgid
-auth and does not need to be setuid root. The effective auth group is
-dropped before the window manager, launcher or session script is started,
-and is reacquired only around auth_userokay(3). Child processes therefore
-do not inherit the auth group.
+xmsm uses BSD Authentication for screen unlocking. It is installed
+setgid auth and does not need to be setuid root. The effective auth
+group is dropped before the window manager, launcher or session script
+is started, and is reacquired only around auth_userokay(3). Child
+processes therefore do not inherit the auth group.
 
 To enable shutdown and reboot, the user should be in _shutdown group:
 
 	# usermod -G _shutdown <username>
 
-To enable suspend, the user needs to be able to run zzz(8).
-In order to do that, the user must be in group "wheel", and apmd(8)
-must be running:
+To enable suspend, the user needs to be able to run zzz(8). In order to
+do that, the user must be in group "wheel", and apmd(8) must be running:
 
 	# rcctl enable apmd
 	# rcctl start apmd
@@ -30,8 +29,8 @@ Generic 48x48 application icons are installed in:
 Applications can refer to an icon by its complete path, for example with
 the emwm(1) iconImage resource.
 
-The core-hr Xcursor theme provides both 24 and 32 pixel cursors.  Select it
-with X resources such as:
+The core-hr Xcursor theme provides both 24 and 32 pixel cursors.  Select
+it with X resources such as:
 
 	Xcursor.theme: core-hr
 	Xcursor.size: 24
@@ -55,12 +54,13 @@ Sample GTK 2 and GTK 3 configurations are installed under:
 	${TRUEPREFIX}/share/examples/emwm/gtk-2.0
 	${TRUEPREFIX}/share/examples/emwm/gtk-3.0
 
-Copy or merge them into the corresponding per-user GTK configuration only
-if desired.  The package does not modify files in users' home directories.
+Copy or merge them into the corresponding per-user GTK configuration
+only if desired.  The package does not modify files in users' home
+directories.
 
 An X resources example is installed as:
 
 	${TRUEPREFIX}/share/examples/emwm/Xresources
 
-Merge it manually into the desired X resources file.  The package neither
-changes ~/.Xresources or ~/.Xdefaults nor runs xrdb(1).
+Merge it manually into the desired X resources file.  The package
+neither changes ~/.Xresources or ~/.Xdefaults nor runs xrdb(1).

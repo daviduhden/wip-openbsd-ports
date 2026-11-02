@@ -1,6 +1,6 @@
-+--------+
-|Soft Serve|
-+--------+
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
 
 Soft Serve stores all of its state below /var/db/soft-serve: the Git
 repositories, the SQLite database, the SSH host and client keys and the
@@ -29,11 +29,11 @@ first start, or import keys later with:
 		--username admin --admin \
 		--public-key "$(cat ~/.ssh/id_ed25519.pub)"
 
-Listener configuration is read from /var/db/soft-serve/config.yaml.
-The default configuration enables the SSH server (:23231), the git
-daemon (:9418), the HTTP server (:23232) and the stats endpoint
-(localhost:23233); the rc.d(8) environment above overrides the git,
-HTTP and stats settings.
+Listener configuration is read from /var/db/soft-serve/config.yaml. The
+default configuration enables the SSH server (:23231), the git daemon
+(:9418), the HTTP server (:23232) and the stats endpoint
+(localhost:23233); the rc.d(8) environment above overrides the git, HTTP
+and stats settings.
 
 The generated configuration file is owned by _softserve and is not
 managed by the package: it is preserved across upgrades.

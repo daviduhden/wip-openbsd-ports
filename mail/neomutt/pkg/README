@@ -1,0 +1,34 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+NeoMutt locks a fixed unveil(2) filesystem policy, then applies pledge(2)
+before reading configuration. The policy allows the resolved home directory
+read-only, a private per-run temporary directory, /var/mail when present,
+existing ~/Mail, ~/mail, ~/.cache/neomutt and ~/.local/share/neomutt
+directories, system and package configuration directories, terminal data,
+DNS and password lookup files, and the base-system TLS certificate store.
+Running as root is refused.
+
+Paths outside those locations are unavailable. In particular, a -F
+configuration file or source command outside the home and fixed system
+configuration directories, mailboxes outside /var/mail and existing
+writable mail directories under HOME, custom cache or certificate paths, and
+attachments outside the allowed writable roots may fail. Other files under
+HOME are readable but not writable through NeoMutt. Paths chosen after
+startup are not added to the unveil policy. NeoMutt uses a private
+temporary directory under HOME instead of exposing all of /tmp; it attempts
+to remove that directory at exit.
+
+The pledge policy omits exec. External programs cannot run, including
+editors, pagers, mailcap handlers, sendmail, tunnels, filters, shell commands,
+GnuPG helpers, and external SASL mechanisms. Forking remains permitted for
+NeoMutt's process-control paths, but a helper's exec attempt violates pledge
+and the helper is killed. GPGME operations needing a GnuPG process and SASL
+mechanisms needing helpers are unavailable. The flavors remain buildable but
+have these runtime limits.
+
+The pledge call is made after unveil is locked and leaves execpromises
+unset. No claim is made that external programs are confined by this policy.
+Do not restore exec without reviewing the process and filesystem boundaries
+together.

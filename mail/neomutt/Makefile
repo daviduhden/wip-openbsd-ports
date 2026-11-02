@@ -20,7 +20,7 @@ PERMIT_PACKAGE=	Yes
 COMPILER=	base-clang ports-gcc
 COMPILER_LANGS=	c
 
-# uses pledge()
+# uses pledge() and unveil()
 WANTLIB+=	c crypto curses iconv idn2 intl pcre2-8 ssl tdb z
 
 LIB_DEPENDS=	databases/tdb \

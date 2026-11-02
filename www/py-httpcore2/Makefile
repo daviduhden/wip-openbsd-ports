@@ -1,4 +1,4 @@
-COMMENT =	A minimal low-level HTTP client.
+COMMENT =	minimal low-level HTTP client
 
 MODPY_DISTV =	2.16.0
 DISTNAME =	httpcore2-${MODPY_DISTV}

@@ -1,4 +1,4 @@
-COMMENT =	The next generation HTTP client.
+COMMENT =	next-generation HTTP client
 
 MODPY_DISTV =	2.16.0
 DISTNAME =	httpx2-${MODPY_DISTV}

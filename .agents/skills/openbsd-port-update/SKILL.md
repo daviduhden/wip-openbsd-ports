@@ -234,7 +234,14 @@ defines supported sandbox claims; the dependency skill covers Cargo/V8 source
 mapping. Review `pkg/README` even when it needs no edit. Never claim OpenBSD
 sandboxing works unless a supported kernel-enforced backend is implemented
 and tested. Outside OpenBSD, leave `distinfo`, `pkg/PLIST`, and `crates.inc`
-to the framework and list each pending file.
+to the framework and list each pending file. When removing a runtime shell
+package such as `shells/bash`, trace shell detection, default fallback order,
+explicit account-shell handling, remote `ShellInfo` handoffs, and all command
+launchers. Separate Rust parser crates and generated completion data from
+runtime shell executables; retain them unless they directly invoke the shell.
+On OpenBSD, an existing `ksh`-as-`Sh` path can use POSIX `-c`/`-lc` and generic
+`Sh` snapshots, but Bash-only command syntax is not translated. Preserve other
+platforms' selection order and test shell startup/snapshot behavior natively.
 
 ### LibreSSL-native ports
 

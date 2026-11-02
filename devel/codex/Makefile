@@ -56,7 +56,6 @@ LIB_DEPENDS =		textproc/oniguruma \
 
 RUN_DEPENDS =		devel/git \
 			lang/python/3 \
-			shells/bash \
 			textproc/ripgrep
 
 MODULES =		devel/cargo

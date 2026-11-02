@@ -1,11 +1,96 @@
-Replace the cross-filesystem mv fallback with the built-in copy.
-Spawning mv after pledge would abort the process because exec is
-not promised.
+Stage bookmark rewrites in an unlinked private temporary file.
+Avoid granting the browser write access to the system temp root.
 
 Index: src/LYBookmark.c
 --- src/LYBookmark.c.orig
 +++ src/LYBookmark.c
-@@ -929,25 +929,18 @@ void remove_bookmark_link(int cur,
+@@ -17,6 +17,11 @@
+ #include <GridText.h>
+ #include <HTCJK.h>
+ 
++#ifdef __OpenBSD__
++#include <stdlib.h>		/* mkstemp() */
++#include <unistd.h>		/* mkstemp(), fdopen(), unlink() */
++#endif
++
+ #ifdef _WINDOWS
+ #include <io.h>			/* for _chsize() */
+ #endif
+@@ -33,6 +38,45 @@ char *MBM_A_subdescript[MBM_V_MAXFILES +
+ static BOOLEAN is_mosaic_hotlist = FALSE;
+ static const char *convert_mosaic_bookmark_file(const char *filename_buffer);
+ 
++#ifdef __OpenBSD__
++/* Create an unlinked read/write temp file inside Lynx's private temp area. */
++static FILE *lynx_bookmark_tmpfile(void)
++{
++    char path[LY_MAXPATH];
++    FILE *fp;
++    int fd;
++    int n;
++
++    n = snprintf(path, sizeof(path), "%slynx-bookmark.XXXXXX",
++		 lynx_temp_space);
++    if (n < 0 || n >= (int) sizeof(path)) {
++	errno = ENAMETOOLONG;
++	return NULL;
++    }
++    fd = mkstemp(path);
++    if (fd == -1)
++	return NULL;
++    fp = fdopen(fd, "w+");
++    if (fp == NULL) {
++	int saved_errno = errno;
++
++	close(fd);
++	(void) unlink(path);
++	errno = saved_errno;
++	return NULL;
++    }
++    if (unlink(path) == -1) {
++	int saved_errno = errno;
++
++	fclose(fp);
++	(void) unlink(path);
++	errno = saved_errno;
++	return NULL;
++    }
++    return fp;
++}
++#endif
++
+ unsigned LYindex2MBM(int n)
+ {
+     static char MBMcodes[MBM_V_MAXFILES + 2] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+@@ -525,7 +569,11 @@ void save_bookmark_link(const char *addr
+      */
+     if (!first_time) {
+ 	BOOLEAN empty_file = TRUE;
++#ifdef __OpenBSD__
++	FILE *bp = lynx_bookmark_tmpfile();
++#else
+ 	FILE *bp = tmpfile();
++#endif
+ 	char chunk[SCAN_LEN];
+ 	int ch;
+ 	int offset_Chr = 0;
+@@ -539,6 +587,15 @@ void save_bookmark_link(const char *addr
+ 	int comment = FALSE;
+ 	char found_tag[scanIgnore + 1];
+ 	SCAN_TRAILING scanned = scanUnknown;
++	if (bp == NULL) {
++	    LYMBM_statusline(BOOKMARK_OPEN_FAILED);
++	    LYSleepAlert();
++	    fclose(fp);
++	    FREE(Title);
++	    FREE(bookmark_URL);
++	    BStrFree(tmp_data);
++	    return;
++	}
+ 
+ 	rewind(fp);
+ 	memset(found_tag, 0, sizeof(found_tag));
+@@ -929,25 +986,18 @@ void remove_bookmark_link(int cur,
  	}
  #else
  	if (errno == EXDEV) {

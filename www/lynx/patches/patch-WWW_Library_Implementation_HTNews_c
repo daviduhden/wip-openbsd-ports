@@ -1,0 +1,68 @@
+Route secure NNTP through the shared TLS verification path.
+Apply SNI and certificate identity checks to secure news links.
+
+Index: WWW/Library/Implementation/HTNews.c
+--- WWW/Library/Implementation/HTNews.c.orig
++++ WWW/Library/Implementation/HTNews.c
+@@ -40,6 +40,7 @@ int HTNewsMaxChunk = 40;	/* Largest numb
+ #endif /* NEWS_AUTH_FILE */
+ 
+ #ifdef USE_SSL
++#include <HTTLS.h>
+ 
+ #if defined(LIBRESSL_VERSION_NUMBER)
+ /* OpenSSL and LibreSSL version numbers do not correspond */
+@@ -2662,23 +2663,10 @@ static int HTLoadNews(const char *arg,
+ 		    (!StrNCmp(url, "snews", 5) ||
+ 		     !StrNCmp(url, "snewspost:", 10) ||
+ 		     !StrNCmp(url, "snewsreply:", 11))) {
+-		    Handle = HTGetSSLHandle();
+-		    SSL_set_fd(Handle, s);
+-		    HTSSLInitPRNG();
+-		    status = SSL_connect(Handle);
++		    Handle = HTSSLConnect(s, url, HTTLS_ANY_VERSION,
++					  HTTLS_ANY_VERSION);
+ 
+-		    if (status <= 0) {
+-			unsigned long SSLerror;
+-
+-			CTRACE((tfp,
+-				"HTNews: Unable to complete SSL handshake for '%s', SSL_connect=%d, SSL error stack dump follows\n",
+-				url, status));
+-			SSL_load_error_strings();
+-			while ((SSLerror = ERR_get_error()) != 0) {
+-			    CTRACE((tfp, "HTNews: SSL: %s\n",
+-				    ERR_error_string(SSLerror, NULL)));
+-			}
+-			HTAlert("Unable to make secure connection to remote host.");
++		    if (Handle == NULL) {
+ 			NEWS_NETCLOSE(s);
+ 			s = -1;
+ 			if (!(post_wanted || reply_wanted ||
+@@ -3076,23 +3064,11 @@ int HTNewsProxyConnect(int sock,
+     char SSLprogress[256];
+ 
+     s = channel_s = sock;
+-    Handle = HTGetSSLHandle();
+-    SSL_set_fd(Handle, s);
+-    HTSSLInitPRNG();
+-    status = SSL_connect(Handle);
+-
+-    if (status <= 0) {
+-	unsigned long SSLerror;
++    Handle = HTSSLConnect(s, url, HTTLS_ANY_VERSION,
++			  HTTLS_ANY_VERSION);
+ 
++    if (Handle == NULL) {
+ 	channel_s = -1;
+-	CTRACE((tfp,
+-		"HTNews: Unable to complete SSL handshake for '%s', SSL_connect=%d, SSL error stack dump follows\n",
+-		url, status));
+-	SSL_load_error_strings();
+-	while ((SSLerror = ERR_get_error()) != 0) {
+-	    CTRACE((tfp, "HTNews: SSL: %s\n", ERR_error_string(SSLerror, NULL)));
+-	}
+-	HTAlert("Unable to make secure connection to remote host.");
+ 	NEWS_NETCLOSE(s);
+ 	s = -1;
+ 	return HT_NOT_LOADED;

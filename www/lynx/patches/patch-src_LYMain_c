@@ -1,19 +1,26 @@
-Restrict Lynx to checked roots and exact state files.
-Fail closed on invalid HOME and escaped Downloads symlinks.
+Constrain Lynx paths and require private writable sandbox roots.
+Resolve unveil rules before applying them and limit TLS trust paths.
 
 Index: src/LYMain.c
 --- src/LYMain.c.orig
 +++ src/LYMain.c
-@@ -1039,6 +1039,275 @@ static void SetLocale(void)
+@@ -1039,6 +1039,394 @@ static void SetLocale(void)
      LYSetTextDomain();
  }
  
 +#ifdef __OpenBSD__
++struct UnveilRule {
++    struct UnveilRule *next;
++    char *path;
++    char perms[5];
++};
++
++static struct UnveilRule *UnveilRules;
++
 +/*
-+ * Sandbox helpers.  Read access is limited to the help/configuration
-+ * trees, the TLS trust store, terminal data and the user's own state
-+ * files.  Write access is limited to the current directory, the
-+ * configured temp/save areas and the individual files Lynx owns.
++ * Sandbox helpers.  Read access is limited to help/configuration,
++ * exact TLS trust files, terminal data and user state.  Writable access
++ * is limited to private temp/save directories and files Lynx owns.
 + */
 +static void unveil_fatal(const char *path)
 +{
@@ -22,6 +29,75 @@ Index: src/LYMain.c
 +    if (LYCursesON)
 +	stop_curses();
 +    exit_immediately(EXIT_FAILURE);
++}
++
++/* Queue canonical paths before applying the first unveil rule. */
++static void unveil_rule_add(const char *path, const char *perms)
++{
++    struct UnveilRule *rule;
++    const char *p;
++
++    for (rule = UnveilRules; rule != NULL; rule = rule->next) {
++	if (strcmp(rule->path, path) == 0) {
++	    for (p = perms; *p != '\0'; ++p) {
++		if (strchr(rule->perms, *p) == NULL) {
++		    size_t len = strlen(rule->perms);
++		    if (len + 1 >= sizeof(rule->perms)) {
++			errno = EINVAL;
++			unveil_fatal(path);
++			return;
++		    }
++		    rule->perms[len] = *p;
++		    rule->perms[len + 1] = '\0';
++		}
++	    }
++	    return;
++	}
++    }
++
++    for (p = perms; *p != '\0'; ++p) {
++	if (strchr("rwcx", *p) == NULL ||
++	    (size_t) (p - perms) >= sizeof(rule->perms) - 1) {
++	    errno = EINVAL;
++	    unveil_fatal(path);
++	    return;
++	}
++    }
++    rule = calloc(1, sizeof(*rule));
++    if (rule == NULL || (rule->path = strdup(path)) == NULL) {
++	free(rule);
++	unveil_fatal(path);
++	return;
++    }
++    for (p = perms; *p != '\0'; ++p) {
++	size_t len = strlen(rule->perms);
++	if (strchr(rule->perms, *p) == NULL && len + 1 < sizeof(rule->perms)) {
++	    rule->perms[len] = *p;
++	    rule->perms[len + 1] = '\0';
++	}
++    }
++    rule->next = UnveilRules;
++    UnveilRules = rule;
++}
++
++static void unveil_apply_rules(void)
++{
++    struct UnveilRule *rule = UnveilRules;
++    struct UnveilRule *next;
++
++    while (rule != NULL) {
++	if (unveil(rule->path, rule->perms) == -1)
++	    unveil_fatal(rule->path);
++	rule = rule->next;
++    }
++    rule = UnveilRules;
++    while (rule != NULL) {
++	next = rule->next;
++	free(rule->path);
++	free(rule);
++	rule = next;
++    }
++    UnveilRules = NULL;
 +}
 +
 +static int unveil_has_dotdot(const char *path)
@@ -67,16 +143,7 @@ Index: src/LYMain.c
 +	free(resolved);
 +	return;
 +    }
-+    if (unveil(resolved, perms) == -1) {
-+	int saved_errno = errno;
-+
-+	free(resolved);
-+	errno = saved_errno;
-+	if (!required && errno == ENOENT)
-+	    return;
-+	unveil_fatal(path);
-+	return;
-+    }
++    unveil_rule_add(resolved, perms);
 +    free(resolved);
 +}
 +
@@ -91,6 +158,12 @@ Index: src/LYMain.c
 +
 +    if (path == NULL || *path == '\0')
 +	return;
++    if (unveil_has_dotdot(path)) {
++	fprintf(stderr, "%s: refusing unveil path with ..: %s\n",
++		getprogname(), path);
++	exit_immediately(EXIT_FAILURE);
++	return;
++    }
 +    resolved = realpath(path, NULL);
 +    if (resolved == NULL) {
 +	if (!required && errno == ENOENT)
@@ -98,12 +171,64 @@ Index: src/LYMain.c
 +	unveil_fatal(path);
 +	return;
 +    }
++    if (!strcmp(resolved, "/")) {
++	if (required) {
++	    fprintf(stderr, "%s: refusing required root rule: %s\n",
++		    getprogname(), path);
++	    if (LYCursesON)
++		stop_curses();
++	    exit_immediately(EXIT_FAILURE);
++	}
++	free(resolved);
++	return;
++    }
 +    if (stat(resolved, &st) != 0 || !S_ISDIR(st.st_mode)) {
 +	free(resolved);
 +	return;
 +    }
++    unveil_rule_add(resolved, perms);
 +    free(resolved);
-+    unveil_path(path, perms, required);
++}
++
++/* Keep writable sandbox roots private to the invoking user. */
++static void unveil_private_dir(const char *path, const char *perms)
++{
++    char *resolved;
++    struct stat st;
++
++    if (path == NULL || *path == '\0')
++	return;
++    resolved = realpath(path, NULL);
++    if (resolved == NULL || stat(resolved, &st) != 0 ||
++	!S_ISDIR(st.st_mode) || st.st_uid != getuid() ||
++	(st.st_mode & 0077) != 0 || (st.st_mode & 0700) != 0700) {
++	if (resolved != NULL)
++	    free(resolved);
++	fprintf(stderr, "%s: sandbox directory must be owned by the user "
++		"and mode 0700: %s\n", getprogname(), NonNull(path));
++	if (LYCursesON)
++	    stop_curses();
++	exit_immediately(EXIT_FAILURE);
++	return;
++    }
++    unveil_rule_add(resolved, perms);
++    free(resolved);
++}
++
++/* Force LYOpenTemp() to establish and validate its private temp area. */
++static void unveil_prepare_tempdir(void)
++{
++    char temp_file[LY_MAXPATH];
++    FILE *fp;
++
++    fp = LYOpenTemp(temp_file, ".sandbox", "w");
++    if (fp == NULL) {
++	unveil_fatal(lynx_temp_space);
++	return;
++    }
++    LYCloseTempFP(fp);
++    if (LYRemoveTemp(temp_file) != 0)
++	unveil_fatal(temp_file);
 +}
 +
 +/*
@@ -149,16 +274,7 @@ Index: src/LYMain.c
 +	    free(resolved);
 +	    return;
 +	}
-+	if (unveil(resolved, perms) == -1) {
-+	    int saved_errno = errno;
-+
-+	    free(resolved);
-+	    errno = saved_errno;
-+	    if (!required && errno == ENOENT)
-+		return;
-+	    unveil_fatal(path);
-+	    return;
-+	}
++	unveil_rule_add(resolved, perms);
 +	free(resolved);
 +	return;
 +    }
@@ -210,17 +326,7 @@ Index: src/LYMain.c
 +	unveil_fatal(path);
 +	return;
 +    }
-+    if (unveil(combined, perms) == -1) {
-+	int saved_errno = errno;
-+
-+	free(parent);
-+	FREE(copy);
-+	errno = saved_errno;
-+	if (!required && errno == ENOENT)
-+	    return;
-+	unveil_fatal(path);
-+	return;
-+    }
++    unveil_rule_add(combined, perms);
 +    free(parent);
 +    FREE(copy);
 +}
@@ -260,6 +366,7 @@ Index: src/LYMain.c
 +{
 +    char expected[LY_MAXPATH];
 +    char *resolved;
++    char *save_real;
 +    int n;
 +
 +    if (path == NULL || *path == '\0' || home_real == NULL)
@@ -271,8 +378,20 @@ Index: src/LYMain.c
 +    resolved = realpath(path, NULL);
 +    if (resolved == NULL)
 +	return;
-+    if (!strcmp(resolved, expected))
-+	unveil_path(resolved, "rwc", 0);
++    if (!strcmp(resolved, expected)) {
++	/* A configured save root already has its exact writable rule. */
++	save_real = non_empty(lynx_save_space)
++	    ? realpath(lynx_save_space, NULL)
++	    : NULL;
++	if (save_real != NULL && !strcmp(save_real, resolved)) {
++	    free(save_real);
++	    free(resolved);
++	    return;
++	}
++	free(save_real);
++	/* Browsing Downloads does not need write access to the whole folder. */
++	unveil_path(resolved, "r", 0);
++    }
 +    free(resolved);
 +}
 +#endif /* __OpenBSD__ */
@@ -280,14 +399,14 @@ Index: src/LYMain.c
  /*
   * Wow!  Someone wants to start up Lynx.
   */
-@@ -2182,6 +2451,176 @@ int main(int argc,
+@@ -2182,6 +2570,184 @@ int main(int argc,
      }
  
      /*
 +     * Disabling features requiring 'proc' + 'exec' and applying the
 +     * OpenBSD sandbox.  Reads are limited to help/configuration, TLS
 +     * trust, terminal data, the current directory and user state files;
-+     * writes are limited to the working areas and those state files.
++     * writes are limited to private temp/save areas and state files.
 +     */
 +#ifdef __OpenBSD__
 +    {
@@ -307,6 +426,13 @@ Index: src/LYMain.c
 +
 +	rlogin_ok = FALSE;
 +	telnet_ok = FALSE;
++	if (getuid() == 0 || geteuid() == 0) {
++	    fprintf(stderr, "%s: refusing to run sandboxed Lynx as root\n",
++		    getprogname());
++	    if (LYCursesON)
++		stop_curses();
++	    exit_immediately(EXIT_FAILURE);
++	}
 +
 +	/*
 +	 * Local browsing is limited to the current directory.  Do not
@@ -336,12 +462,8 @@ Index: src/LYMain.c
 +		 cwd_real[hlen] == '/'))
 +		allow_cwd = 0;
 +	}
-+	if (allow_cwd && cwd_real != NULL) {
-+	    if (access(cwd_real, W_OK) == 0)
-+		unveil_path(cwd_real, "rwc", 0);
-+	    else
-+		unveil_path(cwd_real, "r", 0);
-+	}
++	if (allow_cwd && cwd_real != NULL)
++	    unveil_path(cwd_real, "r", 0);
 +	free(cwd_real);
 +
 +	if (unveil_covers_home(lynx_temp_space, home_real)) {
@@ -351,10 +473,8 @@ Index: src/LYMain.c
 +		stop_curses();
 +	    exit_immediately(EXIT_FAILURE);
 +	}
-+	unveil_path(lynx_temp_space, "rwc", 1);
-+	/* tmpfile(3) in bookmark updates uses the system temp directory. */
-+	if (!unveil_covers_home("/tmp", home_real))
-+	    unveil_path("/tmp", "rwc", 0);
++	unveil_prepare_tempdir();
++	unveil_private_dir(lynx_temp_space, "rwc");
 +	if (unveil_covers_home(lynx_save_space, home_real)) {
 +	    fprintf(stderr, "%s: refusing HOME/ancestor save space: %s\n",
 +		    getprogname(), NonNull(lynx_save_space));
@@ -362,10 +482,12 @@ Index: src/LYMain.c
 +		stop_curses();
 +	    exit_immediately(EXIT_FAILURE);
 +	}
-+	unveil_path(lynx_save_space, "rwc", 0);
++	if (non_empty(lynx_save_space))
++	    unveil_private_dir(lynx_save_space, "rwc");
 +
 +	/* Read-only configuration, help, TLS trust and terminal data. */
-+	unveil_path("/etc/ssl", "r", 0);
++	unveil_file("/etc/ssl/certs.pem", "r", 0);
++	unveil_dir("/etc/ssl/certs", "r", 0);
 +	unveil_path("/etc/localtime", "r", 0);
 +	unveil_path("/etc/organization", "r", 0);
 +	unveil_path("/etc/resolv.conf", "r", 0);
@@ -409,6 +531,10 @@ Index: src/LYMain.c
 +	    LYAddPathToHome(userpath, sizeof(userpath), ".terminfo");
 +	    unveil_path(userpath, "r", 0);
 +	}
++	/* TLS reads these configured CA and client identity files. */
++	unveil_file(SSL_cert_file, "r", 0);
++	unveil_file(SSL_client_cert_file, "r", 0);
++	unveil_file(SSL_client_key_file, "r", 0);
 +	unveil_file(LYCookieFile, "rwc", 0);
 +	unveil_file(LYCookieSaveFile, "rwc", 0);
 +	if (non_empty(BookmarkPage)) {
@@ -435,6 +561,7 @@ Index: src/LYMain.c
 +	unveil_path("/dev/null", "rw", 0);
 +	unveil_path("/dev/urandom", "r", 0);
 +	unveil_path("/dev/random", "r", 0);
++	unveil_apply_rules();
 +	if (unveil(NULL, NULL) == -1) {
 +	    fprintf(stderr, "%s: unveil lock: %s\n",
 +		    getprogname(), strerror(errno));

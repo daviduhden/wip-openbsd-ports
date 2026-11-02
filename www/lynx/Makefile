@@ -26,7 +26,11 @@ CONFIGURE_ARGS=	--datarootdir="${PREFIX}/share/doc/lynx" \
 			--disable-nls \
 			--disable-bibp-urls \
 			--disable-dired \
+			--disable-cgi-links \
+			--disable-exec-links \
+			--disable-exec-scripts \
 			--disable-finger \
+			--disable-nsl-fork \
 			--enable-default-colors \
 			--enable-ipv6 \
 			--enable-widec \

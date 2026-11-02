@@ -1,7 +1,5 @@
-Use HOME instead of getpwuid and keep external copies/commands
-inside the OpenBSD sandbox.  LYCopyFile falls back to the built-in
-copy when no_exec is set, LYSystem refuses cleanly, and clipboard
-helpers do not spawn a process under no_exec.
+Use private temporary subdirectories for OpenBSD temp files.
+Do not expose shared directory contents to the sandboxed browser.
 
 Index: src/LYUtils.c
 --- src/LYUtils.c.orig
@@ -21,7 +19,21 @@ Index: src/LYUtils.c
  	    } else
  #endif
  	    {
-@@ -7055,7 +7056,7 @@ int LYCopyFile(char *src,
+@@ -6072,8 +6073,13 @@ FILE *LYOpenTemp(char *result,
+ 
+ 	if (lstat(lynx_temp_space, &sb) == 0
+ 	    && S_ISDIR(sb.st_mode)) {
++#ifdef __OpenBSD__
++	    if (sb.st_uid != getuid()
++		|| (sb.st_mode & (S_IRWXG | S_IRWXO)) != 0) {
++#else
+ 	    if (sb.st_uid != getuid()
+ 		|| (sb.st_mode & (S_IWOTH | S_IWGRP)) != 0) {
++#endif
+ 		make_it = TRUE;
+ 		CTRACE((tfp,
+ 			"lynx_temp_space is not our directory %s owner %d mode %03o\n",
+@@ -7055,7 +7061,7 @@ int LYCopyFile(char *src,
      int code;
      const char *program;
  
@@ -30,7 +42,7 @@ Index: src/LYUtils.c
  	char *the_command = NULL;
  
  	HTAddParam(&the_command, COPY_COMMAND, 1, program);
-@@ -7135,6 +7136,11 @@ int LYSystem(char *command)
+@@ -7135,6 +7141,11 @@ int LYSystem(char *command)
      int code;
      int do_free = 0;
  
@@ -42,7 +54,7 @@ Index: src/LYUtils.c
  #if defined(HAVE_SIGACTION) && defined(SIGTSTP) && !defined(USE_SLANG)
      struct sigaction saved_sigtstp_act;
      BOOLEAN sigtstp_saved = FALSE;
-@@ -7666,7 +7672,11 @@ void get_clip_release(void)
+@@ -7666,7 +7677,11 @@ void get_clip_release(void)
  
  static int clip_grab(void)
  {
@@ -55,7 +67,7 @@ Index: src/LYUtils.c
  
      if (paste_handle)
  	pclose(paste_handle);
-@@ -7716,10 +7726,14 @@ char *get_clip_grab(void)
+@@ -7716,10 +7731,14 @@ char *get_clip_grab(void)
  
  int put_clip(const char *s)
  {

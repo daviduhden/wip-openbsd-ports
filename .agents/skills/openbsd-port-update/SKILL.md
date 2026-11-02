@@ -147,6 +147,23 @@ pending. The required source comparison in [UPDATE.md](../../../docs/UPDATE.md)
 records stable upstream and official `-current` versions, adopted or declined
 official changes, and local behavior retained or retired.
 
+### Port README placement
+
+Use `pkg/README` for user-facing package notes and begin it with the
+standard banner:
+
+```text
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+```
+
+A top-level `README` is not the OpenBSD convention; keep maintainer-only
+build notes in the change handoff or a review artifact, not in an
+installed file.  Use the framework variables (`${LOCALBASE}`,
+`${SYSCONFDIR}`, `${PKGSTEM}`) rather than hard-coded paths, and keep
+service, security and first-run instructions concise.
+
 ### Local-only and header-only ports
 
 Some overlay ports have no official `-current` counterpart.  Confirm that

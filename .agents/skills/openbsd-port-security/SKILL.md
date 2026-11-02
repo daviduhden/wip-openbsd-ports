@@ -96,6 +96,28 @@ when the sandbox assumes an ordinary user. Do not widen `pledge` or claim
 spawned-process confinement without verifying exec promises and inheritance
 for the target OpenBSD release.
 
+### NeoMutt static-path sandbox policy
+
+For a fixed-path NeoMutt policy, apply `unveil` after resolving the
+unprivileged user's home and before `mutt_init()` reads configuration or
+`source` includes. Resolve HOME canonically, reject root and `/`, use a
+private per-run temporary directory under HOME, and lock the rules. Keep
+mail spool, DNS/password lookups, terminfo, CA files, package/system config,
+SASL sockets/plugins and flavor-specific GPGME socket access explicit.
+Document that startup and runtime paths outside the allowlist fail; do not
+silently widen it to accommodate `-F`, `source`, mailboxes, caches,
+certificates or attachments selected elsewhere.
+
+When omitting pledge's `exec` promise, retain `proc` if the application
+uses fork, wait, or kill outside helper execution. NeoMutt uses these for
+process control and helper launch; with `proc`, an exec-denied child fails
+without turning the parent's fork into a pledge violation. Document that
+external commands cannot run. Apply and lock unveil before the final pledge
+call; then omit the `unveil` promise too. Keep flavor-specific `unix` and
+GPGME descriptor-passing promises only where the linked libraries need them.
+Leave `execpromises` unset. Review pledge's exec behavior and unveil's
+removal on exec before restoring external commands.
+
 ## Acceptance and diagnosis
 
 Document the threat boundary, protected operations, unsupported configurations, target kernel, and exact tests. Every claim must match the process actually confined. Unsupported tests and skipped tests are not passes.

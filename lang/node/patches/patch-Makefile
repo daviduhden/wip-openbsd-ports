@@ -1,3 +1,5 @@
+Build the pledge addon as part of the Node.js install target.
+
 Index: Makefile
 --- Makefile.orig
 +++ Makefile

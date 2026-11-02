@@ -1,3 +1,5 @@
+Count online CPUs with OpenBSD's HW_NCPUONLINE sysctl.
+
 Index: deps/v8/src/base/sys-info.cc
 --- deps/v8/src/base/sys-info.cc.orig
 +++ deps/v8/src/base/sys-info.cc

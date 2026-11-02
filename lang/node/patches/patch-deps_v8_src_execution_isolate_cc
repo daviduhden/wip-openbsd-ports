@@ -1,3 +1,5 @@
+Set embedded V8 code pages executable on OpenBSD.
+
 Index: deps/v8/src/execution/isolate.cc
 --- deps/v8/src/execution/isolate.cc.orig
 +++ deps/v8/src/execution/isolate.cc

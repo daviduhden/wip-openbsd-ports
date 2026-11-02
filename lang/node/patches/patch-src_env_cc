@@ -1,3 +1,5 @@
+Remove the obsolete OpenBSD executable path workaround.
+
 Index: src/env.cc
 --- src/env.cc.orig
 +++ src/env.cc

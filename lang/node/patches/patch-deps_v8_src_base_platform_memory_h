@@ -1,3 +1,5 @@
+Use BSD-compatible malloc headers and feature guards.
+
 Index: deps/v8/src/base/platform/memory.h
 --- deps/v8/src/base/platform/memory.h.orig
 +++ deps/v8/src/base/platform/memory.h

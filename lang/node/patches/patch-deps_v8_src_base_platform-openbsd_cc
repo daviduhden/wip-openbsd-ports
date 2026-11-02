@@ -1,3 +1,5 @@
+Discover the current thread stack with OpenBSD pthread APIs.
+
 Index: deps/v8/src/base/platform/platform-openbsd.cc
 --- deps/v8/src/base/platform/platform-openbsd.cc.orig
 +++ deps/v8/src/base/platform/platform-openbsd.cc

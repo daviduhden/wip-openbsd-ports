@@ -1,3 +1,5 @@
+Enable POSIX WebAssembly trap handling on OpenBSD.
+
 Index: deps/v8/src/api/api.cc
 --- deps/v8/src/api/api.cc.orig
 +++ deps/v8/src/api/api.cc

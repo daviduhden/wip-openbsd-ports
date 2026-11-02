@@ -1,3 +1,5 @@
+Enable V8 control-flow integrity for arm64 targets.
+
 Index: configure.py
 --- configure.py.orig
 +++ configure.py

@@ -1,4 +1,4 @@
-Pulled in from devel/abseil-cpp to fix the ppc64 build
+Pulled in from devel/abseil-cpp to fix the ppc64 build.
 
 Index: deps/v8/third_party/abseil-cpp/absl/base/internal/unscaledcycleclock_config.h
 --- deps/v8/third_party/abseil-cpp/absl/base/internal/unscaledcycleclock_config.h.orig

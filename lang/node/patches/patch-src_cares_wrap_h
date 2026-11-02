@@ -1,3 +1,5 @@
+Define DNS classes and types missing from OpenBSD headers.
+
 Index: src/cares_wrap.h
 --- src/cares_wrap.h.orig
 +++ src/cares_wrap.h

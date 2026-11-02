@@ -1,5 +1,5 @@
-cherrypicked fix for i386
-https://github.com/v8/v8/commit/7c165d90f0800b78c92fd0c13690e7b40683026a
+Cherry-pick the V8 i386 int64-lowering fix.
+Upstream commit: 7c165d90f0800b78c92fd0c13690e7b40683026a.
 
 Index: deps/v8/src/compiler/turboshaft/int64-lowering-reducer.h
 --- deps/v8/src/compiler/turboshaft/int64-lowering-reducer.h.orig

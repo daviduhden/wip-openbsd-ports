@@ -1,3 +1,5 @@
+Match RISC-V assembler immediates to pointer-sized integers.
+
 Index: deps/v8/src/codegen/riscv/assembler-riscv.h
 --- deps/v8/src/codegen/riscv/assembler-riscv.h.orig
 +++ deps/v8/src/codegen/riscv/assembler-riscv.h

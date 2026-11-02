@@ -1,12 +1,5 @@
-1st hunk:
-Use static_cast instead of a potentially dangerous reinterpret_cast.
-Doesn't matter since this file only supports riscv64 where unsigned long and
-unsigned long long are actually the same size.
-../deps/v8/src/codegen/riscv64/assembler-riscv64.cc:403:22: error: reinterpret_cast from 'v8::internal::Address' (aka 'unsigned long') to 'uint64_t' (aka 'unsigned long long') is not allowed
-
-Other hunks:
-Fix build errors due to type mismatch between intptr_t (long) and int64_t
-(long long).
+Use portable casts for RISC-V address and integer types.
+Match immediate types to intptr_t on riscv64.
 
 Index: deps/v8/src/codegen/riscv/assembler-riscv.cc
 --- deps/v8/src/codegen/riscv/assembler-riscv.cc.orig

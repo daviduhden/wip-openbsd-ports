@@ -1,3 +1,5 @@
+Include the POSIX WebAssembly trap handler on OpenBSD.
+
 Index: tools/v8_gypfiles/v8.gyp
 --- tools/v8_gypfiles/v8.gyp.orig
 +++ tools/v8_gypfiles/v8.gyp

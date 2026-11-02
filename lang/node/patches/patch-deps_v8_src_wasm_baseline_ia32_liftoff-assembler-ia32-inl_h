@@ -1,3 +1,5 @@
+Use pointer-sized offsets in Liftoff assembler declarations.
+
 Index: deps/v8/src/wasm/baseline/ia32/liftoff-assembler-ia32-inl.h
 --- deps/v8/src/wasm/baseline/ia32/liftoff-assembler-ia32-inl.h.orig
 +++ deps/v8/src/wasm/baseline/ia32/liftoff-assembler-ia32-inl.h

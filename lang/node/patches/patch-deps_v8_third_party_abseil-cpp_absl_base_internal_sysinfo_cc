@@ -1,3 +1,5 @@
+Use sysctl CPU information instead of procfs on OpenBSD.
+
 Index: deps/v8/third_party/abseil-cpp/absl/base/internal/sysinfo.cc
 --- deps/v8/third_party/abseil-cpp/absl/base/internal/sysinfo.cc.orig
 +++ deps/v8/third_party/abseil-cpp/absl/base/internal/sysinfo.cc

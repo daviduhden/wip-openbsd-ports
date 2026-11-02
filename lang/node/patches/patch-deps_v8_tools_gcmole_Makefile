@@ -1,3 +1,5 @@
+Avoid optimization that interferes with the V8 gcmole helper.
+
 Index: deps/v8/tools/gcmole/Makefile
 --- deps/v8/tools/gcmole/Makefile.orig
 +++ deps/v8/tools/gcmole/Makefile

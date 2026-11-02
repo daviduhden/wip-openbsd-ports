@@ -1,3 +1,5 @@
+Avoid the unsupported UBSan feature path on BSD targets.
+
 Index: deps/v8/src/base/macros.h
 --- deps/v8/src/base/macros.h.orig
 +++ deps/v8/src/base/macros.h

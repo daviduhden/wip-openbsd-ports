@@ -1,3 +1,5 @@
+Use OpenBSD ports compiler and linker settings for Node.js.
+
 Index: include/node/common.gypi
 --- include/node/common.gypi.orig
 +++ include/node/common.gypi

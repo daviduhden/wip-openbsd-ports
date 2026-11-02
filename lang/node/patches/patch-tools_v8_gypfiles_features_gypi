@@ -1,3 +1,5 @@
+Enable CET and IBT support in V8 build features.
+
 Index: tools/v8_gypfiles/features.gypi
 --- tools/v8_gypfiles/features.gypi.orig
 +++ tools/v8_gypfiles/features.gypi

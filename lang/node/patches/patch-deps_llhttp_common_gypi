@@ -1,3 +1,5 @@
+Use conservative optimization for llhttp release builds.
+
 Index: deps/llhttp/common.gypi
 --- deps/llhttp/common.gypi.orig
 +++ deps/llhttp/common.gypi

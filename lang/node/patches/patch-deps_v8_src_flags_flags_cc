@@ -1,3 +1,5 @@
+Make V8 flag pages immutable on OpenBSD after initialization.
+
 Index: deps/v8/src/flags/flags.cc
 --- deps/v8/src/flags/flags.cc.orig
 +++ deps/v8/src/flags/flags.cc

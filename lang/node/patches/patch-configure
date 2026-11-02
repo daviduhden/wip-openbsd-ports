@@ -1,3 +1,5 @@
+Use the selected system Python instead of probing versioned copies.
+
 Index: configure
 --- configure.orig
 +++ configure

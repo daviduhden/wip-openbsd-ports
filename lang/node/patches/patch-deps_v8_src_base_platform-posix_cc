@@ -1,3 +1,5 @@
+Let OpenBSD choose randomized mmap addresses.
+
 Index: deps/v8/src/base/platform/platform-posix.cc
 --- deps/v8/src/base/platform/platform-posix.cc.orig
 +++ deps/v8/src/base/platform/platform-posix.cc

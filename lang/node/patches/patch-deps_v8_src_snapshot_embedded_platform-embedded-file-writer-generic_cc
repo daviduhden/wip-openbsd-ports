@@ -1,3 +1,5 @@
+Emit the OpenBSD section for embedded V8 code.
+
 Index: deps/v8/src/snapshot/embedded/platform-embedded-file-writer-generic.cc
 --- deps/v8/src/snapshot/embedded/platform-embedded-file-writer-generic.cc.orig
 +++ deps/v8/src/snapshot/embedded/platform-embedded-file-writer-generic.cc

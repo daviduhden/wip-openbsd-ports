@@ -1,3 +1,5 @@
+Compile the V8 perf JIT logger for the OpenBSD port.
+
 Index: deps/v8/src/diagnostics/perf-jit.h
 --- deps/v8/src/diagnostics/perf-jit.h.orig
 +++ deps/v8/src/diagnostics/perf-jit.h

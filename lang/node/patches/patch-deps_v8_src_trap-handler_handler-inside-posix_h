@@ -1,3 +1,5 @@
+Use SIGSEGV for OpenBSD V8 out-of-bounds traps.
+
 Index: deps/v8/src/trap-handler/handler-inside-posix.h
 --- deps/v8/src/trap-handler/handler-inside-posix.h.orig
 +++ deps/v8/src/trap-handler/handler-inside-posix.h

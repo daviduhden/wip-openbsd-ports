@@ -1,3 +1,5 @@
+Enable Abseil scheduler and semaphore support on OpenBSD.
+
 Index: deps/v8/third_party/abseil-cpp/absl/base/config.h
 --- deps/v8/third_party/abseil-cpp/absl/base/config.h.orig
 +++ deps/v8/third_party/abseil-cpp/absl/base/config.h

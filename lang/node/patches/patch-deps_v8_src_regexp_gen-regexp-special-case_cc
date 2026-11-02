@@ -1,7 +1,6 @@
-XXX check/remove at next update
-Fix build with ICU >=79 by keeping ICU 78 behaviour
-(without full Unicode 18 semantic);
-adapted from https://github.com/v8/v8/commit/f607706154eabc4a949628a88b38dbe95cd2274c
+Recheck this compatibility patch at the next update.
+Keep ICU 78 behavior when building with ICU 79 or newer.
+Backport V8 change f607706154eabc4a949628a88b38dbe95cd2274c.
 
 Index: deps/v8/src/regexp/gen-regexp-special-case.cc
 --- deps/v8/src/regexp/gen-regexp-special-case.cc.orig

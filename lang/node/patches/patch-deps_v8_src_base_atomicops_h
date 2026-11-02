@@ -1,3 +1,5 @@
+Use pointer-width atomic types on OpenBSD.
+
 Index: deps/v8/src/base/atomicops.h
 --- deps/v8/src/base/atomicops.h.orig
 +++ deps/v8/src/base/atomicops.h

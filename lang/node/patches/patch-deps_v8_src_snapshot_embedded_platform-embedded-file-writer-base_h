@@ -1,3 +1,5 @@
+Recognize OpenBSD during V8 embedded snapshot generation.
+
 Index: deps/v8/src/snapshot/embedded/platform-embedded-file-writer-base.h
 --- deps/v8/src/snapshot/embedded/platform-embedded-file-writer-base.h.orig
 +++ deps/v8/src/snapshot/embedded/platform-embedded-file-writer-base.h

@@ -1,3 +1,5 @@
+Enable the V8 trap handler for OpenBSD x86_64.
+
 Index: deps/v8/src/trap-handler/trap-handler.h
 --- deps/v8/src/trap-handler/trap-handler.h.orig
 +++ deps/v8/src/trap-handler/trap-handler.h

@@ -1,3 +1,5 @@
+Use OpenBSD signal context fields in the V8 trap handler.
+
 Index: deps/v8/src/trap-handler/handler-inside-posix.cc
 --- deps/v8/src/trap-handler/handler-inside-posix.cc.orig
 +++ deps/v8/src/trap-handler/handler-inside-posix.cc

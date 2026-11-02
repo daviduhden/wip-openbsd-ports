@@ -1,3 +1,5 @@
+Include the packaged node_modules directory in module lookup.
+
 Index: lib/internal/modules/cjs/loader.js
 --- lib/internal/modules/cjs/loader.js.orig
 +++ lib/internal/modules/cjs/loader.js

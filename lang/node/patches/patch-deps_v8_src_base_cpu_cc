@@ -1,4 +1,4 @@
-class CPUInfo should only be used on Linux to read /proc/cpuinfo contents.
+Restrict CPUInfo parsing of /proc/cpuinfo to Linux.
 OpenBSD/riscv64 always uses floating-point support.
 
 Index: deps/v8/src/base/cpu.cc

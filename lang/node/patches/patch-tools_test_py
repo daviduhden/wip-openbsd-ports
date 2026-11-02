@@ -1,3 +1,5 @@
+Resolve Node.js test binary paths from the port work directory.
+
 Index: tools/test.py
 --- tools/test.py.orig
 +++ tools/test.py

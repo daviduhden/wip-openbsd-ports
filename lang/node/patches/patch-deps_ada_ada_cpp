@@ -1,3 +1,5 @@
+Avoid query-state name collisions in the Ada URL parser.
+
 Index: deps/ada/ada.cpp
 --- deps/ada/ada.cpp.orig
 +++ deps/ada/ada.cpp

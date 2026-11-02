@@ -1,3 +1,5 @@
+Recognize OpenBSD and FreeBSD in V8 target OS checks.
+
 Index: deps/v8/include/v8config.h
 --- deps/v8/include/v8config.h.orig
 +++ deps/v8/include/v8config.h

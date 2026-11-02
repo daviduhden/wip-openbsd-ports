@@ -1,3 +1,5 @@
+Use ports include ordering and non-O3 V8 build flags.
+
 Index: tools/v8_gypfiles/toolchain.gypi
 --- tools/v8_gypfiles/toolchain.gypi.orig
 +++ tools/v8_gypfiles/toolchain.gypi

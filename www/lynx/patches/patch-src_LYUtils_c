@@ -1,0 +1,73 @@
+Use HOME instead of getpwuid and keep external copies/commands
+inside the OpenBSD sandbox.  LYCopyFile falls back to the built-in
+copy when no_exec is set, LYSystem refuses cleanly, and clipboard
+helpers do not spawn a process under no_exec.
+
+Index: src/LYUtils.c
+--- src/LYUtils.c.orig
++++ src/LYUtils.c
+@@ -5179,10 +5179,11 @@ const char *Home_Dir(void)
+ 	    /*
+ 	     * One could use getlogin() and getpwnam() here instead.
+ 	     */
+-	    struct passwd *pw = getpwuid(geteuid());
++	    char *home;
+ 
+-	    if (pw && pw->pw_dir) {
+-		StrAllocCopy(HomeDir, pw->pw_dir);
++	    home = getenv("HOME");
++	    if (home && *home) {
++		StrAllocCopy(HomeDir, home);
+ 	    } else
+ #endif
+ 	    {
+@@ -7055,7 +7056,7 @@ int LYCopyFile(char *src,
+     int code;
+     const char *program;
+ 
+-    if ((program = HTGetProgramPath(ppCOPY)) != NULL) {
++    if (!no_exec && (program = HTGetProgramPath(ppCOPY)) != NULL) {
+ 	char *the_command = NULL;
+ 
+ 	HTAddParam(&the_command, COPY_COMMAND, 1, program);
+@@ -7135,6 +7136,11 @@ int LYSystem(char *command)
+     int code;
+     int do_free = 0;
+ 
++    if (no_exec) {
++	HTAlert(EXECUTION_DISABLED);
++	return -1;
++    }
++
+ #if defined(HAVE_SIGACTION) && defined(SIGTSTP) && !defined(USE_SLANG)
+     struct sigaction saved_sigtstp_act;
+     BOOLEAN sigtstp_saved = FALSE;
+@@ -7666,7 +7672,11 @@ void get_clip_release(void)
+ 
+ static int clip_grab(void)
+ {
+-    char *cmd = LYGetEnv("RL_PASTE_CMD");
++    char *cmd;
++
++    if (no_exec)
++	return 0;
++    cmd = LYGetEnv("RL_PASTE_CMD");
+ 
+     if (paste_handle)
+ 	pclose(paste_handle);
+@@ -7716,10 +7726,14 @@ char *get_clip_grab(void)
+ 
+ int put_clip(const char *s)
+ {
+-    char *cmd = LYGetEnv("RL_CLCOPY_CMD");
++    char *cmd;
+     FILE *fh;
+     size_t l = strlen(s), res;
+ 
++    if (no_exec)
++	return -1;
++    cmd = LYGetEnv("RL_CLCOPY_CMD");
++
+     if (!cmd)
+ 	return -1;
+ 

@@ -1,0 +1,42 @@
+Replace the cross-filesystem mv fallback with the built-in copy.
+Spawning mv after pledge would abort the process because exec is
+not promised.
+
+Index: src/LYBookmark.c
+--- src/LYBookmark.c.orig
++++ src/LYBookmark.c
+@@ -929,25 +929,18 @@ void remove_bookmark_link(int cur,
+ 	}
+ #else
+ 	if (errno == EXDEV) {
+-	    static const char MV_FMT[] = "%s %s %s";
+-	    char *buffer = NULL;
+-	    const char *program;
+-
+-	    if ((program = HTGetProgramPath(ppMV)) != NULL) {
+-		HTAddParam(&buffer, MV_FMT, 1, program);
+-		HTAddParam(&buffer, MV_FMT, 2, newfile);
+-		HTAddParam(&buffer, MV_FMT, 3, filename_buffer);
+-		HTEndParam(&buffer, MV_FMT, 3);
+-		if (LYSystem(buffer) == 0) {
++	    /*
++	     * Do not spawn mv here: external helpers are not available
++	     * under the OpenBSD pledge.  Use the internal copy path.
++	     */
++	    if (LYCopyFile(newfile, filename_buffer) == 0) {
++		(void) remove(newfile);
+ #ifdef MULTI_USER_UNIX
+-		    if (regular)
+-			chmod(filename_buffer, stat_buf.st_mode & 07777);
++		if (regular)
++		    chmod(filename_buffer, stat_buf.st_mode & 07777);
+ #endif
+-		    FREE(buffer);
+-		    return;
+-		}
++		return;
+ 	    }
+-	    FREE(buffer);
+ 	    keep_tempfile = TRUE;
+ 	    goto failure;
+ 	}

@@ -39,7 +39,20 @@ Read the selected port's Makefile, patches, configuration, `pkg/README`, `pkg/DE
    retaining these statements; do not infer `pledge`/`unveil` containment of
    executed children.
 7. Examine executable memory requirements before adding `USE_WXNEEDED`. Codex/V8 is an existing exception requiring investigation, not a default for Rust or other ports. Do not weaken W^X globally or edit mounts/fstab automatically. Review privilege separation rather than applying setuid mechanically: emwm-utils uses setgid `auth`, drops the effective auth group before starting children, and reacquires it only around `auth_userokay(3)`; sudo-rs requires OpenPAM and has an explicitly unvalidated privilege path; VeraCrypt delegates a core helper through doas.
-8. Run positive and negative tests on an authorized isolated OpenBSD host: normal initialization and functionality, denied paths/network operations as applicable, child execution, failure handling, and reload/shutdown. Privileged installation, doas rules, service activation, kernel limits, and mount changes require explicit authorization. Use [openbsd-port-validation](../openbsd-port-validation/SKILL.md) to record build/package/runtime evidence separately.
+8. For browser-like clients, distinguish an in-process `pledge`/`unveil`
+   policy from multi-process browser sandboxing. Map browser, renderer, GPU,
+   utility, and helper processes separately; state which process each rule
+   confines, and do not claim site isolation or renderer containment from a
+   single-process policy. For a single-process client, claim only path,
+   syscall, and external-execution confinement. Require HOME to resolve to an
+   existing directory before deriving home-scoped rules. Prefer exact state
+   files over a whole-HOME rule, skip `cwd` when it is HOME or an ancestor of
+   HOME, refuse temp/save roots that cover HOME, and verify canonicalized
+   directory roots do not escape their intended parent through symlinks. Guard
+   path-prefix checks for `/` and shorter paths; never install a `/` rule.
+   Disclose remaining writable roots such as `/tmp` and any loss of arbitrary
+   local-file browsing.
+9. Run positive and negative tests on an authorized isolated OpenBSD host: normal initialization and functionality, denied paths/network operations as applicable, child execution, failure handling, and reload/shutdown. Privileged installation, doas rules, service activation, kernel limits, and mount changes require explicit authorization. Use [openbsd-port-validation](../openbsd-port-validation/SKILL.md) to record build/package/runtime evidence separately.
 
 ## Acceptance and diagnosis
 

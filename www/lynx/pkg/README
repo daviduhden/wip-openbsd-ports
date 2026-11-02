@@ -1,0 +1,18 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+This port disables Lynx features that launch external programs, including
+shell, editor, mail, and clipboard helpers. Local file access is limited by
+an unveil(2) policy; arbitrary paths outside the current directory and the
+listed state files may be unavailable.
+
+Run Lynx as an unprivileged user with HOME set to an existing directory.
+Startup fails closed if HOME cannot be resolved. Set LYNX_TEMP_SPACE and
+LYNX_SAVE_SPACE to directories outside HOME and its ancestors. An existing
+HOME/Downloads symlink is left inaccessible by the sandbox. The configured
+temp/save directories and /tmp remain writable areas; keep that in mind for
+sensitive local data. Do not use this sandboxed package as root.
+
+The sandbox is single-process and does not provide site isolation or a
+separate renderer. The pledge/unveil rules constrain Lynx itself only.

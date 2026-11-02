@@ -1,0 +1,18 @@
+Refuse external presentation commands when exec is restricted.
+This covers built-in PostScript/MPEG viewers and custom MIME
+handlers without relying on the per-format pledge checks.
+
+Index: src/HTFWriter.c
+--- src/HTFWriter.c.orig
++++ src/HTFWriter.c
+@@ -980,6 +980,10 @@ HTStream *HTSaveAndExecute(HTPresentatio
+ 	LYCancelledFetch = TRUE;
+ 	return (NULL);
+     }
++    if (no_exec && !dump_output_immediately) {
++	HTAlert(EXECUTION_DISABLED);
++	return HTPlainPresent(pres, anchor, sink);
++    }
+ #if defined(EXEC_LINKS) || defined(EXEC_SCRIPTS)
+     if (pres->quality >= 999.0) {	/* exec link */
+ 	if (dump_output_immediately) {

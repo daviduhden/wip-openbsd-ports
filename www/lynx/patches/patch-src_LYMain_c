@@ -1,0 +1,459 @@
+Restrict Lynx to checked roots and exact state files.
+Fail closed on invalid HOME and escaped Downloads symlinks.
+
+Index: src/LYMain.c
+--- src/LYMain.c.orig
++++ src/LYMain.c
+@@ -1039,6 +1039,275 @@ static void SetLocale(void)
+     LYSetTextDomain();
+ }
+ 
++#ifdef __OpenBSD__
++/*
++ * Sandbox helpers.  Read access is limited to the help/configuration
++ * trees, the TLS trust store, terminal data and the user's own state
++ * files.  Write access is limited to the current directory, the
++ * configured temp/save areas and the individual files Lynx owns.
++ */
++static void unveil_fatal(const char *path)
++{
++    fprintf(stderr, "%s: unveil %s: %s\n",
++	    getprogname(), NonNull(path), strerror(errno));
++    if (LYCursesON)
++	stop_curses();
++    exit_immediately(EXIT_FAILURE);
++}
++
++static int unveil_has_dotdot(const char *path)
++{
++    const char *p = path;
++
++    while ((p = strstr(p, "..")) != NULL) {
++	if ((p == path || p[-1] == '/') &&
++	    (p[2] == '\0' || p[2] == '/'))
++	    return 1;
++	p += 2;
++    }
++    return 0;
++}
++
++static void unveil_path(const char *path, const char *perms, int required)
++{
++    char *resolved;
++
++    if (path == NULL || *path == '\0')
++	return;
++    if (unveil_has_dotdot(path)) {
++	fprintf(stderr, "%s: refusing unveil path with ..: %s\n",
++		getprogname(), path);
++	exit_immediately(EXIT_FAILURE);
++    }
++    resolved = realpath(path, NULL);
++    if (resolved == NULL) {
++	if (!required && errno == ENOENT)
++	    return;
++	unveil_fatal(path);
++	return;
++    }
++    if (!strcmp(resolved, "/")) {
++	/* Never grant a root rule; cwd may legitimately be /. */
++	if (required) {
++	    fprintf(stderr, "%s: refusing required root rule: %s\n",
++		    getprogname(), path);
++	    if (LYCursesON)
++		stop_curses();
++	    exit_immediately(EXIT_FAILURE);
++	}
++	free(resolved);
++	return;
++    }
++    if (unveil(resolved, perms) == -1) {
++	int saved_errno = errno;
++
++	free(resolved);
++	errno = saved_errno;
++	if (!required && errno == ENOENT)
++	    return;
++	unveil_fatal(path);
++	return;
++    }
++    free(resolved);
++}
++
++/*
++ * Unveil a directory only.  Environment overrides such as SSL_CERT_DIR
++ * must not turn a mistyped file path into a broad directory rule.
++ */
++static void unveil_dir(const char *path, const char *perms, int required)
++{
++    char *resolved;
++    struct stat st;
++
++    if (path == NULL || *path == '\0')
++	return;
++    resolved = realpath(path, NULL);
++    if (resolved == NULL) {
++	if (!required && errno == ENOENT)
++	    return;
++	unveil_fatal(path);
++	return;
++    }
++    if (stat(resolved, &st) != 0 || !S_ISDIR(st.st_mode)) {
++	free(resolved);
++	return;
++    }
++    free(resolved);
++    unveil_path(path, perms, required);
++}
++
++/*
++ * Unveil a file that may not exist yet.  If realpath() succeeds, use
++ * its resolved name; otherwise resolve the parent directory and append
++ * the leaf.  This keeps file creation inside the already checked
++ * directory.
++ */
++static void unveil_file(const char *path, const char *perms, int required)
++{
++    char cwd[LY_MAXPATH];
++    char *copy = NULL;
++    char *slash;
++    char *parent = NULL;
++    char *base;
++    char *resolved;
++    char combined[LY_MAXPATH];
++    struct stat st;
++    int n;
++
++    if (path == NULL || *path == '\0')
++	return;
++    if (unveil_has_dotdot(path)) {
++	fprintf(stderr, "%s: refusing unveil path with ..: %s\n",
++		getprogname(), path);
++	exit_immediately(EXIT_FAILURE);
++    }
++    resolved = realpath(path, NULL);
++    if (resolved != NULL) {
++	if (stat(resolved, &st) == 0 && S_ISDIR(st.st_mode)) {
++	    /* This helper is for files, never whole directories. */
++	    free(resolved);
++	    return;
++	}
++	if (!strcmp(resolved, "/")) {
++	    if (required) {
++		fprintf(stderr, "%s: refusing required root rule: %s\n",
++			getprogname(), path);
++		if (LYCursesON)
++		    stop_curses();
++		exit_immediately(EXIT_FAILURE);
++	    }
++	    free(resolved);
++	    return;
++	}
++	if (unveil(resolved, perms) == -1) {
++	    int saved_errno = errno;
++
++	    free(resolved);
++	    errno = saved_errno;
++	    if (!required && errno == ENOENT)
++		return;
++	    unveil_fatal(path);
++	    return;
++	}
++	free(resolved);
++	return;
++    }
++    if (errno != ENOENT) {
++	unveil_fatal(path);
++	return;
++    }
++    StrAllocCopy(copy, path);
++    slash = strrchr(copy, '/');
++    if (slash == NULL) {
++	/*
++	 * A bare filename is relative to cwd.  Resolve the directory
++	 * rather than unveiling cwd itself for a writable file.
++	 */
++	base = copy;
++	if (Current_Dir(cwd) == NULL) {
++	    FREE(copy);
++	    return;
++	}
++	parent = realpath(cwd, NULL);
++    } else {
++	base = slash + 1;
++	if (*base == '\0') {
++	    FREE(copy);
++	    return;
++	}
++	if (slash == copy) {
++	    parent = realpath("/", NULL);
++	} else {
++	    *slash = '\0';
++	    parent = realpath(copy, NULL);
++	}
++    }
++    if (parent == NULL) {
++	int saved_errno = errno;
++
++	FREE(copy);
++	if (!required && saved_errno == ENOENT)
++	    return;
++	errno = saved_errno;
++	unveil_fatal(path);
++	return;
++    }
++    n = snprintf(combined, sizeof(combined), "%s%s%s",
++		 parent, (!strcmp(parent, "/") ? "" : "/"), base);
++    if (n < 0 || n >= (int) sizeof(combined)) {
++	free(parent);
++	FREE(copy);
++	unveil_fatal(path);
++	return;
++    }
++    if (unveil(combined, perms) == -1) {
++	int saved_errno = errno;
++
++	free(parent);
++	FREE(copy);
++	errno = saved_errno;
++	if (!required && errno == ENOENT)
++	    return;
++	unveil_fatal(path);
++	return;
++    }
++    free(parent);
++    FREE(copy);
++}
++
++/*
++ * True when path resolves to HOME or to an ancestor of HOME.  Such a
++ * rule would expose the whole home tree, whether for reading or writing,
++ * and defeat the exact-file policy below.
++ */
++static int unveil_covers_home(const char *path, const char *home_real)
++{
++    char *resolved;
++    int result = 0;
++
++    if (path == NULL || *path == '\0' || home_real == NULL)
++	return 0;
++    resolved = realpath(path, NULL);
++    if (resolved == NULL)
++	return 0;
++    if (!strcmp(resolved, "/") || !strcmp(resolved, home_real)) {
++	result = 1;
++    } else {
++	size_t path_len = strlen(resolved);
++	size_t home_len = strlen(home_real);
++
++	if (path_len < home_len &&
++	    !strncmp(home_real, resolved, path_len) &&
++	    home_real[path_len] == '/')
++	    result = 1;
++    }
++    free(resolved);
++    return result;
++}
++
++/* Expose Downloads only when it is the real HOME/Downloads directory. */
++static void unveil_home_downloads(const char *path, const char *home_real)
++{
++    char expected[LY_MAXPATH];
++    char *resolved;
++    int n;
++
++    if (path == NULL || *path == '\0' || home_real == NULL)
++	return;
++    n = snprintf(expected, sizeof(expected), "%s%sDownloads",
++		 home_real, (!strcmp(home_real, "/") ? "" : "/"));
++    if (n < 0 || n >= (int) sizeof(expected))
++	return;
++    resolved = realpath(path, NULL);
++    if (resolved == NULL)
++	return;
++    if (!strcmp(resolved, expected))
++	unveil_path(resolved, "rwc", 0);
++    free(resolved);
++}
++#endif /* __OpenBSD__ */
++
+ /*
+  * Wow!  Someone wants to start up Lynx.
+  */
+@@ -2182,6 +2451,176 @@ int main(int argc,
+     }
+ 
+     /*
++     * Disabling features requiring 'proc' + 'exec' and applying the
++     * OpenBSD sandbox.  Reads are limited to help/configuration, TLS
++     * trust, terminal data, the current directory and user state files;
++     * writes are limited to the working areas and those state files.
++     */
++#ifdef __OpenBSD__
++    {
++	char cwd[LY_MAXPATH];
++	char rcfile[LY_MAXPATH];
++	char userpath[LY_MAXPATH];
++	char *home_real;
++	char *cwd_real;
++	int allow_cwd = 1;
++	struct stat home_st;
++	int bm;
++
++	no_editor = TRUE;
++	no_exec = TRUE;
++	no_mail = TRUE;
++	no_shell = TRUE;
++
++	rlogin_ok = FALSE;
++	telnet_ok = FALSE;
++
++	/*
++	 * Local browsing is limited to the current directory.  Do not
++	 * turn HOME, / or an ancestor of HOME into a writable tree: the
++	 * individual files Lynx owns are unveiled below.
++	 */
++	home_real = non_empty(LYGetEnv("HOME"))
++	    ? realpath(Home_Dir(), NULL)
++	    : NULL;
++	if (home_real == NULL || stat(home_real, &home_st) != 0 ||
++	    !S_ISDIR(home_st.st_mode)) {
++	    fprintf(stderr, "%s: HOME must name an existing directory\n",
++		    getprogname());
++	    if (LYCursesON)
++		stop_curses();
++	    exit_immediately(EXIT_FAILURE);
++	}
++	cwd_real = (Current_Dir(cwd) != NULL) ? realpath(cwd, NULL) : NULL;
++	if (!strcmp(home_real, "/"))
++	    allow_cwd = 0;
++	if (cwd_real != NULL) {
++	    size_t hlen = strlen(home_real);
++
++	    if (!strcmp(cwd_real, "/") ||
++		!strcmp(cwd_real, home_real) ||
++		(!strncmp(cwd_real, home_real, hlen) &&
++		 cwd_real[hlen] == '/'))
++		allow_cwd = 0;
++	}
++	if (allow_cwd && cwd_real != NULL) {
++	    if (access(cwd_real, W_OK) == 0)
++		unveil_path(cwd_real, "rwc", 0);
++	    else
++		unveil_path(cwd_real, "r", 0);
++	}
++	free(cwd_real);
++
++	if (unveil_covers_home(lynx_temp_space, home_real)) {
++	    fprintf(stderr, "%s: refusing HOME/ancestor temp space: %s\n",
++		    getprogname(), NonNull(lynx_temp_space));
++	    if (LYCursesON)
++		stop_curses();
++	    exit_immediately(EXIT_FAILURE);
++	}
++	unveil_path(lynx_temp_space, "rwc", 1);
++	/* tmpfile(3) in bookmark updates uses the system temp directory. */
++	if (!unveil_covers_home("/tmp", home_real))
++	    unveil_path("/tmp", "rwc", 0);
++	if (unveil_covers_home(lynx_save_space, home_real)) {
++	    fprintf(stderr, "%s: refusing HOME/ancestor save space: %s\n",
++		    getprogname(), NonNull(lynx_save_space));
++	    if (LYCursesON)
++		stop_curses();
++	    exit_immediately(EXIT_FAILURE);
++	}
++	unveil_path(lynx_save_space, "rwc", 0);
++
++	/* Read-only configuration, help, TLS trust and terminal data. */
++	unveil_path("/etc/ssl", "r", 0);
++	unveil_path("/etc/localtime", "r", 0);
++	unveil_path("/etc/organization", "r", 0);
++	unveil_path("/etc/resolv.conf", "r", 0);
++	unveil_path("/etc/hosts", "r", 0);
++	unveil_path("/etc/services", "r", 0);
++	unveil_path("/etc/protocols", "r", 0);
++	unveil_path("/usr/share/zoneinfo", "r", 0);
++	unveil_path("/usr/share/locale", "r", 0);
++	unveil_path("/usr/local/share/locale", "r", 0);
++	unveil_path("/usr/local/share/doc/lynx", "r", 0);
++	unveil_path("/usr/share/terminfo", "r", 0);
++	unveil_path("/usr/local/share/terminfo", "r", 0);
++	unveil_path("/usr/share/misc/termcap", "r", 0);
++	unveil_path("/etc/termcap", "r", 0);
++	unveil_path("/usr/local/lib/rn/server", "r", 0);
++	if (!unveil_covers_home(LYGetEnv("SSL_CERT_FILE"), home_real))
++	    unveil_file(LYGetEnv("SSL_CERT_FILE"), "r", 0);
++	if (!unveil_covers_home(LYGetEnv("SSL_CERT_DIR"), home_real))
++	    unveil_dir(LYGetEnv("SSL_CERT_DIR"), "r", 0);
++	if (!unveil_covers_home(LYGetEnv("TERMINFO"), home_real))
++	    unveil_dir(LYGetEnv("TERMINFO"), "r", 0);
++	if (!unveil_covers_home(LYGetEnv("TZDIR"), home_real))
++	    unveil_dir(LYGetEnv("TZDIR"), "r", 0);
++	if (!unveil_covers_home(LYGetEnv("TZ"), home_real))
++	    unveil_file(LYGetEnv("TZ"), "r", 0);
++	unveil_file(lynx_cfg_file, "r", 0);
++	unveil_file(lynx_lss_file, "r", 0);
++	unveil_file(global_extension_map, "r", 0);
++	unveil_file(personal_extension_map, "r", 0);
++	unveil_file(global_type_map, "r", 0);
++	unveil_file(personal_type_map, "r", 0);
++
++	/* User state files, without making all of HOME accessible. */
++	if (home_real != NULL && Home_Dir() != NULL) {
++	    LYAddPathToHome(rcfile, sizeof(rcfile), FNAME_LYNXRC);
++	    unveil_file(rcfile, "rwc", 0);
++	    LYAddPathToHome(rcfile, sizeof(rcfile), ".newsauth");
++	    unveil_file(rcfile, "r", 0);
++	    LYAddPathToHome(userpath, sizeof(userpath), "Downloads");
++	    unveil_home_downloads(userpath, home_real);
++	    LYAddPathToHome(userpath, sizeof(userpath), ".terminfo");
++	    unveil_path(userpath, "r", 0);
++	}
++	unveil_file(LYCookieFile, "rwc", 0);
++	unveil_file(LYCookieSaveFile, "rwc", 0);
++	if (non_empty(BookmarkPage)) {
++	    LYAddPathToHome(userpath, sizeof(userpath), BookmarkPage);
++	    unveil_file(userpath, "rwc", 0);
++	}
++	for (bm = 0; bm <= MBM_V_MAXFILES; ++bm) {
++	    if (non_empty(MBM_A_subbookmark[bm])) {
++		LYAddPathToHome(userpath, sizeof(userpath),
++				MBM_A_subbookmark[bm]);
++		unveil_file(userpath, "rwc", 0);
++	    }
++	}
++	unveil_file(LynxSigFile, "rwc", 0);
++	unveil_file(LYTraceLogPath, "rwc", 0);
++	unveil_file(session_file, "rwc", 0);
++	unveil_file(sessionin_file, "r", 0);
++	unveil_file(sessionout_file, "rwc", 0);
++	unveil_file(http_error_file, "rwc", 0);
++	unveil_file(lynx_cmd_logfile, "rwc", 0);
++	unveil_file(lynx_cmd_script, "r", 0);
++	free(home_real);
++	unveil_path("/dev/tty", "rw", 0);
++	unveil_path("/dev/null", "rw", 0);
++	unveil_path("/dev/urandom", "r", 0);
++	unveil_path("/dev/random", "r", 0);
++	if (unveil(NULL, NULL) == -1) {
++	    fprintf(stderr, "%s: unveil lock: %s\n",
++		    getprogname(), strerror(errno));
++	    if (LYCursesON)
++		stop_curses();
++	    exit_immediately(EXIT_FAILURE);
++	}
++
++	if (pledge("stdio rpath wpath cpath fattr dns inet tty", NULL) == -1) {
++	    fprintf(stderr, "%s: pledge: %s\n",
++		    getprogname(), strerror(errno));
++	    if (LYCursesON)
++		stop_curses();
++	    exit_immediately(EXIT_FAILURE);
++	}
++    }
++#endif /* __OpenBSD__ */
++
++    /*
+      * Here's where we do all the work.
+      */
+     if (dump_output_immediately) {

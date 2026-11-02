@@ -1,0 +1,18 @@
+Do not follow server redirects to file: URLs unless the user
+explicitly permitted redirection.  Server-side redirects could
+otherwise turn a remote page into a local-file disclosure under
+the broad read policy.  Local browsing and explicit links remain.
+
+Index: src/LYGetFile.c
+--- src/LYGetFile.c.orig
++++ src/LYGetFile.c
+@@ -870,8 +870,7 @@ int getfile(DocInfo *doc, int *target)
+ 		     (LYValidate &&
+ 		      url_type != HTTP_URL_TYPE &&
+ 		      url_type != HTTPS_URL_TYPE) ||
+-		     ((no_file_url || no_goto_file) &&
+-		      url_type == FILE_URL_TYPE) ||
++		      url_type == FILE_URL_TYPE ||
+ 		     (no_goto_lynxcgi &&
+ 		      url_type == LYNXCGI_URL_TYPE) ||
+ #ifndef DISABLE_BIBP

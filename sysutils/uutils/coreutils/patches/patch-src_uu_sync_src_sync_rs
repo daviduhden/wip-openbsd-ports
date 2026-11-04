@@ -1,0 +1,30 @@
+Do not report success when sync -f or -d did not sync anything.
+Use the global sync(2) for -f where syncfs(2) is absent and reject -d
+where fdatasync(2) does not exist.
+
+Index: src/uu/sync/src/sync.rs
+--- src/uu/sync/src/sync.rs.orig
++++ src/uu/sync/src/sync.rs
+@@ -250,10 +250,22 @@ pub fn uumain(args: impl uucore::Args) -
+         } else {
+             #[cfg(any(target_os = "linux", target_os = "android", windows))]
+             syncfs(&files)?;
++            // No syncfs(2) here. Flushing every filesystem is a superset of
++            // flushing the named file's filesystem, so it preserves the
++            // requested durability instead of silently doing nothing.
++            #[cfg(not(any(target_os = "linux", target_os = "android", windows)))]
++            sync()?;
+         }
+     } else if matches.get_flag(options::DATA) {
+         #[cfg(any(target_os = "linux", target_os = "android"))]
+         fdatasync(&files)?;
++        // Without fdatasync(2), report the unsupported request rather than
++        // returning success without syncing anything.
++        #[cfg(not(any(target_os = "linux", target_os = "android")))]
++        return Err(USimpleError::new(
++            1,
++            "-d is not supported on this platform".to_string(),
++        ));
+     } else {
+         sync()?;
+     }

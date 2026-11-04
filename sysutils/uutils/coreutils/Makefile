@@ -2,7 +2,7 @@ COMMENT =	alternative implementation of GNU coreutils
 
 GH_PROJECT =	coreutils
 GH_TAGNAME =	0.12.0
-REVISION =       0
+REVISION =       1
 
 WANTLIB += ${MODCARGO_WANTLIB} m
 
@@ -39,11 +39,11 @@ MODCARGO_BUILD_ARGS +=	--features uu_stdbuf/feat_external_libstdbuf
 MODCARGO_ENV +=		LIBSTDBUF_DIR=${PREFIX}/libexec/uutils-coreutils
 
 pre-test:
-	${INSTALL_DATA_DIR} ${MODCARGO_TARGET_DIR}/release/locales
-	ln -fs ${WRKSRC}/src/uucore/locales ${MODCARGO_TARGET_DIR}/release/locales/uucore
-	for d in ${WRKSRC}/src/uu/*/locales; do \
-		ln -fs $$d ${MODCARGO_TARGET_DIR}/release/locales/$$(basename $$(dirname $$d)); \
-	done
+	env WRKSRC=${WRKSRC} PREFIX=${PREFIX} \
+		MODCARGO_TARGET_DIR=${MODCARGO_TARGET_DIR} \
+		INSTALL_DATA="${INSTALL_DATA}" \
+		INSTALL_DATA_DIR="${INSTALL_DATA_DIR}" \
+		sh ${FILESDIR}/locales.sh link
 
 do-install:
 .for utility in ${COREUTILS}
@@ -55,10 +55,10 @@ do-install:
 	${INSTALL_DATA} ${MODCARGO_TARGET_DIR}/release/deps/libstdbuf.so \
 		${PREFIX}/libexec/uutils-coreutils/
 
-	cd ${WRKSRC} && find src -path '*/locales/*.ftl' -type f | while read f; do \
-		${INSTALL_DATA_DIR} ${PREFIX}/share/uutils-coreutils/$$(dirname $$f); \
-		${INSTALL_DATA} $$f ${PREFIX}/share/uutils-coreutils/$$f; \
-	done
+	env WRKSRC=${WRKSRC} PREFIX=${PREFIX} \
+		INSTALL_DATA="${INSTALL_DATA}" \
+		INSTALL_DATA_DIR="${INSTALL_DATA_DIR}" \
+		sh ${FILESDIR}/locales.sh install
 
 .include "crates.inc"
 

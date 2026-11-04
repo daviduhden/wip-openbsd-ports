@@ -2,12 +2,13 @@
 | Running ${PKGSTEM} on OpenBSD
 +-----------------------------------------------------------------------
 
-NeoMutt locks a fixed unveil(2) filesystem policy, then applies pledge(2)
-before reading configuration. The policy allows the resolved home directory
-read-only, a private per-run temporary directory, /var/mail when present,
-existing ~/Mail, ~/mail, ~/.cache/neomutt and ~/.local/share/neomutt
-directories, system and package configuration directories, terminal data,
-DNS and password lookup files, and the base-system TLS certificate store.
+NeoMutt resolves the user's home and locks a fixed unveil(2) policy, then
+applies pledge(2), before mutt_init() reads configuration. The policy
+allows the resolved home directory read-only, a private per-run temporary
+directory, /var/mail when present, existing ~/Mail, ~/mail,
+~/.cache/neomutt and ~/.local/share/neomutt directories, system and
+package configuration directories, terminal data, DNS and password lookup
+files, and the base-system TLS certificate store.
 Running as root is refused.
 
 Paths outside those locations are unavailable. In particular, a -F
@@ -22,11 +23,13 @@ to remove that directory at exit.
 
 The pledge policy omits exec. External programs cannot run, including
 editors, pagers, mailcap handlers, sendmail, tunnels, filters, shell commands,
-GnuPG helpers, and external SASL mechanisms. Forking remains permitted for
-NeoMutt's process-control paths, but a helper's exec attempt violates pledge
-and the helper is killed. GPGME operations needing a GnuPG process and SASL
-mechanisms needing helpers are unavailable. The flavors remain buildable but
-have these runtime limits.
+GnuPG helpers, and external SASL mechanisms. The packaged default transport
+invokes /usr/sbin/sendmail and is therefore unavailable; configure the
+built-in SMTP transport with smtp_url to send mail. Forking remains
+permitted for NeoMutt's process-control paths, but a helper's exec attempt
+violates pledge and the helper is killed. GPGME operations needing a GnuPG
+process and SASL mechanisms needing helpers are unavailable. The flavors
+remain buildable but have these runtime limits.
 
 The pledge call is made after unveil is locked and leaves execpromises
 unset. No claim is made that external programs are confined by this policy.

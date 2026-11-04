@@ -13,6 +13,7 @@ HOMEPAGE=	https://neomutt.org/
 MAINTAINER=	Stuart Henderson <stu.ports@spacehopper.org>
 
 EPOCH=		0
+REVISION=	1
 
 # GPLv2+
 PERMIT_PACKAGE=	Yes

@@ -1,5 +1,6 @@
-Add OpenBSD pledge and unveil sandboxing to NeoMutt.
-Restrict filesystem access and deny external helper execution.
+Drop descriptor-passing promises that NeoMutt never uses.
+The program has no sendmsg or recvmsg path; GPGME cannot start a helper
+without exec, so the promises only widened the policy.
 
 Index: main.c
 --- main.c.orig
@@ -271,7 +272,7 @@ Index: main.c
 +#ifdef CRYPT_BACKEND_GPGME
 +  mutt_debug(LL_DEBUG1, "Pledging (GPGME build)\n");
 +  if (pledge("stdio rpath wpath cpath flock fattr getpw tty inet dns "
-+            "proc unix sendfd recvfd",
++            "proc unix",
 +	    NULL) == -1) {
 +    fprintf(stderr, "%s: pledge: %s\n", argv[0], strerror(errno));
 +    exit(1);

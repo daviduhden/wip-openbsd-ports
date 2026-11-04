@@ -64,62 +64,16 @@ do-install:
 	${INSTALL_MAN} ${WRKSRC}/src/xfile.1 ${PREFIX}/man/man1/xfile.1
 	${INSTALL_DATA} ${WRKSRC}/src/xfile.ad \
 		${PREFIX}/lib/X11/app-defaults/XFile
-	${INSTALL_DATA_DIR} ${PREFIX}/share/xfile/types
-	${INSTALL_DATA} ${WRKSRC}/src/default.db \
-		${PREFIX}/share/xfile/types/system.db
-	${INSTALL_DATA_DIR} ${PREFIX}/share/xfile/icons
-	for f in ${WRKSRC}/src/icons/*.xpm; do \
-		${INSTALL_DATA} $$f ${PREFIX}/share/xfile/icons/; \
-	done
-	${INSTALL_DATA} ${WRKSRC}/src/icons/README \
-		${PREFIX}/share/xfile/README.icons
-	${INSTALL_DATA_DIR} ${PREFIX}/share/pixmaps
-	${INSTALL_DATA} ${WRKSRC}/src/xbm/cabinet.xpm \
-		${PREFIX}/share/pixmaps/xfile_48x48.xpm
-	${INSTALL_DATA} ${WRKSRC}/src/xbm/cabinet64.xpm \
-		${PREFIX}/share/pixmaps/xfile_64x64.xpm
-	# xfile-addon: additional type definitions and icons.  XFile loads
-	# every *.db from share/xfile/types and looks icons up in
-	# share/xfile/icons, so these are used automatically; user files
-	# in ~/.xfile/{types,icons} still take precedence.
-	for f in ${WRKSRC}/xfile-addon/types/*.db; do \
-		${INSTALL_DATA} $$f ${PREFIX}/share/xfile/types/; \
-	done
-	for f in ${WRKSRC}/xfile-addon/icons/*.xpm; do \
-		case $$f in *file.[lmst].xpm) continue;; esac; \
-		${INSTALL_DATA} $$f ${PREFIX}/share/xfile/icons/; \
-	done
-	${INSTALL_DATA} ${WRKSRC}/xfile-addon/README \
-		${PREFIX}/share/xfile/README.addon
-	# alternative "file" icons are shipped as examples only, so they
-	# do not override the default icon set
-	${INSTALL_DATA_DIR} ${PREFIX}/share/examples/xfile/addon/icons
-	${INSTALL_DATA} ${WRKSRC}/xfile-addon/icons/file.l.xpm \
-		${WRKSRC}/xfile-addon/icons/file.m.xpm \
-		${WRKSRC}/xfile-addon/icons/file.s.xpm \
-		${WRKSRC}/xfile-addon/icons/file.t.xpm \
-		${PREFIX}/share/examples/xfile/addon/icons/
-	# xfind
 	${INSTALL_PROGRAM} ${WRKSRC}/xfind/xfind ${PREFIX}/bin/xfind
 	${INSTALL_MAN} ${WRKSRC}/xfind/xfind.man ${PREFIX}/man/man1/xfind.1
 	${INSTALL_DATA} ${WRKSRC}/xfind/XFind.ad \
 		${PREFIX}/lib/X11/app-defaults/XFind
-	${INSTALL_DATA} ${WRKSRC}/xfind/xfind.xpm \
-		${PREFIX}/share/pixmaps/xfind_48x48.xpm
-	# xfile-xdgsvc (XDG/freedesktop D-Bus file manager shim)
 	${INSTALL_PROGRAM} ${WRKSRC}/xfile-xdgsvc/xfile-xdgsvc \
 		${PREFIX}/bin/xfile-xdgsvc
-	${INSTALL_DATA_DIR} ${PREFIX}/share/dbus-1/services
-	sed 's|^Exec=.*$$|Exec=${TRUEPREFIX}/bin/xfile-xdgsvc|' \
-		${WRKSRC}/xfile-xdgsvc/xfile.service > \
-		${WRKSRC}/xfile.service
-	${INSTALL_DATA} ${WRKSRC}/xfile.service \
-		${PREFIX}/share/dbus-1/services/xfile.service
-	# optional slanted icons (not selected by default)
-	${INSTALL_DATA_DIR} ${PREFIX}/share/examples/xfile/slanted-icons
-	for f in ${WRKSRC}/slanted-icons/*.xpm; do \
-		${INSTALL_DATA} $$f ${PREFIX}/share/examples/xfile/slanted-icons/; \
-	done
+	env WRKSRC=${WRKSRC} PREFIX=${PREFIX} TRUEPREFIX=${TRUEPREFIX} \
+		INSTALL_DATA="${INSTALL_DATA}" \
+		INSTALL_DATA_DIR="${INSTALL_DATA_DIR}" \
+		sh ${FILESDIR}/install-data.sh
 
 NO_TEST =	Yes
 

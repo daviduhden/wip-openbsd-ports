@@ -32,6 +32,7 @@ DIST_TUPLE += github simplex-chat libbbs \
 		59a0f4bf32e195cb6883de8374825c0f4764c717 cbits/libbbs
 
 CATEGORIES = net
+REVISION =		1
 HOMEPAGE = https://simplex.chat/
 
 MAINTAINER = David Uhden Collado <daviduhden@gmail.com>
@@ -68,6 +69,16 @@ UNIX_TIME_V = 0.5.0
 CRYPTOSTORE_V = 0.6.0.0
 ENTROPY_V = 0.4.1.11
 CABAL_INC_HOME ?= ${WRKDIR}/.cabal-inc-home
+CABAL_INC_ENV = \
+	CABAL_INC_HOME=${CABAL_INC_HOME} LOCALBASE=${LOCALBASE} \
+	WRKDIR=${WRKDIR} WRKBUILD=${WRKBUILD} PORTDIR=${.CURDIR} \
+	FILESDIR=${FILESDIR} \
+	MODCABAL_STEM=${MODCABAL_STEM} \
+	MODCABAL_VERSION=${MODCABAL_VERSION} \
+	SIMPLEXMQ_CABAL_PACKAGE_PATHS='${SIMPLEXMQ_CABAL_PACKAGE_PATHS}' \
+	CABAL_INC_SKIP='${CABAL_INC_SKIP}' \
+	CABAL_INC_EXTRA='${CABAL_INC_EXTRA}' \
+	INSTALL_DATA_DIR="${INSTALL_DATA_DIR}"
 CABAL_INC_SKIP = aeson,socks,direct-sqlcipher,sqlcipher-simple,warp-tls,warp
 CABAL_INC_EXTRA = wai-app-static:3.2.1:0,wai-extra:3.1.18:0,yaml:0.11.11.2:0
 SIMPLEXMQ_CABAL_PACKAGES = \
@@ -125,121 +136,37 @@ BUILD_DEPENDS = converters/dos2unix \
 		lang/ghc>=9.8.3
 TEST_DEPENDS = databases/sqlite3
 
-SIMPLEXMQ_CABAL_CHECK_PATHS = \
-	for _pkg in ${SIMPLEXMQ_CABAL_PACKAGE_PATHS}; do \
-		if [ ! -f "$$_pkg" ]; then \
-			echo "missing cabal package: $$_pkg" >&2; \
-			exit 1; \
-		fi; \
-	done
-
 post-patch:
-	# Normalize extracted source trees to LF before dependency patches.
-	find ${WRKDIR} -type f \( -name '*.hs' -o -name '*.cabal' \
-		-o -name '*.sql' -o -name '*.h' -o -name '*.c' \) \
-		-exec ${LOCALBASE}/bin/dos2unix -q {} +
-	patch -d ${WRKDIR}/direct-sqlcipher -p0 \
-		< ${FILESDIR}/direct-sqlcipher/patch-direct-sqlcipher_cabal
-	${SIMPLEXMQ_CABAL_CHECK_PATHS}
+	env WRKDIR=${WRKDIR} WRKSRC=${WRKSRC} FILESDIR=${FILESDIR} \
+		LOCALBASE=${LOCALBASE} \
+		INSTALL_DATA="${INSTALL_DATA}" \
+		INSTALL_DATA_DIR="${INSTALL_DATA_DIR}" \
+		SIMPLEXMQ_CABAL_PACKAGE_PATHS='${SIMPLEXMQ_CABAL_PACKAGE_PATHS}' \
+		AESON_PATCHES='${AESON_PATCHES}' \
+		CRYPTOSTORE_PATCHES='${CRYPTOSTORE_PATCHES}' \
+		CRYPTOSTORE_V=${CRYPTOSTORE_V} \
+		WARP_PATCHES='${WARP_PATCHES}' \
+		TLS_PATCHES='${TLS_PATCHES}' TLS_V=${TLS_V} \
+		HTTP2_PATCHES='${HTTP2_PATCHES}' HTTP2_V=${HTTP2_V} \
+		NETWORK_V=${NETWORK_V} UNIX_TIME_V=${UNIX_TIME_V} \
+		ENTROPY_V=${ENTROPY_V} \
+		sh ${FILESDIR}/post-patch.sh
 	printf '%s\n' \
 		${SIMPLEXMQ_CABAL_PACKAGES} \
 		${SIMPLEXMQ_CABAL_COMMON_OPTIONS} \
 		>> ${WRKSRC}/cabal.project.local
-.for _p in ${AESON_PATCHES}
-	patch -d ${WRKDIR}/aeson -p0 < ${FILESDIR}/aeson/${_p}
-.endfor
-.for _p in ${CRYPTOSTORE_PATCHES}
-	if [ -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} ]; then \
-		patch -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} -p0 \
-			< ${FILESDIR}/cryptostore/${_p}; \
-	fi
-.endfor
-.for _p in ${WARP_PATCHES}
-	patch -d ${WRKDIR}/simplex-wai/warp -p0 < ${FILESDIR}/warp/${_p}
-.endfor
-.for _p in ${TLS_PATCHES}
-	if [ -d ${WRKDIR}/tls-${TLS_V} ]; then \
-		patch -d ${WRKDIR}/tls-${TLS_V} -p0 \
-			< ${FILESDIR}/tls/${_p}; \
-	fi
-.endfor
-.for _p in ${HTTP2_PATCHES}
-	if [ -d ${WRKDIR}/http2-${HTTP2_V} ]; then \
-		patch -d ${WRKDIR}/http2-${HTTP2_V} -p0 \
-			< ${FILESDIR}/http2/${_p}; \
-	fi
-.endfor
-	if [ -f ${WRKDIR}/network-${NETWORK_V}/network.cabal ]; then \
-		patch -d ${WRKDIR}/network-${NETWORK_V} -p0 \
-			< ${FILESDIR}/network/patch-network_cabal; \
-		${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include; \
-		${INSTALL_DATA} ${FILESDIR}/network/HsNetworkConfig.h \
-			${WRKDIR}/network-${NETWORK_V}/include/HsNetworkConfig.h; \
-	fi
-	if [ -f ${WRKDIR}/unix-time-${UNIX_TIME_V}/unix-time.cabal ]; then \
-		patch -d ${WRKDIR}/unix-time-${UNIX_TIME_V} -p0 \
-			< ${FILESDIR}/unix-time/patch-unix-time_cabal; \
-		${INSTALL_DATA} ${FILESDIR}/unix-time/UnixTimeConfig.h \
-			${WRKDIR}/unix-time-${UNIX_TIME_V}/cbits/config.h; \
-	fi
-	if [ -f ${WRKDIR}/entropy-${ENTROPY_V}/entropy.cabal ]; then \
-		patch -d ${WRKDIR}/entropy-${ENTROPY_V} -p0 \
-			< ${FILESDIR}/entropy/patch-entropy_cabal; \
-	fi
 
 cabal-inc: patch
-	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}
-	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}/.cabal
-	env HOME=${CABAL_INC_HOME} CABAL_DIR=${CABAL_INC_HOME}/.cabal \
-		LC_ALL=en_US.UTF-8 \
-		${LOCALBASE}/bin/cabal update
-	if [ ! -f ${CABAL_INC_HOME}/.cabal/config ] && \
-		[ -f ${CABAL_INC_HOME}/.config/cabal/config ]; then \
-		cp ${CABAL_INC_HOME}/.config/cabal/config \
-			${CABAL_INC_HOME}/.cabal/config; \
-	fi
-	${SIMPLEXMQ_CABAL_CHECK_PATHS}
 	printf '%s\n' \
 		${SIMPLEXMQ_CABAL_PACKAGES} \
 		${SIMPLEXMQ_CABAL_COMMON_OPTIONS} \
 		> ${WRKSRC}/cabal.project.local
-	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
-		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
-		${LOCALBASE}/bin/cabal v2-build --dry-run \
-		-w ${LOCALBASE}/bin/ghc \
-		--disable-benchmarks --disable-tests \
-		exe:smp-server exe:xftp-server
-	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
-		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
-		${LOCALBASE}/bin/cabal-bundler --openbsd \
-		--plan dist-newstyle/cache/plan.json \
-		--executable smp-server \
-		${MODCABAL_STEM}-${MODCABAL_VERSION} \
-		> ${WRKDIR}/simplexmq.smp.inc
-	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
-		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
-		${LOCALBASE}/bin/cabal-bundler --openbsd \
-		--plan dist-newstyle/cache/plan.json \
-		--executable xftp-server \
-		${MODCABAL_STEM}-${MODCABAL_VERSION} \
-		> ${WRKDIR}/simplexmq.xftp.inc
+	env ${CABAL_INC_ENV} sh ${FILESDIR}/cabal-inc.sh build
 	printf '%s\n' \
 		${SIMPLEXMQ_CABAL_TEST_OPTIONS} \
 		>> ${WRKSRC}/cabal.project.local
-	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
-		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
-		${LOCALBASE}/bin/cabal v2-test --dry-run \
-		-w ${LOCALBASE}/bin/ghc \
-		--disable-benchmarks \
-		test:simplexmq-test
-	cp ${WRKBUILD}/dist-newstyle/cache/plan.json \
-		${WRKDIR}/simplexmq.test.plan.json
-	env SKIP=${CABAL_INC_SKIP} EXTRA=${CABAL_INC_EXTRA} \
-		perl ${FILESDIR}/cabal-deps-merge.pl \
-		${WRKDIR}/simplexmq.smp.inc ${WRKDIR}/simplexmq.xftp.inc \
-			${WRKDIR}/simplexmq.test.plan.json \
-			> ${WRKDIR}/cabal.inc.new
-	mv ${WRKDIR}/cabal.inc.new ${.CURDIR}/cabal.inc
+	env ${CABAL_INC_ENV} sh ${FILESDIR}/cabal-inc.sh test
+	env ${CABAL_INC_ENV} sh ${FILESDIR}/cabal-inc.sh merge
 
 post-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/${PKGSTEM}
@@ -253,7 +180,7 @@ post-install:
 do-test:
 	# Keep default-temp XFTP probes and capture files inside make clean's scope.
 	mkdir -p -m 700 ${WRKDIR}/test-tmp
-	${SIMPLEXMQ_CABAL_CHECK_PATHS}
+	sh ${FILESDIR}/check-package-paths.sh ${SIMPLEXMQ_CABAL_PACKAGE_PATHS}
 	printf '%s\n' \
 		${SIMPLEXMQ_CABAL_PACKAGES} \
 		${SIMPLEXMQ_CABAL_COMMON_OPTIONS} \

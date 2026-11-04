@@ -27,6 +27,14 @@ doas rcctl start xftp_server
 The servers store configuration under `/etc/simplex/` and runtime data
 under `/var/simplex/`.
 
+`init` creates a CA private key (`ca.key`) that signs server certificates.
+Move `ca.key` to offline storage after initialization. Keep the CA
+certificate (`ca.crt`), the server certificate and the server key on the
+host: clients need the CA certificate and the server needs it to present
+its chain. Anyone who obtains the CA key can issue certificates that
+clients trust. Publish the CA certificate
+fingerprint printed by `init` through a channel independent of the server.
+
 The OpenBSD port defaults XFTP certificate generation to ED25519 because
 LibreSSL does not provide ED448.  ED448 can still be selected explicitly
 when using a compatible openssl(1) implementation.

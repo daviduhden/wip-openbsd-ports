@@ -1,5 +1,5 @@
-Handle OpenBSD signals in the daemon loop and install pledge and unveil
-rules after startup-only operations have finished.
+Install unveil after startup and use the current option names.
+Grant only paths the daemon reads, including syslog and the resolver.
 
 Index: daemon/UnixDaemon.cpp
 --- daemon/UnixDaemon.cpp.orig
@@ -73,7 +73,7 @@ Index: daemon/UnixDaemon.cpp
  			// Signal handler
  			struct sigaction sa;
  			sa.sa_handler = handle_signal;
-@@ -229,13 +274,150 @@ namespace i2p
+@@ -229,13 +274,141 @@ namespace i2p
  				sigaction(SIGCONT, &sa, 0);
  			}
  
@@ -82,7 +82,7 @@ Index: daemon/UnixDaemon.cpp
 +#ifdef __OpenBSD__
 +			// Resolve/read sandbox policy before the first unveil hides it.
 +			bool useUnveil, usePledge;
-+			i2p::config::GetOption ("openbsd.unevil_enabled", useUnveil);
++			i2p::config::GetOption ("openbsd.unveil_enabled", useUnveil);
 +			i2p::config::GetOption ("openbsd.pledge_enabled", usePledge);
 +			// CreatePrivateFile() uses chmod when saving router and destination keys.
 +			std::string promises = "stdio rpath wpath cpath fattr inet dns unix flock";
@@ -123,11 +123,11 @@ Index: daemon/UnixDaemon.cpp
 +					for (const auto& line : lines) promises += line + " ";
 +				}
 +			}
-+			if (useUnveil && !readPolicy ("openbsd.unevil_file", extraPaths)) return false;
++			if (useUnveil && !readPolicy ("openbsd.unveil_file", extraPaths)) return false;
 +			if (useUnveil)
 +			{
-+				// Coalesce aliases before unveil: repeated rules may only reduce
-+				// permissions. For example, certsdir may equal datadir.
++				// Coalesce aliases before unveil. Permissions of repeated rules are
++				// merged: certsdir may equal a writable datadir, for example.
 +				std::map<std::string, std::string> rules;
 +				auto allow = [&rules, &fail](std::string path, const char * permissions) {
 +					if (path.empty ()) return true;
@@ -153,6 +153,10 @@ Index: daemon/UnixDaemon.cpp
 +				};
 +				if (!allow (i2p::fs::GetDataDir (), "rwc") ||
 +					!allow (i2p::fs::GetCertsDir (), "r") || !allow (pidfile, "rwc")) return false;
++				// syslog, the resolver, host lookups and log timestamps.
++				if (!allow ("/dev/log", "w") || !allow ("/etc/resolv.conf", "r") ||
++					!allow ("/etc/hosts", "r") || !allow ("/etc/services", "r") ||
++					!allow ("/etc/localtime", "r")) return false;
 +				for (const char * option : {"conf", "tunconf", "tunnelsdir", "reseed.file", "reseed.zipfile"})
 +				{
 +					std::string path; i2p::config::GetOption (option, path);
@@ -172,19 +176,6 @@ Index: daemon/UnixDaemon.cpp
 +						if (!path.empty () && path.front () != '/') path = i2p::fs::DataDirPath (path);
 +						if (!allow (path, "rwc")) return false;
 +					}
-+					uint16_t port; i2p::config::GetOption ("i2pcontrol.port", port);
-+					if (!port)
-+					{
-+						std::string path; i2p::config::GetOption ("i2pcontrol.address", path);
-+						if (!allow (path, "rwc")) return false;
-+					}
-+				}
-+				bool outproxy; i2p::config::GetOption ("socksproxy.outproxy.enabled", outproxy);
-+				uint16_t port; i2p::config::GetOption ("socksproxy.outproxyport", port);
-+				if (outproxy && !port)
-+				{
-+					std::string path; i2p::config::GetOption ("socksproxy.outproxy", path);
-+					if (!allow (path, "w")) return false;
 +				}
 +				// miniupnpc consults MiniSSDPD before multicast discovery.
 +				if (upnp && !allow ("/var/run/minissdpd.sock", "w")) return false;
@@ -224,7 +215,7 @@ Index: daemon/UnixDaemon.cpp
  		}
  
  		void DaemonUnix::run ()
-@@ -244,6 +426,36 @@ namespace i2p
+@@ -244,6 +417,36 @@ namespace i2p
  			while (running)
  			{
  				std::this_thread::sleep_for (std::chrono::seconds(1));

@@ -1,5 +1,5 @@
-Resolve configured paths before daemon startup changes directories, and
-prepare OpenBSD sandbox settings using those absolute paths.
+Resolve configured paths before daemon startup changes directory.
+Set the startup pledge only for operations that still need it.
 
 Index: daemon/Daemon.cpp
 --- daemon/Daemon.cpp.orig
@@ -96,7 +96,7 @@ Index: daemon/Daemon.cpp
 +		i2p::config::SetOption ("conf", AbsolutePath (config));
 +		for (const char * option : {"tunconf", "tunnelsdir", "certsdir", "logfile", "pidfile",
 +			"reseed.file", "reseed.zipfile", "addressbook.hostsfile",
-+			"openbsd.pledge_file", "openbsd.unevil_file"})
++			"openbsd.pledge_file", "openbsd.unveil_file"})
  		{
 -			if(path=="")
 -			{
@@ -245,7 +245,7 @@ Index: daemon/Daemon.cpp
 +		if (usePledge && policy.empty ())
 +		{
 +			std::string promises = "stdio rpath wpath cpath fattr inet dns unix flock proc";
-+			bool useUnveil; i2p::config::GetOption ("openbsd.unevil_enabled", useUnveil);
++			bool useUnveil; i2p::config::GetOption ("openbsd.unveil_enabled", useUnveil);
 +			if (useUnveil) promises += " unveil";
 +			bool upnp; i2p::config::GetOption ("upnp.enabled", upnp);
 +			if (upnp) promises += " mcast";
@@ -259,8 +259,14 @@ Index: daemon/Daemon.cpp
  		i2p::crypto::InitCrypto (precomputation);
  
  		i2p::transport::InitAddressFromIface (); // get address4/6 from interfaces
-@@ -472,4 +382,0 @@ namespace util
+@@ -469,10 +380,6 @@ namespace util
+ 
+ 		std::string httpLang; i2p::config::GetOption("http.lang", httpLang);
+ 		i2p::i18n::SetLanguage(httpLang);
 -#ifdef __OpenBSD__
 -//SIOCGIFMTU is not found, SOCK DGRAM not found
 -		if(openbsd_pledge_enabled) init_pledge();
 -#endif
+ 
+ 		return true;
+ 	}

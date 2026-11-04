@@ -3,7 +3,7 @@ COMMENT =	client for the I2P anonymous network
 GH_ACCOUNT =	PurpleI2P
 GH_PROJECT =	i2pd
 GH_TAGNAME =	3.0.0.1
-REVISION =	1
+REVISION =	2
 
 CATEGORIES =	net
 HOMEPAGE =	https://i2pd.website
@@ -36,11 +36,11 @@ post-install:
 		${PREFIX}/share/examples/i2pd
 	${INSTALL_DATA} ${WRKDIST}/libi2pd{,_client}/*.h \
 		${PREFIX}/include/i2pd
-.for dir in family reseed
-	${INSTALL_DATA_DIR} ${WRKINST}${LOCALSTATEDIR}/i2pd/certificates/${dir}
-	${INSTALL_DATA} ${WRKDIST}/contrib/certificates/${dir}/* \
-		${WRKINST}${LOCALSTATEDIR}/i2pd/certificates/${dir}
-.endfor
+	env WRKINST=${WRKINST} LOCALSTATEDIR=${LOCALSTATEDIR} \
+		WRKDIST=${WRKDIST} \
+		INSTALL_DATA="${INSTALL_DATA}" \
+		INSTALL_DATA_DIR="${INSTALL_DATA_DIR}" \
+		sh ${FILESDIR}/install-certificates.sh
 	${INSTALL_DATA_DIR} ${WRKINST}${SYSCONFDIR}/i2pd/tunnels.d
 	${SUBST_DATA} ${FILESDIR}/i2pd.conf \
 		${PREFIX}/share/examples/i2pd/i2pd.conf

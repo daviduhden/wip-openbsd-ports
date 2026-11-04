@@ -1,5 +1,4 @@
-Track UDP server tunnel shutdown atomically and guard cleanup timer
-operations shared by the event loop and configuration reload.
+Use atomic state and per-timer mutexes for the weak timer handlers.
 
 Index: libi2pd_client/UDPTunnel.h
 --- libi2pd_client/UDPTunnel.h.orig
@@ -22,13 +21,28 @@ Index: libi2pd_client/UDPTunnel.h
  	{
  		public:
  
-@@ -194,7 +196,8 @@ namespace client
+@@ -194,7 +196,9 @@ namespace client
  			UDPSessionPtr m_LastSession;
  			uint16_t m_inPort;
  			bool m_Gzip;
 -			bool m_IsStarted = false; // a tunnel that never started shares nothing to tear down
 +			std::atomic<bool> m_IsStarted {false}; // a tunnel that never started shares nothing to tear down
 +			std::mutex m_CleanupTimerMutex;
++			std::mutex m_StatsTimerMutex;
  			uint32_t m_NumRawNoSession = 0;
  			size_t m_MaxWindow = I2P_UDP_MIN_MAX_NUM_UNACKED_DATAGRAMS;
  			std::unique_ptr<boost::asio::steady_timer> m_StatsTimer;
+@@ -265,10 +269,12 @@ namespace client
+ 			uint16_t RemotePort, m_LastPort;
+ 			bool m_cancel_resolve;
+ 			bool m_Gzip;
+-			bool m_IsStarted = false; // see the comment in I2PUDPServerTunnel
++			std::atomic<bool> m_IsStarted {false}; // see the comment in I2PUDPServerTunnel
+ 			i2p::datagram::DatagramVersion m_DatagramVersion;
+ 			std::shared_ptr<UDPConvo> m_LastSession;
+ 			uint32_t m_KeepAliveInterval = 0;
++			std::mutex m_KeepAliveTimerMutex;
++			std::mutex m_StatsTimerMutex;
+ 			std::unique_ptr<boost::asio::steady_timer> m_KeepAliveTimer;
+ 			std::unique_ptr<boost::asio::steady_timer> m_StatsTimer;
+ 

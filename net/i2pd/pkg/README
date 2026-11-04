@@ -132,3 +132,31 @@ For example:
 
 Send SIGUSR1 to reopen the log file. Send SIGHUP to reload tunnel
 configuration and rotate transient keys.
+
+
+Sandbox
+=======
+
+On OpenBSD, i2pd installs a pledge(2) policy during startup and switches
+to the final policy after fork, setsid, setrlimit and PID locking are
+complete. It also locks an unveil(2) policy when openbsd.unveil_enabled
+is true, which is the default. The packaged policy does not grant the
+exec or error promises, so i2pd cannot start helper programs and
+violations terminate the process. A custom openbsd.pledge_file replaces
+that policy and is the administrator's responsibility.
+
+The default unveil profile covers the data directory, certificates,
+configuration and tunnel files, the log file, the pid file, syslog,
+the resolver and hosts files, and the MiniSSDPD socket when UPnP is
+enabled. A data directory, log file, control certificate or pid file
+outside those paths is unavailable under the sandbox. Administrators
+who relocate state must list the additional paths in
+openbsd.unveil_file, one path per line; entries are granted read, write
+and create access. Set openbsd.pledge_enabled=false or
+openbsd.unveil_enabled=false only when the resulting unrestricted
+process is acceptable.
+
+This is a single-process policy. It does not confine data processed by
+i2pd and it has not replaced the daemon's own protocol validation.
+Native pledge and unveil behaviour still requires validation on the
+target OpenBSD release.

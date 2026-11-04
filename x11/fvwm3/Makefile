@@ -45,19 +45,7 @@ DEBUG_PACKAGES =       ${BUILD_PACKAGES}
 USE_GMAKE =	yes
 
 post-install:
-	cd ${WRKINST}/${TRUEPREFIX}/man/man1 && for m in Fvwm*.1; \
-		do mv {,fvwm3-}$$m; done
-	cd ${WRKINST}/${TRUEPREFIX}/man/man1 && for m in \
-		fvwm-convert-2.6.1 fvwm-menu-desktop.1 fvwm-menu-directory.1 \
-		fvwm-menu-xlock.1 fvwm-perllib.1 fvwm-root.1; do \
-		mv $$m fvwm3-$${m#fvwm-}; done
-	cd ${WRKINST}/${TRUEPREFIX}/man/man1/ && \
-		mv fvwm3-FvwmCommand{,3}.1
-	cd ${WRKINST}/${TRUEPREFIX}/bin && for b in \
-		fvwm-convert-2.6 fvwm-menu-desktop fvwm-menu-directory \
-		fvwm-menu-xlock fvwm-perllib fvwm-root; do \
-		mv $$b fvwm3-$${b#fvwm-}; done
-	mv ${WRKINST}/${TRUEPREFIX}/bin/FvwmCommand{,3}
+	sh ${FILESDIR}/rename-paths.sh "${WRKINST}${TRUEPREFIX}"
 
 # bsd.port.mk converts CFLAGS_<chosen compiler> into CFLAGS. Assigning
 # CFLAGS after the include would be too late for the build environment.

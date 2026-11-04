@@ -64,9 +64,9 @@ MONERO_PATCHES += patch-src_device_device_io_hid_cpp
 MONERO_PATCHES += patch-src_serialization_binary_archive_h
 
 post-patch:
-.for _p in ${MONERO_PATCHES}
-	patch -d ${MONERO_WRKSRC} -p0 < ${FILESDIR}/monero/${_p}
-.endfor
+	env MONERO_WRKSRC=${MONERO_WRKSRC} FILESDIR=${FILESDIR} \
+		MONERO_PATCHES='${MONERO_PATCHES}' \
+		sh ${FILESDIR}/apply-monero-patches.sh
 
 do-configure:
 	cd ${MONERO_WRKSRC} && cmake -S ${MONERO_WRKSRC} -B ${MONERO_WRKBUILD} \

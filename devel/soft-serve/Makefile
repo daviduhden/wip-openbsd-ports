@@ -6,6 +6,7 @@ MODGO_VERSION =		v0.12.4
 DISTNAME =		soft-serve-${MODGO_VERSION}
 
 CATEGORIES =		devel
+REVISION =		1
 
 HOMEPAGE =		https://github.com/charmbracelet/soft-serve
 

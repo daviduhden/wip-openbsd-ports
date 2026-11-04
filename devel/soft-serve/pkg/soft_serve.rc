@@ -16,13 +16,14 @@ rc_reload=YES
 # the variables are set as part of the command string instead.
 #
 # The unauthenticated git:// daemon and the stats endpoint are disabled
-# by default.  The HTTP interface is bound to localhost; set
-# SOFT_SERVE_HTTP_LISTEN_ADDR to expose it more widely.  Enable the git
-# daemon only on trusted networks.
+# by default.  The HTTP and SSH interfaces are bound to localhost; set
+# SOFT_SERVE_HTTP_LISTEN_ADDR or SOFT_SERVE_SSH_LISTEN_ADDR to expose them
+# more widely.  Enable the git daemon only on trusted networks.
 rc_start() {
 	rc_exec "SOFT_SERVE_DATA_PATH=/var/db/soft-serve \
 		SOFT_SERVE_GIT_ENABLED=false \
 		SOFT_SERVE_HTTP_LISTEN_ADDR=localhost:23232 \
+		SOFT_SERVE_SSH_LISTEN_ADDR=localhost:23231 \
 		SOFT_SERVE_STATS_ENABLED=false \
 		${daemon} ${daemon_flags}"
 }

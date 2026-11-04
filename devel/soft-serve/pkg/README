@@ -8,8 +8,9 @@ configuration file.  The rc.d(8) script starts the server as the
 _softserve user with /var/db/soft-serve as the working directory.
 
 The rc.d(8) script disables the unauthenticated git:// daemon and the
-stats endpoint and binds the HTTP interface to localhost.  The SSH
-listener remains enabled on port 23231 on all interfaces.
+stats endpoint and binds the HTTP and SSH interfaces to localhost.  The
+first SSH client to connect becomes the administrator, so keep the
+listener on loopback until that account exists.
 
 Initial setup:
 
@@ -32,8 +33,8 @@ first start, or import keys later with:
 Listener configuration is read from /var/db/soft-serve/config.yaml. The
 default configuration enables the SSH server (:23231), the git daemon
 (:9418), the HTTP server (:23232) and the stats endpoint
-(localhost:23233); the rc.d(8) environment above overrides the git, HTTP
-and stats settings.
+(localhost:23233); the rc.d(8) environment above overrides the git, HTTP,
+SSH and stats settings.
 
 The generated configuration file is owned by _softserve and is not
 managed by the package: it is preserved across upgrades.

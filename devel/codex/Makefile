@@ -114,10 +114,7 @@ post-patch:
 	    ${V8_DISTDIR}/third_party/icu/common/
 
 post-build:
-.for s in bash fish zsh
-	cd ${WRKBUILD}/target/release && \
-		./codex completion $s > codex.$s
-.endfor
+	env WRKBUILD=${WRKBUILD} sh ${FILESDIR}/generate-completions.sh
 
 post-install:
 	mv ${PREFIX}/bin/logs_client ${PREFIX}/bin/codex-logs-client

@@ -134,11 +134,20 @@ sub main {
     die $usage if @ARGV > 1;
     my $codex = find_executable( $ARGV[0] // 'codex' );
     my $perl  = find_executable($^X);
+    my $probe_source = File::Spec->catfile(
+        dirname( abs_path($0) ), 'openbsd-sandbox-probe.pl'
+    );
+    die "Probe not found: $probe_source\n" unless -f $probe_source;
     my $base =
       tempdir( 'codex-openbsd-regress-XXXXXX', TMPDIR => 1, CLEANUP => 1 );
     $base = abs_path($base);
     my $work = "$base/workspace";
     mkdir $work or die "mkdir $work: $!\n";
+    # Keep the probe readable to the sandboxed process.  A path outside the
+    # workspace may be hidden by the profile's unveil rules.
+    my $probe = "$work/sandbox-probe.pl";
+    write_file( $probe, read_file($probe_source) );
+    chmod 0644, $probe or die "chmod $probe: $!\n";
 
     for my $name (qw(.git .agents .codex .aws tmp src)) {
         mkdir "$work/$name" or die "mkdir $work/$name: $!\n";
@@ -160,8 +169,6 @@ sub main {
           . "[permissions.openbsd-workspace]\nextends=\":workspace\"\n"
           . "[permissions.openbsd-workspace.filesystem]\n\":slash_tmp\"=\"read\"\n"
           . "[permissions.openbsd-workspace.network]\nenabled=true\n" );
-    my $writer = 'open my $f, ">", $ARGV[0] or die "open: $!\n"; '
-      . 'print {$f} "changed" or die "write: $!\n"; close $f or die "close: $!\n";';
     my @failures;
     my $run = sub {
         my ( $name, $mode, $command, %options ) = @_;
@@ -215,7 +222,7 @@ sub main {
     my ( $probe_exit, $probe_timeout, $probe_output ) = capture(
         $base, $work,
         [ $codex, 'sandbox', '--permission-profile', 'openbsd-read', '--',
-          $perl, '-e', 'exit 0' ]
+          $perl, $probe, 'exit0' ]
     );
     if ( !$probe_timeout && $probe_exit != 0
         && index( $probe_output, 'unveil rules are discarded by execve' ) >= 0 ) {
@@ -227,14 +234,14 @@ sub main {
     $run->(
         'named read-only rejects unavailable network isolation',
         ':read-only',
-        [ $perl, '-e', $writer, "$work/read-marker" ],
+        [ $perl, $probe, 'write', "$work/read-marker" ],
         reject_setup => 1,
         unchanged    => "$work/read-marker"
     );
     $run->(
         'named workspace rejects unavailable network isolation',
         ':workspace',
-        [ $perl, '-e', $writer, "$work/work-marker" ],
+        [ $perl, $probe, 'write', "$work/work-marker" ],
         reject_setup => 1,
         unchanged    => "$work/work-marker"
     );
@@ -270,11 +277,11 @@ sub main {
     # failures. Use the same executable for positive and negative controls.
     $run->(
         'workspace direct write',
-        'openbsd-workspace', [ $perl, '-e', $writer, 'allowed' ]
+        'openbsd-workspace', [ $perl, $probe, 'write', 'allowed' ]
     );
     $run->(
         'disabled sandbox bypass',
-        ':danger-full-access', [ $perl, '-e', $writer, "$base/full-access" ]
+        ':danger-full-access', [ $perl, $probe, 'write', "$base/full-access" ]
     );
     my @denials = (
         [ 'read-only write', "$work/readonly-new",   'openbsd-read' ],
@@ -286,7 +293,7 @@ sub main {
     for my $case (@denials) {
         my ( $name, $target, $mode ) = @$case;
         $run->(
-            $name, $mode, [ $perl, '-e', $writer, $target ],
+            $name, $mode, [ $perl, $probe, 'write', $target ],
             denied    => 1,
             unchanged => $target
         );
@@ -295,40 +302,27 @@ sub main {
     # Repeat protection with the final path absent: unveil must prevent
     # first-time creation, rather than merely fail while applying the rules.
     rmdir "$work/.codex" or die "rmdir missing-metadata fixture: $!\n";
-    my $mkdir = 'mkdir $ARGV[0] or die "mkdir: $!\n";';
     $run->(
         'workspace directory creation control',
         'openbsd-workspace',
-        [ $perl, '-e', $mkdir, "$work/fresh" ]
+        [ $perl, $probe, 'mkdir', "$work/fresh" ]
     );
     $run->(
         'missing .codex directory stays protected',
         'openbsd-workspace',
-        [ $perl, '-e', $mkdir, "$work/.codex" ],
+        [ $perl, $probe, 'mkdir', "$work/.codex" ],
         denied    => 1,
         unchanged => "$work/.codex"
     );
     $run->(
         'workspace metadata',
         'openbsd-workspace',
-        [
-            $perl,
-            '-e',
-            'chmod 0600, "allowed" or die "chmod: $!\n"; '
-              . 'utime undef, undef, "allowed" or die "utime: $!\n";'
-        ]
+        [ $perl, $probe, 'metadata' ]
     );
     $run->(
         'same-owner fchown (Cargo SQLite)',
         'openbsd-workspace',
-        [
-            $perl,
-            '-e',
-            'open my $f, "+<", "allowed" or die "open: $!\n"; '
-              . 'my $gid = (split / /, $))[0]; '
-              . 'chown $<, $gid, $f or die "fchown: $!\n"; '
-              . 'close $f or die "close: $!\n";'
-        ]
+        [ $perl, $probe, 'fchown' ]
     );
 
     my $listener = IO::Socket::INET->new(
@@ -338,19 +332,15 @@ sub main {
         Proto     => 'tcp',
     ) or die "listen: $!\n";
     my $port = $listener->sockport;
-    my $connection =
-        'use IO::Socket::INET; my $s = IO::Socket::INET->new('
-      . "PeerAddr => '127.0.0.1', PeerPort => $port, Proto => 'tcp', Timeout => 5) "
-      . 'or die "connect: $!\n"; close $s or die "close: $!\n";';
     $run->(
         'network enabled control',
         'openbsd-workspace',
-        [ $perl, '-e', $connection ]
+        [ $perl, $probe, 'connect', '127.0.0.1', $port ]
     );
     $run->(
         'network disabled rejects command before execution',
         ':workspace',
-        [ $perl, '-e', $writer, "$work/network-marker" ],
+        [ $perl, $probe, 'write', "$work/network-marker" ],
         reject_setup => 1,
         unchanged    => "$work/network-marker"
     );

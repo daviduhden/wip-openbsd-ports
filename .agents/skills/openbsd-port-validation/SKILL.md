@@ -55,6 +55,25 @@ update the checksums. Check the diff and the upstream provenance either way.
 For a port using generated manifests, confirm the include is present and was
 produced by its module target, not hand-edited.
 
+Without a native host, reconstruct a changed patch series in a `mktemp -d`
+directory: extract the pristine distfile, apply each `patches/patch-*` in
+sorted order with `patch -p0`, and compare the tree with the edited result.
+Also confirm that every `Index:` path exists and that no two patches target
+the same file. This proves application and duplicate detection statically; it
+does not replace `make patch` or a build.
+
+For shell or Makefile changes, run `sh -n` on every touched shell helper,
+`shellcheck -s sh` when available, and `perl -c` on touched Perl files. Search
+the changed files for `perl -e`, `perl -E`, `python -c` and heredoc-embedded
+code; build-only helpers belong in `files/` and normal repository tools in
+`tools/`. These checks are static and do not prove OpenBSD `make` behaviour.
+
+For a sandbox change, inspect every reconstructed promise string and
+`execpromises` argument. Confirm that no new policy contains `exec` or
+`error`, that existing uses were removed or explicitly reported as remaining,
+and that an executed child is not described as confined by the parent. These
+are source checks, not runtime proof.
+
 ### 2. Fetch and extract
 
 ```sh
@@ -192,6 +211,6 @@ assumptions have changed, and add reusable knowledge that improves future use.
 Correct instructions that proved wrong; keep examples and validation commands
 current, and remove obsolete or duplicated guidance. Do not record one-off
 execution details. Review linked skills and applicable `AGENTS.md` files for
-consistency, validate local references, and run `python3 scripts/validate-agent-knowledge.py --scope worktree` after instruction edits. The automated check covers
+consistency, validate local references, and run `perl scripts/validate-agent-knowledge.pl --scope worktree` after instruction edits. The automated check covers
 structure and change presence; a person must still judge whether the update is
 relevant. Include the synchronization result in the final report.

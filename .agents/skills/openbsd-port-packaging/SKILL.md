@@ -81,14 +81,27 @@ README format on maintainer documentation.
    `rc_bg` and `rc_reload` only when the daemon actually needs them, and ends
    with `rc_cmd "$1"`. Use `rc_exec` for environment assignments because `su`
    may reset the environment. Do not add `&`, shell redirections, or a manual
-   PID file to imitate backgrounding; use `rc_bg`.
-6. Verify owners, modes, and writability from the service's perspective:
+   PID file to imitate backgrounding; use `rc_bg`. Bind a service without
+   authentication to loopback by default and document how to expose it. Do not
+   combine `daemon_user` with a program that drops privileges itself: the
+   second `setgroups(2)` is root-only, so the service fails at startup (tor is
+   the current example: start as root and let its `User` setting drop).
+   Set every listener variable the daemon reads; omitting one leaves upstream's
+   all-interfaces default in place.
+6. Keep recipes declarative. Version variables, dependency lists, patch
+   lists and short install commands belong in the Makefile. Move loops,
+   conditionals and multi-step path games to `files/*.sh` invoked as
+   `sh ${FILESDIR}/name.sh`; never embed Perl or Python (`perl -e`,
+   `python -c`, or heredoc code) in a recipe, shell script or configuration.
+   Reusable repository tooling belongs under `tools/`, not inside a port.
+   Helpers use `set -eu`, quote paths and guard unmatched globs.
+7. Verify owners, modes, and writability from the service's perspective:
    configuration under `/etc` is normally root-owned and readable by the
    service group (for example `0640`); private state and keys are not
    world-readable; state directories are not daemon-owned if the daemon could
    then replace its own configuration. Check persistent paths, log paths, and
    any directory the service expects but the package does not create.
-7. Check native linkage. `WANTLIB` describes libraries the binary needs;
+8. Check native linkage. `WANTLIB` describes libraries the binary needs;
    `LIB_DEPENDS` names the packages that provide them. Run:
 
    ```sh
@@ -97,11 +110,11 @@ README format on maintainer documentation.
 
    Add missing entries and remove stale ones. `dlopen(3)` libraries are not
    detected automatically, so document and test them separately.
-8. Install the package on an authorized test host, inspect `pkg_info -L`, and
+9. Install the package on an authorized test host, inspect `pkg_info -L`, and
    exercise the service or program. Test a fresh install and, where relevant,
    an upgrade over an existing configuration. Verify that `@sample` does not
    overwrite user data and that `pkg_delete` does not remove user-created state.
-9. Finish [openbsd-port-validation](../openbsd-port-validation/SKILL.md).
+10. Finish [openbsd-port-validation](../openbsd-port-validation/SKILL.md).
    Record which packaging and runtime checks were actually run.
 
 ## Checks and acceptance
@@ -134,7 +147,16 @@ README format on maintainer documentation.
   installation path; test an upgrade, not only a fresh install.
 - **A service binds all interfaces unexpectedly:** inspect defaults and the
   README. Do not describe a demonstration or unauthenticated listener as
-  localhost-only.
+  localhost-only, and do not override upstream's loopback default with
+  `0.0.0.0` unless the package documents the exposure and authentication
+  boundary.
+- **A privileged helper validates only part of a request:** restrict object
+  ownership changes to the exact resource the operation needs (for example
+  device nodes directly under `/dev`), resolve paths first, and reject
+  everything else instead of relying on the caller's sudoers/doas rule.
+- **A setuid package documents an unvalidated privilege path:** keep the
+  warning in `DESCR` and `README`, describe the required authentication stack,
+  and never suggest a permissive PAM module as the only auth check.
 - **The package contains an unregistered generated file:** fix `do-install` or
   the PLIST; do not hide the difference with a broad directory entry.
 
@@ -158,6 +180,6 @@ assumptions have changed, and add reusable knowledge that improves future use.
 Correct instructions that proved wrong; keep examples and validation commands
 current, and remove obsolete or duplicated guidance. Do not record one-off
 execution details. Review linked skills and applicable `AGENTS.md` files for
-consistency, validate local references, and run `python3 scripts/validate-agent-knowledge.py --scope worktree` after instruction edits. The automated check covers
+consistency, validate local references, and run `perl scripts/validate-agent-knowledge.pl --scope worktree` after instruction edits. The automated check covers
 structure and change presence; a person must still judge whether the update is
 relevant. Include the synchronization result in the final report.

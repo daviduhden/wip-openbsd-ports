@@ -50,7 +50,16 @@ Read [UPDATE.md](../../../docs/UPDATE.md) and the port's Makefile, existing patc
    The checker verifies the comment width, single `Index:`, relative path,
    `.orig`/target labels, line endings, and that every hunk count matches its
    header. It does not prove that a patch applies; a fresh `make patch` does
-   that.
+   that. Also confirm that every `Index:` path exists in the pristine
+   extraction and that no two patches target the same path. A path that no
+   longer exists, or a second patch for an already-patched file, is obsolete
+   or duplicated even if its hunks still look plausible.
+
+   When a native OpenBSD host is unavailable, reconstruct the whole series in
+   a temporary directory: extract the pristine distfile, apply every
+   `patches/patch-*` in sorted order with `patch -p0`, and compare the result
+   with the edited tree. This checks application and duplicate/hunk conflicts
+   statically; it is not a build.
 8. SPDX identifiers are optional in this repository. Preserve upstream
    notices and record an accurate SPDX identifier only when the licensing of
    the authored material is established. Do not assign a blanket license,
@@ -129,6 +138,6 @@ assumptions have changed, and add reusable knowledge that improves future use.
 Correct instructions that proved wrong; keep examples and validation commands
 current, and remove obsolete or duplicated guidance. Do not record one-off
 execution details. Review linked skills and applicable `AGENTS.md` files for
-consistency, validate local references, and run `python3 scripts/validate-agent-knowledge.py --scope worktree` after instruction edits. The automated check covers
+consistency, validate local references, and run `perl scripts/validate-agent-knowledge.pl --scope worktree` after instruction edits. The automated check covers
 structure and change presence; a person must still judge whether the update is
 relevant. Include the synchronization result in the final report.

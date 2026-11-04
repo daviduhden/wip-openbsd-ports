@@ -30,6 +30,58 @@ for version updates. The specialized procedures are in `.agents/skills/`:
 | `openbsd-port-security` | Auditing crypto, sandboxing, privileges, or service exposure. |
 | `openbsd-ports-sync` | Moving tested sources between this Git checkout and `/usr/ports`. |
 
+## Mandatory compatibility and sandbox review
+
+Any change to source, patches, dependencies, service scripts, or build flags
+must include a static OpenBSD compatibility review using
+`.agents/skills/openbsd-port-security/SKILL.md`:
+
+1. Map startup, configuration, key access, listeners, helpers, privilege
+   changes, reload, and shutdown before changing a policy.
+2. Check the cryptographic library actually linked and the target LibreSSL
+   API surface; never disable validation or fake a version to compile.
+3. Reject simultaneous `PROT_WRITE|PROT_EXEC`. Temporary RW-to-RX transitions
+   do not require `USE_WXNEEDED`; reserve it for mappings that are genuinely
+   writable and executable at the same time.
+4. Replace Linux-only syscalls and procfs assumptions with a checked native
+   path, not a stub that reports success.
+5. Treat `pledge(2)` and `unveil(2)` as separate boundaries with separate
+   inheritance rules. A parent policy does not confine an executed child.
+6. Do not add the `exec` or `error` promises. Remove them from existing
+   policies when an exec-free or separated design can preserve functionality.
+   When it cannot, keep the limitation explicit instead of widening the
+   policy. `proc` alone never grants execution.
+7. Prefer privilege separation and pre-opened resources over granting a
+   helper broader access to the same files, network, or credentials.
+8. Compare with current official ports before editing and preserve justified
+   local behavior. Record obsolete local patches instead of copying official
+   ones blindly.
+9. Regenerate changed patches from pristine sources with `diff -u -p`, one
+   target per patch, short comments, and `Index:`. Verify the whole series
+   applies to a pristine extraction in a temporary directory.
+10. Document the remaining risk, unsupported features, and the checks that
+    still require a native OpenBSD host. Static review is not runtime proof.
+
+## Shell and Makefile hygiene
+
+- Do not embed Perl or Python in shell scripts, rc.d scripts, Makefiles or
+  configuration (`perl -e`, `python -c`, or heredoc code). Use native shell
+  for simple logic and a standalone `files/*.sh` helper for complex logic.
+- Keep port Makefiles declarative: variables, dependency and patch lists,
+  targets, and short commands. Move loops, conditionals and multi-step
+  transformations to a helper; keep version and patch data in the Makefile.
+- Invoke build-only helpers as `sh ${FILESDIR}/name.sh` and pass path roots
+  through arguments or the environment. Helpers use `set -eu`, quote paths,
+  and guard unmatched globs.
+- Repository tools stay under `tools/`; port build helpers stay under the
+  port's `files/`. Do not add a second copy of data that the Makefile owns.
+- Verify with `sh -n`, `shellcheck -s sh`, `perl -c` and the relevant test
+  suite. State that OpenBSD `make`, package and runtime checks remain
+  outstanding when no matching host was used.
+
+See [Shell and Makefile refactoring](docs/build-script-refactoring.md) for the
+helper layout and the current port-specific exceptions.
+
 ## Ground rules
 
 1. Prefer the official OpenBSD ports infrastructure, module, and conventions
@@ -194,12 +246,15 @@ The detailed update checklist is in
 
 Choose the checks that match the change and record the exact commands,
 environment, and result. At minimum, inspect `git diff --check`, `git status`,
-and the complete diff. Run `prove -v tools/t/perl-tools.t` after changing the
-Perl tools. If execution is prohibited or the host is not a matching OpenBSD
-system, perform static review only and state that build, package, and runtime
-validation remain outstanding. Do not run `bulk-build.pl` or
-`gen-manifests-and-test.pl` as a substitute for reviewing a change; they
-install packages, build ports, and may modify the host.
+and the complete diff. When a patch changes, reconstruct the series by applying
+every `patches/patch-*` file to a pristine extraction in a `mktemp -d` tree and
+compare the result with the edited tree; a patch that only looks correct is not
+evidence that the series applies. Run `prove -v tools/t/perl-tools.t` after
+changing the Perl tools. If execution is prohibited or the host is not a
+matching OpenBSD system, perform static review only and state that build,
+package, and runtime validation remain outstanding. Do not run
+`bulk-build.pl` or `gen-manifests-and-test.pl` as a substitute for reviewing a
+change; they install packages, build ports, and may modify the host.
 
 Commit only the files needed for the task. Use an imperative subject, usually
 prefixed with `category/port:` when the change is port-specific. Do not commit
@@ -245,14 +300,13 @@ Never add cosmetic edits, timestamps, or empty changes to satisfy enforcement.
 
 After editing instructions, verify frontmatter and required headings, inspect
 local Markdown links and referenced paths, run
-`python3 scripts/validate-agent-knowledge.py --scope worktree`, and review `git diff --check`, status, and the
+`perl scripts/validate-agent-knowledge.pl --scope worktree`, and review `git diff --check`, status, and the
 complete diff. The validator checks changed paths, substantive instruction
 diffs, basic skill structure, and resolvable local Markdown links; it cannot
 judge semantic relevance, which requires human review. Its default comparison
-is against `HEAD`; set `AGENT_SYNC_BASE` to a Git base ref for CI or review of a
-branch range. This repository currently has no checked-in CI pipeline, so run
-the validator locally; CI integration can invoke the same command once a CI is
-introduced.
+is against `HEAD`; use `--scope range --base BASE_REF --head HEAD_REF` for CI or
+branch review. The GitHub PR workflow runs the contract tests and the range
+validator; run the same commands locally before delivery.
 
 Every task is blocked from completion until repository changes include at
 least one relevant, substantive instruction or skill update, the validator
@@ -263,10 +317,10 @@ review at the end; repeat validation only after correcting a detected error.
 
 ### Shared Agent Knowledge Validation Contract
 
-Use `python3 scripts/validate-agent-knowledge.py --scope worktree` for local
-changes and `python3 -m unittest discover -s tests/agent_knowledge_validator -v`
-for its contract tests. The validator requires Python 3.11+ and Git, uses only
-the Python standard library, and publishes contract version `1.0.0`. All
+Use `perl scripts/validate-agent-knowledge.pl --scope worktree` for local
+changes and `prove -v tests/agent_knowledge_validator`
+for its contract tests. The validator requires Perl 5.36+ and Git, uses only
+core Perl modules, and publishes contract version `2.0.0`. All
 adopting repositories share the same CLI, AK001-AK006 identifiers, output
 schema, and exit codes (`0` pass, `1` policy failure, `2` execution/configuration
 error). For a pull request, pass both revisions with
@@ -274,12 +328,15 @@ error). For a pull request, pass both revisions with
 
 Read [Agent Knowledge Validation Contract](docs/agent-knowledge-validation.md)
 for the complete rules, JSON schema, optional repository configuration,
-warning semantics, and extension process. AK004 and AK006 can require human
+warning semantics, and extension process. The migration record is
+[Python tooling migration](docs/python-migration.md). AK004 and AK006 can require human
 review; their warnings do not prove or disprove semantic correctness. Keep the
-canonical script and black-box unittest suite byte-identical across adopting
-repositories. Repository-specific requirements belong in the documented TOML
-configuration or a stable `AKX...` extension, never in a private fork of the
-shared rules. The GitHub PR workflow runs the same tests and range command;
+canonical Perl validator and its black-box `Test::More` suite equivalent across
+adopting repositories. Repository-specific requirements belong in the
+documented TOML configuration or a stable `AKX...` extension, never in a
+private fork of the shared rules. Do not reintroduce Python for project
+tooling: `lang/python` and the `py-*` ports are upstream port content, not
+repository scripts. The GitHub PR workflow runs the same tests and range command;
 it does not edit files or require secrets.
 
 ### Mandatory Definition of Done

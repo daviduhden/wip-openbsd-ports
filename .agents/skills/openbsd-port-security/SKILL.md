@@ -22,6 +22,18 @@ Read the selected port's Makefile, patches, configuration, `pkg/README`, `pkg/DE
    build-time features that fork or launch helpers; do not rely on configure
    defaults. A direct call blocked only by `pledge` may terminate the whole
    application instead of refusing the requested operation cleanly.
+
+   Do not add pledge's `exec` or `error` promises to a new policy, including
+   through `execpromises`. Reconstruct every promise string and its
+   compile-time conditions, not just the visible literal. If an existing
+   policy uses either promise, determine which operation needs it and either
+   remove that operation, move it before the policy is installed, or split
+   the work into a helper with its own reviewed boundary. `proc` permits
+   fork/wait/kill but not execution; retaining it does not make a child run.
+   If no exec-free design preserves the documented behavior, state the
+   limitation and leave the hardening incomplete instead of granting
+   execution. A helper that can run arbitrary commands must not be presented
+   as containment for the restricted process.
 6. Treat existing implementations separately. Tor's in-process profile rejects
    managed transports requiring exec. Codex's restricted command backend
    currently fails closed rather than claiming child containment; its
@@ -42,7 +54,21 @@ Read the selected port's Makefile, patches, configuration, `pkg/README`, `pkg/DE
    Reconfirm each behavior against the selected release and tests before
    retaining these statements; do not infer `pledge`/`unveil` containment of
    executed children.
-7. Examine executable memory requirements before adding `USE_WXNEEDED`. Codex/V8 is an existing exception requiring investigation, not a default for Rust or other ports. Do not weaken W^X globally or edit mounts/fstab automatically. Review privilege separation rather than applying setuid mechanically: emwm-utils uses setgid `auth`, drops the effective auth group before starting children, and reacquires it only around `auth_userokay(3)`; sudo-rs requires OpenPAM and has an explicitly unvalidated privilege path; VeraCrypt delegates a core helper through doas.
+7. Examine executable memory requirements before adding `USE_WXNEEDED`.
+   OpenBSD rejects a mapping that requests `PROT_WRITE|PROT_EXEC` at the same
+   time; it does not reject an RW mapping that is later changed to RX, and
+   such a secure-JIT path needs neither `USE_WXNEEDED` nor a `wxallowed`
+   mount. Add `USE_WXNEEDED` only when a component genuinely requires a
+   simultaneous writable and executable mapping and no secure transition is
+   available. RandomX enables `RANDOMX_FLAG_SECURE` on OpenBSD through
+   `jit_compiler.hpp`, so do not add the flag pre-emptively. Codex/V8 is an
+   existing exception requiring investigation, not a default for Rust or other
+   ports. Do not weaken W^X globally or edit mounts/fstab automatically.
+   Review privilege separation rather than applying setuid mechanically:
+   emwm-utils uses setgid `auth`, drops the effective auth group before
+   starting children, and reacquires it only around `auth_userokay(3)`;
+   sudo-rs requires OpenPAM and has an explicitly unvalidated privilege path;
+   VeraCrypt delegates a core helper through doas.
 8. For browser-like clients, distinguish an in-process `pledge`/`unveil`
    policy from multi-process browser sandboxing. Map browser, renderer, GPU,
    utility, and helper processes separately; state which process each rule
@@ -70,11 +96,11 @@ Read the selected port's Makefile, patches, configuration, `pkg/README`, `pkg/DE
    sendmail, tunnels, and shell escapes are an explicit execution boundary:
    `unveil` is removed on exec, so parent rules do not confine the helper.
    Check `pledge` child promises independently and do not describe them as
-   filesystem containment. A pledged launcher can retain `proc` and `exec`
-   while leaving `execpromises` unset; OpenBSD then starts executed children
-   without pledge restrictions. Do not pass `NULL` after an earlier call has
-   already set restrictive exec promises, because `NULL` preserves that
-   existing policy.
+   filesystem containment. A launcher that retains `exec` with unset
+   `execpromises` lets OpenBSD start executed children without pledge
+   restrictions; do not treat that as containment and do not add it in new
+   work. Do not pass `NULL` after an earlier call has already set restrictive
+   exec promises, because `NULL` preserves that existing policy.
 10. Run positive and negative tests on an authorized isolated OpenBSD host: normal initialization and functionality, denied paths/network operations as applicable, child execution, failure handling, and reload/shutdown. Privileged installation, doas rules, service activation, kernel limits, and mount changes require explicit authorization. Use [openbsd-port-validation](../openbsd-port-validation/SKILL.md) to record build/package/runtime evidence separately.
 
 ### LibreSSL client and sandbox reviews
@@ -85,9 +111,10 @@ SAN handling, SNI, resource ownership and error paths. Keep explicit user
 acceptance of an invalid certificate distinct from default policy; do not
 turn a no-prompt/reject setting into acceptance. When `unveil` is locked,
 allow only configured CA and client certificate/key files required by the
-TLS path. For base OpenBSD LibreSSL, default trust paths are
-`/etc/ssl/certs.pem` and `/etc/ssl/certs`; avoid unveiling `/etc/ssl`
-wholesale when those exact paths suffice. Prefer a per-run, owner-only
+TLS path. For base OpenBSD LibreSSL, the default trust file is
+`/etc/ssl/cert.pem`; `/etc/ssl/certs` and the legacy `certs.pem` name may
+also be needed for compatibility. Avoid unveiling `/etc/ssl` wholesale when
+those exact paths suffice. Prefer a per-run, owner-only
 temporary directory over granting all of `/tmp`; replace application
 `tmpfile(3)` call sites that bypass the configured private temp root when
 necessary. Require writable roots to be canonical directories owned by the
@@ -112,11 +139,14 @@ When omitting pledge's `exec` promise, retain `proc` if the application
 uses fork, wait, or kill outside helper execution. NeoMutt uses these for
 process control and helper launch; with `proc`, an exec-denied child fails
 without turning the parent's fork into a pledge violation. Document that
-external commands cannot run. Apply and lock unveil before the final pledge
-call; then omit the `unveil` promise too. Keep flavor-specific `unix` and
-GPGME descriptor-passing promises only where the linked libraries need them.
-Leave `execpromises` unset. Review pledge's exec behavior and unveil's
-removal on exec before restoring external commands.
+external commands cannot run, including the default `/usr/sbin/sendmail`
+transport and PGP/S/MIME helpers; built-in SMTP remains usable. Apply and
+lock unveil before the final pledge call, then omit the `unveil` promise too.
+Keep flavor-specific `unix` only where a linked library opens a Unix socket.
+Do not grant `sendfd`/`recvfd` unless a sendmsg/recvmsg or explicit
+descriptor-passing call site exists; NeoMutt has none. Leave
+`execpromises` unset. Review pledge's exec behavior and unveil's removal on
+exec before restoring external commands.
 
 ## Acceptance and diagnosis
 
@@ -139,6 +169,6 @@ assumptions have changed, and add reusable knowledge that improves future use.
 Correct instructions that proved wrong; keep examples and validation commands
 current, and remove obsolete or duplicated guidance. Do not record one-off
 execution details. Review linked skills and applicable `AGENTS.md` files for
-consistency, validate local references, and run `python3 scripts/validate-agent-knowledge.py --scope worktree` after instruction edits. The automated check covers
+consistency, validate local references, and run `perl scripts/validate-agent-knowledge.pl --scope worktree` after instruction edits. The automated check covers
 structure and change presence; a person must still judge whether the update is
 relevant. Include the synchronization result in the final report.

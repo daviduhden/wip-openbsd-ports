@@ -1,6 +1,6 @@
 # Agent Knowledge Validation Contract
 
-Contract version: `1.0.0`
+Contract version: `2.0.0`
 JSON schema version: `1.0`
 
 All repositories must implement the same Agent Knowledge Validation CLI
@@ -11,18 +11,24 @@ repository's agent instructions, related skills and tests.
 
 ## Run the validator
 
-Requirements: Python 3.11 or newer and Git. The validator uses only Python's
-standard library. Run it from inside the repository worktree:
+Requirements: Perl 5.36 or newer and Git. The validator uses only core Perl
+modules. Run it from inside the repository worktree:
 
 ```sh
-python3 scripts/validate-agent-knowledge.py --help
-python3 scripts/validate-agent-knowledge.py --scope worktree
-python3 scripts/validate-agent-knowledge.py \
+perl scripts/validate-agent-knowledge.pl --help
+perl scripts/validate-agent-knowledge.pl --scope worktree
+perl scripts/validate-agent-knowledge.pl \
   --scope range --base BASE_REF --head HEAD_REF
-python3 scripts/validate-agent-knowledge.py \
+perl scripts/validate-agent-knowledge.pl \
   --scope range --base BASE_REF --head HEAD_REF --format json
-python3 -m unittest discover -s tests/agent_knowledge_validator -v
+prove -v tests/agent_knowledge_validator
 ```
+
+Contract 2.0.0 replaces the canonical Python implementation with Perl. The
+CLI, rule identifiers, JSON schema version `1.0`, output conventions and exit
+codes are unchanged. `contract_version` in `.agent-knowledge-validator.toml`
+must be `2.0.0`; a repository still on the Python 1.0.0 validator must update
+both the configuration and its CI invocation before adopting the Perl files.
 
 `worktree` includes staged and unstaged tracked changes, untracked non-ignored
 files, renames, and deletions. `range` compares the merge base of `BASE_REF`
@@ -61,7 +67,7 @@ shape:
 ```json
 {
   "schema_version": "1.0",
-  "contract_version": "1.0.0",
+  "contract_version": "2.0.0",
   "status": "PASS",
   "summary": {"errors": 0, "warnings": 1},
   "checks": [],
@@ -80,7 +86,7 @@ version update and compatibility review.
 ## Optional repository configuration
 
 `.agent-knowledge-validator.toml` is optional. The only supported root table is
-`[validator]`, and `contract_version` must equal `1.0.0`. Supported settings:
+`[validator]`, and `contract_version` must equal `2.0.0`. Supported settings:
 
 - `exclude_paths`: repository-relative globs excluded from the AK001 change
   gate. Document each generated or user-state exclusion in `AGENTS.md`.
@@ -101,13 +107,32 @@ Configuration cannot execute commands, define arbitrary code, or disable
 AK002, AK003, AK004, AK005, or AK006. Unknown keys, absolute paths, parent
 traversals, and incompatible contract versions fail with exit code `2`.
 
+## Implementation language and migration
+
+Contract 2.0.0 defines Perl as the canonical implementation language. The
+validator uses only modules shipped with Perl: `Getopt::Long`, `JSON::PP`,
+`Encode`, `File::Spec`, `File::Basename`, `Cwd`, `IPC::Open3`, `IO::Select`, and `Symbol`.
+The test suite adds `File::Temp`, `File::Path`, `File::Copy` and `Test::More`. It never invokes
+a shell: Git commands use list-form `open3`, and configuration is parsed by a
+small TOML subset reader rather than evaluated.
+
+The retired Python files were `scripts/validate-agent-knowledge.py` and
+`tests/agent_knowledge_validator/test_validator.py`. Python is still present in
+the repository only as upstream port content (`lang/python`, the `py-*`
+packages and upstream patches that touch Python files); those are not
+repository scripts and must not be rewritten for this contract.
+
+A repository that adopts 2.0.0 must replace the two canonical files, update
+`contract_version`, CI, instructions and skills together, then run `prove` and
+both CLI modes before relying on the gate.
+
 ## Extending and replicating the contract
 
-Keep `scripts/validate-agent-knowledge.py` byte-identical across adopting
+Keep `scripts/validate-agent-knowledge.pl` byte-identical across adopting
 repositories. The standard black-box suite at
-`tests/agent_knowledge_validator/test_validator.py` must also remain
-equivalent and pass with `unittest`. Repository-specific config is the only
-normal way to add deterministic constraints. If a distinct extension needs
+`tests/agent_knowledge_validator/test_validator.t` must also remain equivalent
+and pass with `prove`. Repository-specific config is the only normal way to
+add deterministic constraints. If a distinct extension needs
 code, give it a stable identifier outside `AK001`–`AK006`, document why it
 cannot be expressed by the shared configuration, and add equivalent tests.
 

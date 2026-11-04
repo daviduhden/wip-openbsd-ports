@@ -10,11 +10,16 @@ no packages are installed, and no external network is accessed. The suite also
 loads the sandbox regression driver's private helpers to exercise capture and
 failure handling on a Unix host. This does not validate pledge/unveil.
 
+The small programs under `tools/t/fixtures/` exercise the capture helper
+without inline Perl (`perl -e`).
+
 To validate the actual sandbox after building/installing Codex on OpenBSD:
 
     perl devel/codex/files/openbsd-sandbox-regress.pl /usr/local/bin/codex
 
-That separate native suite compiles small C/Rust/Cargo fixtures.
+That separate native suite compiles small C/Rust/Cargo fixtures. It requires
+both `openbsd-sandbox-regress.pl` and `openbsd-sandbox-probe.pl`; the driver
+copies the probe into its disposable workspace.
 
 The local Perl::Critic installation can be used without persistent changes.
 Adjust the paths if your local install uses a different prefix:
@@ -24,6 +29,11 @@ Adjust the paths if your local install uses a different prefix:
         perlcritic --severity 1 tools/*.pl tools/t/*.t \
         devel/codex/files/*.pl net/simplex-chat/files/*.pl net/simplexmq/files/*.pl
 
+Port build helpers are POSIX shell. Check them with:
+
+    sh -n <helper>...
+    shellcheck -s sh <helper>...
+
 No critic policy exclusions are installed. Remaining default-policy findings
 are recorded in local maintenance notes under `audit/`, which is not tracked.
 
@@ -32,10 +42,10 @@ are recorded in local maintenance notes under `audit/`, which is not tracked.
 Every repository change must include a substantive, relevant agent or skill
 instruction update. Run the structural checker from the repository root:
 
-    python3 scripts/validate-agent-knowledge.py --scope worktree
+    perl scripts/validate-agent-knowledge.pl --scope worktree
 
-It compares the working tree with `HEAD`; for CI or branch review, set
-`AGENT_SYNC_BASE` to the base ref, for example `AGENT_SYNC_BASE=origin/main`.
+It compares the working tree with `HEAD`; for CI or branch review, use
+`--scope range --base origin/main --head HEAD`.
 The checker rejects changes without instruction updates and empty/trivial
 instruction diffs, then checks skill frontmatter, required maintenance headings,
 and local Markdown link targets. It uses Perl core modules and Git only. It

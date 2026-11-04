@@ -1,6 +1,6 @@
-Add OpenBSD process metadata via sysctl for timestamp and terminal
-identity. Use closefrom before exec instead of unavailable close_range
-flags, and remove the Linux/FreeBSD-only compilation guard.
+Set FD_CLOEXEC instead of calling closefrom(2) before exec.
+Callers still use descriptors above stderr until exec succeeds: closing
+them early hid exec errors and broke the askpass pipe used by sudo -A.
 
 Index: src/system/mod.rs
 --- src/system/mod.rs.orig
@@ -16,7 +16,7 @@ Index: src/system/mod.rs
  use time::ProcessCreateTime;
  
  use self::signal::SignalNumber;
-@@ -37,9 +39,6 @@
+@@ -37,9 +39,6 @@ pub mod term;
  
  pub mod wait;
  
@@ -26,22 +26,46 @@ Index: src/system/mod.rs
  pub(crate) fn _exit(status: c_int) -> ! {
      // SAFETY: this function is safe to call
      unsafe { libc::_exit(status) }
-@@ -54,7 +53,13 @@
+@@ -54,7 +53,37 @@ pub(crate) fn mark_fds_as_cloexec() -> i
      #[allow(clippy::diverging_sub_expression)]
      let res = unsafe {
          'a: {
 -            #[cfg(not(target_os = "linux"))]
-+            // OpenBSD provides closefrom(2) but no close_range(2).  Every
-+            // caller execs another program right after this function returns,
-+            // so closing the descriptors is equivalent to marking them
-+            // close-on-exec.
++            // OpenBSD provides closefrom(2) but no close_range(2).
++            // closefrom is not equivalent here: callers still use fds above
++            // stderr until exec succeeds (the error pipe and askpass output),
++            // and closing them early would hide exec failures or break -A.
 +            #[cfg(target_os = "openbsd")]
-+            break 'a cerr(libc::closefrom(lowfd as c_int));
++            {
++                let maxfd = libc::sysconf(libc::_SC_OPEN_MAX);
++                // Clamp so an unlimited or absurd _SC_OPEN_MAX neither
++                // truncates to a negative value nor loops without bound.
++                let limit = if maxfd > 0 {
++                    maxfd.min(1_048_576) as c_int
++                } else {
++                    1024
++                };
++                let mut fd = lowfd as c_int;
++                while fd < limit {
++                    let flags = libc::fcntl(fd, libc::F_GETFD);
++                    if flags == -1 {
++                        let err = io::Error::last_os_error();
++                        if err.raw_os_error() != Some(libc::EBADF) {
++                            break 'a Err(err);
++                        }
++                    } else if libc::fcntl(fd, libc::F_SETFD, flags | libc::FD_CLOEXEC) == -1
++                    {
++                        break 'a Err(io::Error::last_os_error());
++                    }
++                    fd += 1;
++                }
++                break 'a Ok(());
++            }
 +            #[cfg(not(any(target_os = "linux", target_os = "openbsd")))]
              break 'a cerr(libc::close_range(
                  lowfd as c_uint,
                  c_uint::MAX,
-@@ -828,6 +833,71 @@
+@@ -828,6 +857,71 @@ impl Process {
              i64::from(ki_start.tv_usec) * 1000,
          ))
      }

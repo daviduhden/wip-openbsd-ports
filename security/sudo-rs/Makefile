@@ -6,6 +6,7 @@ GH_ACCOUNT =		trifectatechfoundation
 GH_PROJECT =		sudo-rs
 GH_TAGNAME =		v${V}
 CATEGORIES =		security
+REVISION =		1
 
 HOMEPAGE =		https://github.com/trifectatechfoundation/sudo-rs/
 
@@ -25,8 +26,9 @@ LIB_DEPENDS =		security/openpam
 
 # Upstream only supports Linux and FreeBSD.  The patches under patches/
 # add the OpenBSD bits: the platform guard, the PAM bindings selection,
-# closefrom(2) instead of close_range(2), sysctl(2)-based process
-# information, POLLRDHUP and the AT_EMPTY_PATH permission check.
+# closing inherited descriptors instead of close_range(2),
+# sysctl(2)-based process information, POLLRDHUP and the AT_EMPTY_PATH
+# permission check.
 # The result is a first porting attempt and needs to be built and tested
 # on OpenBSD; see pkg/DESCR.
 MODCARGO_INSTALL =	No

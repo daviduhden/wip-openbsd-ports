@@ -1,0 +1,37 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+PAM configuration
+=================
+
+sudo-rs always authenticates through PAM. OpenBSD has no PAM in the base
+system, so security/openpam must be installed and /etc/pam.d/sudo must
+exist before sudo can be used. The sudoers file alone is not enough.
+
+Write a service that performs a real authentication check for the
+invoking user. security/openpam provides pam_bsdauth(8) for OpenBSD's BSD
+authentication. A minimal service is:
+
+    auth    required /usr/local/lib/security/pam_bsdauth.so
+    account required /usr/local/lib/security/pam_permit.so
+    session required /usr/local/lib/security/pam_permit.so
+
+Do not use pam_permit(8), pam_self(8) or pam_rootok(8) as the only
+authentication module: they accept the user without verifying a password
+or other credential. Review the configured stack with pamtester(1) from
+security/openpam before relying on it.
+
+Privilege model
+===============
+
+This package installs sudo(8) setuid root, matching security/sudo. Any
+defect in the porting patches, the PAM stack or the sudoers policy can
+therefore yield root privileges. The OpenBSD patch set is a first porting
+attempt: build and exercise the escalation, sudoedit, timestamp and
+terminal checks on a dedicated machine before deployment. Until then,
+prefer the packages already used on the target system.
+
+The default descriptor policy marks inherited descriptors close-on-exec;
+it does not close descriptors that the exec error pipe or an askpass
+helper still needs before exec succeeds.

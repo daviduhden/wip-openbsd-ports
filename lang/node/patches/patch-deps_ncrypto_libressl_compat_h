@@ -1,11 +1,11 @@
-Add LibreSSL compatibility helpers for ncrypto.
-Map missing allocation, secure-heap and key-check helpers onto
-the primitives LibreSSL actually provides.
+Check RSA modulus parity and DSA subgroup membership in the fallback.
+LibreSSL has no EVP_PKEY_public_check, so this compatibility helper must
+reject malformed keys just as strictly.
 
 Index: deps/ncrypto/libressl_compat.h
 --- /dev/null
 +++ deps/ncrypto/libressl_compat.h
-@@ -0,0 +1,204 @@
+@@ -0,0 +1,219 @@
 +#pragma once
 +
 +// Compatibility helpers for building ncrypto against LibreSSL.
@@ -104,7 +104,10 @@ Index: deps/ncrypto/libressl_compat.h
 +      if (rsa == nullptr) return 0;
 +      RSA_get0_key(rsa, &n, &e, nullptr);
 +      if (n == nullptr || e == nullptr) return 0;
-+      return BN_num_bits(n) >= 512 && BN_is_odd(e) ? 1 : 0;
++      if (BN_is_negative(n) || !BN_is_odd(n)) return 0;
++      if (BN_is_negative(e) || !BN_is_odd(e) ||
++          BN_cmp(e, BN_value_one()) <= 0) return 0;
++      return BN_num_bits(n) >= 512 ? 1 : 0;
 +    }
 +    case EVP_PKEY_EC: {
 +      const EC_KEY* key = EVP_PKEY_get0_EC_KEY(pkey);
@@ -123,7 +126,19 @@ Index: deps/ncrypto/libressl_compat.h
 +        return 0;
 +      if (BN_is_negative(pub) || BN_is_zero(pub) || BN_cmp(pub, p) >= 0)
 +        return 0;
-+      return 1;
++      // RFC 3279: the public value must lie in the order-q subgroup.
++      BN_CTX* bn_ctx = BN_CTX_new();
++      BIGNUM* check = BN_new();
++      if (bn_ctx == nullptr || check == nullptr) {
++        BN_CTX_free(bn_ctx);
++        BN_free(check);
++        return 0;
++      }
++      int valid = BN_mod_exp(check, pub, q, p, bn_ctx) == 1 &&
++                  BN_is_one(check);
++      BN_CTX_free(bn_ctx);
++      BN_free(check);
++      return valid ? 1 : 0;
 +    }
 +    case EVP_PKEY_DH: {
 +      const DH* dh = EVP_PKEY_get0_DH(pkey);

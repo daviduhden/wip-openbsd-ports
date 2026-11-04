@@ -1,6 +1,6 @@
-Enable CET/IBT on OpenBSD, use -idirafter for local includes, and
-keep W^X.  The external OpenSSL rpath is no longer needed because
-this port uses the base-system LibreSSL.
+Enable CET/IBT, use -idirafter for local includes, and keep W^X.
+Exclude OpenBSD powerpc64 from -mminimal-toc. The external OpenSSL
+rpath is no longer needed because this port uses base LibreSSL.
 
 Index: common.gypi
 --- common.gypi.orig
@@ -23,23 +23,30 @@ Index: common.gypi
          'conditions': [
            ['enable_lto=="true"', {
              'cflags': ['<(lto)'],
-@@ -596,8 +598,8 @@
+@@ -596,7 +598,7 @@
              'standalone_static_library': 1,
            }],
            ['OS=="openbsd"', {
 -            'cflags': [ '-I/usr/local/include' ],
--            'ldflags': [ '-Wl,-z,wxneeded' ],
 +            'cflags': [ '-idirafter /usr/local/include' ],
-+            'ldflags': [ '-Wl,-z,wxneeded' ],
+             'ldflags': [ '-Wl,-z,wxneeded' ],
            }],
            ['_toolset=="host"', {
-             'conditions': [
-@@ -609,7 +613,7 @@
+@@ -609,7 +611,7 @@
                  'cflags': [ '-m64' ],
                  'ldflags': [ '-m64' ],
                }],
 -              [ 'host_arch=="ppc64" and OS not in "aix os400"', {
 +              [ 'host_arch=="ppc64" and OS not in "aix os400 openbsd"', {
+                 'conditions': [
+                   [ 'clang==0', {
+                     'cflags': [ '-mminimal-toc' ],
+@@ -638,7 +640,7 @@
+                 'cflags': [ '-m64' ],
+                 'ldflags': [ '-m64' ],
+               }],
+-              [ 'target_arch=="ppc64" and OS not in "aix os400"', {
++              [ 'target_arch=="ppc64" and OS not in "aix os400 openbsd"', {
                  'conditions': [
                    [ 'clang==0', {
                      'cflags': [ '-mminimal-toc' ],

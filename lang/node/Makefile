@@ -13,7 +13,7 @@ DIST_TUPLE =		codeberg qbit node-pledge 1.1.4 \
 DISTNAME =		node-${NODE_VERSION}
 PKGNAME =		${DISTNAME:S/v//g}
 EPOCH =			0
-REVISION =		1
+REVISION =		2
 
 CATEGORIES =		lang devel
 
@@ -87,10 +87,7 @@ post-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/share/node
 	${INSTALL_DATA} ${FULLDISTDIR}/${DISTNAME}-headers.tar.gz \
 		${PREFIX}/share/node/${DISTNAME}-headers.tar.gz
-	cd ${PREFIX}/lib/node_modules/npm/node_modules && for x in *; do \
-		mv $$x ../..; \
-		ln -s ../../$$x $$x; \
-	done
+	env PREFIX=${PREFIX} sh ${FILESDIR}/link-npm-modules.sh
 
 # Includes a lot of networking tests that will fail when running as _pbuild
 do-test:

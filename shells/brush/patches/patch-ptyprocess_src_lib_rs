@@ -1,13 +1,11 @@
-OpenBSD has no ptsname_r and does not acquire the controlling terminal
-just by opening the pty slave: like FreeBSD/macOS it has to call
-TIOCSCTTY (see login_tty(3)). Add an OpenBSD get_slave_name based on
-ptsname(3) and route OpenBSD to the TIOCSCTTY branch of
-make_controlling_tty.
+Cast TIOCSCTTY to the platform ioctl request type.
+OpenBSD ioctl(2) takes c_ulong, which is 32-bit on i386 and armv7, so a
+hard-coded u64 breaks those builds.
 
 Index: ptyprocess/src/lib.rs
 --- ptyprocess/src/lib.rs.orig
 +++ ptyprocess/src/lib.rs
-@@ -46,7 +46,7 @@ use nix::fcntl::{fcntl, open, FcntlArg, FdFlag, OFlag}
+@@ -46,7 +46,7 @@ pub use nix::Error;
  use nix::fcntl::{fcntl, open, FcntlArg, FdFlag, OFlag};
  use nix::libc::{self, winsize, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO};
  use nix::pty::PtyMaster;
@@ -16,7 +14,7 @@ Index: ptyprocess/src/lib.rs
  use nix::sys::stat::Mode;
  use nix::sys::wait::{self, waitpid};
  use nix::sys::{signal, termios};
-@@ -469,6 +469,11 @@
+@@ -469,6 +469,11 @@ impl AsRawFd for Master {
      }
  }
  
@@ -28,7 +26,7 @@ Index: ptyprocess/src/lib.rs
  #[cfg(any(target_os = "linux", target_os = "android"))]
  fn get_slave_name(fd: &PtyMaster) -> Result<String> {
      nix::pty::ptsname_r(fd)
-@@ -655,7 +660,7 @@
+@@ -655,7 +660,7 @@ fn get_term_char(fd: RawFd, char: Specia
  }
  
  fn make_controlling_tty(ptm: &Master) -> Result<()> {
@@ -37,7 +35,7 @@ Index: ptyprocess/src/lib.rs
      {
          let pts_name = ptm.get_slave_name()?;
          // https://github.com/pexpect/ptyprocess/blob/c69450d50fbd7e8270785a0552484182f486092f/ptyprocess/_fork_pty.py
-@@ -702,7 +707,7 @@
+@@ -702,7 +707,7 @@ fn make_controlling_tty(ptm: &Master) ->
          close(fd)?;
      }
  
@@ -46,3 +44,12 @@ Index: ptyprocess/src/lib.rs
      {
          let pts_fd = ptm.get_slave_fd()?;
  
+@@ -711,7 +716,7 @@ fn make_controlling_tty(ptm: &Master) ->
+ 
+         use nix::libc::ioctl;
+         use nix::libc::TIOCSCTTY;
+-        match unsafe { ioctl(pts_fd, TIOCSCTTY as u64, 0) } {
++        match unsafe { ioctl(pts_fd, TIOCSCTTY as nix::libc::c_ulong, 0) } {
+             0 => {}
+             _ => return Err(Error::last()),
+         }

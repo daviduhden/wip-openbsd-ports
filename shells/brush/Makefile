@@ -14,6 +14,7 @@ GH_TAGNAME =		brush-shell-v${V}
 
 DIST_TUPLE +=		github zhiburt ptyprocess ${PTYPROCESS_COMMIT} ptyprocess
 CATEGORIES =		shells
+REVISION=	1
 
 HOMEPAGE =		https://github.com/reubeno/brush/
 

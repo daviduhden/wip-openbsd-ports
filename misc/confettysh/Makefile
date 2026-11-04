@@ -7,6 +7,7 @@ DISTNAME =		confettysh-${MODGO_VERSION}
 WRKDIST =		${WRKDIR}/${MODGO_MODNAME}@${MODGO_VERSION}
 
 CATEGORIES =		misc
+REVISION =		1
 
 HOMEPAGE =		https://github.com/charmbracelet/confettysh
 

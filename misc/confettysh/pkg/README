@@ -14,9 +14,12 @@ The rc.d(8) script runs the server as the _confettysh user with
 	doas rcctl enable confettysh
 	doas rcctl start confettysh
 
-By default the server listens on 0.0.0.0:2222 and also exposes the
-Prometheus metrics endpoint on 0.0.0.0:9222.  Both addresses come from
-the single -listen flag.  Override the defaults in /etc/rc.conf.local,
+The packaged rc.d(8) script listens on 127.0.0.1:2222 and exposes the
+Prometheus metrics endpoint on 127.0.0.1:9222.  confettysh performs no
+authentication, so do not move it to a public address unless the network
+in front of it authenticates and restricts access.  The -listen flag
+selects the address for both endpoints; -port and -metrics-port select
+their ports.  Override the defaults in /etc/rc.conf.local,
 for example:
 
 	confettysh_flags="-listen 127.0.0.1 -port 2222 -metrics-port 9222"

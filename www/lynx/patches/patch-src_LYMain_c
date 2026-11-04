@@ -1,5 +1,6 @@
-Constrain Lynx paths and require private writable sandbox roots.
-Resolve unveil rules before applying them and limit TLS trust paths.
+Cover the LibreSSL default CA file and the legacy bundle name.
+Without either path, HTTPS fails closed unless an environment or
+configuration override supplies the trust store.
 
 Index: src/LYMain.c
 --- src/LYMain.c.orig
@@ -399,7 +400,7 @@ Index: src/LYMain.c
  /*
   * Wow!  Someone wants to start up Lynx.
   */
-@@ -2182,6 +2570,184 @@ int main(int argc,
+@@ -2182,6 +2570,185 @@ int main(int argc,
      }
  
      /*
@@ -486,6 +487,7 @@ Index: src/LYMain.c
 +	    unveil_private_dir(lynx_save_space, "rwc");
 +
 +	/* Read-only configuration, help, TLS trust and terminal data. */
++	unveil_file("/etc/ssl/cert.pem", "r", 0);
 +	unveil_file("/etc/ssl/certs.pem", "r", 0);
 +	unveil_dir("/etc/ssl/certs", "r", 0);
 +	unveil_path("/etc/localtime", "r", 0);

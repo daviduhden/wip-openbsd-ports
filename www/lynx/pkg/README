@@ -5,7 +5,9 @@
 This port disables Lynx features that launch external programs,
 including shell, editor, mail, and clipboard helpers. Local file access
 is limited by an unveil(2) policy; arbitrary paths outside the current
-directory and the listed state files may be unavailable.
+directory and the listed state files may be unavailable. The current
+directory is not unveiled when it is HOME or lies inside HOME, so run
+Lynx from a directory you are willing to expose for that session.
 
 Run Lynx as an unprivileged user with HOME set to an existing directory.
 Startup refuses root and fails closed if HOME cannot be resolved. Lynx

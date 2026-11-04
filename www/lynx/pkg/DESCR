@@ -12,3 +12,9 @@ information systems intended primarily for local access. For example,
 Lynx has been used to build several Campus Wide Information Systems
 (CWIS). In addition, Lynx can be used to build systems isolated within a
 single LAN.
+
+On OpenBSD this package disables features that start external programs,
+including editor, shell, mail, exec, dired, rlogin, telnet and tn3270,
+and confines filesystem access with unveil(2). The in-process finger
+client remains available. See lynx(1) and the package README for the
+resulting limits.

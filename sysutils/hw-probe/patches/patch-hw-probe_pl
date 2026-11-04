@@ -1,0 +1,104 @@
+Validate options that reach a root shell and quote single-quoted values.
+Use list-form curl for the generated inventory request.
+
+Index: hw-probe.pl
+--- hw-probe.pl.orig
++++ hw-probe.pl
+@@ -190,6 +190,27 @@ GetOptions("h|help!" => \$Opt{"Help"},
+   "output=s" => \$Opt{"OutputDir"}
+ ) or die "\n".$ShortUsage;
+ 
++# Values below are interpolated into command lines that run as root.
++# Reject anything outside the documented identifier and address forms.
++if(defined $Opt{"Group"} and $Opt{"Group"}!~/\A[A-Za-z0-9][A-Za-z0-9._-]{0,63}\z/)
++{
++    printMsg("ERROR", "invalid inventory id");
++    exitStatus(1);
++}
++
++if(defined $Opt{"Email"} and $Opt{"Email"}!~/\A[A-Za-z0-9._%+-]+\@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\z/)
++{
++    printMsg("ERROR", "invalid Email address");
++    exitStatus(1);
++}
++
++# The path is placed on a command line that can run as root.
++if(defined $Opt{"HWInfoPath"} and not -x $Opt{"HWInfoPath"})
++{
++    printMsg("ERROR", "hwinfo path is not an executable file");
++    exitStatus(1);
++}
++
+ if($#ARGV_COPY==-1)
+ { # Run from STDIN
+     if (-t STDIN)
+@@ -2766,6 +2787,13 @@ sub runCmd($)
+     return `LC_ALL=$LOCALE $AddPath$Cmd`;
+ }
+ 
++sub shellSingleQuote($)
++{
++    my $Value = shift;
++    $Value =~ s/'/'\\''/g;
++    return "'".$Value."'";
++}
++
+ sub generateGroup()
+ {
+     my $GroupURL = $URL."/get_group.php";
+@@ -2774,8 +2802,24 @@ sub generateGroup()
+     
+     if(checkCmd("curl"))
+     {
+-        my $CurlCmd = "curl -s -S -f -POST -F get=group -F email=".$Opt{"Email"}." -F tool_ver=\'$TOOL_VERSION\' -H \"Expect:\" $GroupURL"; # --http1.0
+-        $Log = qx/$CurlCmd 2>&1/;
++        # List form avoids a shell and any interpolation of the address.
++        my @Cmd = ("curl", "-s", "-S", "-f", "-POST",
++                   "-F", "get=group",
++                   "-F", "email=".$Opt{"Email"},
++                   "-F", "tool_ver=".$TOOL_VERSION,
++                   "-H", "Expect:", $GroupURL);
++        if(open(my $CurlFH, "-|", @Cmd))
++        {
++            local $/;
++            $Log = <$CurlFH>;
++            $Log = "" unless defined $Log;
++            close($CurlFH);
++        }
++        else
++        {
++            printMsg("ERROR", "failed to run curl");
++            exitStatus(1);
++        }
+     }
+     else {
+         $Log = postRequest($GroupURL, { "get"=>"group", "email"=>$Opt{"Email"}, "tool_ver"=>$TOOL_VERSION }, "NoSSL");
+@@ -2966,13 +3010,13 @@ sub uploadData()
+     
+     if($Opt{"PC_Name"})
+     {
+-        @Cmd = (@Cmd, "-F id='".$Opt{"PC_Name"}."'");
++        @Cmd = (@Cmd, "-F id=".shellSingleQuote($Opt{"PC_Name"}));
+         $Data{"id"} = $Opt{"PC_Name"};
+     }
+     
+     if($Opt{"Group"})
+     {
+-        @Cmd = (@Cmd, "-F group='".$Opt{"Group"}."'");
++        @Cmd = (@Cmd, "-F group=".shellSingleQuote($Opt{"Group"}));
+         $Data{"group"} = $Opt{"Group"};
+     }
+     
+@@ -19526,12 +19570,6 @@ sub scenario()
+         generateGroup();
+     }
+     
+-    if($Opt{"Email"} and $Opt{"Email"}!~/\A[^\@]+\@[^\@]+\.\w{2,}\Z/)
+-    {
+-        printMsg("ERROR", "invalid Email address");
+-        exitStatus(1);
+-    }
+-    
+     if($Opt{"RemindGroup"})
+     {
+         probeHWaddr();

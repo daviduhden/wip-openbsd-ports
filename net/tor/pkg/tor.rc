@@ -1,17 +1,25 @@
 #!/bin/ksh
 
 daemon="${TRUEPREFIX}/bin/tor"
-daemon_user="_tor"
 daemon_flags="--RunAsDaemon 1"
 daemon_timeout=60
 
-# Run tor in the foreground under rc.subr as _tor. The packaged torrc still
-# contains `User _tor` and `RunAsDaemon 1`; the command-line flag overrides
-# the latter, and tor accepts the already-dropped user. Binding ports below
-# 1024 requires an explicit configuration change and a privileged wrapper.
+# tor starts as root so it can bind low ports and then drops to _tor itself,
+# as configured by the packaged torrc. Running it through daemon_user would
+# make the later switch_id(2) fail because setgroups(2) is root-only.
 . /etc/rc.d/rc.subr
 
 rc_stop_signal=INT
+
+# tor must drop privileges itself: the packaged torrc sets User _tor.
+# Refuse to start as root if an administrator removed that setting.
+rc_pre() {
+	if ! grep -Eq '^[[:space:]]*User[[:space:]]+_tor([[:space:]]|$)' \
+	    /etc/tor/torrc; then
+		echo "tor: /etc/tor/torrc must set 'User _tor'" >&2
+		return 1
+	fi
+}
 
 rc_configtest() {
 	rc_exec "${daemon} ${daemon_flags} --verify-config"

@@ -33,25 +33,12 @@ CABAL_INC_HOME ?=	${WRKDIR}/.cabal-inc-home
 # this Makefile remains the single source of truth, then replace cabal.inc
 # atomically after a successful run.
 cabal-inc:
-	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}
-	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}/.cabal
-	env HOME=${CABAL_INC_HOME} CABAL_DIR=${CABAL_INC_HOME}/.cabal \
-		LC_ALL=en_US.UTF-8 \
-		${LOCALBASE}/bin/cabal update
-	if [ ! -f ${CABAL_INC_HOME}/.cabal/config ] && \
-		[ -f ${CABAL_INC_HOME}/.config/cabal/config ]; then \
-		cp ${CABAL_INC_HOME}/.config/cabal/config \
-			${CABAL_INC_HOME}/.cabal/config; \
-	fi
-	env HOME=${CABAL_INC_HOME} CABAL_DIR=${CABAL_INC_HOME}/.cabal \
-		LC_ALL=en_US.UTF-8 \
-		${LOCALBASE}/bin/cabal-bundler --openbsd \
-			${MODCABAL_STEM}-${MODCABAL_VERSION} \
-			> ${WRKDIR}/cabal.inc.raw
-	sed -e '/^MODCABAL_STEM[[:space:]]*=/d' \
-		-e '/^MODCABAL_VERSION[[:space:]]*=/d' \
-		${WRKDIR}/cabal.inc.raw > ${WRKDIR}/cabal.inc.new
-	mv ${WRKDIR}/cabal.inc.new ${.CURDIR}/cabal.inc
+	env CABAL_INC_HOME=${CABAL_INC_HOME} LOCALBASE=${LOCALBASE} \
+		WRKDIR=${WRKDIR} PORTDIR=${.CURDIR} \
+		MODCABAL_STEM=${MODCABAL_STEM} \
+		MODCABAL_VERSION=${MODCABAL_VERSION} \
+		INSTALL_DATA_DIR="${INSTALL_DATA_DIR}" \
+		sh ${FILESDIR}/cabal-inc.sh
 
 .include "cabal.inc"
 

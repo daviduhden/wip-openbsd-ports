@@ -55,6 +55,16 @@ MODCABAL_BUILD_ARGS = -v2
 .endif
 
 CABAL_INC_HOME ?= ${WRKDIR}/.cabal-inc-home
+CABAL_INC_ENV = \
+	CABAL_INC_HOME=${CABAL_INC_HOME} LOCALBASE=${LOCALBASE} \
+	WRKDIR=${WRKDIR} WRKBUILD=${WRKBUILD} PORTDIR=${.CURDIR} \
+	FILESDIR=${FILESDIR} \
+	MODCABAL_STEM=${MODCABAL_STEM} \
+	MODCABAL_VERSION=${MODCABAL_VERSION} \
+	CHAT_CABAL_PACKAGE_PATHS='${CHAT_CABAL_PACKAGE_PATHS}' \
+	CABAL_INC_SKIP='${CABAL_INC_SKIP}' \
+	CABAL_INC_EXTRA='${CABAL_INC_EXTRA}' \
+	INSTALL_DATA_DIR="${INSTALL_DATA_DIR}"
 CABAL_INC_SKIP = simplexmq,aeson,socks,direct-sqlcipher,sqlcipher-simple,terminal,android-support,zip
 CABAL_INC_EXTRA = yaml:0.11.11.2:0
 NETWORK_V = 3.2.9.0
@@ -179,94 +189,32 @@ TEST_DEPENDS = databases/sqlite3
 SIMPLEX_TEST_OPTIONS ?=
 SIMPLEX_TEST_OUTPUT ?= 0
 
-CHAT_CABAL_CHECK_PATHS = \
-	for _pkg in ${CHAT_CABAL_PACKAGE_PATHS}; do \
-		if [ ! -f "$$_pkg" ]; then \
-			echo "missing cabal package: $$_pkg" >&2; \
-			exit 1; \
-		fi; \
-	done
-
 post-patch:
-	# Normalize extracted source trees to LF before dependency patches.
-	find ${WRKDIR} -type f \( -name '*.hs' -o -name '*.cabal' \
-		-o -name '*.sql' -o -name '*.h' -o -name '*.c' \) \
-		-exec ${LOCALBASE}/bin/dos2unix -q {} +
-	# Query plans are platform-specific.  If the OpenBSD plans have been
-	# regenerated (make do-test SIMPLEX_UPDATE_QUERY_PLANS=1, then copied to
-	# files/), install them so "Save query plans" verifies them.
-	for _plans in chat_query_plans.txt agent_query_plans.txt; do \
-		if [ -f ${FILESDIR}/$$_plans ]; then \
-			${INSTALL_DATA} ${FILESDIR}/$$_plans \
-				${WRKSRC}/src/Simplex/Chat/Store/SQLite/Migrations/$$_plans; \
-		fi; \
-	done
-	patch -d ${WRKDIR}/direct-sqlcipher -p0 \
-		< ${FILESDIR}/direct-sqlcipher/patch-direct-sqlcipher_cabal
-	if [ ! -f ${WITHERABLE_DIR}/witherable.cabal ]; then \
-		${TAR} -C ${WRKDIR} -xzf ${WITHERABLE_TARBALL}; \
-	fi
-	${CHAT_CABAL_CHECK_PATHS}
+	env WRKDIR=${WRKDIR} WRKSRC=${WRKSRC} FILESDIR=${FILESDIR} \
+		LOCALBASE=${LOCALBASE} \
+		INSTALL_DATA="${INSTALL_DATA}" \
+		INSTALL_DATA_DIR="${INSTALL_DATA_DIR}" \
+		CHAT_CABAL_PACKAGE_PATHS='${CHAT_CABAL_PACKAGE_PATHS}' \
+		SIMPLEXMQ_PATCHES='${SIMPLEXMQ_PATCHES}' \
+		AESON_PATCHES='${AESON_PATCHES}' \
+		CRYPTOSTORE_PATCHES='${CRYPTOSTORE_PATCHES}' \
+		CRYPTOSTORE_V=${CRYPTOSTORE_V} \
+		TLS_PATCHES='${TLS_PATCHES}' TLS_V=${TLS_V} \
+		HTTP2_PATCHES='${HTTP2_PATCHES}' HTTP2_V=${HTTP2_V} \
+		NETWORK_V=${NETWORK_V} UNIX_TIME_V=${UNIX_TIME_V} \
+		ENTROPY_V=${ENTROPY_V} \
+		WITHERABLE_DIR=${WITHERABLE_DIR} \
+		WITHERABLE_TARBALL=${WITHERABLE_TARBALL} \
+		TAR=${TAR} \
+		sh ${FILESDIR}/post-patch.sh
 	printf '%s\n' \
 		'allow-newer: *' \
 		${CHAT_CABAL_PACKAGES} \
 		${CHAT_CABAL_COMMON_OPTIONS} \
 		${CHAT_CABAL_BUILD_OPTIONS} \
 		>> ${WRKSRC}/cabal.project.local
-.for _p in ${SIMPLEXMQ_PATCHES}
-	patch -d ${WRKDIR}/simplexmq -p0 < ${FILESDIR}/simplexmq/${_p}
-.endfor
-.for _p in ${AESON_PATCHES}
-	patch -d ${WRKDIR}/aeson -p0 < ${FILESDIR}/aeson/${_p}
-.endfor
-.for _p in ${CRYPTOSTORE_PATCHES}
-	if [ -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} ]; then \
-		patch -d ${WRKDIR}/cryptostore-${CRYPTOSTORE_V} -p0 \
-			< ${FILESDIR}/cryptostore/${_p}; \
-	fi
-.endfor
-	if [ -f ${WRKDIR}/network-${NETWORK_V}/network.cabal ]; then \
-		patch -d ${WRKDIR}/network-${NETWORK_V} -p0 \
-			< ${FILESDIR}/network/patch-network_cabal; \
-		${INSTALL_DATA_DIR} ${WRKDIR}/network-${NETWORK_V}/include; \
-		${INSTALL_DATA} ${FILESDIR}/network/HsNetworkConfig.h \
-			${WRKDIR}/network-${NETWORK_V}/include/HsNetworkConfig.h; \
-	fi
-.for _p in ${TLS_PATCHES}
-	if [ -d ${WRKDIR}/tls-${TLS_V} ]; then \
-		patch -d ${WRKDIR}/tls-${TLS_V} -p0 \
-			< ${FILESDIR}/tls/${_p}; \
-	fi
-.endfor
-.for _p in ${HTTP2_PATCHES}
-	if [ -d ${WRKDIR}/http2-${HTTP2_V} ]; then \
-		patch -d ${WRKDIR}/http2-${HTTP2_V} -p0 \
-			< ${FILESDIR}/http2/${_p}; \
-	fi
-.endfor
-	if [ -f ${WRKDIR}/unix-time-${UNIX_TIME_V}/unix-time.cabal ]; then \
-		patch -d ${WRKDIR}/unix-time-${UNIX_TIME_V} -p0 \
-			< ${FILESDIR}/unix-time/patch-unix-time_cabal; \
-		${INSTALL_DATA} ${FILESDIR}/unix-time/UnixTimeConfig.h \
-			${WRKDIR}/unix-time-${UNIX_TIME_V}/cbits/config.h; \
-	fi
-	if [ -f ${WRKDIR}/entropy-${ENTROPY_V}/entropy.cabal ]; then \
-		patch -d ${WRKDIR}/entropy-${ENTROPY_V} -p0 \
-			< ${FILESDIR}/entropy/patch-entropy_cabal; \
-	fi
 
 cabal-inc: patch
-	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}
-	${INSTALL_DATA_DIR} ${CABAL_INC_HOME}/.cabal
-	env HOME=${CABAL_INC_HOME} CABAL_DIR=${CABAL_INC_HOME}/.cabal \
-		LC_ALL=en_US.UTF-8 \
-		${LOCALBASE}/bin/cabal update
-	if [ ! -f ${CABAL_INC_HOME}/.cabal/config ] && \
-		[ -f ${CABAL_INC_HOME}/.config/cabal/config ]; then \
-		cp ${CABAL_INC_HOME}/.config/cabal/config \
-			${CABAL_INC_HOME}/.cabal/config; \
-	fi
-	${CHAT_CABAL_CHECK_PATHS}
 	printf '%s\n' \
 		'allow-newer: *' \
 		'packages: .' \
@@ -274,21 +222,8 @@ cabal-inc: patch
 		${CHAT_CABAL_COMMON_OPTIONS} \
 		${CHAT_CABAL_BUILD_OPTIONS} \
 		> ${WRKSRC}/cabal.project.local
-	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
-		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
-		${LOCALBASE}/bin/cabal v2-build --dry-run \
-		-w ${LOCALBASE}/bin/ghc \
-		--disable-benchmarks --disable-tests \
-		exe:simplex-chat
-	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
-		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
-		${LOCALBASE}/bin/cabal-bundler --openbsd \
-		--plan dist-newstyle/cache/plan.json \
-		--executable simplex-chat \
-		${MODCABAL_STEM}-${MODCABAL_VERSION} \
-		> ${WRKDIR}/simplex-chat.raw.inc
+	env ${CABAL_INC_ENV} sh ${FILESDIR}/cabal-inc.sh build
 	# Test builds need simplexmq to expose the server modules imported by tests.
-	${CHAT_CABAL_CHECK_PATHS}
 	printf '%s\n' \
 		'allow-newer: *' \
 		'packages: .' \
@@ -296,20 +231,8 @@ cabal-inc: patch
 		${CHAT_CABAL_COMMON_OPTIONS} \
 		${CHAT_CABAL_TEST_OPTIONS} \
 		> ${WRKSRC}/cabal.project.local
-	cd ${WRKBUILD} && env HOME=${CABAL_INC_HOME} \
-		CABAL_DIR=${CABAL_INC_HOME}/.cabal LC_ALL=en_US.UTF-8 \
-		${LOCALBASE}/bin/cabal v2-test --dry-run \
-		-w ${LOCALBASE}/bin/ghc \
-		--disable-benchmarks \
-		test:simplex-chat-test
-	cp ${WRKBUILD}/dist-newstyle/cache/plan.json \
-		${WRKDIR}/simplex-chat.test.plan.json
-	env SKIP=${CABAL_INC_SKIP} EXTRA=${CABAL_INC_EXTRA} \
-		perl ${FILESDIR}/cabal-deps-merge.pl \
-		${WRKDIR}/simplex-chat.raw.inc \
-			${WRKDIR}/simplex-chat.test.plan.json \
-			> ${WRKDIR}/cabal.inc.new
-	mv ${WRKDIR}/cabal.inc.new ${.CURDIR}/cabal.inc
+	env ${CABAL_INC_ENV} sh ${FILESDIR}/cabal-inc.sh test
+	env ${CABAL_INC_ENV} sh ${FILESDIR}/cabal-inc.sh merge
 
 post-install:
 	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/${PKGSTEM}
@@ -322,7 +245,7 @@ do-test:
 	# Keep simplexmq unflagged here so the test suite can import its server APIs.
 	# Shared XFTP probes must not leave received files in the global /tmp.
 	mkdir -p -m 700 ${WRKDIR}/test-tmp
-	${CHAT_CABAL_CHECK_PATHS}
+	sh ${FILESDIR}/check-package-paths.sh ${CHAT_CABAL_PACKAGE_PATHS}
 	# Cabal keeps the first value of a repeated per-package flag, so rewrite
 	# the build-only +client_library stanza instead of appending a new one.
 	sed 's/^    flags: +client_library$$/    flags: -client_library/' \

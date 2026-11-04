@@ -6,9 +6,7 @@ GH_TAGNAME =	0.3.0
 WANTLIB += ${MODCARGO_WANTLIB}
 
 post-install:
-	cd ${PREFIX}/bin && for program in *; do \
-		mv $$program uu-$$program; \
-	done
+	env PREFIX=${PREFIX} sh ${FILESDIR}/prefix-binaries.sh
 
 .include "crates.inc"
 

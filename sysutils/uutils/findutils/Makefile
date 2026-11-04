@@ -8,9 +8,7 @@ LIB_DEPENDS =	textproc/oniguruma
 WANTLIB += ${MODCARGO_WANTLIB} onig
 
 post-install:
-	cd ${PREFIX}/bin && for program in *; do \
-		mv $$program uu-$$program; \
-	done
+	env PREFIX=${PREFIX} sh ${FILESDIR}/prefix-binaries.sh
 
 .include "crates.inc"
 

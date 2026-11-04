@@ -83,16 +83,10 @@ do-install:
 	${INSTALL_DATA} ${WRKSRC}/src/toolboxrc ${PREFIX}/lib/X11/toolboxrc
 	${INSTALL_DATA_DIR} ${PREFIX}/share/emwm/icons
 	${INSTALL_DATA} ${WRKDIR}/icons/*.xpm ${PREFIX}/share/emwm/icons/
-	${INSTALL_DATA_DIR} ${PREFIX}/share/icons/core-hr/cursors
-	for f in ${WRKDIR}/xc-core-hr/core-hr/cursors/*; do \
-		if test -L $$f; then \
-			ln -s $$(readlink $$f) \
-				${PREFIX}/share/icons/core-hr/cursors/$${f##*/}; \
-		else \
-			${INSTALL_DATA} $$f \
-				${PREFIX}/share/icons/core-hr/cursors/; \
-		fi; \
-	done
+	env WRKDIR=${WRKDIR} PREFIX=${PREFIX} \
+		INSTALL_DATA="${INSTALL_DATA}" \
+		INSTALL_DATA_DIR="${INSTALL_DATA_DIR}" \
+		sh ${FILESDIR}/install-cursors.sh
 	${INSTALL_DATA_DIR} ${PREFIX}/share/examples/emwm/xmdlgicons/32px
 	${INSTALL_DATA_DIR} ${PREFIX}/share/examples/emwm/xmdlgicons/48px
 	${INSTALL_DATA} ${WRKDIR}/dlgicons/32px/* \

@@ -295,14 +295,14 @@ if ( !$ENV{PERL_AUDIT_BASELINE} ) {
     die "load sandbox helpers: " . ( $@ || $! ) unless defined $loaded;
     my ( $exit, $timed_out, $output ) =
       capture( $tmp, $tmp,
-        [ $^X, '-e', 'print "x" x 100_000; print STDERR "stderr-marker";' ],
+        [ $^X, "$root/tools/t/fixtures/capture-output.pl" ],
         5 );
     is( $exit, 0, 'capture preserves successful exit' );
     ok( !$timed_out, 'successful capture does not time out' );
     is( length($output), 100_013,
         'large stdout and stderr captured without pipe deadlock' );
     ( $exit, $timed_out, $output ) =
-      capture( $tmp, $tmp, [ $^X, '-e', 'exit 7;' ], 5 );
+      capture( $tmp, $tmp, [ $^X, "$root/tools/t/fixtures/exit-7.pl" ], 5 );
     is( $exit, 7, 'capture preserves nonzero exit' );
     ( $exit, $timed_out, $output ) =
       capture( $tmp, "$tmp/missing-cwd", [ '/bin/echo', 'bad' ], 5 );
@@ -312,7 +312,7 @@ if ( !$ENV{PERL_AUDIT_BASELINE} ) {
       capture( $tmp, $tmp, [ '/bin/sh', '-c', 'kill -TERM $$' ], 5 );
     is( $exit, 143, 'capture preserves signal termination' );
     ( $exit, $timed_out, $output ) =
-      capture( $tmp, $tmp, [ $^X, '-e', 'sleep 5;' ], 0.1 );
+      capture( $tmp, $tmp, [ $^X, "$root/tools/t/fixtures/sleep-5.pl" ], 0.1 );
     ok( $timed_out, 'capture timeout is explicitly reported' );
     isnt( $exit, 0, 'timed-out target is terminated and reaped' );
 }

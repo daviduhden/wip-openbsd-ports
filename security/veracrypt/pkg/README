@@ -13,13 +13,19 @@ to /etc/doas.conf before mounting, creating or formatting volumes:
 This rule permits only the privileged core service used internally by
 VeraCrypt. Run the normal CLI or GUI as your own user. Do not use
 "permit nopass" unless you accept passwordless elevation for every user
-allowed by the rule.
+allowed by the rule. Membership in the group named by the rule is
+effectively root-equivalent: anyone who can run the core service can ask
+it to mount, unmount and format volumes. Keep the rule narrow and review
+it after every upgrade.
 
 The core service is used for operations that require root privileges,
 such as configuring vnd(4) loop devices, mounting and unmounting
-filesystems, changing ownership of mount points and device nodes, and
-running newfs(8) when an OpenBSD FFS filesystem is created inside a
-volume.
+filesystems, changing ownership of device nodes, and running newfs(8)
+when an OpenBSD FFS filesystem is created inside a volume. The ownership
+request accepts only character or block device nodes directly under
+/dev; it cannot chown an arbitrary file or follow a symbolic link outside
+that directory. It does not limit which raw device under /dev may be
+transferred, so the doas rule must still be restricted to trusted users.
 
 Filesystem creation
 ===================

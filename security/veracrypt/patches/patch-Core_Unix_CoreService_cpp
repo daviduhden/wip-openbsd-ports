@@ -1,8 +1,5 @@
-Use doas with rules restricted to --core-service and a private
-authentication terminal. Keep its slave on stderr across doas
-closefrom(), forward one password response, and detach the elevated
-worker before releasing the tty. Format OpenBSD FFS through a restricted
-privileged service request.
+Terminate the password response with a newline for readpassphrase(3).
+doas keeps reading until the newline, so elevation otherwise times out.
 
 Index: Core/Unix/CoreService.cpp
 --- Core/Unix/CoreService.cpp.orig
@@ -48,7 +45,7 @@ Index: Core/Unix/CoreService.cpp
  #ifdef TC_MACOSX
  	static bool IsMacOSXDevicePathWithPrefix (const string &path, const string &prefix)
  	{
-@@ -111,6 +138,10 @@
+@@ -111,6 +138,10 @@ namespace VeraCrypt
  		{
  			try
  			{
@@ -59,7 +56,7 @@ Index: Core/Unix/CoreService.cpp
  				int f = open ("/dev/null", 0);
  				throw_sys_sub_if (f == -1, "/dev/null");
  				throw_sys_if (dup2 (f, STDERR_FILENO) == -1);
-@@ -149,6 +180,10 @@
+@@ -149,6 +180,10 @@ namespace VeraCrypt
  
  	void CoreService::ProcessRequests (int inputFD, int outputFD)
  	{
@@ -70,7 +67,7 @@ Index: Core/Unix/CoreService.cpp
  		try
  		{
  			Core = move_ptr(CoreDirect);
-@@ -273,6 +308,34 @@
+@@ -273,6 +308,34 @@ namespace VeraCrypt
  					}
  #endif
  
@@ -105,22 +102,22 @@ Index: Core/Unix/CoreService.cpp
  					// MountVolumeRequest
  					MountVolumeRequest *mountRequest = dynamic_cast <MountVolumeRequest*> (request.get());
  					if (mountRequest)
-@@ -372,6 +435,14 @@
- 	{
- 		ExecuteMacOSXAPFSFormatterRequest request (devicePath, userId, groupId);
- 		SendRequest <ExecuteMacOSXAPFSFormatterResponse> (request);
-+	}
-+#endif
-+
+@@ -375,6 +438,14 @@ namespace VeraCrypt
+ 	}
+ #endif
+ 
 +#ifdef TC_OPENBSD
 +	void CoreService::RequestExecuteOpenBSDFFSFormatter (const DevicePath &devicePath)
 +	{
 +		ExecuteOpenBSDFFSFormatterRequest request (devicePath);
 +		SendRequest <ExecuteOpenBSDFFSFormatterResponse> (request);
- 	}
- #endif
- 
-@@ -408,6 +479,7 @@
++	}
++#endif
++
+ 	shared_ptr <VolumeInfo> CoreService::RequestMountVolume (MountOptions &options)
+ 	{
+ 		MountVolumeRequest request (&options);
+@@ -408,6 +479,7 @@ namespace VeraCrypt
  			{
  				//	Test if the user has an active "sudo" session.
  				bool authCheckDone = false;
@@ -128,7 +125,7 @@ Index: Core/Unix/CoreService.cpp
  				if (!Core->GetUseDummySudoPassword ())
  				{	
  					// We are using -n to avoid prompting the user for a password.
-@@ -452,6 +524,9 @@
+@@ -452,6 +524,9 @@ namespace VeraCrypt
  						request.FastElevation = false;
  					}
  				}
@@ -138,7 +135,7 @@ Index: Core/Unix/CoreService.cpp
  			
  				try
  				{
-@@ -507,6 +582,36 @@
+@@ -507,6 +582,36 @@ namespace VeraCrypt
  
  	void CoreService::StartElevated (const CoreServiceRequest &request)
  	{
@@ -175,7 +172,7 @@ Index: Core/Unix/CoreService.cpp
  		unique_ptr <Pipe> inPipe (new Pipe());
  		unique_ptr <Pipe> outPipe (new Pipe());
  		Pipe errPipe;
-@@ -522,7 +627,11 @@
+@@ -522,7 +627,11 @@ namespace VeraCrypt
  				{
  					// Throw exception if sudo is not found in secure locations
  					std::string errorMsg;
@@ -187,7 +184,7 @@ Index: Core/Unix/CoreService.cpp
  					if (sudoPath.empty())
  						throw SystemException(SRC_POS, errorMsg);
  
-@@ -551,7 +660,54 @@
+@@ -551,7 +660,54 @@ namespace VeraCrypt
  					throw_sys_if (dup2 (outPipe->GetWriteFD(), STDOUT_FILENO) == -1);
  					throw_sys_if (dup2 (errPipe.GetWriteFD(), STDERR_FILENO) == -1);
  
@@ -242,7 +239,7 @@ Index: Core/Unix/CoreService.cpp
  					execvp (args[0], ((char* const*) args));
  					throw SystemException (SRC_POS, args[0]);
  				}
-@@ -601,9 +757,13 @@
+@@ -601,9 +757,13 @@ namespace VeraCrypt
  #if defined(TC_LINUX )
  		Thread::Sleep (1000); // wait 1 second for the forked sudo to start
  #endif
@@ -258,7 +255,7 @@ Index: Core/Unix/CoreService.cpp
  
  		throw_sys_if (fcntl (outPipe->GetReadFD(), F_SETFL, O_NONBLOCK) == -1);
  		throw_sys_if (fcntl (errPipe.GetReadFD(), F_SETFL, O_NONBLOCK) == -1);
-@@ -611,11 +771,77 @@
+@@ -611,11 +771,88 @@ namespace VeraCrypt
  		char buffer[4096];
  		vector <char> errOutput;
  		errOutput.reserve (4096);
@@ -317,6 +314,17 @@ Index: Core/Unix/CoreService.cpp
 +								throw_sys_if (n <= 0);
 +								sent += n;
 +							}
++							// readpassphrase(3) keeps reading until it sees a newline.
++							const char newline = '\n';
++							ssize_t written = 0;
++							while (written < 1)
++							{
++								ssize_t n = write (authTerminalFd, &newline + written, 1 - written);
++								if (n < 0 && errno == EINTR)
++									continue;
++								throw_sys_if (n <= 0);
++								written += n;
++							}
 +							burn (&adminPassword.front(), adminPassword.size());
 +							passwordSent = true;
 +						}
@@ -336,7 +344,7 @@ Index: Core/Unix/CoreService.cpp
  		try
  		{
  			do
-@@ -667,11 +893,17 @@
+@@ -667,13 +904,19 @@ namespace VeraCrypt
  					Thread thread;
  					thread.Start (new WaitFunctor (forkedPid));
  
@@ -349,12 +357,14 @@ Index: Core/Unix/CoreService.cpp
  
  				waitRes = waitpid (forkedPid, &status, 0);
  			}
-+		}
-+
  		}
  
++		}
++
  		if (!errOutput.empty())
-@@ -700,11 +932,19 @@
+ 		{
+ 			unique_ptr <Serializable> deserializedObject;
+@@ -700,11 +943,19 @@ namespace VeraCrypt
  			if (!errOutput.empty())
  				strErrOutput.insert (strErrOutput.begin(), errOutput.begin(), errOutput.end());
  
@@ -374,7 +384,7 @@ Index: Core/Unix/CoreService.cpp
  		}
  
  		throw_sys_if (fcntl (outPipe->GetReadFD(), F_SETFL, 0) == -1);
-@@ -718,6 +958,17 @@
+@@ -718,6 +969,17 @@ namespace VeraCrypt
  
  		AdminInputPipe = move_ptr(inPipe);
  		AdminOutputPipe = move_ptr(outPipe);

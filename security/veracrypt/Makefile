@@ -5,7 +5,7 @@ COMMENT =		free open source disk encryption software
 V =			1.26.29
 DISTNAME =		VeraCrypt_${V}_Source
 PKGNAME =		veracrypt-${V}
-REVISION =       0
+REVISION =       1
 CATEGORIES =		security
 HOMEPAGE =		https://www.veracrypt.fr/
 

@@ -1,0 +1,56 @@
+Restrict the elevated chown request to device nodes under /dev.
+Volume creation only transfers ownership of the device it is about to
+open. Resolve the path first so symlinks cannot redirect the chown.
+
+Index: Core/Unix/CoreUnix.cpp
+--- Core/Unix/CoreUnix.cpp.orig
++++ Core/Unix/CoreUnix.cpp
+@@ -22,6 +22,7 @@
+ #include <sys/utsname.h>
+ #endif
+ #ifdef TC_OPENBSD
++#include <limits.h>
+ #include <pwd.h>
+ #endif
+ #include <stdio.h>
+@@ -1361,7 +1362,40 @@ namespace VeraCrypt
+ 
+ 	void CoreUnix::SetFileOwner (const FilesystemPath &path, const UserId &owner) const
+ 	{
++#ifdef TC_OPENBSD
++		// Callers only transfer ownership of a device node so that an
++		// unprivileged volume creation can open it. Never let the elevated
++		// service chown an arbitrary file or traverse to another directory.
++		string requested = string (path);
++		char resolved[PATH_MAX];
++		if (!realpath (requested.c_str (), resolved))
++		{
++			// The finally-handler also restores ownership of a device
++			// that may have disappeared after a failed creation.
++			if (errno == ENOENT || errno == ENOTDIR)
++				return;
++			throw_sys_sub_if (true, requested);
++		}
++
++		struct stat st;
++		if (lstat (resolved, &st) == -1)
++		{
++			if (errno == ENOENT || errno == ENOTDIR)
++				return;
++			throw_sys_sub_if (true, string (resolved));
++		}
++		if (!S_ISCHR (st.st_mode) && !S_ISBLK (st.st_mode))
++			throw ParameterIncorrect (SRC_POS);
++
++		string target (resolved);
++		if (target.compare (0, 5, "/dev/") != 0 ||
++			target.find ('/', 5) != string::npos)
++			throw ParameterIncorrect (SRC_POS);
++
++		throw_sys_sub_if (chown (target.c_str (), owner.SystemId, (gid_t) -1) == -1, target);
++#else
+ 		throw_sys_if (chown (string (path).c_str(), owner.SystemId, (gid_t) -1) == -1);
++#endif
+ 	}
+ 
+ 	DirectoryPath CoreUnix::SlotNumberToMountPoint (VolumeSlotNumber slotNumber) const

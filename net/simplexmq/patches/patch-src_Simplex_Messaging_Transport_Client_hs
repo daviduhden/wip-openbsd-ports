@@ -15,7 +15,7 @@ TLS.bye's internal timeout.
 Index: src/Simplex/Messaging/Transport/Client.hs
 --- src/Simplex/Messaging/Transport/Client.hs.orig
 +++ src/Simplex/Messaging/Transport/Client.hs
-@@ -64,6 +64,7 @@ import System.IO.Error
+@@ -64,6 +64,7 @@ import Simplex.Messaging.Util (bshow, ca
  import System.IO.Error
  import Text.Read (readMaybe)
  import UnliftIO.Exception (IOException)

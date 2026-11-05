@@ -14,7 +14,7 @@ remain required.
 Index: src/Simplex/RemoteControl/Client.hs
 --- src/Simplex/RemoteControl/Client.hs.orig
 +++ src/Simplex/RemoteControl/Client.hs
-@@ -29,6 +29,7 @@ module Simplex.RemoteControl.Client
+@@ -30,6 +30,7 @@ module Simplex.RemoteControl.Client
    ) where
  
  import Control.Applicative ((<|>))
@@ -22,7 +22,7 @@ Index: src/Simplex/RemoteControl/Client.hs
  import Control.Logger.Simple
  import Control.Monad
  import Control.Monad.Except
-@@ -116,7 +117,7 @@ connectRCHost drg pairing@RCHostPairing
+@@ -117,7 +118,7 @@ connectRCHost drg pairing@RCHostPairing
    when multicast $ case knownHost of
      Nothing -> throwE RCENewController
      Just KnownHostPairing {hostDhPubKey} -> do
@@ -31,7 +31,7 @@ Index: src/Simplex/RemoteControl/Client.hs
        atomically $ putTMVar announcer ann
    pure (found, signedInv, RCHostClient {action, client_ = c}, r)
    where
-@@ -203,7 +204,7 @@ certFingerprint caCert = C.KeyHash fp
+@@ -204,7 +205,7 @@ certFingerprint caCert = C.KeyHash fp
  
  cancelHostClient :: RCHostClient -> IO ()
  cancelHostClient RCHostClient {action, client_ = RCHClient_ {announcer, endSession}} = do
@@ -40,7 +40,7 @@ Index: src/Simplex/RemoteControl/Client.hs
    atomically (tryTakeTMVar announcer) >>= mapM_ uninterruptibleCancel
    uninterruptibleCancel action
  
-@@ -362,8 +363,8 @@ prepareCtrlSession
+@@ -363,8 +364,8 @@ prepareCtrlSession
  
  -- * Multicast discovery
  
@@ -51,7 +51,7 @@ Index: src/Simplex/RemoteControl/Client.hs
    replicateM_ maxCount $ do
      logDebug "Announcing..."
      nonce <- atomically $ C.randomCbNonce drg
-@@ -413,15 +414,17 @@ findRCCtrlPairing pairings RCEncInvitati
+@@ -416,15 +417,17 @@ findRCCtrlPairing pairings RCEncInvitati
  
  -- application should call this function when TMVar resolves
  confirmCtrlSession :: RCCtrlClient -> Bool -> IO ()

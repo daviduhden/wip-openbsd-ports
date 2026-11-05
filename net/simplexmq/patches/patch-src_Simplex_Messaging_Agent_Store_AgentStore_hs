@@ -9,7 +9,7 @@ committed.
 Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
 --- src/Simplex/Messaging/Agent/Store/AgentStore.hs.orig
 +++ src/Simplex/Messaging/Agent/Store/AgentStore.hs
-@@ -132,6 +132,7 @@ module Simplex.Messaging.Agent.Store.AgentStore
+@@ -138,6 +138,7 @@ module Simplex.Messaging.Agent.Store.Age
      getSndMsgViaRcpt,
      updateSndMsgRcpt,
      getPendingQueueMsg,
@@ -17,7 +17,7 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
      getConnectionsForDelivery,
      getAllSndQueuesForDelivery,
      updatePendingMsgRIState,
-@@ -230,6 +231,7 @@ module Simplex.Messaging.Agent.Store.Age
+@@ -244,6 +245,7 @@ module Simplex.Messaging.Agent.Store.Age
      getSndFile,
      getSndFileByEntityId,
      getNextSndFileToPrepare,
@@ -25,10 +25,10 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
      updateSndFileError,
      updateSndFileStatus,
      updateSndFileEncrypted,
-@@ -1069,6 +1071,13 @@ getAllSndQueuesForDelivery db = map toSn
+@@ -1111,6 +1113,13 @@ getAllSndQueuesForDelivery db = map toSn
        WHERE c.deleted = 0
      |]
-
+ 
 +-- A retry may outlive deletion of its connection or replacement of its queue.
 +isSndMsgPending :: DB.Connection -> ConnId -> SndQueue -> InternalId -> IO Bool
 +isSndMsgPending db connId SndQueue {dbQueueId} msgId =
@@ -39,7 +39,7 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
  getPendingQueueMsg :: DB.Connection -> ConnId -> SndQueue -> IO (Either StoreError (Maybe (Maybe RcvQueue, PendingMsgData)))
  getPendingQueueMsg db connId SndQueue {dbQueueId} =
    getWorkItem "message" getMsgId getMsgData markMsgFailed
-@@ -1504,7 +1513,10 @@ createCommand db corrId connId srv_ cmd
+@@ -1649,7 +1658,10 @@ createCommand db corrId connId srv_ cmd
      serverFields :: ExceptT StoreError IO (Maybe (NonEmpty TransportHost), Maybe ServiceName, Maybe C.KeyHash)
      serverFields = case srv_ of
        Just srv@(SMPServer host port _) ->
@@ -49,12 +49,12 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
 +        -- can also be resolved after restarting the agent.
 +        (Just host,Just port,) <$> liftIO (createServer db srv)
        Nothing -> pure (Nothing, Nothing, Nothing)
-
+ 
  insertedRowId :: DB.Connection -> IO Int64
-@@ -3449,6 +3461,34 @@ getNextSndFileToPrepare db ttl =
+@@ -3685,6 +3697,34 @@ getNextSndFileToPrepare db ttl =
            |]
            (SFSNew, SFSEncrypting, SFSEncrypted, cutoffTs)
-
+ 
 +-- Upload status is committed before notifications. Recover files with no
 +-- remaining uploads even if shutdown interrupted their final notification.
 +getNextSndFileToComplete :: DB.Connection -> NominalDiffTime -> IO (Either StoreError (Maybe SndFile))
@@ -86,7 +86,7 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
  markSndFileFailed :: DB.Connection -> DBSndFileId -> IO ()
  markSndFileFailed db fileId =
    DB.execute db "UPDATE snd_files SET failed = 1 WHERE snd_file_id = ?" (Only fileId)
-@@ -3537,12 +3577,12 @@ getNextSndChunkToUpload db server@Protoc
+@@ -3773,12 +3813,12 @@ getNextSndChunkToUpload db server@Protoc
              JOIN snd_files f ON f.snd_file_id = c.snd_file_id
              WHERE s.xftp_host = ? AND s.xftp_port = ? AND s.xftp_key_hash = ?
                AND r.replica_status = ? AND r.replica_number = 1
@@ -101,7 +101,7 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
      getChunkData :: (Int64, DBSndFileId) -> IO (Either StoreError SndFileChunk)
      getChunkData (sndFileChunkReplicaId, _fileId) = do
        chunk_ <-
-@@ -3621,9 +3661,9 @@ getPendingSndFilesServers db ttl = do
+@@ -3857,9 +3897,9 @@ getPendingSndFilesServers db ttl = do
          JOIN snd_file_chunks c ON c.snd_file_chunk_id = r.snd_file_chunk_id
          JOIN snd_files f ON f.snd_file_id = c.snd_file_id
          WHERE r.replica_status = ? AND r.replica_number = 1
@@ -110,6 +110,6 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
        |]
 -      (SFRSCreated, SFSEncrypted, SFSUploading, cutoffTs)
 +      (SFRSCreated, SFSUploading, cutoffTs)
-
+ 
  getCleanupSndFilesPrefixPaths :: DB.Connection -> IO [(DBSndFileId, SndFileId, FilePath)]
  getCleanupSndFilesPrefixPaths db =

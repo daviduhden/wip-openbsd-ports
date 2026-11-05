@@ -12,15 +12,15 @@ preparation.
 Index: tests/AgentTests/SQLiteTests.hs
 --- tests/AgentTests/SQLiteTests.hs.orig
 +++ tests/AgentTests/SQLiteTests.hs
-@@ -20,6 +20,7 @@ import Control.Concurrent.MVar
+@@ -20,6 +20,7 @@ import Control.Concurrent.Async (concurr
  import Control.Concurrent.MVar
  import Control.Concurrent.STM
  import Control.Exception (SomeException)
 +import qualified Control.Exception as E
- import Control.Monad (replicateM_)
+ import Control.Monad (forM_, replicateM_)
  import Control.Monad.Trans.Except
  import Crypto.Random (ChaChaDRG)
-@@ -44,7 +45,7 @@
+@@ -45,7 +46,7 @@ import Simplex.Messaging.Agent.Store
  import Simplex.Messaging.Agent.Store.AgentStore
  import Simplex.Messaging.Agent.Store.Migrations.App (appMigrations)
  import Simplex.Messaging.Agent.Store.SQLite
@@ -29,9 +29,9 @@ Index: tests/AgentTests/SQLiteTests.hs
  import qualified Simplex.Messaging.Agent.Store.SQLite.DB as DB
  import Simplex.Messaging.Agent.Store.Shared (MigrationConfig (..), MigrationConfirmation (..))
  import qualified Simplex.Messaging.Crypto as C
-@@ -67,11 +68,10 @@
+@@ -69,11 +70,10 @@ withStore :: SpecWith DBStore -> Spec
  withStore = before createStore' . after removeStore
-
+ 
  withStore2 :: SpecWith (DBStore, DBStore) -> Spec
 -withStore2 = before connect2 . after (removeStore . fst)
 +withStore2 = before connect2 . after (\(s1, s2) -> closeDBStore s2 `E.finally` removeStore s1)
@@ -42,9 +42,9 @@ Index: tests/AgentTests/SQLiteTests.hs
 +    connect2 = E.bracketOnError createStore' removeStore $ \s1@DBStore {dbFilePath} -> do
        s2 <- connectSQLiteStore $ DBOpts dbFilePath [] "" False False DB.TQOff
        pure (s1, s2)
-
-@@ -89,11 +89,8 @@
-
+ 
+@@ -91,11 +91,8 @@ createEncryptedStore key keepKey = do
+ 
  removeStore :: DBStore -> IO ()
  removeStore db@DBStore {dbFilePath} = do
 -  close db
@@ -53,10 +53,10 @@ Index: tests/AgentTests/SQLiteTests.hs
 -  where
 -    close :: DBStore -> IO ()
 -    close st = mapM_ DB.close =<< tryTakeMVar (dbConnection st)
-
+ 
  storeTests :: Spec
  storeTests = do
-@@ -103,6 +100,20 @@
+@@ -105,6 +102,20 @@ storeTests = do
      describe "db setup" $ do
        testCompiledThreadsafe
        testForeignKeysEnabled
@@ -77,9 +77,9 @@ Index: tests/AgentTests/SQLiteTests.hs
      describe "db methods" $ do
        describe "Queue and Connection management" $ do
          describe "create Rcv connection" $ do
-@@ -136,6 +147,19 @@
-           testCreateSndMsg
-           testCreateRcvAndSndMsgs
+@@ -141,6 +152,19 @@ storeTests = do
+       describe "deleteRatchetKeyHashesExpired" testDeleteRatchetKeyHashesExpired
+       it "should keep only the newest skipped message keys" testGetSkippedMsgKeys
        describe "Work items" $ do
 +        it "persists a command's new server before its queue exists" $ \st -> do
 +          g <- C.newRandom
@@ -97,12 +97,12 @@ Index: tests/AgentTests/SQLiteTests.hs
          it "should getPendingQueueMsg" testGetPendingQueueMsg
          it "should getPendingServerCommand" testGetPendingServerCommand
          it "should getNextRcvChunkToDownload" testGetNextRcvChunkToDownload
-@@ -815,6 +839,8 @@
+@@ -879,6 +903,8 @@ testGetNextSndChunkToUpload st = do
      -- create file 2
-     Right fId2 <- createSndFile db g 1 (CryptoFile "filepath" Nothing) 1 "filepath" testFileSbKey testFileCbNonce Nothing
+     Right fId2 <- createSndFile db g 1 (CryptoFile "filepath" Nothing) 1 "filepath" testFileSbKey testFileCbNonce Nothing Nothing
      updateSndFileEncrypted db 2 (FileDigest "abc") [(XFTPChunkSpec "filepath" 1 1, FileDigest "ghi")]
 +    -- Only files whose preparation is committed are selected for upload.
 +    updateSndFileStatus db 2 SFSUploading
      createSndFileReplica_ db 2 newSndChunkReplica1
-
+ 
      -- Left e <- getNextSndChunkToUpload db xftpServer1 86400

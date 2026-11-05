@@ -14,18 +14,18 @@ Index: src/Simplex/Messaging/Util.hs
      bshow,
      tshow,
      maybeWord,
-@@ -66,6 +67,7 @@
+@@ -66,6 +67,7 @@ module Simplex.Messaging.Util
      traverseWithKey_,
    ) where
-
+ 
 +import qualified Control.Concurrent as C
  import Control.Exception (AllocationLimitExceeded (..), AsyncException (..))
  import qualified Control.Exception as E
  import Control.Monad
-@@ -100,6 +102,12 @@
+@@ -100,6 +102,12 @@ import GHC.Conc (labelThread, myThreadId
  import UnliftIO hiding (atomicModifyIORef')
  import qualified UnliftIO.Exception as UE
-
+ 
 +-- Publish thread ownership while masked, but do not make a long-lived child
 +-- inherit that mask. Keep its completion callback masked, like forkFinally.
 +forkFinallyUnmasked :: MonadUnliftIO m => m a -> (Either E.SomeException a -> m ()) -> m C.ThreadId
@@ -35,12 +35,12 @@ Index: src/Simplex/Messaging/Util.hs
  raceAny_ :: MonadUnliftIO m => [m a] -> m ()
  raceAny_ = r []
    where
-@@ -261,7 +269,7 @@
+@@ -261,7 +269,7 @@ tryWriteTBQueue q a = do
  {-# INLINE tryWriteTBQueue #-}
-
+ 
  catchAll :: IO a -> (E.SomeException -> IO a) -> IO a
 -catchAll = E.catch
 +catchAll = UE.catch
  {-# INLINE catchAll #-}
-
+ 
  catchAll_ :: IO a -> IO a -> IO a

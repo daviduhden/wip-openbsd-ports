@@ -19,7 +19,7 @@ interruptible.
 Index: src/Simplex/Messaging/Transport/Server.hs
 --- src/Simplex/Messaging/Transport/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/Server.hs
-@@ -32,6 +32,8 @@ where
+@@ -32,6 +32,8 @@ module Simplex.Messaging.Transport.Serve
  where
  
  import Control.Applicative ((<|>))
@@ -76,7 +76,7 @@ Index: src/Simplex/Messaging/Transport/Server.hs
  
  -- | Recover from errors in `accept` whenever it is safe.
  -- Some errors are safe to ignore, while blindly restaring `accept` may trigger a busy loop.
-@@ -228,6 +236,7 @@ closeServer :: TMVar Bool -> TVar (IntMa
+@@ -230,6 +238,7 @@ closeServer :: TMVar Bool -> TVar (IntMa
  closeServer started clients sock = do
    close sock
    readTVarIO clients >>= mapM_ (deRefWeak >=> mapM_ killThread)
@@ -84,7 +84,7 @@ Index: src/Simplex/Messaging/Transport/Server.hs
    void . atomically $ tryPutTMVar started False
  
  startTCPServer :: TMVar Bool -> Maybe HostName -> ServiceName -> IO Socket
-@@ -235,8 +244,8 @@ startTCPServer started host port = withS
+@@ -237,8 +246,8 @@ startTCPServer started host port = withS
    where
      resolve =
        let hints = defaultHints {addrFlags = [AI_PASSIVE], addrSocketType = Stream}

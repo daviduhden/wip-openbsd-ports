@@ -6,7 +6,7 @@ close the database and worker threads.
 Index: tests/AgentTests/ServerChoice.hs
 --- tests/AgentTests/ServerChoice.hs.orig
 +++ tests/AgentTests/ServerChoice.hs
-@@ -16,14 +16,13 @@ import Simplex.Messaging.Client (defaultNetworkConfig)
+@@ -16,14 +16,13 @@ import Simplex.Messaging.Agent.Env.SQLit
  import Simplex.Messaging.Client (defaultNetworkConfig)
  import Simplex.Messaging.Protocol
  import Test.Hspec hiding (fit, it)
@@ -22,15 +22,3 @@ Index: tests/AgentTests/ServerChoice.hs
  
  operatorSimpleX :: Maybe OperatorId
  operatorSimpleX = Just 1
-@@ -70,9 +69,8 @@ initServers =
-     }
- 
- testChooseDifferentOperator :: IO ()
--testChooseDifferentOperator = do
--  c <- getSMPAgentClient' 1 agentCfg initServers testDB
--  runRight_ $ do
-+testChooseDifferentOperator =
-+  withAgent 1 agentCfg initServers testDB $ \c -> runRight_ $ do
-     -- chooses the only operator with storage role
-     srv1 <- withAgentEnv c $ getNextServer c 1 storageSrvs []
-     liftIO $ srv1 == testOp1Srv1 || srv1 == testOp1Srv2 `shouldBe` True

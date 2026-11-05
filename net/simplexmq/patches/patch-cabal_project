@@ -4,7 +4,7 @@ pin tls to the API version used by the compatibility patches.
 Index: cabal.project
 --- cabal.project.orig
 +++ cabal.project
-@@ -13,41 +13,15 @@ packages: .
+@@ -13,41 +13,13 @@ packages: .
     -- coverage: False
     -- library-coverage: False
  
@@ -29,26 +29,26 @@ Index: cabal.project
 -source-repository-package
 -    type: git
 -    location: https://github.com/simplex-chat/direct-sqlcipher.git
--    tag: f814ee68b16a9447fbb467ccc8f29bdd3546bfd9
+-    tag: 2330df3dc8c4b660674d3c02d76bb86f66c2abee
 +constraints: tls == 2.4.3
  
 -source-repository-package
 -    type: git
 -    location: https://github.com/simplex-chat/sqlcipher-simple.git
 -    tag: a46bd361a19376c5211f1058908fc0ae6bf42446
-+package cryptostore
-+    flags: +use_crypton
- 
- -- waiting for published warp-tls-3.4.7
+-
+--- waiting for published warp-tls-3.4.7
 -source-repository-package
 -    type: git
 -    location: https://github.com/yesodweb/wai.git
 -    tag: ec5e017d896a78e787a5acea62b37a4e677dec2e
 -    subdir: warp-tls
--
- -- backported fork due http-5.0
++package cryptostore
++    flags: +use_crypton
+ 
+--- backported fork due http-5.0
 -source-repository-package
 -    type: git
 -    location: https://github.com/simplex-chat/wai.git
--    tag: 2f6e5aa5f05ba9140ac99e195ee647b4f7d926b0
+-    tag: 63667cb577d09c967ddcd945e42c324872dfeb7d
 -    subdir: warp

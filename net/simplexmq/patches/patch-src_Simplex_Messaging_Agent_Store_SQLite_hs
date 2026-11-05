@@ -6,7 +6,7 @@ Index: src/Simplex/Messaging/Agent/Store/SQLite.hs
 --- src/Simplex/Messaging/Agent/Store/SQLite.hs.orig
 +++ src/Simplex/Messaging/Agent/Store/SQLite.hs
 @@ -44,7 +44,7 @@ where
-
+ 
  import Control.Concurrent.MVar
  import Control.Concurrent.STM
 -import Control.Exception (bracketOnError, onException, throwIO)
@@ -14,7 +14,7 @@ Index: src/Simplex/Messaging/Agent/Store/SQLite.hs
  import Control.Monad
  import Data.Bits (xor)
  import Data.ByteArray (ScrubbedBytes)
-@@ -69,7 +69,7 @@
+@@ -69,7 +69,7 @@ import qualified Simplex.Messaging.Agent
  import Simplex.Messaging.Agent.Store.SQLite.Util
  import Simplex.Messaging.Agent.Store.Shared (Migration (..), MigrationConfig (..), MigrationError (..))
  import qualified Simplex.Messaging.Crypto as C
@@ -22,10 +22,10 @@ Index: src/Simplex/Messaging/Agent/Store/SQLite.hs
 +import Simplex.Messaging.Util (ifM, packZipWith, safeDecodeUtf8, unlessM)
  import System.Directory (copyFile, createDirectoryIfMissing, doesFileExist)
  import System.FilePath (takeDirectory, takeFileName, (</>))
-
-@@ -149,9 +149,9 @@
+ 
+@@ -149,9 +149,9 @@ xorMd5Combine idsHash rId = packZipWith
  {-# INLINE xorMd5Combine #-}
-
+ 
  closeDBStore :: DBStore -> IO ()
 -closeDBStore st@DBStore {dbClosed} =
 -  ifM (readTVarIO dbClosed) (putStrLn "closeDBStore: already closed") $
@@ -35,9 +35,9 @@ Index: src/Simplex/Messaging/Agent/Store/SQLite.hs
 +    unlessM (readTVarIO dbClosed) $ do
        DB.close conn
        atomically $ writeTVar dbClosed True
-
-@@ -161,15 +161,15 @@
-
+ 
+@@ -161,15 +161,15 @@ openSQLiteStore st@DBStore {dbClosed} ke
+ 
  openSQLiteStore_ :: DBStore -> ScrubbedBytes -> Bool -> IO ()
  openSQLiteStore_ DBStore {dbConnection, dbFilePath, dbFunctions, dbKey, dbClosed} key keepKey =
 -  bracketOnError
@@ -58,6 +58,6 @@ Index: src/Simplex/Messaging/Agent/Store/SQLite.hs
 +          writeTVar dbKey $! storeKey key keepKey
 +        pure DB.Connection {conn, slow, track})
 +      (pure old)
-
+ 
  reopenDBStore :: DBStore -> IO ()
  reopenDBStore st@DBStore {dbKey, dbClosed} =

@@ -4,7 +4,7 @@ xftp-server.
 Index: apps/xftp-server/Main.hs
 --- apps/xftp-server/Main.hs.orig
 +++ apps/xftp-server/Main.hs
-@@ -7,10 +7,10 @@ import XFTPWeb (xftpGenerateSite)
+@@ -7,10 +7,10 @@ import Simplex.Messaging.Server.Web (ser
  import XFTPWeb (xftpGenerateSite)
  
  defaultCfgPath :: FilePath

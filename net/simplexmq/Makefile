@@ -4,13 +4,12 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplexmq
-GH_TAGNAME = v7.0.1
+GH_COMMIT = a0eec7104c706ab0dab2ad604f280a7130f7a22c
 
-V = 7.0.1
+V = 7.1.0.16
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
-WRKDIST = ${WRKDIR}/${GH_PROJECT}-${GH_TAGNAME:S/^v//}
 WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 
@@ -19,20 +18,19 @@ DIST_TUPLE += github simplex-chat aeson \
 DIST_TUPLE += github simplex-chat hs-socks \
 		a30cc7a79a08d8108316094f8f2f82a0c5e1ac51 ../hs-socks
 DIST_TUPLE += github simplex-chat direct-sqlcipher \
-		f814ee68b16a9447fbb467ccc8f29bdd3546bfd9 ../direct-sqlcipher
+		2330df3dc8c4b660674d3c02d76bb86f66c2abee ../direct-sqlcipher
 DIST_TUPLE += github simplex-chat sqlcipher-simple \
 		a46bd361a19376c5211f1058908fc0ae6bf42446 ../sqlcipher-simple
 DIST_TUPLE += github yesodweb wai \
 		ec5e017d896a78e787a5acea62b37a4e677dec2e ../yesod-wai
 DIST_TUPLE += github simplex-chat wai \
-		2f6e5aa5f05ba9140ac99e195ee647b4f7d926b0 ../simplex-wai
+		63667cb577d09c967ddcd945e42c324872dfeb7d ../simplex-wai
 DIST_TUPLE += github supranational blst \
 		db3defd0d501cc2bb1cdd59cb955d1a421821441 cbits/blst
 DIST_TUPLE += github simplex-chat libbbs \
 		59a0f4bf32e195cb6883de8374825c0f4764c717 cbits/libbbs
 
 CATEGORIES = net
-REVISION =		1
 HOMEPAGE = https://simplex.chat/
 
 MAINTAINER = David Uhden Collado <daviduhden@gmail.com>
@@ -44,7 +42,7 @@ WANTLIB = c crypto ffi gmp iconv m pthread sqlcipher util z zstd
 
 MODULES = devel/cabal
 MODCABAL_STEM = simplexmq
-MODCABAL_VERSION = 7.0.1.0
+MODCABAL_VERSION = 7.1.0.16
 MODCABAL_EXECUTABLES = smp-server xftp-server
 
 .if ${DEBUG} == 1

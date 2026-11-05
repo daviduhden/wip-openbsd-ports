@@ -3,8 +3,8 @@ Avoid ambiguous ByteArray conversions in XFTP web tests with GHC 9.10.
 Index: tests/XFTPWebTests.hs
 --- tests/XFTPWebTests.hs.orig
 +++ tests/XFTPWebTests.hs
-@@ -54,6 +54,9 @@ import XFTPCLI (recipientFiles, senderFiles, testBrack
- import XFTPCLI (recipientFiles, senderFiles, testBracket)
+@@ -53,6 +53,9 @@ import Simplex.Messaging.Agent.Protocol
+ import SMPAgentClient (agentCfg, initAgentServers, testDB)
  import qualified Simplex.Messaging.Crypto.File as CF
  
 +toBS :: BA.ByteArrayAccess a => a -> B.ByteString
@@ -13,7 +13,7 @@ Index: tests/XFTPWebTests.hs
  xftpWebDir :: FilePath
  xftpWebDir = "xftp-web"
  
-@@ -606,7 +609,7 @@ tsKeyTests = describe "crypto/keys" $ do
+@@ -605,7 +608,7 @@ tsKeyTests = describe "crypto/keys" $ do
        let seed = B.pack [1 .. 32]
            sk = throwCryptoError $ Ed25519.secretKey seed
            pk = Ed25519.toPublic sk
@@ -22,7 +22,7 @@ Index: tests/XFTPWebTests.hs
            haskellDer = C.encodePubKey (C.PublicKeyEd25519 pk)
        tsDer <- callNode $ impKey <> jsOut ("K.encodePubKeyEd25519(" <> jsUint8 rawPub <> ")")
        tsDer `shouldBe` haskellDer
-@@ -615,7 +618,7 @@ tsKeyTests = describe "crypto/keys" $ do
+@@ -614,7 +617,7 @@ tsKeyTests = describe "crypto/keys" $ do
        let rawPriv = B.pack [1 .. 32]
            sk = throwCryptoError $ X25519.secretKey rawPriv
            pk = X25519.toPublic sk
@@ -31,7 +31,7 @@ Index: tests/XFTPWebTests.hs
            haskellDer = C.encodePubKey (C.PublicKeyX25519 pk)
        tsDer <- callNode $ impKey <> jsOut ("K.encodePubKeyX25519(" <> jsUint8 rawPub <> ")")
        tsDer `shouldBe` haskellDer
-@@ -647,7 +650,7 @@ tsKeyTests = describe "crypto/keys" $ do
+@@ -646,7 +649,7 @@ tsKeyTests = describe "crypto/keys" $ do
            pk = Ed25519.toPublic sk
            msg = "deterministic test" :: B.ByteString
            sig = Ed25519.sign sk pk msg
@@ -40,7 +40,7 @@ Index: tests/XFTPWebTests.hs
        actual <-
          callNode $
            impKey
-@@ -663,8 +666,8 @@ tsKeyTests = describe "crypto/keys" $ do
+@@ -662,8 +665,8 @@ tsKeyTests = describe "crypto/keys" $ do
            pk = Ed25519.toPublic sk
            msg = "cross-language sign test" :: B.ByteString
            sig = Ed25519.sign sk pk msg
@@ -51,7 +51,7 @@ Index: tests/XFTPWebTests.hs
        actual <-
          callNode $
            impKey
-@@ -700,8 +703,8 @@ tsKeyTests = describe "crypto/keys" $ do
+@@ -699,8 +702,8 @@ tsKeyTests = describe "crypto/keys" $ do
            msg = "original message" :: B.ByteString
            wrongMsg = "wrong message" :: B.ByteString
            sig = Ed25519.sign sk pk msg
@@ -62,7 +62,7 @@ Index: tests/XFTPWebTests.hs
        actual <-
          callNode $
            impKey
-@@ -723,8 +726,8 @@ tsKeyTests = describe "crypto/keys" $ do
+@@ -722,8 +725,8 @@ tsKeyTests = describe "crypto/keys" $ do
            sk2 = throwCryptoError $ X25519.secretKey seed2
            pk2 = X25519.toPublic sk2
            dhHs = X25519.dh pk2 sk1
@@ -73,7 +73,7 @@ Index: tests/XFTPWebTests.hs
        actual <-
          callNode $
            impKey <> jsOut ("K.dh(" <> jsUint8 rawPk2 <> ", " <> jsUint8 seed1 <> ")")
-@@ -737,8 +740,8 @@ tsKeyTests = describe "crypto/keys" $ do
+@@ -736,8 +739,8 @@ tsKeyTests = describe "crypto/keys" $ do
            pk1 = X25519.toPublic sk1
            sk2 = throwCryptoError $ X25519.secretKey seed2
            pk2 = X25519.toPublic sk2
@@ -84,7 +84,7 @@ Index: tests/XFTPWebTests.hs
        dh1 <-
          callNode $
            impKey <> jsOut ("K.dh(" <> jsUint8 rawPk2 <> ", " <> jsUint8 seed1 <> ")")
-@@ -1024,7 +1027,7 @@ tsFileCryptoTests = describe "crypto/fil
+@@ -1023,7 +1026,7 @@ tsFileCryptoTests = describe "crypto/fil
            padLen = encSize - 16 - fileSize' - 8
            padding = B.replicate (fromIntegral padLen) 0x23
            (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
@@ -93,7 +93,7 @@ Index: tests/XFTPWebTests.hs
            hsEncrypted = B.concat [hdrEnc, srcEnc, padEnc, tag]
        tsEncrypted <-
          callNode $
-@@ -1059,7 +1062,7 @@ tsFileCryptoTests = describe "crypto/fil
+@@ -1058,7 +1061,7 @@ tsFileCryptoTests = describe "crypto/fil
            padLen = encSize - 16 - fileSize' - 8
            padding = B.replicate (fromIntegral padLen) 0x23
            (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
@@ -102,7 +102,7 @@ Index: tests/XFTPWebTests.hs
            encrypted = B.concat [hdrEnc, srcEnc, padEnc, tag]
        tsResult <-
          callNode $
-@@ -1121,7 +1124,7 @@ tsFileCryptoTests = describe "crypto/fil
+@@ -1120,7 +1123,7 @@ tsFileCryptoTests = describe "crypto/fil
            padLen = encSize - 16 - fileSize' - 8
            padding = B.replicate (fromIntegral padLen) 0x23
            (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
@@ -111,7 +111,7 @@ Index: tests/XFTPWebTests.hs
            encrypted = B.concat [hdrEnc, srcEnc, padEnc, tag]
            (chunk1, rest) = B.splitAt 50 encrypted
            (chunk2, chunk3) = B.splitAt 50 rest
-@@ -1158,7 +1161,7 @@ tsFileCryptoTests = describe "crypto/fil
+@@ -1157,7 +1160,7 @@ tsFileCryptoTests = describe "crypto/fil
            padLen = encSize - 16 - fileSize' - 8
            padding = B.replicate (fromIntegral padLen) 0x23
            (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
@@ -120,7 +120,7 @@ Index: tests/XFTPWebTests.hs
            encrypted = B.concat [hdrEnc, srcEnc, padEnc, tag]
        tsResult <-
          callNode $
-@@ -1433,7 +1436,7 @@ tsTransmissionTests = describe "protocol
+@@ -1432,7 +1435,7 @@ tsTransmissionTests = describe "protocol
            tInner = smpEncode corrId <> smpEncode entityId <> cmdBytes
            tForAuth = smpEncode sessionId <> tInner
            sig = Ed25519.sign sk pk tForAuth
@@ -129,7 +129,7 @@ Index: tests/XFTPWebTests.hs
            authenticator = smpEncode rawSig
            -- implySessId = False: tToSend = tForAuth (sessionId on wire)
            encoded = authenticator <> tForAuth
-@@ -1732,18 +1735,18 @@ tsHandshakeTests = describe "protocol/ha
+@@ -1731,18 +1734,18 @@ tsHandshakeTests = describe "protocol/ha
        let signSeed = B.pack [1 .. 32]
            signSk = throwCryptoError $ Ed25519.secretKey signSeed
            signPk = Ed25519.toPublic signSk
@@ -151,7 +151,7 @@ Index: tests/XFTPWebTests.hs
            -- AlgorithmIdentifier for Ed25519 (7 bytes)
            algId = B.pack [0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70]
            -- BIT STRING wrapper (3 + 64 = 67 bytes)
-@@ -1765,15 +1768,15 @@ tsHandshakeTests = describe "protocol/ha
+@@ -1764,15 +1767,15 @@ tsHandshakeTests = describe "protocol/ha
        let signSeed = B.pack [1 .. 32]
            signSk = throwCryptoError $ Ed25519.secretKey signSeed
            signPk = Ed25519.toPublic signSk
@@ -170,7 +170,7 @@ Index: tests/XFTPWebTests.hs
            algId = B.pack [0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70]
            bitString = B.pack [0x03, 0x41, 0x00] <> sigRaw
            content = spkiDer <> algId <> bitString
-@@ -1844,7 +1847,7 @@ tsIdentityTests = describe "crypto/ident
+@@ -1843,7 +1846,7 @@ tsIdentityTests = describe "crypto/ident
        let signSeed = B.pack [1 .. 32]
            signSk = throwCryptoError $ Ed25519.secretKey signSeed
            signPk = Ed25519.toPublic signSk
@@ -179,7 +179,7 @@ Index: tests/XFTPWebTests.hs
            leafCertDer = mkFakeCertDer signPkRaw
            idCertDer = B.pack [1 .. 50]
            keyHash = C.sha256Hash idCertDer
-@@ -1852,11 +1855,11 @@ tsIdentityTests = describe "crypto/ident
+@@ -1851,11 +1854,11 @@ tsIdentityTests = describe "crypto/ident
            dhSeed = B.pack [41 .. 72]
            dhSk = throwCryptoError $ X25519.secretKey dhSeed
            dhPk = X25519.toPublic dhSk
@@ -193,7 +193,7 @@ Index: tests/XFTPWebTests.hs
            algId = B.pack [0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70]
            bitString = B.pack [0x03, 0x41, 0x00] <> dhSigRaw
            signedKeyDer = B.pack [0x30, 0x76] <> spkiDer <> algId <> bitString
-@@ -1864,7 +1867,7 @@ tsIdentityTests = describe "crypto/ident
+@@ -1863,7 +1866,7 @@ tsIdentityTests = describe "crypto/ident
            challenge = B.pack [101 .. 132]
            sessionId = B.pack [201 .. 232]
            challengeSig = Ed25519.sign signSk signPk (challenge <> sessionId)
@@ -202,7 +202,7 @@ Index: tests/XFTPWebTests.hs
        tsResult <-
          callNode $
            impId
-@@ -1896,7 +1899,7 @@ tsIdentityTests = describe "crypto/ident
+@@ -1895,7 +1898,7 @@ tsIdentityTests = describe "crypto/ident
        let signSeed = B.pack [1 .. 32]
            signSk = throwCryptoError $ Ed25519.secretKey signSeed
            signPk = Ed25519.toPublic signSk
@@ -211,7 +211,7 @@ Index: tests/XFTPWebTests.hs
            leafCertDer = mkFakeCertDer signPkRaw
            idCertDer = B.pack [1 .. 50]
            wrongKeyHash = B.replicate 32 0xff
-@@ -1904,18 +1907,18 @@ tsIdentityTests = describe "crypto/ident
+@@ -1903,18 +1906,18 @@ tsIdentityTests = describe "crypto/ident
            dhSeed = B.pack [41 .. 72]
            dhSk = throwCryptoError $ X25519.secretKey dhSeed
            dhPk = X25519.toPublic dhSk
@@ -233,7 +233,7 @@ Index: tests/XFTPWebTests.hs
        tsResult <-
          callNode $
            impId
-@@ -1947,7 +1950,7 @@ tsIdentityTests = describe "crypto/ident
+@@ -1946,7 +1949,7 @@ tsIdentityTests = describe "crypto/ident
        let signSeed = B.pack [1 .. 32]
            signSk = throwCryptoError $ Ed25519.secretKey signSeed
            signPk = Ed25519.toPublic signSk
@@ -242,7 +242,7 @@ Index: tests/XFTPWebTests.hs
            leafCertDer = mkFakeCertDer signPkRaw
            idCertDer = B.pack [1 .. 50]
            keyHash = C.sha256Hash idCertDer
-@@ -1955,11 +1958,11 @@ tsIdentityTests = describe "crypto/ident
+@@ -1954,11 +1957,11 @@ tsIdentityTests = describe "crypto/ident
            dhSeed = B.pack [41 .. 72]
            dhSk = throwCryptoError $ X25519.secretKey dhSeed
            dhPk = X25519.toPublic dhSk
@@ -256,7 +256,7 @@ Index: tests/XFTPWebTests.hs
            algId = B.pack [0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70]
            bitString = B.pack [0x03, 0x41, 0x00] <> dhSigRaw
            signedKeyDer = B.pack [0x30, 0x76] <> spkiDer <> algId <> bitString
-@@ -1967,7 +1970,7 @@ tsIdentityTests = describe "crypto/ident
+@@ -1966,7 +1969,7 @@ tsIdentityTests = describe "crypto/ident
            sessionId = B.pack [201 .. 232]
            wrongChallenge = B.pack [1 .. 32]
            wrongSig = Ed25519.sign signSk signPk (wrongChallenge <> sessionId)
@@ -265,7 +265,7 @@ Index: tests/XFTPWebTests.hs
        tsResult <-
          callNode $
            impId
-@@ -1999,7 +2002,7 @@ tsIdentityTests = describe "crypto/ident
+@@ -1998,7 +2001,7 @@ tsIdentityTests = describe "crypto/ident
        let signSeed = B.pack [1 .. 32]
            signSk = throwCryptoError $ Ed25519.secretKey signSeed
            signPk = Ed25519.toPublic signSk
@@ -274,7 +274,7 @@ Index: tests/XFTPWebTests.hs
            leafCertDer = mkFakeCertDer signPkRaw
            idCertDer = B.pack [1 .. 50]
            keyHash = C.sha256Hash idCertDer
-@@ -2010,18 +2013,18 @@ tsIdentityTests = describe "crypto/ident
+@@ -2009,18 +2012,18 @@ tsIdentityTests = describe "crypto/ident
            dhSeed = B.pack [41 .. 72]
            dhSk = throwCryptoError $ X25519.secretKey dhSeed
            dhPk = X25519.toPublic dhSk
@@ -296,7 +296,7 @@ Index: tests/XFTPWebTests.hs
        tsResult <-
          callNode $
            impId
-@@ -2315,11 +2318,11 @@ tsClientTests = describe "protocol/clien
+@@ -2314,11 +2317,11 @@ tsClientTests = describe "protocol/clien
    let privARaw = B.pack [1 .. 32]
        privA = throwCryptoError $ X25519.secretKey privARaw
        pubA = X25519.toPublic privA
@@ -310,7 +310,7 @@ Index: tests/XFTPWebTests.hs
        nonce24 = B.pack [0 .. 23]
  
    describe "cbAuthenticate" $ do
-@@ -2434,13 +2437,13 @@ tsClientTests = describe "protocol/clien
+@@ -2433,13 +2436,13 @@ tsClientTests = describe "protocol/clien
  
    describe "transport chunk encryption" $ do
      let dhSecret = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
@@ -319,23 +319,23 @@ Index: tests/XFTPWebTests.hs
  
      it "encryptTransportChunk matches Haskell" $ do
        let plaintext = B.pack [100 .. 199]
-           state0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           state0 = either (error . show) id $ LC.cbInit dhSecret (C.unsafeCbNonce nonce24)
            (cipher, state1) = LC.sbEncryptChunk state0 plaintext
 -          tag = BA.convert $ LC.sbAuth state1 :: B.ByteString
 +          tag = toBS $ LC.sbAuth state1 :: B.ByteString
            expected = cipher <> tag
        tsResult <-
          callNode $
-@@ -2459,7 +2462,7 @@ tsClientTests = describe "protocol/clien
+@@ -2458,7 +2461,7 @@ tsClientTests = describe "protocol/clien
        let plaintext = B.pack ([200 .. 255] <> [0 .. 99])
-           state0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           state0 = either (error . show) id $ LC.cbInit dhSecret (C.unsafeCbNonce nonce24)
            (cipher, state1) = LC.sbEncryptChunk state0 plaintext
 -          tag = BA.convert $ LC.sbAuth state1 :: B.ByteString
 +          tag = toBS $ LC.sbAuth state1 :: B.ByteString
            encData = cipher <> tag
        tsResult <-
          callNode $
-@@ -2533,11 +2536,11 @@ tsDownloadTests = describe "download" $
+@@ -2532,11 +2535,11 @@ tsDownloadTests = describe "download" $
    let privARaw = B.pack [1 .. 32]
        privA = throwCryptoError $ X25519.secretKey privARaw
        pubA = X25519.toPublic privA
@@ -349,7 +349,7 @@ Index: tests/XFTPWebTests.hs
        nonce24 = B.pack [0 .. 23]
        -- File-level key/nonce (different from transport)
        fileKey32 = B.pack [1 .. 32]
-@@ -2549,7 +2552,7 @@ tsDownloadTests = describe "download" $
+@@ -2548,7 +2551,7 @@ tsDownloadTests = describe "download" $
      it "derives DH secret matching Haskell" $ do
        -- Simulate: client has privA, server sends pubB
        let hsDhSecret = C.dh' (C.PublicKeyX25519 pubB) (C.PrivateKeyX25519 privA)
@@ -358,7 +358,7 @@ Index: tests/XFTPWebTests.hs
        tsDhSecret <-
          callNode $
            impDl
-@@ -2565,12 +2568,12 @@ tsDownloadTests = describe "download" $
+@@ -2564,12 +2567,12 @@ tsDownloadTests = describe "download" $
      it "transport decrypt with digest verification" $ do
        -- Haskell: transport-encrypt a chunk
        let dhSecret = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
@@ -366,14 +366,14 @@ Index: tests/XFTPWebTests.hs
 +          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> toBS k :: B.ByteString
            chunkData = B.pack [50 .. 149]
            chunkDigest = C.sha256Hash chunkData
-           state0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           state0 = either (error . show) id $ LC.cbInit dhSecret (C.unsafeCbNonce nonce24)
            (cipher, state1) = LC.sbEncryptChunk state0 chunkData
 -          tag = BA.convert (LC.sbAuth state1) :: B.ByteString
 +          tag = toBS (LC.sbAuth state1) :: B.ByteString
            encData = cipher <> tag
        tsResult <-
          callNode $
-@@ -2589,12 +2592,12 @@ tsDownloadTests = describe "download" $
+@@ -2588,12 +2591,12 @@ tsDownloadTests = describe "download" $
  
      it "rejects wrong digest" $ do
        let dhSecret = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
@@ -381,28 +381,28 @@ Index: tests/XFTPWebTests.hs
 +          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> toBS k :: B.ByteString
            chunkData = B.pack [50 .. 149]
            wrongDigest = B.replicate 32 0xff
-           state0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           state0 = either (error . show) id $ LC.cbInit dhSecret (C.unsafeCbNonce nonce24)
            (cipher, state1) = LC.sbEncryptChunk state0 chunkData
 -          tag = BA.convert (LC.sbAuth state1) :: B.ByteString
 +          tag = toBS (LC.sbAuth state1) :: B.ByteString
            encData = cipher <> tag
        tsResult <-
          callNode $
-@@ -2613,11 +2616,11 @@ tsDownloadTests = describe "download" $
+@@ -2612,11 +2615,11 @@ tsDownloadTests = describe "download" $
  
      it "allows null digest (skip verification)" $ do
        let dhSecret = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
 -          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
 +          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> toBS k :: B.ByteString
            chunkData = B.pack [10 .. 50]
-           state0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           state0 = either (error . show) id $ LC.cbInit dhSecret (C.unsafeCbNonce nonce24)
            (cipher, state1) = LC.sbEncryptChunk state0 chunkData
 -          tag = BA.convert (LC.sbAuth state1) :: B.ByteString
 +          tag = toBS (LC.sbAuth state1) :: B.ByteString
            encData = cipher <> tag
        tsResult <-
          callNode $
-@@ -2647,14 +2650,14 @@ tsDownloadTests = describe "download" $
+@@ -2646,14 +2649,14 @@ tsDownloadTests = describe "download" $
            padLen = encSize - 16 - fileSize' - 8
            padding = B.replicate (fromIntegral padLen) 0x23
            (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
@@ -413,14 +413,14 @@ Index: tests/XFTPWebTests.hs
        let dhSecret = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
 -          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
 +          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> toBS k :: B.ByteString
-           ts0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           ts0 = either (error . show) id $ LC.cbInit dhSecret (C.unsafeCbNonce nonce24)
            (transportCipher, ts1) = LC.sbEncryptChunk ts0 fileEncrypted
 -          transportTag = BA.convert (LC.sbAuth ts1) :: B.ByteString
 +          transportTag = toBS (LC.sbAuth ts1) :: B.ByteString
            transportEncData = transportCipher <> transportTag
        -- Step 3: TS decrypts transport, then file-level
        tsResult <-
-@@ -2692,7 +2695,7 @@ tsDownloadTests = describe "download" $
+@@ -2691,7 +2694,7 @@ tsDownloadTests = describe "download" $
            padLen = encSize - 16 - fileSize' - 8
            padding = B.replicate (fromIntegral padLen) 0x23
            (padEnc, sb3) = LC.sbEncryptChunk sb2 padding
@@ -429,14 +429,14 @@ Index: tests/XFTPWebTests.hs
            fileEncrypted = B.concat [hdrEnc, srcEnc, padEnc, fileTag]
        -- Split file-encrypted data into two "chunks" and transport-encrypt each
        let splitPt = B.length fileEncrypted `div` 2
-@@ -2700,19 +2703,19 @@ tsDownloadTests = describe "download" $
+@@ -2699,19 +2702,19 @@ tsDownloadTests = describe "download" $
            fileChunk2 = B.drop splitPt fileEncrypted
            -- Transport encrypt chunk 1 (with separate DH / nonce per chunk)
            dhSecret1 = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
 -          dhSecret1Bytes = case dhSecret1 of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
 +          dhSecret1Bytes = case dhSecret1 of C.DhSecretX25519 k -> toBS k :: B.ByteString
            nonce1 = nonce24
-           t1s0 = either (error . show) id $ LC.cbInit dhSecret1 (C.cbNonce nonce1)
+           t1s0 = either (error . show) id $ LC.cbInit dhSecret1 (C.unsafeCbNonce nonce1)
            (t1cipher, t1s1) = LC.sbEncryptChunk t1s0 fileChunk1
 -          t1tag = BA.convert (LC.sbAuth t1s1) :: B.ByteString
 +          t1tag = toBS (LC.sbAuth t1s1) :: B.ByteString
@@ -446,23 +446,23 @@ Index: tests/XFTPWebTests.hs
            dhSecret2 = C.dh' (C.PublicKeyX25519 pubB) (C.PrivateKeyX25519 privA)
 -          dhSecret2Bytes = case dhSecret2 of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
 +          dhSecret2Bytes = case dhSecret2 of C.DhSecretX25519 k -> toBS k :: B.ByteString
-           t2s0 = either (error . show) id $ LC.cbInit dhSecret2 (C.cbNonce nonce2)
+           t2s0 = either (error . show) id $ LC.cbInit dhSecret2 (C.unsafeCbNonce nonce2)
            (t2cipher, t2s1) = LC.sbEncryptChunk t2s0 fileChunk2
 -          t2tag = BA.convert (LC.sbAuth t2s1) :: B.ByteString
 +          t2tag = toBS (LC.sbAuth t2s1) :: B.ByteString
            transportEnc2 = t2cipher <> t2tag
        -- TS: transport-decrypt each chunk, then file-level decrypt the concatenation
        tsResult <-
-@@ -2750,7 +2753,7 @@ tsDownloadTests = describe "download" $
+@@ -2749,7 +2752,7 @@ tsDownloadTests = describe "download" $
            chunkData = "FGET round-trip test data" :: B.ByteString
-           state0 = either (error . show) id $ LC.cbInit dhSecret (C.cbNonce nonce24)
+           state0 = either (error . show) id $ LC.cbInit dhSecret (C.unsafeCbNonce nonce24)
            (cipher, state1) = LC.sbEncryptChunk state0 chunkData
 -          tag = BA.convert (LC.sbAuth state1) :: B.ByteString
 +          tag = toBS (LC.sbAuth state1) :: B.ByteString
            encData = cipher <> tag
            -- Simulate server response: FILE <serverPubKey> <nonce>
            -- Server sends pubA (client has privB to do DH)
-@@ -2788,7 +2791,7 @@ tsDownloadTests = describe "download" $
+@@ -2787,7 +2790,7 @@ tsDownloadTests = describe "download" $
            padLen = encSize - 16 - fileSize' - 8
            padding = B.replicate (fromIntegral padLen) 0x23
            (padEnc, sb3) = LC.sbEncryptChunk sb2 padding

@@ -15,7 +15,7 @@ opposite peer.
 Index: tests/SMPProxyTests.hs
 --- tests/SMPProxyTests.hs.orig
 +++ tests/SMPProxyTests.hs
-@@ -170,63 +170,63 @@ deliverMessageViaProxy :: (C.AlgorithmI a, C.AuthAlgor
+@@ -186,6 +186,9 @@ oneServer test msType = withSmpServerCon
  deliverMessageViaProxy :: (C.AlgorithmI a, C.AuthAlgorithm a) => SMPServer -> SMPServer -> C.SAlgorithm a -> ByteString -> ByteString -> IO ()
  deliverMessageViaProxy proxyServ relayServ alg msg msg' = deliverMessagesViaProxy proxyServ relayServ alg [msg] [msg']
  
@@ -23,11 +23,13 @@ Index: tests/SMPProxyTests.hs
 +withProtocolClient acquire = bracket (acquire >>= either (fail . show) pure) closeProtocolClient
 +
  deliverMessagesViaProxy :: (C.AlgorithmI a, C.AuthAlgorithm a) => SMPServer -> SMPServer -> C.SAlgorithm a -> [ByteString] -> [ByteString] -> IO ()
- deliverMessagesViaProxy proxyServ relayServ alg unsecuredMsgs securedMsgs = do
+ deliverMessagesViaProxy = deliverMessagesViaProxyVR $ mkVersionRange minServerSMPRelayVersion currentClientSMPRelayVersion
+ 
+@@ -194,60 +197,57 @@ deliverMessagesViaProxyVR clientVR proxy
    g <- C.newRandom
    -- set up proxy
    ts <- getCurrentTime
--  pc' <- getProtocolClient g NRMInteractive (1, proxyServ, Nothing) defaultSMPClientConfig {serverVRange = mkVersionRange minServerSMPRelayVersion currentClientSMPRelayVersion} [] Nothing ts (\_ -> pure ())
+-  pc' <- getProtocolClient g NRMInteractive (1, proxyServ, Nothing) defaultSMPClientConfig {serverVRange = clientVR, proxiedRelayVRange = clientVR} [] Nothing ts (\_ -> pure ())
 -  pc <- either (fail . show) pure pc'
 -  THAuthClient {} <- maybe (fail "getProtocolClient returned no thAuth") pure $ thAuth $ thParams pc
 -  -- set up relay
@@ -47,6 +49,8 @@ Index: tests/SMPProxyTests.hs
 -  forM_ unsecuredMsgs $ \msg -> do
 -    runExceptT' (proxySMPMessage pc NRMInteractive sess Nothing sndId noMsgFlags msg) `shouldReturn` Right ()
 -    runExceptT' (proxySMPMessage pc NRMInteractive sess {prSessionId = "bad session"} Nothing sndId noMsgFlags msg) `shouldReturn` Left (ProxyProtocolError $ SMP.PROXY SMP.NO_SESSION)
+-    forM_ ([prevVersion minServerSMPRelayVersion, nextVersion currentServerSMPRelayVersion] :: [VersionSMP]) $ \v ->
+-      runExceptT' (proxySMPMessage pc NRMInteractive sess {prVersion = v} Nothing sndId noMsgFlags msg) `shouldReturn` Left (ProxyProtocolError $ SMP.PROXY $ SMP.PROTOCOL $ SMP.PROXY $ SMP.BROKER $ SMP.TRANSPORT TEVersion)
 -    -- receive 1
 -    (_tSess, _, [(_entId, STEvent (Right (SMP.MSG RcvMessage {msgId, msgBody = EncRcvMsgBody encBody})))]) <- atomically $ readTBQueue msgQ
 -    dec msgId encBody `shouldBe` Right msg
@@ -64,7 +68,7 @@ Index: tests/SMPProxyTests.hs
 -        dec msgId' encBody' `shouldBe` Right msg'
 -        runExceptT' $ ackSMPMessage rc rPriv rcvId msgId'
 -    )
-+  withProtocolClient (getProtocolClient g NRMInteractive (1, proxyServ, Nothing) defaultSMPClientConfig {serverVRange = mkVersionRange minServerSMPRelayVersion currentClientSMPRelayVersion} [] Nothing ts (\_ -> pure ())) $ \pc -> do
++  withProtocolClient (getProtocolClient g NRMInteractive (1, proxyServ, Nothing) defaultSMPClientConfig {serverVRange = clientVR, proxiedRelayVRange = clientVR} [] Nothing ts (\_ -> pure ())) $ \pc -> do
 +    THAuthClient {} <- maybe (fail "getProtocolClient returned no thAuth") pure $ thAuth $ thParams pc
 +    -- set up relay
 +    msgQ <- newTBQueueIO 1024
@@ -82,6 +86,8 @@ Index: tests/SMPProxyTests.hs
 +      forM_ unsecuredMsgs $ \msg -> do
 +        runExceptT' (proxySMPMessage pc NRMInteractive sess Nothing sndId noMsgFlags msg) `shouldReturn` Right ()
 +        runExceptT' (proxySMPMessage pc NRMInteractive sess {prSessionId = "bad session"} Nothing sndId noMsgFlags msg) `shouldReturn` Left (ProxyProtocolError $ SMP.PROXY SMP.NO_SESSION)
++        forM_ ([prevVersion minServerSMPRelayVersion, nextVersion currentServerSMPRelayVersion] :: [VersionSMP]) $ \v ->
++          runExceptT' (proxySMPMessage pc NRMInteractive sess {prVersion = v} Nothing sndId noMsgFlags msg) `shouldReturn` Left (ProxyProtocolError $ SMP.PROXY $ SMP.PROTOCOL $ SMP.PROXY $ SMP.BROKER $ SMP.TRANSPORT TEVersion)
 +        -- receive 1
 +        (_tSess, _, [(_entId, STEvent (Right (SMP.MSG RcvMessage {msgId, msgBody = EncRcvMsgBody encBody})))]) <- atomically $ readTBQueue msgQ
 +        dec msgId encBody `shouldBe` Right msg
@@ -105,7 +111,7 @@ Index: tests/SMPProxyTests.hs
    g <- C.newRandom
    -- set up proxy
    ts <- getCurrentTime
--  pc' <- getProtocolClient g NRMInteractive (1, proxyServ, Nothing) defaultSMPClientConfig {serverVRange = mkVersionRange minServerSMPRelayVersion sendingProxySMPVersion} [] Nothing ts (\_ -> pure ())
+-  pc' <- getProtocolClient g NRMInteractive (1, proxyServ, Nothing) defaultSMPClientConfig [] Nothing ts (\_ -> pure ())
 -  pc <- either (fail . show) pure pc'
 -  THAuthClient {} <- maybe (fail "getProtocolClient returned no thAuth") pure $ thAuth $ thParams pc
 -  -- get proxy session
@@ -114,7 +120,7 @@ Index: tests/SMPProxyTests.hs
 -    case sess0 of
 -      Right !_noWay -> error "got unexpected client"
 -      Left !_err -> threadDelay d
-+  withProtocolClient (getProtocolClient g NRMInteractive (1, proxyServ, Nothing) defaultSMPClientConfig {serverVRange = mkVersionRange minServerSMPRelayVersion sendingProxySMPVersion} [] Nothing ts (\_ -> pure ())) $ \pc -> do
++  withProtocolClient (getProtocolClient g NRMInteractive (1, proxyServ, Nothing) defaultSMPClientConfig [] Nothing ts (\_ -> pure ())) $ \pc -> do
 +    THAuthClient {} <- maybe (fail "getProtocolClient returned no thAuth") pure $ thAuth $ thParams pc
 +    -- get proxy session
 +    replicateM_ n $ do
@@ -123,9 +129,9 @@ Index: tests/SMPProxyTests.hs
 +        Right !_noWay -> error "got unexpected client"
 +        Left !_err -> threadDelay d
  
- agentDeliverMessageViaProxy :: (C.AlgorithmI a, C.AuthAlgorithm a) => (NonEmpty SMPServer, SMPProxyMode, Bool) -> (NonEmpty SMPServer, SMPProxyMode, Bool) -> C.SAlgorithm a -> ByteString -> ByteString -> AgentMsgId -> IO ()
+ agentDeliverMessageViaProxy :: (HasTestEnv, C.AlgorithmI a, C.AuthAlgorithm a) => (NonEmpty SMPServer, SMPProxyMode, Bool) -> (NonEmpty SMPServer, SMPProxyMode, Bool) -> C.SAlgorithm a -> ByteString -> ByteString -> AgentMsgId -> IO ()
  agentDeliverMessageViaProxy aTestCfg@(aSrvs, _, aViaProxy) bTestCfg@(bSrvs, _, bViaProxy) alg msg1 msg2 baseId =
-@@ -311,7 +311,7 @@ agentDeliverMessagesViaProxyConc agentSe
+@@ -332,7 +332,7 @@ agentDeliverMessagesViaProxyConc agentSe
            forever $
              get bob >>= \case
                ("", _, A.SENT _ _) -> pure ()
@@ -134,11 +140,11 @@ Index: tests/SMPProxyTests.hs
                huh -> fail (show huh)
        bSender <- async $ forM_ msgs $ runExceptT' . A.sendMessage bob aliceId pqEnc noMsgFlags
        aRecipient <-
-@@ -437,7 +437,15 @@ agentViaProxyRetryNoSession = do
-           pure ()
+@@ -443,6 +443,16 @@ agentViaProxyRetryNoSession = do
    where
-     withServer2 = withSmpServerConfigOn (transport @TLS) proxyCfgJ2 testPort2
--    servers srv = initAgentServersProxy {smp = userServers [srv]}
+     withServer2 = withSmpServerConfigOn (transport @TLS) proxyCfgS2 testPort2
+     servers srv = initAgentServersProxy {smp = userServers [srv]}
++    withServer2 = withSmpServerConfigOn (transport @TLS) proxyCfgS2 testPort2
 +    servers srv =
 +      initAgentServersProxy
 +        { smp = userServers [srv],
@@ -149,5 +155,5 @@ Index: tests/SMPProxyTests.hs
 +              }
 +        }
  
- testNoProxy :: AStoreType -> IO ()
+ testNoProxy :: HasTestEnv => AStoreType -> IO ()
  testNoProxy msType = do

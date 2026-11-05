@@ -24,7 +24,7 @@ Index: tests/AgentTests/SchemaDump.hs
  import Control.Monad (unless, void)
  import Data.List (dropWhileEnd)
  import Data.Maybe (fromJust, isJust)
-@@ -53,16 +54,18 @@ testVerifySchemaDump :: IO ()
+@@ -55,16 +56,18 @@ testVerifySchemaDump :: IO ()
  testVerifySchemaDump = do
    savedSchema <- ifM (doesFileExist appSchema) (readFile appSchema) (pure "")
    savedSchema `deepseq` pure ()
@@ -47,7 +47,7 @@ Index: tests/AgentTests/SchemaDump.hs
    removeFile testDB
  
  testSchemaMigrations :: IO ()
-@@ -92,8 +95,9 @@ testSchemaMigrations = do
+@@ -94,8 +97,9 @@ testSchemaMigrations = do
  testVerifyStrict :: IO ()
  testVerifyStrict = do
    Right st <- createDBStore (DBOpts testDB [] "" False True TQOff) appMigrations (MigrationConfig MCConsole Nothing)

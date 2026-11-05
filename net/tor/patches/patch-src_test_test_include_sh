@@ -5,7 +5,7 @@ that sandbox while testing configuration includes.
 Index: src/test/test_include.sh
 --- src/test/test_include.sh.orig
 +++ src/test/test_include.sh
-@@ -99,7 +99,11 @@
+@@ -99,7 +99,11 @@ echo "# comment" > "$torrcd/comment.conf
  echo "NodeFamily 4" > "$torrcd/folder/04_four.conf"
  echo "NodeFamily 5" > "$torrcd/folder/05_five.conf"
  torrc="$configdir/torrc"

@@ -10,54 +10,47 @@ cleanup.
 Index: tests/Test.hs
 --- tests/Test.hs.orig
 +++ tests/Test.hs
-@@ -9,8 +9,8 @@ import ChatTests
+@@ -18,8 +18,8 @@ import Bots.DirectoryTests
+ import ChatClient
  import ChatTests
  import ChatTests.DBUtils
- import ChatTests.Names (chatNamesTests)
 -import ChatTests.Utils (xdescribe'')
  import Control.Logger.Simple
 +import System.Environment (lookupEnv)
  import Data.Time.Clock.System
  import BadgeTests
- import JSONTests
-@@ -74,7 +74,7 @@
-       describe "Random servers" randomServersTests
- #if !defined(dbPostgres)
-       around (tmpTestBracket chatQueryStats agentQueryStats) $ describe "names tests" chatNamesTests
--      around (tmpTestBracket chatQueryStats agentQueryStats) $ xdescribe'' "SimpleX Directory names" directoryNameTests
-+      around (tmpTestBracket chatQueryStats agentQueryStats) $ describe "SimpleX Directory names" directoryNameTests
- #endif
- #if defined(dbPostgres)
-       createdDropDb . around testBracket
-@@ -86,11 +86,11 @@
+ import ImageTests
+@@ -110,14 +110,14 @@ main = do
            describe "Mobile API Tests" mobileTests
  #endif
            describe "SimpleX chat client" chatTests
 -          xdescribe'' "SimpleX Broadcast bot" broadcastBotTests
--          xdescribe'' "SimpleX Directory service bot" directoryServiceTests
 +          xdescribe "SimpleX Broadcast bot" broadcastBotTests
-+          describe "SimpleX Directory service bot" directoryServiceTests
+           describe "SimpleX Directory service bot" directoryServiceTests
+           describe "SimpleX badge service e2e" $ do
+             badgeServiceTests
+             describe "managed group" badgeGroupIntegrationTests
            describe "Remote session" remoteTests
  #if !defined(dbPostgres)
--          xdescribe'' "Save query plans" saveQueryPlans
-+          describe "Save query plans" saveQueryPlans
+-          sequential $ xdescribe'' "Save query plans" saveQueryPlans
++          sequential $ describe "Save query plans" saveQueryPlans
  #endif
    where
  #if defined(dbPostgres)
-@@ -99,10 +99,12 @@
-         . after_ (dropDatabaseAndUser testDBConnectInfo)
-     testBracket test = withSmpServer $ tmpBracket $ \tmpPath -> test TestParams {tmpPath, printOutput = False}
+@@ -131,10 +131,12 @@ main = do
+         withSmpServer ps (test ps) `finally` dropTestSchemas ps
  #else
--    testBracket chatQueryStats agentQueryStats test =
--      withSmpServer $ tmpBracket $ \tmpPath -> test TestParams {tmpPath, chatQueryStats, agentQueryStats, printOutput = False}
--    tmpTestBracket chatQueryStats agentQueryStats test =
--      tmpBracket $ \tmpPath -> test TestParams {tmpPath, chatQueryStats, agentQueryStats, printOutput = False}
-+    testBracket chatQueryStats agentQueryStats test = do
+     withTestDB = id
+-    testBracket chatQueryStats agentQueryStats portBases test =
+-      tmpTestBracket chatQueryStats agentQueryStats portBases $ \ps -> withSmpServer ps $ test ps
+-    tmpTestBracket chatQueryStats agentQueryStats portBases test =
+-      withPortBase portBases $ \portBase -> tmpBracket $ \tmpPath -> test TestParams {tmpPath, portBase, chatQueryStats, agentQueryStats, printOutput = False}
++    testBracket chatQueryStats agentQueryStats portBases test = do
 +      printOutput <- (== Just "1") <$> lookupEnv "SIMPLEX_TEST_OUTPUT"
-+      withSmpServer $ tmpBracket $ \tmpPath -> test TestParams {tmpPath, chatQueryStats, agentQueryStats, printOutput}
-+    tmpTestBracket chatQueryStats agentQueryStats test = do
++      tmpTestBracket chatQueryStats agentQueryStats portBases $ \ps -> withSmpServer ps $ test ps {printOutput}
++    tmpTestBracket chatQueryStats agentQueryStats portBases test = do
 +      printOutput <- (== Just "1") <$> lookupEnv "SIMPLEX_TEST_OUTPUT"
-+      tmpBracket $ \tmpPath -> test TestParams {tmpPath, chatQueryStats, agentQueryStats, printOutput}
++      withPortBase portBases $ \portBase -> tmpBracket $ \tmpPath -> test TestParams {tmpPath, portBase, chatQueryStats, agentQueryStats, printOutput}
  #endif
      tmpBracket test = do
        t <- getSystemTime

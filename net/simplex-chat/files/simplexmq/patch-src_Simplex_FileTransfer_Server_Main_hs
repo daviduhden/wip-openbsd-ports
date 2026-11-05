@@ -1,11 +1,11 @@
-LibreSSL's openssl(1) does not implement ED448.  Use ED25519 as the
+LibreSSL's openssl(1) does not implement ED448. Use ED25519 as the
 portable default for XFTP TLS certificate generation; ED448 remains
 selectable when a compatible command-line implementation is installed.
 
 Index: src/Simplex/FileTransfer/Server/Main.hs
 --- src/Simplex/FileTransfer/Server/Main.hs.orig
 +++ src/Simplex/FileTransfer/Server/Main.hs
-@@ -378,7 +378,7 @@ cliCommandP cfgPath logPath iniFile =
+@@ -391,7 +391,7 @@ cliCommandP cfgPath logPath iniFile =
            ( long "sign-algorithm"
                <> short 'a'
                <> help "Signature algorithm used for TLS certificates: ED25519, ED448"

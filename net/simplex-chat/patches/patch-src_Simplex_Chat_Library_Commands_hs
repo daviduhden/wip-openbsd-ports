@@ -7,24 +7,38 @@ callers.
 Index: src/Simplex/Chat/Library/Commands.hs
 --- src/Simplex/Chat/Library/Commands.hs.orig
 +++ src/Simplex/Chat/Library/Commands.hs
-@@ -95,6 +95,7 @@ import Simplex.Chat.Web (webPreviewWorker)
+@@ -109,7 +109,7 @@ import qualified Simplex.Chat.Util as U
  import Simplex.Chat.Web (webPreviewWorker)
  import Simplex.FileTransfer.Description (FileDescriptionURI (..), maxFileSizeHard)
  import Simplex.Messaging.Agent
-+import Simplex.Messaging.Agent.Client (cancelWorker)
- import Simplex.Messaging.Agent.Env.SQLite (ServerCfg (..), ServerRoles (..), allRoles)
+-import Simplex.Messaging.Agent.Client (getAgentWorker, waitForUserNetwork, waitForWork, waitWhileSuspended, withWork_)
++import Simplex.Messaging.Agent.Client (cancelWorker, getAgentWorker, waitForUserNetwork, waitForWork, waitWhileSuspended, withWork_)
+ import Simplex.Messaging.Agent.Env.SQLite (ServerCfg (..), ServerRoles (..), Worker (..), allRoles)
  import Simplex.Messaging.Agent.Protocol
- import Simplex.Messaging.Agent.Store.Entity
-@@ -217,7 +218,7 @@
-
+ import Simplex.Messaging.Agent.RetryInterval (RetryInterval (..), nextRetryDelay, withRetryInterval, withRetryIntervalCount)
+@@ -139,11 +139,10 @@ import Simplex.RemoteControl.Types (RCCt
+ import System.Exit (ExitCode, exitSuccess)
+ import System.FilePath (takeExtension, takeFileName, (</>))
+ import System.IO (Handle, IOMode (..))
+-import System.Mem.Weak (deRefWeak)
+ import System.Random (randomRIO)
+ import System.Timeout (timeout)
+ import UnliftIO.Async
+-import UnliftIO.Concurrent (forkIO, killThread, threadDelay)
++import UnliftIO.Concurrent (forkIO, threadDelay)
+ import UnliftIO.Directory
+ import qualified UnliftIO.Exception as E
+ import UnliftIO.IO (hClose)
+@@ -247,7 +246,7 @@ videoFilePrefix = "video_"
+ 
  -- enableSndFiles has no effect when mainApp is True
- startChatController :: Bool -> Bool -> CM' (Async ())
--startChatController mainApp enableSndFiles = do
-+startChatController mainApp enableSndFiles = withChatLifecycle $ do
+ startChatController :: Bool -> Bool -> Bool -> CM' (Async ())
+-startChatController mainApp enableSndFiles serviceRequests = do
++startChatController mainApp enableSndFiles serviceRequests = withChatLifecycle $ do
    asks smpAgent >>= liftIO . resumeAgentClient
+   chatWriteVar' processServiceRequests serviceRequests
    unless mainApp $ chatWriteVar' subscriptionMode SMOnlyCreate
-   users <- fromRight [] <$> runExceptT (withFastStore' getUsers)
-@@ -235,21 +236,21 @@
+@@ -266,23 +265,23 @@ startChatController mainApp enableSndFil
          (userDiff, connDiff) <- withAgent (\a -> syncConnections a aUserIds connIds)
          withFastStore' setConnectionsSyncTs
          toView $ CEvtConnectionsDiff (AgentUserId <$> userDiff) (AgentConnId <$> connDiff)
@@ -46,12 +60,14 @@ Index: src/Simplex/Chat/Library/Commands.hs
            startDeliveryWorkers
            startRelayRequestWorker_
            startCleanupManager
+           mapM_ startBadgeWork users
+           startStoreReceiptWorkers users
 -          void $ forkIO $ mapM_ startExpireCIs users
 +          forkChatBackground $ mapM_ startExpireCIs users
            startRelayChecks users
            startWebPreview users
          else when enableSndFiles $ startXFTP xftpStartSndWorkers
-@@ -271,7 +272,7 @@
+@@ -308,7 +307,7 @@ startChatController mainApp enableSndFil
        cleanupAsync <- asks cleanupManagerAsync
        readTVarIO cleanupAsync >>= \case
          Nothing -> do
@@ -60,7 +76,7 @@ Index: src/Simplex/Chat/Library/Commands.hs
            atomically $ writeTVar cleanupAsync a
          _ -> pure ()
      startRelayChecks users = do
-@@ -280,7 +281,7 @@
+@@ -317,7 +316,7 @@ startChatController mainApp enableSndFil
          relayAsync <- asks relayGroupLinkChecksAsync
          readTVarIO relayAsync >>= \case
            Nothing -> do
@@ -69,7 +85,7 @@ Index: src/Simplex/Chat/Library/Commands.hs
              atomically $ writeTVar relayAsync a
            _ -> pure ()
      startWebPreview users = do
-@@ -293,7 +294,7 @@
+@@ -330,7 +329,7 @@ startChatController mainApp enableSndFil
              readTVarIO webPreviewWorkerAsync >>= \case
                Nothing -> do
                  cc <- ask
@@ -78,10 +94,28 @@ Index: src/Simplex/Chat/Library/Commands.hs
                  atomically $ writeTVar webPreviewWorkerAsync a
                _ -> pure ()
          _ -> pure ()
-@@ -344,24 +345,56 @@
+@@ -383,38 +382,59 @@ restoreCalls = do
    calls <- asks currentCalls
    atomically $ writeTVar calls callsMap
-
+ 
+-stopChatController :: ChatController -> IO ()
+-stopChatController ChatController {smpAgent, agentAsync = s, sndFiles, rcvFiles, expireCIFlags, remoteHostSessions, remoteCtrlSession, cleanupManagerAsync, relayGroupLinkChecksAsync, webPreviewState, expireCIThreads, timedItemThreads, deliveryTaskWorkers, deliveryJobWorkers, relayRequestWorkers, badgeWorkers, storeReceiptWorkers} = do
+-  readTVarIO remoteHostSessions >>= mapM_ (cancelRemoteHost False . snd)
+-  atomically (stateTVar remoteCtrlSession (,Nothing)) >>= mapM_ (cancelRemoteCtrl False . snd)
+-  disconnectAgentClient smpAgent
+-  readTVarIO s >>= mapM_ (\(a1, a2) -> uninterruptibleCancel a1 >> mapM_ uninterruptibleCancel a2)
+-  cancelAsync cleanupManagerAsync
+-  cancelAsync relayGroupLinkChecksAsync
+-  forM_ webPreviewState $ \WebPreviewState {webPreviewWorkerAsync} -> cancelAsync webPreviewWorkerAsync
+-  clearMap expireCIThreads >>= mapM_ (mapM_ uninterruptibleCancel)
+-  clearMap timedItemThreads >>= mapM_ (readTVarIO >=> mapM_ (deRefWeak >=> mapM_ killThread))
+-  clearMap deliveryTaskWorkers >>= mapM_ cancelWorker
+-  clearMap deliveryJobWorkers >>= mapM_ cancelWorker
+-  clearMap relayRequestWorkers >>= mapM_ cancelWorker
+-  stopBadgeWorkers badgeWorkers
+-  clearMap storeReceiptWorkers >>= mapM_ cancelWorker
+-  closeFiles sndFiles
+-  closeFiles rcvFiles
 +-- Keep /stop restartable and serialize it with controller startup.
 +withChatLifecycle :: CM' a -> CM' a
 +withChatLifecycle action = do
@@ -94,27 +128,24 @@ Index: src/Simplex/Chat/Library/Commands.hs
 +  ChatController {agentAsync, chatStartThreads} <- ask
 +  gate <- newEmptyTMVarIO
 +  a <- asyncWithUnmask $ \unmask -> unmask $ whenM (atomically $ takeTMVar gate) action
-+  atomically $ do
+   atomically $ do
+-    keys <- M.keys <$> readTVar expireCIFlags
+-    forM_ keys $ \k -> TM.insert k False expireCIFlags
+-    writeTVar s Nothing
 +    started <- isJust <$> readTVar agentAsync
 +    when started $ modifyTVar' chatStartThreads (a :)
 +    putTMVar gate started
 +
- stopChatController :: ChatController -> IO ()
--stopChatController ChatController {smpAgent, agentAsync = s, sndFiles, rcvFiles, expireCIFlags, remoteHostSessions, remoteCtrlSession} = do
--  readTVarIO remoteHostSessions >>= mapM_ (cancelRemoteHost False . snd)
--  atomically (stateTVar remoteCtrlSession (,Nothing)) >>= mapM_ (cancelRemoteCtrl False . snd)
--  disconnectAgentClient smpAgent
--  readTVarIO s >>= mapM_ (\(a1, a2) -> forkIO $ uninterruptibleCancel a1 >> mapM_ uninterruptibleCancel a2)
--  closeFiles sndFiles
--  closeFiles rcvFiles
--  atomically $ do
--    keys <- M.keys <$> readTVar expireCIFlags
--    forM_ keys $ \k -> TM.insert k False expireCIFlags
--    writeTVar s Nothing
++stopChatController :: ChatController -> IO ()
 +stopChatController cc = runReaderT (withChatLifecycle $ liftIO stop) cc
    where
+-    cancelAsync :: TVar (Maybe (Async ())) -> IO ()
+-    cancelAsync a = atomically (swapTVar a Nothing) >>= mapM_ uninterruptibleCancel
+-    clearMap :: TM.TMap k a -> IO (Map k a)
+-    clearMap m = atomically $ swapTVar m M.empty
 +    ChatController {smpAgent, agentAsync = s, chatStartThreads, sndFiles, rcvFiles,
 +      deliveryTaskWorkers, deliveryJobWorkers, relayRequestWorkers,
++      badgeWorkers, storeReceiptWorkers,
 +      cleanupManagerAsync, relayGroupLinkChecksAsync, webPreviewState,
 +      expireCIThreads, expireCIFlags, timedItemThreads,
 +      remoteHostSessions, remoteCtrlSession} = cc
@@ -133,6 +164,8 @@ Index: src/Simplex/Chat/Library/Commands.hs
 +      atomically (swapTVar deliveryTaskWorkers M.empty) >>= mapM_ cancelWorker
 +      atomically (swapTVar deliveryJobWorkers M.empty) >>= mapM_ cancelWorker
 +      atomically (swapTVar relayRequestWorkers M.empty) >>= mapM_ cancelWorker
++      stopBadgeWorkers badgeWorkers
++      atomically (swapTVar storeReceiptWorkers M.empty) >>= mapM_ cancelWorker
 +      readTVarIO remoteHostSessions >>= mapM_ (cancelRemoteHost False . snd)
 +      atomically (stateTVar remoteCtrlSession (,Nothing)) >>= mapM_ (cancelRemoteCtrl False . snd)
 +      stopAgentClient smpAgent
@@ -147,10 +180,10 @@ Index: src/Simplex/Chat/Library/Commands.hs
 -      mapM_ hClose fs
 -      atomically $ writeTVar files M.empty
 +    closeFiles files = atomically (swapTVar files M.empty) >>= mapM_ hClose
-
+ 
  updateNetworkConfig :: NetworkConfig -> SimpleNetCfg -> NetworkConfig
  updateNetworkConfig cfg SimpleNetCfg {socksProxy, socksMode, hostMode, requiredHostMode, smpProxyMode_, smpProxyFallback_, smpWebPortServers, tcpTimeout_, logTLSErrors} =
-@@ -563,8 +596,8 @@
+@@ -627,8 +647,8 @@ processChatCommand cxt nm = \case
      when restoreChat $ do
        users <- withFastStore' getUsers
        lift $ do
@@ -159,11 +192,11 @@ Index: src/Simplex/Chat/Library/Commands.hs
 +        forkChatBackground $ subscribeUsers True users
 +        forkChatBackground $ startFilesToReceive users
          setAllExpireCIFlags True
-     ok_
-   APISuspendChat t -> do
-@@ -5115,13 +5148,21 @@
+         mapM_ startBadgeWork users
+       mapM_ startStoreReceiptWork users
+@@ -6412,13 +6432,21 @@ assertDirectAllowed user dir ct event =
        _ -> True
-
+ 
  startExpireCIThread :: User -> CM' ()
 -startExpireCIThread user@User {userId} = do
 -  expireThreads <- asks expireCIThreads

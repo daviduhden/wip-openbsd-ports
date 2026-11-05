@@ -5,7 +5,7 @@ store.
 Index: src/Simplex/Chat/Library/Internal.hs
 --- src/Simplex/Chat/Library/Internal.hs.orig
 +++ src/Simplex/Chat/Library/Internal.hs
-@@ -107,7 +107,8 @@ import Simplex.Messaging.Version
+@@ -109,7 +109,8 @@ import Simplex.Messaging.Util
  import Simplex.Messaging.Version
  import System.FilePath (takeFileName, (</>))
  import System.IO (Handle, IOMode (..), hFlush)
@@ -15,8 +15,8 @@ Index: src/Simplex/Chat/Library/Internal.hs
  import UnliftIO.Directory
  import UnliftIO.IO (hClose, openFile)
  import UnliftIO.STM
-@@ -1631,18 +1632,23 @@
-
+@@ -1761,18 +1762,23 @@ startProximateTimedItemThread user itemR
+ 
  startTimedItemThread :: User -> (ChatRef, ChatItemId) -> UTCTime -> CM ()
  startTimedItemThread user itemRef deleteAt = do
 -  itemThreads <- asks timedItemThreads
@@ -48,6 +48,6 @@ Index: src/Simplex/Chat/Library/Internal.hs
 +      a <- asyncWithUnmask (\unmask -> unmask work `E.finally` atomically (TM.delete itemRef itemThreads))
 +        `E.onException` atomically (putTMVar threadVar Nothing >> TM.delete itemRef itemThreads)
 +      atomically $ putTMVar threadVar $ Just a
-
+ 
  deleteTimedItem :: User -> (ChatRef, ChatItemId) -> UTCTime -> CM ()
  deleteTimedItem user (ChatRef cType chatId scope, itemId) deleteAt = do

@@ -35,5 +35,5 @@ Index: src/Simplex/Messaging/Server/Web.hs
 +      bracket (WT.attachConn socket cxt) (terminate . fst)
 +#endif
      -- from warp
-     withTimeout ii conn =
+     withTimeout ii =
        bracket

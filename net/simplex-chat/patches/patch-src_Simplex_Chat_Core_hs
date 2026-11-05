@@ -5,15 +5,24 @@ the agent and close its stores.
 Index: src/Simplex/Chat/Core.hs
 --- src/Simplex/Chat/Core.hs.orig
 +++ src/Simplex/Chat/Core.hs
-@@ -13,6 +13,7 @@ module Simplex.Chat.Core
+@@ -13,15 +13,13 @@ module Simplex.Chat.Core
    )
  where
  
+-import Control.Concurrent (forkIO)
+-import Control.Exception (fromException, mask, onException, throwTo)
 +import Control.Concurrent.STM (retry)
  import Control.Logger.Simple
  import Control.Monad
  import Control.Monad.Except
-@@ -34,6 +35,8 @@
+ import Control.Monad.Reader
+ import qualified Data.ByteString.Char8 as B
+ import Data.List (find)
+-import Data.Maybe (isNothing)
+ import Data.Text (Text)
+ import qualified Data.Text as T
+ import Data.Text.Encoding (encodeUtf8)
+@@ -37,6 +35,8 @@ import Simplex.Chat.Store.Shared (StoreE
  import Simplex.Chat.Types
  import Simplex.Chat.Types.Preferences (FeatureAllowed (..), FilesPreference (..), Preferences (..), emptyChatPrefs)
  import Simplex.Chat.View (ChatResponseEvent, serializeChatError, serializeChatResponse, simplexChatContact)
@@ -22,16 +31,17 @@ Index: src/Simplex/Chat/Core.hs
  import Simplex.Messaging.Agent.Protocol
  import Simplex.Messaging.Agent.Store.Common (DBStore, withTransaction)
  import Simplex.Messaging.Agent.Store.Shared (MigrationConfig (..), MigrationConfirmation (..))
-@@ -42,6 +45,8 @@
+@@ -45,7 +45,8 @@ import System.Exit (exitFailure)
  import System.IO (hFlush, stdout)
  import Text.Read (readMaybe)
  import UnliftIO.Async
+-import UnliftIO.Exception (finally)
 +import qualified UnliftIO.Exception as E
 +import UnliftIO.STM
  
  simplexChatCore :: ChatConfig -> ChatOpts -> (User -> ChatController -> IO ()) -> IO ()
  simplexChatCore cfg@ChatConfig {confirmMigrations, testView, chatHooks} opts@ChatOpts {coreOptions = coreOptions@CoreChatOpts {dbOptions, logAgent, yesToUpMigrations, migrationBackupPath, maintenance}, createBot, userDisplayName, userImageFile} chat =
-@@ -82,19 +87,35 @@
+@@ -86,29 +87,38 @@ simplexChatCore cfg@ChatConfig {confirmM
                pure u
            unless testView $ putStrLn $ "Current user: " <> userStr u
            runSimplexChat cfg opts u cc chat
@@ -45,16 +55,30 @@ Index: src/Simplex/Chat/Core.hs
 -  | maintenance = wait =<< async (chat u cc)
 +  | maintenance = chat u cc
    | otherwise = do
--      a1 <- runReaderT (startChatController True True) cc
-+      _ <- runReaderT (startChatController True True) cc
-       when (chatRelay && not testView) $ askCreateRelayAddress cc u chatRelayServer headless
-       forM_ (postStartHook chatHooks) ($ cc)
--      a2 <- async $ chat u cc
--      waitEither_ a1 a2
+-      a1 <- runReaderT (startChatController True True False) cc `onException` stopChatController cc
+-      flip finally (stopUnlessCancelled a1) $ do
+-        when (chatRelay && not testView) $ askCreateRelayAddress cc u chatRelayServer headless
+-        forM_ (postStartHook chatHooks) ($ cc)
+-        -- throwTo waits while the callback is masked, so an outside interrupt cancels it from a forked thread.
+-        -- A /_stop sent from the callback ends a1 first, which leaves the callback running.
+-        mask $ \restore -> do
+-          a2 <- asyncWithUnmask $ \unmask -> unmask (chat u cc)
+-          let cancelCallback = poll a1 >>= \r -> when (isNothing r) $ void $ forkIO $ throwTo (asyncThreadId a2) AsyncCancelled
+-          restore (waitEither_ a1 a2) `onException` cancelCallback
++      _ <- runReaderT (startChatController True True False) cc
++      when (chatRelay && not testView) $ askCreateRelayAddress cc u chatRelayServer headless
++      forM_ (postStartHook chatHooks) ($ cc)
 +      race_ (chat u cc) monitorAgent
-+  where
+   where
+-    stopUnlessCancelled a1 =
+-      poll a1 >>= \case
+-        Just (Left e) | fromException e == Just AsyncCancelled -> pure ()
+-        _ -> stopChatController cc
 +    -- /stop removes the subscriber before cancelling it. Follow replacement
 +    -- subscribers after /start, but propagate unexpected subscriber failures.
++    -- Upstream's shorter-lived waitEither_ on the initial subscriber would end
++    -- the whole process on /stop, so the port keeps following agentAsync; the
++    -- teardown in simplexChatCore then stops the current controller once.
 +    monitorAgent = forever $ do
 +      a <- atomically $ readTVar (agentAsync cc) >>= maybe retry (pure . fst)
 +      result <- atomically $
@@ -70,4 +94,4 @@ Index: src/Simplex/Chat/Core.hs
 +        Just (Right ()) -> E.throwIO $ userError "Agent subscriber stopped unexpectedly"
  
  sendChatCmdStr :: ChatController -> String -> IO (Either ChatError ChatResponse)
- sendChatCmdStr cc s = runReaderT (execChatCommand Nothing (encodeUtf8 $ T.pack s) 0) cc
+ sendChatCmdStr cc s = runReaderT (execChatCommand CSLocal (encodeUtf8 $ T.pack s) 0) cc

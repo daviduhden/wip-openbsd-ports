@@ -1,6 +1,6 @@
 Wait for proxy-agent reconnect workers and protocol clients during
 shutdown, publish worker/client creation atomically, and reject
-connections completed after shutdown began.  Detached relay TLS sessions
+connections completed after shutdown began. Detached relay TLS sessions
 could otherwise survive their owner and overlap a subsequent server
 instance.
 
@@ -29,7 +29,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
  import UnliftIO.STM
  
  type SMPClientVar = SessionVar (Either (SMPClientError, Maybe UTCTime) (OwnServer, SMPClient))
-@@ -203,7 +202,7 @@ getSMPServerClient' ca srv = snd <$> get
+@@ -204,7 +203,7 @@ getSMPServerClient' ca srv = snd <$> get
  {-# INLINE getSMPServerClient' #-}
  
  getSMPServerClient'' :: SMPClientAgent p -> SMPServer -> ExceptT SMPClientError IO (OwnServer, SMPClient)
@@ -38,7 +38,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
    ts <- liftIO getCurrentTime
    withGetSessVar workerSeq srv smpClients ts (ExceptT . newSMPClient) waitForSMPClient
    where
-@@ -227,14 +226,20 @@ getSMPServerClient'' ca@SMPClientAgent {
+@@ -228,14 +227,20 @@ getSMPServerClient'' ca@SMPClientAgent {
        r <- connectClient ca srv v `E.catches` clientHandlers
        case r of
          Right smp -> do
@@ -65,7 +65,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
          Left e -> do
            let ei = persistErrorInterval agentCfg
            if ei == 0
-@@ -313,7 +318,7 @@ connectClient ca@SMPClientAgent {agentCf
+@@ -314,7 +319,7 @@ connectClient ca@SMPClientAgent {agentCf
  reconnectClient :: SMPClientAgent p -> SMPServer -> IO ()
  reconnectClient ca@SMPClientAgent {active, agentCfg, smpSubWorkers, workerSeq} srv = do
    ts <- getCurrentTime
@@ -74,7 +74,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
    where
      getWorkerVar ts =
        ifM
-@@ -322,7 +327,7 @@ reconnectClient ca@SMPClientAgent {activ
+@@ -323,7 +328,7 @@ reconnectClient ca@SMPClientAgent {activ
          (Just <$> getSessVar workerSeq srv smpSubWorkers ts)
      newSubWorker :: SessionVar (Async ()) -> IO ()
      newSubWorker v = do
@@ -83,7 +83,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
        atomically $ putTMVar (sessionVar v) a
      runSubWorker v =
        withRetryInterval (reconnectInterval agentCfg) $ \_ loop -> do
-@@ -388,18 +393,19 @@ lookupSMPServerClient SMPClientAgent {sm
+@@ -389,18 +394,19 @@ lookupSMPServerClient SMPClientAgent {sm
  closeSMPClientAgent :: SMPClientAgent p -> IO ()
  closeSMPClientAgent c = do
    atomically $ writeTVar (active c) False

@@ -1,16 +1,15 @@
 Disambiguate getAddrInfo's result type for newer network/GHC
 combinations.
 
-Prefer the IPv4 wildcard on OpenBSD.  OpenBSD does not accept
-IPv4-mapped connections on an IPv6 socket, while this server opens only
-one of the addresses returned by getAddrInfo.  Choosing IPv6 first
-therefore makes the server unreachable through IPv4 addresses such as
-127.0.0.1.
+Prefer the IPv4 wildcard on OpenBSD. OpenBSD does not accept IPv4-mapped
+connections on an IPv6 socket, while this server opens only one of the
+addresses returned by getAddrInfo. Choosing IPv6 first therefore makes
+the server unreachable through IPv4 addresses such as 127.0.0.1.
 
-Make shutdown synchronous.  Keep each accepted connection registered
+Make shutdown synchronous. Keep each accepted connection registered
 until its socket finalizer completes, close the registration race around
 fork, and do not report the listening socket as stopped while connection
-finalizers are still running.  Otherwise a restarted server can overlap
+finalizers are still running. Otherwise a restarted server can overlap
 the previous TLS sessions and stores.
 
 Join closing connections even when their finalizer starts before
@@ -77,7 +76,7 @@ Index: src/Simplex/Messaging/Transport/Server.hs
  
  -- | Recover from errors in `accept` whenever it is safe.
  -- Some errors are safe to ignore, while blindly restaring `accept` may trigger a busy loop.
-@@ -228,6 +236,7 @@ closeServer :: TMVar Bool -> TVar (IntMa
+@@ -230,6 +238,7 @@ closeServer :: TMVar Bool -> TVar (IntMa
  closeServer started clients sock = do
    close sock
    readTVarIO clients >>= mapM_ (deRefWeak >=> mapM_ killThread)
@@ -85,7 +84,7 @@ Index: src/Simplex/Messaging/Transport/Server.hs
    void . atomically $ tryPutTMVar started False
  
  startTCPServer :: TMVar Bool -> Maybe HostName -> ServiceName -> IO Socket
-@@ -235,8 +244,8 @@ startTCPServer started host port = withS
+@@ -237,8 +246,8 @@ startTCPServer started host port = withS
    where
      resolve =
        let hints = defaultHints {addrFlags = [AI_PASSIVE], addrSocketType = Stream}

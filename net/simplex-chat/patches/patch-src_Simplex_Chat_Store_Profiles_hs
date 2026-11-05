@@ -4,7 +4,7 @@ Maybe.
 Index: src/Simplex/Chat/Store/Profiles.hs
 --- src/Simplex/Chat/Store/Profiles.hs.orig
 +++ src/Simplex/Chat/Store/Profiles.hs
-@@ -294,7 +294,9 @@ updateUserPrivacy db User {userId, showNtfs, viewPwdHa
+@@ -312,7 +312,9 @@ updateUserPrivacy db User {userId, showN
      |]
      (hashSalt viewPwdHash :. (BI showNtfs, userId))
    where

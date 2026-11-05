@@ -19,7 +19,7 @@ interactive request mode when creating a contact-link reply queue.
 Index: src/Simplex/Messaging/Agent.hs
 --- src/Simplex/Messaging/Agent.hs.orig
 +++ src/Simplex/Messaging/Agent.hs
-@@ -41,6 +41,7 @@
+@@ -41,6 +41,7 @@ module Simplex.Messaging.Agent
      getSMPAgentClient,
      getSMPAgentClient_,
      disconnectAgentClient,
@@ -27,7 +27,7 @@ Index: src/Simplex/Messaging/Agent.hs
      disposeAgentClient,
      resumeAgentClient,
      withConnLock,
-@@ -250,7 +251,7 @@
+@@ -269,7 +270,7 @@ import Simplex.RemoteControl.Invitation
  import Simplex.RemoteControl.Types
  import System.Mem.Weak (deRefWeak)
  import UnliftIO.Async (mapConcurrently)
@@ -36,7 +36,7 @@ Index: src/Simplex/Messaging/Agent.hs
  import qualified UnliftIO.Exception as E
  import UnliftIO.STM
  
-@@ -273,25 +274,28 @@
+@@ -292,25 +293,28 @@ getSMPAgentClient_ clientId cfg initServ
        liftIO $ checkServers "SMP" smp >> checkServers "XFTP" xftp
        currentTs <- liftIO getCurrentTime
        notices <- liftIO $ withTransaction store (`getClientNotices` presetServers) `catchAll_` pure []
@@ -81,7 +81,7 @@ Index: src/Simplex/Messaging/Agent.hs
          logError $ "Agent thread " <> name <> " crashed: " <> tshow e
          atomically $ writeTBQueue subQ ("", "", AEvt SAEConn $ ERR $ CRITICAL True $ show e)
  
-@@ -306,14 +310,26 @@
+@@ -325,14 +329,26 @@ logServersStats c = do
      liftIO $ threadDelay' int
  
  saveServersStats :: AgentClient -> AM' ()
@@ -112,7 +112,7 @@ Index: src/Simplex/Messaging/Agent.hs
  
  restoreServersStats :: AgentClient -> AM' ()
  restoreServersStats c@AgentClient {smpServersStats, xftpServersStats, ntfServersStats, srvStatsStartedAt} = do
-@@ -328,22 +344,53 @@
+@@ -347,22 +363,53 @@ restoreServersStats c@AgentClient {smpSe
  
  disconnectAgentClient :: AgentClient -> IO ()
  disconnectAgentClient c@AgentClient {agentEnv = Env {ntfSupervisor = ns, xftpAgent = xa}} = do
@@ -175,7 +175,7 @@ Index: src/Simplex/Messaging/Agent.hs
  
  createUser :: AgentClient -> Bool -> NonEmpty (ServerCfg 'PSMP) -> NonEmpty (ServerCfg 'PXFTP) -> AE UserId
  createUser c = withAgentEnv c .:. createUser' c
-@@ -886,8 +933,10 @@
+@@ -972,8 +1019,10 @@ joinConnAsync c corrId updateConn connId
  allowConnectionAsync' :: AgentClient -> ACorrId -> ConnId -> ConfirmationId -> ConnInfo -> AM ()
  allowConnectionAsync' c corrId connId confId ownConnInfo =
    withStore c (`getConn` connId) >>= \case
@@ -188,7 +188,7 @@ Index: src/Simplex/Messaging/Agent.hs
      _ -> throwE $ CMD PROHIBITED "allowConnectionAsync"
  
  -- TODO
-@@ -905,7 +954,7 @@
+@@ -994,7 +1043,7 @@ acceptContactAsync' c corrId connId enab
      throwE err
  
  ackMessageAsync' :: AgentClient -> ACorrId -> ConnId -> AgentMsgId -> Maybe MsgReceiptInfo -> AM ()
@@ -197,7 +197,7 @@ Index: src/Simplex/Messaging/Agent.hs
    SomeConn cType _ <- withStore c (`getConn` connId)
    case cType of
      SCDuplex -> enqueueAck
-@@ -917,10 +966,11 @@
+@@ -1006,10 +1055,11 @@ ackMessageAsync' c corrId connId msgId r
      enqueueAck :: AM ()
      enqueueAck = do
        let mId = InternalId msgId
@@ -212,45 +212,72 @@ Index: src/Simplex/Messaging/Agent.hs
  
  deleteConnectionAsync' :: AgentClient -> Bool -> ConnId -> AM ()
  deleteConnectionAsync' c waitDelivery connId = deleteConnectionsAsync' c waitDelivery [connId]
-@@ -1408,7 +1458,7 @@
-         SomeConn cType conn <- withStore c (`getConn` connId)
-         let pqInitKeys = CR.joinContactInitialKeys (v >= pqdrSMPAgentVersion) pqSup
-         CCLink cReq _ <- case conn of
--          NewConnection _ -> newRcvConnSrv c NRMBackground userId connId enableNtfs SCMInvitation Nothing Nothing pqInitKeys subMode srv
-+          NewConnection _ -> newRcvConnSrv c nm userId connId enableNtfs SCMInvitation Nothing Nothing pqInitKeys subMode srv
-           RcvConnection _ rq -> mkJoinInvitation rq pqInitKeys
-           _ -> throwE $ CMD PROHIBITED $ "joinConnSrv: bad connection " <> show cType
-         void $ sendInvitation c nm userId connId qInfo vrsn cReq cInfo
-@@ -1474,9 +1524,15 @@
- allowConnection' c connId confId ownConnInfo = withConnLock c connId "allowConnection" $ do
+@@ -1634,7 +1684,7 @@ joinConnSrv' c nm userId connId enableNt
+           Nothing -> do
+             let pqInitKeys = CR.joinContactInitialKeys pqSupport
+             CCLink cReq _ <- case conn of
+-              NewConnection _ -> newRcvConnSrv c NRMBackground userId connId enableNtfs SCMInvitation Nothing Nothing pqInitKeys False subMode srv
++              NewConnection _ -> newRcvConnSrv c nm userId connId enableNtfs SCMInvitation Nothing Nothing pqInitKeys False subMode srv
+               RcvConnection _ rq -> mkJoinInvitation rq pqInitKeys
+               _ -> throwE $ CMD PROHIBITED $ "joinConnSrv: bad connection " <> show cType
+             pure AgentInvitation {agentVersion = v, connReq = cReq, connInfo = cInfo}
+@@ -1645,7 +1695,7 @@ joinConnSrv' c nm userId connId enableNt
+             rq <- case conn of
+               NewConnection _ -> do
+                 e2eKeys <- atomically $ C.generateKeyPair g
+-                fst <$> createRcvQueue c NRMBackground userId connId srv enableNtfs subMode Nothing (CQRMessaging Nothing) e2eKeys
++                fst <$> createRcvQueue c nm userId connId srv enableNtfs subMode Nothing (CQRMessaging Nothing) e2eKeys
+               RcvConnection _ rq -> pure rq
+               _ -> throwE $ CMD PROHIBITED $ "joinConnSrv: bad connection " <> show cType
+             let RcvQueue {smpClientVersion = rqV} = rq
+@@ -1721,11 +1771,18 @@ allowConnection' :: AgentClient -> Maybe
+ allowConnection' c cmdId_ connId confId ownConnInfo = withConnLock c connId "allowConnection" $ do
    withStore c (`getConn` connId) >>= \case
      SomeConn _ (RcvConnection _ RcvQueue {server, rcvId}) -> do
--      AcceptedConfirmation {senderConf = SMPConfirmation {senderKey}} <-
-+      AcceptedConfirmation {senderConf = SMPConfirmation {senderKey, smpReplyQueues}} <-
-         withStore c $ \db -> acceptConfirmation db confId ownConnInfo
--      enqueueCommand c "" connId (Just server) . AInternalCommand $ ICAllowSecure rcvId senderKey
-+      -- When the sender already secured our receive queue, acceptance only
-+      -- needs the reply server. A pending confirmation ACK on the receive
-+      -- server must not block it when that server goes offline.
-+      let commandServer = case (senderKey, smpReplyQueues) of
-+            (Nothing, q : _) -> qServer q
-+            _ -> server
-+      enqueueCommand c "" connId (Just commandServer) . AInternalCommand $ ICAllowSecure rcvId senderKey
+-      withStore c $ \db -> runExceptT $ do
+-        AcceptedConfirmation {senderConf = SMPConfirmation {senderKey}} <- ExceptT $ acceptConfirmation db confId ownConnInfo
+-        ExceptT $ createCommand db "" connId (Just server) $ AInternalCommand $ ICAllowSecure rcvId senderKey
++      commandServer <- withStore c $ \db -> runExceptT $ do
++        AcceptedConfirmation {senderConf = SMPConfirmation {senderKey, smpReplyQueues}} <- ExceptT $ acceptConfirmation db confId ownConnInfo
++        -- When the sender already secured our receive queue, acceptance only
++        -- needs the reply server. A pending confirmation ACK on the receive
++        -- server must not block it when that server goes offline.
++        let commandServer = case (senderKey, smpReplyQueues) of
++              (Nothing, q : _) -> qServer q
++              _ -> server
++        ExceptT $ createCommand db "" connId (Just commandServer) $ AInternalCommand $ ICAllowSecure rcvId senderKey
+         liftIO $ mapM_ (deleteCommand db) cmdId_
+-      lift . void $ getAsyncCmdWorker True c connId (Just server)
++        pure commandServer
++      lift . void $ getAsyncCmdWorker True c connId (Just commandServer)
      _ -> throwE $ CMD PROHIBITED "allowConnection"
  
  -- | Accept contact (ACPT command) in Reader monad
-@@ -1907,7 +1963,9 @@
+@@ -2279,20 +2336,9 @@ runCommandProcessing c@AgentClient {subQ
            tryCommand . withNextSrv c userId storageSrvs triedHosts [qServer q] $ \srv -> do
              sqSecured <- joinConnSrv c NRMBackground userId connId enableNtfs cReq connInfo pqEnc subMode srv
              notify $ JOINED sqSecured
--        LET confId ownCInfo -> withServer' . tryCommand $ allowConnection' c connId confId ownCInfo >> notify OK
+-        JOIN (JRServiceReq cReq@(CRContactUri ConnReqUriData {crSmpQueues = q :| _} _) pqEnc signKey_) subMode connInfo -> noServer $ do
+-          triedHosts <- newTVarIO S.empty
+-          tryCommand . withNextSrv c userId storageSrvs triedHosts [qServer q] $ \srv ->
+-            withConnLock c connId "JOIN service request" $
+-              atomically (TM.lookup connId (serviceRequests c)) >>= \case
+-                Nothing -> pure ()
+-                Just v -> do
+-                  let mkInner replyQInfo binding = AgentServiceRequest (replyQInfo :| []) (signServiceReq (C.unStored <$> signKey_) binding connInfo) connInfo
+-                  void (joinConnSrv' c NRMBackground userId connId False cReq connInfo pqEnc subMode srv mkInner)
+-                    `catchAllErrors` \e ->
+-                      if temporaryOrHostError e
+-                        then throwE e
+-                        else atomically $ void $ tryPutTMVar v $ Left e -- will not overwrite existing result
+-        LET confId ownCInfo -> withServer' . tryAtomicCommand $ allowConnection' c (Just cmdId) connId confId ownCInfo >> notify OK
 +        -- Also accept persisted LET commands that older versions assigned
 +        -- to a server; newly queued LET commands have no network dependency.
-+        LET confId ownCInfo -> tryCommand $ allowConnection' c connId confId ownCInfo >> notify OK
-         ACK msgId rcptInfo_ -> withServer' . tryCommand $ ackMessage' c connId msgId rcptInfo_ >> notify OK
++        LET confId ownCInfo -> tryAtomicCommand $ allowConnection' c (Just cmdId) connId confId ownCInfo >> notify OK
+         ACK msgId rcptInfo_ -> withServer' . tryAtomicCommand $ ackMessage' c (Just cmdId) connId msgId rcptInfo_ >> notify OK
          SWCH ->
-           noServer . tryWithLock "switchConnection" $
-@@ -2182,9 +2240,12 @@
+           noServer . tryAtomicWithLock "switchConnection" $
+@@ -2625,9 +2671,12 @@ runSmpQueueMsgDelivery c@AgentClient {su
          atomically $ endAgentOperation c AOMsgDelivery -- this operation begins in submitPendingMsg
          let mId = unId msgId
              ri' = maybe id updateRetryInterval2 msgRetryState ri
@@ -266,7 +293,7 @@ Index: src/Simplex/Messaging/Agent.hs
            resp <- tryAllErrors $ case msgType of
              AM_CONN_INFO -> sendConfirmation c NRMBackground sq msgBody
              AM_CONN_INFO_REPLY -> sendConfirmation c NRMBackground sq msgBody
-@@ -2301,8 +2362,10 @@
+@@ -2753,8 +2802,10 @@ runSmpQueueMsgDelivery c@AgentClient {su
                              Nothing -> internalErr msgId "sent QTEST: queue not found in connection"
                              Just (sq', sq'' : sqs') -> do
                                checkSQSwchStatus sq' SSSendingQTEST

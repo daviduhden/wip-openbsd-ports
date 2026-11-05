@@ -1,5 +1,5 @@
 Bind multicast receivers to the wildcard address and join the group on
-each usable IPv4 interface.  OpenBSD associates membership with one
+each usable IPv4 interface. OpenBSD associates membership with one
 interface, so INADDR_ANY alone is not sufficient on multihomed hosts.
 Select the invitation address as the outgoing multicast interface as
 well, ensuring the datagram source matches the address authenticated by
@@ -7,7 +7,7 @@ XRCP.
 
 Construct the listener directly because network-udp's wildcard path
 requires IP_PKTINFO, which OpenBSD does not have; recvfrom is sufficient
-here because discovery only needs the peer address.  Use SO_REUSEPORT as
+here because discovery only needs the peer address. Use SO_REUSEPORT as
 well as SO_REUSEADDR so concurrent listeners can bind the discovery
 port.
 
@@ -30,7 +30,7 @@ Index: src/Simplex/RemoteControl/Discovery.hs
  
  module Simplex.RemoteControl.Discovery
    ( pattern ANY_ADDR_V4,
-@@ -23,8 +23,9 @@
+@@ -23,8 +23,9 @@ import Control.Logger.Simple
  import Control.Monad
  import Data.ByteString (ByteString)
  import Data.Default (def)
@@ -42,7 +42,7 @@ Index: src/Simplex/RemoteControl/Discovery.hs
  import Data.String (IsString)
  import qualified Data.Text as T
  import Data.Word (Word16)
-@@ -37,7 +38,7 @@
+@@ -37,7 +38,7 @@ import qualified Simplex.Messaging.Trans
  import Simplex.Messaging.Transport.Client (TransportHost (..))
  import Simplex.Messaging.Transport.Server (mkTransportServerConfig, runTransportServerSocket, startTCPServer)
  import Simplex.Messaging.Util (ifM, tshow)
@@ -51,7 +51,7 @@ Index: src/Simplex/RemoteControl/Discovery.hs
  import Simplex.RemoteControl.Types
  import UnliftIO
  
-@@ -100,45 +101,70 @@
+@@ -100,49 +101,70 @@ startTLSServer port_ startedOnPort crede
            TLS.serverSupported = defaultSupportedParams
          }
  
@@ -86,6 +86,35 @@ Index: src/Simplex/RemoteControl/Discovery.hs
 -  -- N.setSocketOption raw N.Broadcast 1
 -  joinMulticast subscribers raw (listenerHostAddr4 sock)
 -  pure sock
+-
+-closeListener :: TMVar Int -> UDP.ListenSocket -> IO ()
+-closeListener subscribers sock =
+-  partMulticast subscribers (UDP.listenSocket sock) (listenerHostAddr4 sock) `finally` UDP.stop sock
+-
+-joinMulticast :: TMVar Int -> N.Socket -> N.HostAddress -> IO ()
+-joinMulticast subscribers sock group = do
+-  now <- atomically $ takeTMVar subscribers
+-  if now == 0
+-    then
+-      setMembership sock group True >>= \case
+-        Left e -> atomically (putTMVar subscribers now) >> logError ("setMembership failed " <> tshow e)
+-        Right () -> atomically $ putTMVar subscribers (now + 1)
+-    else atomically $ putTMVar subscribers (now + 1)
+-
+-partMulticast :: TMVar Int -> N.Socket -> N.HostAddress -> IO ()
+-partMulticast subscribers sock group = do
+-  now <- atomically $ takeTMVar subscribers
+-  if now == 1
+-    then
+-      setMembership sock group False >>= \case
+-        Left e -> atomically (putTMVar subscribers (now - 1)) >> logError ("setMembership failed " <> tshow e)
+-        Right () -> atomically $ putTMVar subscribers (now - 1)
+-    else atomically $ putTMVar subscribers (max 0 (now - 1))
+-
+-listenerHostAddr4 :: UDP.ListenSocket -> N.HostAddress
+-listenerHostAddr4 sock = case UDP.mySockAddr sock of
+-  N.SockAddrInet _port host -> host
+-  _ -> error "MULTICAST_ADDR_V4 is V4"
 +  interfaces <- multicastInterfaces
 +  let joinInterface interface =
 +        (joinMulticast raw multicastHostAddr4 interface $> Just interface)
@@ -99,42 +128,21 @@ Index: src/Simplex/RemoteControl/Discovery.hs
 +      else pure joined
 +  when (null memberships) $ ioError $ userError "no IPv4 interface accepted the multicast membership"
 +  pure (sock, memberships)
- 
--closeListener :: TMVar Int -> UDP.ListenSocket -> IO ()
--closeListener subscribers sock =
--  partMulticast subscribers (UDP.listenSocket sock) (listenerHostAddr4 sock) `finally` UDP.stop sock
++
 +closeListener :: (UDP.ListenSocket, [N.HostAddress]) -> IO ()
 +closeListener (sock, interfaces) =
 +  forM_ interfaces (partMulticast raw multicastHostAddr4) `finally` UDP.stop sock
 +  where
 +    raw = UDP.listenSocket sock
- 
--joinMulticast :: TMVar Int -> N.Socket -> N.HostAddress -> IO ()
--joinMulticast subscribers sock group = do
--  now <- atomically $ takeTMVar subscribers
--  when (now == 0) $ do
--    setMembership sock group True >>= \case
--      Left e -> atomically (putTMVar subscribers now) >> logError ("setMembership failed " <> tshow e)
--      Right () -> atomically $ putTMVar subscribers (now + 1)
++
 +joinMulticast :: N.Socket -> N.HostAddress -> N.HostAddress -> IO ()
 +joinMulticast sock group interface = setMembership sock group interface True
- 
--partMulticast :: TMVar Int -> N.Socket -> N.HostAddress -> IO ()
--partMulticast subscribers sock group = do
--  now <- atomically $ takeTMVar subscribers
--  when (now == 1) $
--    setMembership sock group False >>= \case
--      Left e -> atomically (putTMVar subscribers now) >> logError ("setMembership failed " <> tshow e)
--      Right () -> atomically $ putTMVar subscribers (now - 1)
++
 +partMulticast :: N.Socket -> N.HostAddress -> N.HostAddress -> IO ()
 +partMulticast sock group interface =
 +  setMembership sock group interface False
 +    `catch` \(e :: SomeException) -> logError $ "Leaving multicast interface " <> tshow interface <> " failed: " <> tshow e
- 
--listenerHostAddr4 :: UDP.ListenSocket -> N.HostAddress
--listenerHostAddr4 sock = case UDP.mySockAddr sock of
--  N.SockAddrInet _port host -> host
--  _ -> error "MULTICAST_ADDR_V4 is V4"
++
 +multicastInterfaces :: IO [N.HostAddress]
 +multicastInterfaces = do
 +  interfaces <- nub . mapMaybe interfaceAddress <$> getNetworkInterfaces

@@ -10,46 +10,30 @@ they can be regenerated on OpenBSD.
 Index: tests/SchemaDump.hs
 --- tests/SchemaDump.hs.orig
 +++ tests/SchemaDump.hs
-@@ -3,12 +3,12 @@
+@@ -3,11 +3,12 @@
  {-# LANGUAGE OverloadedStrings #-}
  {-# LANGUAGE ScopedTypeVariables #-}
  
 -module SchemaDump where
 +module SchemaDump (schemaDumpTest, saveQueryPlans) where
  
--import ChatClient (withTmpFiles)
  import ChatTests.DBUtils
  import Control.Concurrent.STM
  import Control.DeepSeq
-+import Control.Exception (bracket, bracket_)
++import Control.Exception (bracket)
  import qualified Control.Exception as E
  import Control.Monad (unless, void)
  import Data.List (dropWhileEnd, sort)
-@@ -29,7 +29,8 @@
- import qualified Simplex.Messaging.Agent.Store.SQLite.Migrations as Migrations
+@@ -29,6 +30,7 @@ import qualified Simplex.Messaging.Agent
  import Simplex.Messaging.Agent.Store.Shared (Migration (..), MigrationConfig (..), MigrationConfirmation (..), MigrationsToRun (..), toDownMigration)
  import Simplex.Messaging.Util (ifM, tshow, whenM)
--import System.Directory (doesFileExist, removeFile)
-+import System.Directory (createDirectoryIfMissing, doesFileExist, removeDirectoryRecursive, removeFile)
+ import System.Directory (doesFileExist, removeFile)
 +import System.Environment (lookupEnv)
  import System.Process (readCreateProcess, shell)
  import Test.Hspec
  
-@@ -51,6 +52,12 @@
- appAgentQueryPlans :: FilePath
- appAgentQueryPlans = "src/Simplex/Chat/Store/SQLite/Migrations/agent_query_plans.txt"
- 
-+withTmpFiles :: IO a -> IO a
-+withTmpFiles =
-+  bracket_
-+    (createDirectoryIfMissing False "tests/tmp")
-+    (removeDirectoryRecursive "tests/tmp")
-+
- testSchema :: FilePath
- testSchema = "tests/tmp/test_agent_schema.sql"
- 
-@@ -65,24 +72,26 @@
- testVerifySchemaDump = withTmpFiles $ do
+@@ -64,24 +66,26 @@ testVerifySchemaDump :: IO ()
+ testVerifySchemaDump = do
    savedSchema <- ifM (doesFileExist appSchema) (readFile appSchema) (pure "")
    savedSchema `deepseq` pure ()
 -  void $ createChatStore (DBOpts testDB chatDBFunctions "" False True TQOff) (MigrationConfig MCError Nothing)
@@ -60,7 +44,7 @@ Index: tests/SchemaDump.hs
    removeFile testDB
  
  testVerifyLintFKeyIndexes :: IO ()
- testVerifyLintFKeyIndexes = withTmpFiles $ do
+ testVerifyLintFKeyIndexes = do
    savedLint <- ifM (doesFileExist appLint) (readFile appLint) (pure "")
    savedLint `deepseq` pure ()
 -  void $ createChatStore (DBOpts testDB chatDBFunctions "" False True TQOff) (MigrationConfig MCError Nothing)
@@ -71,7 +55,7 @@ Index: tests/SchemaDump.hs
    removeFile testDB
  
  testSchemaMigrations :: IO ()
- testSchemaMigrations = withTmpFiles $ do
+ testSchemaMigrations = do
    let noDownMigrations = dropWhileEnd (\Migration {down} -> isJust down) Store.migrations
    Right st <- createDBStore (DBOpts testDB chatDBFunctions "" False True TQOff) noDownMigrations (MigrationConfig MCError Nothing)
 -  mapM_ (testDownMigration st) $ drop (length noDownMigrations) Store.migrations
@@ -81,13 +65,10 @@ Index: tests/SchemaDump.hs
    removeFile testDB
    whenM (doesFileExist testSchema) $ removeFile testSchema
    where
-@@ -103,10 +112,11 @@
-       schema''' `shouldBe` schema'
- 
+@@ -104,8 +108,9 @@ testSchemaMigrations = do
  testVerifyStrict :: IO ()
--testVerifyStrict = do
-+testVerifyStrict = withTmpFiles $ do
-   Right st <- createDBStore (DBOpts testDB chatDBFunctions "" False True TQOff) Store.migrations (MigrationConfig MCConsole Nothing)
+ testVerifyStrict = do
+   Right st <- createDBStore (DBOpts testDB chatDBFunctions "" False True TQOff) Store.migrations (MigrationConfig MCError Nothing)
 -  withConnection st (`DB.query_` "SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence' AND sql NOT LIKE '% STRICT'")
 -    `shouldReturn` ([] :: [Only Text])
 +  bracket (pure st) closeDBStore $ \st' ->
@@ -96,7 +77,7 @@ Index: tests/SchemaDump.hs
  
  skipComparisonForUpMigrations :: [String]
  skipComparisonForUpMigrations =
-@@ -179,8 +189,14 @@
+@@ -179,8 +184,14 @@ saveQueryPlans = it "verify and overwrit
        agentQueryStats
        (createAgentStore (DBOpts testAgentDB [] "" False True TQOff) (MigrationConfig MCError Nothing))
        (const $ pure ())

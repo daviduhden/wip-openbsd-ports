@@ -4,9 +4,9 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-GH_TAGNAME = v7.0.4
+GH_TAGNAME = v7.1.0
 
-V = 7.0.4
+V = 7.1.0
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -15,7 +15,7 @@ WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 
 DIST_TUPLE += github simplex-chat simplexmq \
-		efaad8e73436d60f5052f07dda6b71151ad5039b ../simplexmq
+		a0eec7104c706ab0dab2ad604f280a7130f7a22c ../simplexmq
 DIST_TUPLE += github supranational blst \
 		db3defd0d501cc2bb1cdd59cb955d1a421821441 ../simplexmq/cbits/blst
 DIST_TUPLE += github simplex-chat libbbs \
@@ -23,7 +23,7 @@ DIST_TUPLE += github simplex-chat libbbs \
 DIST_TUPLE += github simplex-chat hs-socks \
 		a30cc7a79a08d8108316094f8f2f82a0c5e1ac51 ../hs-socks
 DIST_TUPLE += github simplex-chat direct-sqlcipher \
-		f814ee68b16a9447fbb467ccc8f29bdd3546bfd9 ../direct-sqlcipher
+		2330df3dc8c4b660674d3c02d76bb86f66c2abee ../direct-sqlcipher
 DIST_TUPLE += github simplex-chat sqlcipher-simple \
 		a46bd361a19376c5211f1058908fc0ae6bf42446 ../sqlcipher-simple
 DIST_TUPLE += github simplex-chat aeson \
@@ -34,6 +34,21 @@ DIST_TUPLE += github simplex-chat android-support \
 		9aa09f148089d6752ce563b14c2df1895718d806 ../android-support
 DIST_TUPLE += github simplex-chat zip \
 		2eff156c3aac389e35d38bf10a52733d7061640a ../zip
+DIST_TUPLE += github simplex-chat hs-jpeg-turbo \
+		d0a4d954038ee5bcb5c4dc9372a6fb0b05fed77c ../hs-jpeg-turbo
+DIST_TUPLE += github simplex-chat JuicyPixels-stbir \
+		e0090e14f6348a33b53c11b377cb69df766b02b4 ../JuicyPixels-stbir
+DIST_TUPLE += github mozilla mozjpeg \
+		08265790774cd0714832c9e675522acbe5581437 \
+		../hs-jpeg-turbo/jpeg-turbo/cbits/mozjpeg
+DIST_TUPLE += github randy408 libspng \
+		fb768002d4288590083a476af628e51c3f1d47cd \
+		../hs-jpeg-turbo/JuicyPixels-spng/cbits/libspng
+DIST_TUPLE += github richgel999 miniz \
+		77d0dce8627735138c51770d1799a1ef48f2117d \
+		../hs-jpeg-turbo/JuicyPixels-spng/cbits/miniz
+DIST_TUPLE += github nothings stb \
+		1ee679ca2ef753a528db5ba6801e1067b40481b8 ../JuicyPixels-stbir/cbits/stb
 
 CATEGORIES = net
 HOMEPAGE = https://simplex.chat/
@@ -47,7 +62,7 @@ WANTLIB = c crypto ffi gmp iconv m pthread sqlcipher util z zstd
 
 MODULES = devel/cabal
 MODCABAL_STEM = simplex-chat
-MODCABAL_VERSION = 7.0.0.12
+MODCABAL_VERSION = 7.1.0.19
 MODCABAL_EXECUTABLES = simplex-chat
 
 .if ${DEBUG} == 1
@@ -65,7 +80,7 @@ CABAL_INC_ENV = \
 	CABAL_INC_SKIP='${CABAL_INC_SKIP}' \
 	CABAL_INC_EXTRA='${CABAL_INC_EXTRA}' \
 	INSTALL_DATA_DIR="${INSTALL_DATA_DIR}"
-CABAL_INC_SKIP = simplexmq,aeson,socks,direct-sqlcipher,sqlcipher-simple,terminal,android-support,zip
+CABAL_INC_SKIP = simplexmq,aeson,socks,direct-sqlcipher,sqlcipher-simple,terminal,android-support,zip,jpeg-turbo,JuicyPixels-jpeg-turbo,JuicyPixels-spng,JuicyPixels-stbir
 CABAL_INC_EXTRA = yaml:0.11.11.2:0
 NETWORK_V = 3.2.9.0
 HTTP2_V = 5.4.4
@@ -97,7 +112,11 @@ CHAT_CABAL_PACKAGES = \
 	'packages: ${WRKDIR}/witherable-${WITHERABLE_V}/witherable.cabal' \
 	'packages: ${WRKDIR}/haskell-terminal/terminal.cabal' \
 	'packages: ${WRKDIR}/android-support/android-support.cabal' \
-	'packages: ${WRKDIR}/zip/zip.cabal'
+	'packages: ${WRKDIR}/zip/zip.cabal' \
+	'packages: ${WRKDIR}/hs-jpeg-turbo/JuicyPixels-jpeg-turbo/JuicyPixels-jpeg-turbo.cabal' \
+	'packages: ${WRKDIR}/hs-jpeg-turbo/JuicyPixels-spng/JuicyPixels-spng.cabal' \
+	'packages: ${WRKDIR}/hs-jpeg-turbo/jpeg-turbo/jpeg-turbo.cabal' \
+	'packages: ${WRKDIR}/JuicyPixels-stbir/JuicyPixels-stbir.cabal'
 CHAT_CABAL_PACKAGE_PATHS = \
 	${WRKDIR}/simplexmq/simplexmq.cabal \
 	${WRKDIR}/hs-socks/socks.cabal \
@@ -107,7 +126,11 @@ CHAT_CABAL_PACKAGE_PATHS = \
 	${WRKDIR}/witherable-${WITHERABLE_V}/witherable.cabal \
 	${WRKDIR}/haskell-terminal/terminal.cabal \
 	${WRKDIR}/android-support/android-support.cabal \
-	${WRKDIR}/zip/zip.cabal
+	${WRKDIR}/zip/zip.cabal \
+	${WRKDIR}/hs-jpeg-turbo/JuicyPixels-jpeg-turbo/JuicyPixels-jpeg-turbo.cabal \
+	${WRKDIR}/hs-jpeg-turbo/JuicyPixels-spng/JuicyPixels-spng.cabal \
+	${WRKDIR}/hs-jpeg-turbo/jpeg-turbo/jpeg-turbo.cabal \
+	${WRKDIR}/JuicyPixels-stbir/JuicyPixels-stbir.cabal
 CHAT_CABAL_COMMON_OPTIONS = \
 	'constraints: network ==${NETWORK_V}, http2 ==${HTTP2_V}, tls ==${TLS_V}' \
 	'package simplex-chat' \
@@ -156,7 +179,6 @@ SIMPLEXMQ_PATCHES = \
 	patch-src_Simplex_Messaging_Notifications_Server_hs \
 	patch-src_Simplex_Messaging_Server_CLI_hs \
 	patch-src_Simplex_Messaging_Server_hs \
-	patch-src_Simplex_Messaging_Server_MsgStore_Journal_hs \
 	patch-src_Simplex_Messaging_Server_Web_hs \
 	patch-src_Simplex_Messaging_Transport_hs \
 	patch-src_Simplex_Messaging_Transport_Client_hs \

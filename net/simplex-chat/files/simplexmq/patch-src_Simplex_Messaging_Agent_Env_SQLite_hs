@@ -5,15 +5,15 @@ XFTP completion independently from network uploads and file preparation.
 Index: src/Simplex/Messaging/Agent/Env/SQLite.hs
 --- src/Simplex/Messaging/Agent/Env/SQLite.hs.orig
 +++ src/Simplex/Messaging/Agent/Env/SQLite.hs
-@@ -309,6 +309,7 @@ data XFTPAgent = XFTPAgent
+@@ -322,6 +322,7 @@ data XFTPAgent = XFTPAgent
      xftpWorkDir :: TVar (Maybe FilePath),
      xftpRcvWorkers :: TMap (Maybe XFTPServer) Worker,
      xftpSndWorkers :: TMap (Maybe XFTPServer) Worker,
 +    xftpSndCompleteWorkers :: TMap () Worker,
      xftpDelWorkers :: TMap XFTPServer Worker
    }
-
-@@ -317,13 +318,15 @@ newXFTPAgent = do
+ 
+@@ -330,13 +331,15 @@ newXFTPAgent = do
    xftpWorkDir <- newTVarIO Nothing
    xftpRcvWorkers <- TM.emptyIO
    xftpSndWorkers <- TM.emptyIO
@@ -21,7 +21,7 @@ Index: src/Simplex/Messaging/Agent/Env/SQLite.hs
    xftpDelWorkers <- TM.emptyIO
 -  pure XFTPAgent {xftpWorkDir, xftpRcvWorkers, xftpSndWorkers, xftpDelWorkers}
 +  pure XFTPAgent {xftpWorkDir, xftpRcvWorkers, xftpSndWorkers, xftpSndCompleteWorkers, xftpDelWorkers}
-
+ 
  data Worker = Worker
    { workerId :: Int,
      doWork :: TMVar (),
@@ -30,4 +30,4 @@ Index: src/Simplex/Messaging/Agent/Env/SQLite.hs
 +    cancelled :: TVar Bool,
      restarts :: TVar RestartCount
    }
-
+ 

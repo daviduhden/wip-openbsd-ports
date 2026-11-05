@@ -7,9 +7,9 @@ Index: src/Simplex/Chat/Controller.hs
 --- src/Simplex/Chat/Controller.hs.orig
 +++ src/Simplex/Chat/Controller.hs
 @@ -17,10 +17,8 @@
-
+ 
  module Simplex.Chat.Controller where
-
+ 
 -import Control.Concurrent (ThreadId)
  import Control.Concurrent.Async (Async)
  import Control.Exception (Exception)
@@ -17,7 +17,7 @@ Index: src/Simplex/Chat/Controller.hs
  import Control.Monad.Except
  import Control.Monad.IO.Unlift
  import Control.Monad.Reader
-@@ -99,7 +97,7 @@
+@@ -104,7 +102,7 @@ import Simplex.RemoteControl.Client
  import Simplex.RemoteControl.Invitation (RCSignedInvitation, RCVerifiedInvitation)
  import Simplex.RemoteControl.Types
  import System.IO (Handle)
@@ -26,7 +26,7 @@ Index: src/Simplex/Chat/Controller.hs
  import UnliftIO.STM
  #if !defined(dbPostgres)
  import qualified Database.SQLite.Simple as SQL
-@@ -282,6 +280,8 @@
+@@ -311,6 +309,8 @@ data ChatController = ChatController
      firstTime :: Bool,
      smpAgent :: AgentClient,
      agentAsync :: TVar (Maybe (Async (), Maybe (Async ()))),
@@ -35,7 +35,7 @@ Index: src/Simplex/Chat/Controller.hs
      chatStore :: DBStore,
      chatStoreChanged :: TVar Bool, -- if True, chat should be fully restarted
      random :: TVar ChaChaDRG,
-@@ -308,11 +308,11 @@
+@@ -342,11 +342,11 @@ data ChatController = ChatController
      relayGroupLinkChecksAsync :: TVar (Maybe (Async ())),
      webPreviewState :: Maybe WebPreviewState,
      chatRelayTests :: TMap ConnId RelayTest,

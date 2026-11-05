@@ -78,13 +78,19 @@ in `SUBST_VARS`. A port can use several at once.
    generator output to a temporary file, verify exit status and contents, then
    replace the tracked include. `cabal.inc` handling differs between
    `devel/fourmolu` (stdout) and the SimpleX ports (their target writes the
-   file); read the recipe.
+   file); read the recipe. A new upstream `source-repository-package` fork
+   needs a `DIST_TUPLE` pin in the port and a local cabal package path; pin
+   each git submodule as a separate entry because GitHub archive downloads
+   omit them.
 
 6. Rebase or remove every patch with
    [openbsd-port-patches](../openbsd-port-patches/SKILL.md). A patch that still
    applies may no longer be needed. Update `*_V` variables and dependency
    patch paths when a vendored dependency moves. A clean `make patch` from a
-   fresh extraction is mandatory.
+   fresh extraction is mandatory. On a release-only update, still regenerate
+   the whole series against the new source: unchanged patch bodies are fine,
+   but refresh hunk headers and context, and remove a patch only after
+   confirming upstream incorporated its change.
 
 7. Update metadata that follows the source: `WANTLIB`, `LIB_DEPENDS`,
    `RUN_DEPENDS`, `TEST_DEPENDS`, `SHARED_LIBS`, `SUBST_VARS`, installed

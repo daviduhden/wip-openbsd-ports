@@ -251,6 +251,12 @@ Bump the following before regenerating:
   `CRYPTOSTORE_V`, `ENTROPY_V`, and `WITHERABLE_V` for
   `net/simplex-chat`.
 - The `DIST_TUPLE` commit hashes for the vendored GitHub dependencies.
+  When upstream adds a `source-repository-package` fork, pin it with
+  `DIST_TUPLE` and add its package path instead of allowing a build-time
+  Git fetch. Pin every git submodule of that fork as an additional
+  `DIST_TUPLE` entry; GitHub archive downloads do not include submodules.
+  Use `GH_COMMIT` with the cabal package version when the referenced
+  simplexmq commit has no release tag.
 
 Regenerate the manifest:
 

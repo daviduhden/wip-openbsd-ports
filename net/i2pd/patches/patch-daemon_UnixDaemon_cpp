@@ -1,15 +1,15 @@
-Install unveil after startup and use the current option names.
-Grant only paths the daemon reads, including syslog and the resolver.
+Reject forbidden promises and embedded NUL bytes in custom policies.
 
 Index: daemon/UnixDaemon.cpp
 --- daemon/UnixDaemon.cpp.orig
 +++ daemon/UnixDaemon.cpp
-@@ -19,6 +19,18 @@
+@@ -19,6 +19,19 @@
  #include <sys/stat.h>
  #include <sys/resource.h>
  
 +#ifdef __OpenBSD__
 +#include <fstream>
++#include <sstream>
 +#include <vector>
 +#include <cerrno>
 +#include <cstring>
@@ -23,7 +23,7 @@ Index: daemon/UnixDaemon.cpp
  #include "Config.h"
  #include "FS.h"
  #include "Log.h"
-@@ -33,6 +45,18 @@ const int GRACEFUL_SHUTDOWN_INTERVAL = 1
+@@ -33,6 +46,18 @@ const int GRACEFUL_SHUTDOWN_INTERVAL = 1
  // a handler may only touch volatile sig_atomic_t, everything else is done by the daemon loop
  static volatile sig_atomic_t g_PendingSignals[NSIG] = {};
  
@@ -42,7 +42,7 @@ Index: daemon/UnixDaemon.cpp
  void handle_signal(int sig)
  {
  	int savedErrno = errno;
-@@ -210,8 +234,29 @@ namespace i2p
+@@ -210,8 +235,29 @@ namespace i2p
  			gracefulShutdownInterval = 0; // not specified
  
  			// handle signal TSTP
@@ -73,7 +73,7 @@ Index: daemon/UnixDaemon.cpp
  			// Signal handler
  			struct sigaction sa;
  			sa.sa_handler = handle_signal;
-@@ -229,13 +274,141 @@ namespace i2p
+@@ -229,13 +275,148 @@ namespace i2p
  				sigaction(SIGCONT, &sa, 0);
  			}
  
@@ -122,6 +122,13 @@ Index: daemon/UnixDaemon.cpp
 +					promises.clear ();
 +					for (const auto& line : lines) promises += line + " ";
 +				}
++				if (promises.find ('\0') != std::string::npos)
++					return fail ("Daemon: NUL byte in pledge policy");
++				std::istringstream tokens (promises);
++				std::string token;
++				while (tokens >> token)
++					if (token == "exec" || token == "error")
++						return fail ("Daemon: forbidden pledge promise: " + token);
 +			}
 +			if (useUnveil && !readPolicy ("openbsd.unveil_file", extraPaths)) return false;
 +			if (useUnveil)
@@ -215,7 +222,7 @@ Index: daemon/UnixDaemon.cpp
  		}
  
  		void DaemonUnix::run ()
-@@ -244,6 +417,36 @@ namespace i2p
+@@ -244,6 +425,36 @@ namespace i2p
  			while (running)
  			{
  				std::this_thread::sleep_for (std::chrono::seconds(1));

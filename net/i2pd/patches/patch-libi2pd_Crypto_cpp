@@ -96,5 +96,5 @@ Index: libi2pd/Crypto.cpp
 +		if (msgLen && EVP_DecryptUpdate (ctx, buf, &outlen, msg, (int)msgLen) != 1) return false;
 +		return outlen == (int)msgLen && EVP_DecryptFinal_ex (ctx, buf + outlen, &finalLen) == 1 && finalLen == 0;
  	}
- 
+
  	bool AEADChaCha20Poly1305 (const uint8_t * msg, size_t msgLen, const uint8_t * ad, size_t adLen,

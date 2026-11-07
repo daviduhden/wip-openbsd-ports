@@ -14,13 +14,13 @@ Index: libi2pd_client/UDPTunnel.h
  #include <list>
 @@ -148,7 +150,7 @@ namespace client
  	typedef std::shared_ptr<UDPSession> UDPSessionPtr;
- 
+
  	/** server side udp tunnel, many i2p inbound to 1 ip outbound */
 -	class I2PUDPServerTunnel
 +	class I2PUDPServerTunnel: public std::enable_shared_from_this<I2PUDPServerTunnel>
  	{
  		public:
- 
+
 @@ -194,7 +196,9 @@ namespace client
  			UDPSessionPtr m_LastSession;
  			uint16_t m_inPort;
@@ -45,4 +45,4 @@ Index: libi2pd_client/UDPTunnel.h
 +			std::mutex m_StatsTimerMutex;
  			std::unique_ptr<boost::asio::steady_timer> m_KeepAliveTimer;
  			std::unique_ptr<boost::asio::steady_timer> m_StatsTimer;
- 
+

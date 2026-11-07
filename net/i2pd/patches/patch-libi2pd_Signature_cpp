@@ -5,7 +5,7 @@ Index: libi2pd/Signature.cpp
 --- libi2pd/Signature.cpp.orig
 +++ libi2pd/Signature.cpp
 @@ -8,7 +8,8 @@
- 
+
  #include <memory>
  #include <openssl/evp.h>
 -#if (OPENSSL_VERSION_NUMBER >= 0x030000000) // since 3.0.0
@@ -26,7 +26,7 @@ Index: libi2pd/Signature.cpp
 @@ -172,7 +173,7 @@ namespace crypto
  	}
  #endif
- 
+
 -#if (OPENSSL_VERSION_NUMBER >= 0x030000000) // since 3.0.0
 +#if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x30000000L // since 3.0.0
  	ECDSAVerifier::ECDSAVerifier (int curve, size_t keyLen, const EVP_MD * hash):
@@ -35,7 +35,7 @@ Index: libi2pd/Signature.cpp
 @@ -405,7 +406,7 @@ namespace crypto
  			LogPrint (eLogError, "EdDSA signing key is not set");
  	}
- 
+
 -#if (OPENSSL_VERSION_NUMBER >= 0x030000000)
 +#if OPENSSL_ED25519PH
  	static const OSSL_PARAM EDDSA25519phParams[] =
@@ -66,7 +66,7 @@ Index: libi2pd/Signature.cpp
 +		EVP_MD_CTX_free (ctx);
 +		return ret;
  	}
- 
+
  	EDDSA25519phSigner::EDDSA25519phSigner (const uint8_t * signingPrivateKey):
 @@ -438,21 +433,21 @@ namespace crypto
  	void EDDSA25519phSigner::Sign (const uint8_t * buf, int len, uint8_t * signature) const

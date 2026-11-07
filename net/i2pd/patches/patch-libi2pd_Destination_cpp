@@ -25,7 +25,7 @@ Index: libi2pd/Destination.cpp
  #endif
  						{
 @@ -1085,6 +1089,9 @@ namespace client
- 
+
  		for (auto& it: encryptionKeyTypes)
  		{
 +#if OPENSSL_PQ

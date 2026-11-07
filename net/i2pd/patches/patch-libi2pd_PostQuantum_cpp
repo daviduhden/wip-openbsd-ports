@@ -8,12 +8,12 @@ Index: libi2pd/PostQuantum.cpp
 @@ -6,6 +6,8 @@
  * See full license text in LICENSE file at top of project tree
  */
- 
+
 +#include <cstring>
 +#include <openssl/crypto.h>
  #include "Log.h"
  #include "PostQuantum.h"
- 
+
 @@ -14,227 +16,173 @@
  #ifndef LIBRESSL_VERSION_NUMBER
  #include <openssl/param_build.h>
@@ -21,7 +21,7 @@ Index: libi2pd/PostQuantum.cpp
 -#else
 -#include<openssl/mlkem.h>
  #endif
- 
+
  namespace i2p
  {
  namespace crypto
@@ -60,13 +60,13 @@ Index: libi2pd/PostQuantum.cpp
 -		m_Pkey (nullptr)
  	{
  	}
- 
+
  	MLKEMKeys::~MLKEMKeys ()
  	{
 -		FreeKeys();
 +		FreeKeys ();
  	}
- 
+
  	void MLKEMKeys::FreeKeys ()
  	{
  #ifndef LIBRESSL_VERSION_NUMBER
@@ -81,7 +81,7 @@ Index: libi2pd/PostQuantum.cpp
 -		if (m_Pkey) m_Pkey = nullptr;
 +		m_Pkey = nullptr;
  	}
- 
+
 -	void MLKEMKeys::GenerateKeys ()
 +	bool MLKEMKeys::GenerateKeys ()
  	{
@@ -134,7 +134,7 @@ Index: libi2pd/PostQuantum.cpp
 +		LogPrint (eLogError, "MLKEM: Failed to generate keys");
 +		return false;
 +	}
- 
+
 -	void MLKEMKeys::GetPublicKey (uint8_t * pub) const
 +	bool MLKEMKeys::GetPublicKey (uint8_t * pub) const
  	{
@@ -170,7 +170,7 @@ Index: libi2pd/PostQuantum.cpp
 +		LogPrint (eLogError, "MLKEM: Failed to export public key");
 +		return false;
  	}
- 
+
 -
 -	void MLKEMKeys::SetPublicKey (const uint8_t * pub)
 +	bool MLKEMKeys::SetPublicKey (const uint8_t * pub)
@@ -223,7 +223,7 @@ Index: libi2pd/PostQuantum.cpp
 +		LogPrint (eLogError, "MLKEM: Failed to parse public key");
 +		return false;
  	}
- 
+
 -	void MLKEMKeys::Encaps (uint8_t * ciphertext, uint8_t * shared)
 +	bool MLKEMKeys::Encaps (uint8_t * ciphertext, uint8_t * shared)
  	{
@@ -290,7 +290,7 @@ Index: libi2pd/PostQuantum.cpp
 +		LogPrint (eLogError, "MLKEM: Encapsulation failed");
 +		return false;
  	}
- 
+
 -	void MLKEMKeys::Decaps (const uint8_t * ciphertext, uint8_t * shared)
 +	bool MLKEMKeys::Decaps (const uint8_t * ciphertext, uint8_t * shared)
  	{
@@ -340,7 +340,7 @@ Index: libi2pd/PostQuantum.cpp
 +		LogPrint (eLogError, "MLKEM: Decapsulation failed");
 +		return false;
  	}
- 
+
  	std::unique_ptr<MLKEMKeys> CreateMLKEMKeys (i2p::data::CryptoKeyType type)
  	{
 -		if (type <= i2p::data::CRYPTO_KEY_TYPE_ECIES_X25519_AEAD ||
@@ -348,4 +348,4 @@ Index: libi2pd/PostQuantum.cpp
 +		if (!IsMLKEMSupported (type)) return nullptr;
  		return std::make_unique<MLKEMKeys>((MLKEMTypes)(type - i2p::data::CRYPTO_KEY_TYPE_ECIES_X25519_AEAD - 1));
  	}
- 
+

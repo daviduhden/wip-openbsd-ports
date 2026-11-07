@@ -12,11 +12,11 @@ Index: libi2pd/PostQuantum.h
 +#if OPENSSL_PQ && defined(LIBRESSL_VERSION_NUMBER)
  #	include <openssl/mlkem.h>
  #endif
- 
+
 @@ -60,6 +60,16 @@ namespace crypto
  		return std::get<2>(MLKEMS[type - i2p::data::CRYPTO_KEY_TYPE_ECIES_X25519_AEAD - 1]);
  	}
- 
+
 +	constexpr bool IsMLKEMSupported (i2p::data::CryptoKeyType type)
 +	{
 +		if (!GetMLKEMPublicKeyLen (type)) return false;
@@ -33,7 +33,7 @@ Index: libi2pd/PostQuantum.h
 @@ -67,13 +77,18 @@ namespace crypto
  			MLKEMKeys (MLKEMTypes type);
  			~MLKEMKeys ();
- 
+
 -			void GenerateKeys ();
 -			void GetPublicKey (uint8_t * pub) const;
 -			void SetPublicKey (const uint8_t * pub);
@@ -51,8 +51,8 @@ Index: libi2pd/PostQuantum.h
 -			void Decaps (const uint8_t * ciphertext, uint8_t * shared);
 +			[[nodiscard]] bool Encaps (uint8_t * ciphertext, uint8_t * shared);
 +			[[nodiscard]] bool Decaps (const uint8_t * ciphertext, uint8_t * shared);
- 
- 
+
+
  		private:
 @@ -88,8 +103,8 @@ namespace crypto
  			EVP_PKEY * m_Pkey;
@@ -64,4 +64,4 @@ Index: libi2pd/PostQuantum.h
 +			const int m_Rank;
  #endif
  	};
- 
+

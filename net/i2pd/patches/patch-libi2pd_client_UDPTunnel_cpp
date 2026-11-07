@@ -5,16 +5,16 @@ Index: libi2pd_client/UDPTunnel.cpp
 --- libi2pd_client/UDPTunnel.cpp.orig
 +++ libi2pd_client/UDPTunnel.cpp
 @@ -484,7 +484,7 @@ namespace client
- 
+
  	void I2PUDPServerTunnel::Start ()
  	{
 -		m_IsStarted = true;
 +		m_IsStarted.store (true, std::memory_order_release);
  		m_LocalDest->Start ();
- 
+
  		auto dgram = m_LocalDest->CreateDatagramDestination (m_Gzip);
 @@ -505,11 +505,14 @@ namespace client
- 
+
  	void I2PUDPServerTunnel::ScheduleCleanupTimer ()
  	{
 -		if (m_CleanupTimer)
@@ -30,9 +30,9 @@ Index: libi2pd_client/UDPTunnel.cpp
 +			});
  		}
  	}
- 
+
 @@ -524,11 +527,14 @@ namespace client
- 
+
  	void I2PUDPServerTunnel::ScheduleStatsTimer ()
  	{
 -		if (m_StatsTimer)
@@ -48,7 +48,7 @@ Index: libi2pd_client/UDPTunnel.cpp
 +			});
  		}
  	}
- 
+
 @@ -558,10 +564,15 @@ namespace client
  		// a config reload builds a second tunnel object and drops it when the same
  		// one is already there. Its destructor must not reset the receiver of the
@@ -70,7 +70,7 @@ Index: libi2pd_client/UDPTunnel.cpp
  		if (dgram) {
  			dgram->ResetReceiver (m_inPort);
 @@ -617,7 +628,7 @@ namespace client
- 
+
  	void I2PUDPClientTunnel::Start ()
  	{
 -		m_IsStarted = true;
@@ -79,7 +79,7 @@ Index: libi2pd_client/UDPTunnel.cpp
  		// Reset flag in case of tunnel reload
  		if (m_cancel_resolve) m_cancel_resolve = false;
 @@ -652,10 +663,15 @@ namespace client
- 
+
  	void I2PUDPClientTunnel::Stop ()
  	{
 -		if (!m_IsStarted) return; // see the comment in I2PUDPServerTunnel::Stop
@@ -95,11 +95,11 @@ Index: libi2pd_client/UDPTunnel.cpp
 +			std::lock_guard<std::mutex> lock (m_StatsTimerMutex);
 +			if (m_StatsTimer) m_StatsTimer->cancel ();
 +		}
- 
+
  		auto dgram = m_LocalDest->GetDatagramDestination ();
  		if (dgram)
 @@ -927,11 +943,14 @@ namespace client
- 
+
  	void I2PUDPClientTunnel::ScheduleKeepAliveTimer ()
  	{
 -		if (m_KeepAliveTimer)
@@ -115,9 +115,9 @@ Index: libi2pd_client/UDPTunnel.cpp
 +			});
  		}
  	}
- 
+
 @@ -947,11 +966,14 @@ namespace client
- 
+
  	void I2PUDPClientTunnel::ScheduleStatsTimer ()
  	{
 -		if (m_StatsTimer)
@@ -133,4 +133,4 @@ Index: libi2pd_client/UDPTunnel.cpp
 +			});
  		}
  	}
- 
+

@@ -7,7 +7,7 @@ Index: libi2pd/util.cpp
 @@ -26,6 +26,10 @@
  #include <pthread_np.h>
  #endif
- 
+
 +#ifdef __OpenBSD__
 +#include <net/if.h>
 +#endif

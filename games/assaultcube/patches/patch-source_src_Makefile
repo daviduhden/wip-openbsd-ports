@@ -11,7 +11,7 @@ Index: source/src/Makefile
 @@ -33,7 +33,9 @@ ifeq ($(ACDEBUG),yes)
  	override CXXFLAGS+= -g -D_DEBUG
  endif
- 
+
 -ifneq (,$(findstring clang,$(CXX)))
 +ifeq ($(PLATFORM),OpenBSD)
 +	override CXXFLAGS+= -Wall -fsigned-char
@@ -19,10 +19,10 @@ Index: source/src/Makefile
  	CXXFLAGS= -O3 -fomit-frame-pointer
  	override CXXFLAGS+= -Wall -fsigned-char
  else
-@@ -158,8 +160,13 @@
+@@ -158,8 +160,13 @@ all: client server
  ../enet/Makefile:
  	cd ../enet; ./configure --enable-shared=no --enable-static=yes
- 
+
 +ifeq ($(USE_SYSTEM_ENET),1)
 +.PHONY: libenet
 +libenet:
@@ -30,6 +30,6 @@ Index: source/src/Makefile
  libenet: ../enet/Makefile
  	-$(MAKE) -C ../enet all
 +endif
- 
+
  clean-enet: ../enet/Makefile
  	$(MAKE) -C ../enet/ clean

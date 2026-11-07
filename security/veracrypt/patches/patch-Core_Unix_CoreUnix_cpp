@@ -5,16 +5,18 @@ open. Resolve the path first so symlinks cannot redirect the chown.
 Index: Core/Unix/CoreUnix.cpp
 --- Core/Unix/CoreUnix.cpp.orig
 +++ Core/Unix/CoreUnix.cpp
-@@ -22,6 +22,7 @@
- #include <sys/utsname.h>
- #endif
- #ifdef TC_OPENBSD
-+#include <limits.h>
- #include <pwd.h>
+@@ -29,6 +29,9 @@
  #endif
  #include <stdio.h>
-@@ -1361,7 +1362,40 @@ namespace VeraCrypt
- 
+ #include <unistd.h>
++#ifdef TC_OPENBSD
++#include <limits.h>
++#endif
+ #include "Platform/FileStream.h"
+ #include "Platform/MemoryStream.h"
+ #include "Platform/SystemLog.h"
+@@ -1625,7 +1628,40 @@ namespace VeraCrypt
+
  	void CoreUnix::SetFileOwner (const FilesystemPath &path, const UserId &owner) const
  	{
 +#ifdef TC_OPENBSD
@@ -52,5 +54,5 @@ Index: Core/Unix/CoreUnix.cpp
  		throw_sys_if (chown (string (path).c_str(), owner.SystemId, (gid_t) -1) == -1);
 +#endif
  	}
- 
+
  	DirectoryPath CoreUnix::SlotNumberToMountPoint (VolumeSlotNumber slotNumber) const

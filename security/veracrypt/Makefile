@@ -2,10 +2,11 @@ BROKEN-sparc64 =	relocation truncated to fit: R_SPARC_GOT13
 
 COMMENT =		free open source disk encryption software
 
-V =			1.26.29
+V =			1.26.31
 DISTNAME =		VeraCrypt_${V}_Source
 PKGNAME =		veracrypt-${V}
-REVISION =       1
+REVISION =	0
+
 CATEGORIES =		security
 HOMEPAGE =		https://www.veracrypt.fr/
 
@@ -14,7 +15,7 @@ MAINTAINER =		Tietoturvamies <main@tietoturvamies.fi>
 # Apache2
 PERMIT_PACKAGE =	Yes
 
-SITES =			https://launchpad.net/veracrypt/trunk/${V}/+download/
+SITES =			https://github.com/veracrypt/VeraCrypt/releases/download/VeraCrypt_${V}/
 EXTRACT_SUFX =		.tar.bz2
 FIX_EXTRACT_PERMISSIONS = Yes
 

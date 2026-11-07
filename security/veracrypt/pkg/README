@@ -8,7 +8,7 @@ Privilege elevation
 VeraCrypt runs its privileged core service through doas(1).  Add a rule
 to /etc/doas.conf before mounting, creating or formatting volumes:
 
-    permit :wheel cmd ${TRUEPREFIX}/bin/veracrypt args --core-service
+    permit :wheel cmd ${TRUEPREFIX}/bin/veracrypt args --core-service-no-fork
 
 This rule permits only the privileged core service used internally by
 VeraCrypt. Run the normal CLI or GUI as your own user. Do not use
@@ -17,6 +17,10 @@ allowed by the rule. Membership in the group named by the rule is
 effectively root-equivalent: anyone who can run the core service can ask
 it to mount, unmount and format volumes. Keep the rule narrow and review
 it after every upgrade.
+
+Version 1.26.31 uses --core-service-no-fork for doas elevation. Replace the
+older --core-service argument in existing rules when upgrading. The port
+uses doas even if sudo is also installed.
 
 The core service is used for operations that require root privileges,
 such as configuring vnd(4) loop devices, mounting and unmounting

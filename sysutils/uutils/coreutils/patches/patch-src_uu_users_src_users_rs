@@ -1,0 +1,25 @@
+Propagate OpenBSD utmp read and parse errors in users.
+Do not report a successful empty user list for invalid input.
+
+Index: src/uu/users/src/users.rs
+--- src/uu/users/src/users.rs.orig
++++ src/uu/users/src/users.rs
+@@ -12,6 +12,8 @@ use std::path::Path;
+ use clap::builder::ValueParser;
+ use clap::{Arg, Command};
+ use uucore::error::UResult;
++#[cfg(target_os = "openbsd")]
++use uucore::{display::Quotable, error::USimpleError};
+ use uucore::format_usage;
+ use uucore::translate;
+ 
+@@ -46,7 +48,8 @@ pub fn uumain(args: impl uucore::Args) -
+     #[cfg(target_os = "openbsd")]
+     {
+         let filename = maybe_file.unwrap_or(Path::new(OPENBSD_UTMP_FILE));
+-        let entries = parse_from_path(filename).unwrap_or_default();
++        let entries = parse_from_path(filename)
++            .map_err(|error| USimpleError::new(1, format!("{}: {error}", filename.quote())))?;
+         users = Vec::new();
+         for entry in entries {
+             if let UtmpEntry::UTMP {

@@ -16,7 +16,7 @@ Index: tests/by-util/test_date.rs
 @@ -511,10 +511,19 @@ fn test_date_format_literal() {
      new_ucmd!().arg("+%%N").succeeds().stdout_is("%N\n");
  }
- 
+
 +/// Setting the system clock requires root and would leave every process on the
 +/// machine -- including the rest of this test run -- with a wrong date.  If the
 +/// suite is run as root, the `date --set` tests that call `clock_settime` are
@@ -34,7 +34,7 @@ Index: tests/by-util/test_date.rs
          new_ucmd!()
              .arg("--set")
              .arg("2020-03-12 13:30:00+08:00")
-@@ -582,7 +591,7 @@
+@@ -582,7 +591,7 @@ fn test_date_set_mac_unavailable() {
  #[test]
  #[cfg(all(unix, not(target_vendor = "apple")))]
  fn test_date_set_valid_2() {
@@ -43,7 +43,7 @@ Index: tests/by-util/test_date.rs
          new_ucmd!()
              .arg("--set")
              .arg("Sat 20 Mar 2021 14:53:01 AWST") // spell-checker:disable-line
-@@ -604,6 +613,10 @@
+@@ -604,6 +613,10 @@ fn test_date_for_invalid_file() {
  #[test]
  #[cfg(unix)]
  fn test_date_for_no_permission_file() {
@@ -53,8 +53,8 @@ Index: tests/by-util/test_date.rs
 +    }
      use std::os::unix::fs::PermissionsExt;
      const FILE: &str = "file-no-perm-1";
- 
-@@ -731,7 +744,7 @@
+
+@@ -731,7 +744,7 @@ fn test_date_multiple_references() {
  #[test]
  #[cfg(all(unix, not(target_vendor = "apple")))]
  fn test_date_set_valid_3() {
@@ -63,7 +63,7 @@ Index: tests/by-util/test_date.rs
          new_ucmd!()
              .arg("--set")
              .arg("Sat 20 Mar 2021 14:53:01") // Local timezone
-@@ -743,7 +756,7 @@
+@@ -743,7 +756,7 @@ fn test_date_set_valid_3() {
  #[test]
  #[cfg(all(unix, not(target_vendor = "apple")))]
  fn test_date_set_valid_4() {

@@ -1,8 +1,5 @@
-Make the uutils test suite pass on OpenBSD. Tests that rely on the
-filesystem denying access are skipped when running as root, in case the
-suite is run with root privileges, matching the GNU coreutils test
-suite. Also treat the xattr crate's unsupported-platform error as
-ENOTSUP so optional attribute preservation is silent on OpenBSD.
+Skip tail permission-denial cases as root, which can open the otherwise
+unreadable input fixtures.
 
 Index: tests/by-util/test_tail.rs
 --- tests/by-util/test_tail.rs.orig
@@ -16,7 +13,7 @@ Index: tests/by-util/test_tail.rs
 +        return;
 +    }
      use std::os::unix::fs::PermissionsExt;
- 
+
      let ts = TestScenario::new(util_name!());
 @@ -289,6 +293,10 @@ fn test_permission_denied() {
  #[test]
@@ -27,5 +24,5 @@ Index: tests/by-util/test_tail.rs
 +        return;
 +    }
      use std::os::unix::fs::PermissionsExt;
- 
+
      let (at, mut ucmd) = at_and_ucmd!();

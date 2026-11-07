@@ -1,8 +1,5 @@
-Make the uutils test suite pass on OpenBSD. Tests that rely on the
-filesystem denying access are skipped when running as root, in case the
-suite is run with root privileges, matching the GNU coreutils test
-suite. Also treat the xattr crate's unsupported-platform error as
-ENOTSUP so optional attribute preservation is silent on OpenBSD.
+Skip touch permission-denial cases as root. In particular, do not touch
+the real root directory when privilege would allow the test to do so.
 
 Index: tests/by-util/test_touch.rs
 --- tests/by-util/test_touch.rs.orig
@@ -18,7 +15,7 @@ Index: tests/by-util/test_touch.rs
      let file = "/";
      new_ucmd!()
          .args(&[file])
-@@ -923,6 +927,10 @@ fn test_touch_changes_time_of_file_in_stdout() {
+@@ -923,6 +927,10 @@ fn test_touch_changes_time_of_file_in_st
      ignore = "WASI: filesystem permission errors surface as ENOENT rather than EACCES"
  )]
  fn test_touch_permission_denied_error_msg() {
@@ -27,5 +24,5 @@ Index: tests/by-util/test_touch.rs
 +        return;
 +    }
      let (at, mut ucmd) = at_and_ucmd!();
- 
+
      let dirname = "dir_with_read_only_access";

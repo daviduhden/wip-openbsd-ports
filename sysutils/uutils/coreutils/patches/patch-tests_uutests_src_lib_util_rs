@@ -1,8 +1,5 @@
-Make the uutils test suite pass on OpenBSD. Tests that rely on the
-filesystem denying access are skipped when running as root, in case the
-suite is run with root privileges, matching the GNU coreutils test
-suite. Also treat the xattr crate's unsupported-platform error as
-ENOTSUP so optional attribute preservation is silent on OpenBSD.
+Expose an effective-root check for permission-dependent tests, so they
+can skip fixtures whose access restrictions do not constrain root.
 
 Index: tests/uutests/src/lib/util.rs
 --- tests/uutests/src/lib/util.rs.orig
@@ -10,7 +7,7 @@ Index: tests/uutests/src/lib/util.rs
 @@ -99,6 +99,20 @@ pub fn is_ci() -> bool {
      env::var("CI").is_ok_and(|s| s.eq_ignore_ascii_case("true"))
  }
- 
+
 +/// Test if the test suite is running with root (effective user id 0)
 +/// privileges.  Tests that rely on the filesystem denying access are skipped
 +/// when run as root, matching the GNU coreutils test suite.

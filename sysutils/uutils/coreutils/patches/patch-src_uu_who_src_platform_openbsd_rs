@@ -1,0 +1,20 @@
+Report failure when who cannot run on OpenBSD.
+Do not return success for the unsupported utmpx implementation.
+
+Index: src/uu/who/src/platform/openbsd.rs
+--- src/uu/who/src/platform/openbsd.rs.orig
++++ src/uu/who/src/platform/openbsd.rs
+@@ -7,11 +7,10 @@
+ 
+ use crate::uu_app;
+ 
+-use uucore::error::UResult;
++use uucore::error::{UResult, USimpleError};
+ use uucore::translate;
+ 
+ pub fn uumain(args: impl uucore::Args) -> UResult<()> {
+     let _matches = uucore::clap_localization::handle_clap_result(uu_app(), args)?;
+-    println!("{}", translate!("who-unsupported-openbsd"));
+-    Ok(())
++    Err(USimpleError::new(1, translate!("who-unsupported-openbsd")))
+ }

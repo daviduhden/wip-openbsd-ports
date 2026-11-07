@@ -1,0 +1,9 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+When mutual TLS materializes a recognized plaintext key in a temporary
+file, encryption must succeed. The port propagates encryption failures
+instead of silently writing that key without encryption. Already-encrypted
+keys retain the upstream loading path. Temporary files have private modes;
+their cleanup does not guarantee erasure from physical storage or swap.

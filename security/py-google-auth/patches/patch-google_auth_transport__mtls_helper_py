@@ -1,0 +1,64 @@
+Do not fall back to plaintext temporary keys after encryption fails.
+Keep parse failures separate so already-encrypted keys still reach the
+SSL loader, while a recognized plaintext key must be encrypted.
+
+Index: google/auth/transport/_mtls_helper.py
+--- google/auth/transport/_mtls_helper.py.orig
++++ google/auth/transport/_mtls_helper.py
+@@ -156,9 +156,10 @@ def _encrypt_key_if_plaintext(
+ ) -> Tuple[bytes, Optional[bytes]]:
+     """Encrypts a plaintext PEM key if necessary, returning the bytes and passphrase.
+
+-    If the key is already encrypted, or if parsing/encryption fails, the key is
+-    returned as-is (plaintext) as a fallback. This allows the caller (underlying SSL
+-    context) to attempt loading the key directly and handle any failures.
++    If the key cannot be parsed without a password, it is returned as-is so
++    the underlying SSL context can load an encrypted key or report an error.
++    Once a plaintext key has been parsed, encryption failures propagate;
++    never silently write that plaintext key to a temporary file.
+     """
+     import secrets
+
+@@ -167,25 +168,27 @@ def _encrypt_key_if_plaintext(
+
+     try:
+         pkey = serialization.load_pem_private_key(key_bytes, password=None)
+-        # It's plaintext, encrypt it.
+-        target_passphrase = passphrase
+-        if target_passphrase is None:
+-            target_passphrase = secrets.token_hex(32).encode("utf-8")
+-        elif isinstance(target_passphrase, str):
+-            target_passphrase = target_passphrase.encode("utf-8")
+-
+-        encrypted_content = pkey.private_bytes(
+-            encoding=serialization.Encoding.PEM,
+-            format=serialization.PrivateFormat.PKCS8,
+-            encryption_algorithm=serialization.BestAvailableEncryption(
+-                target_passphrase
+-            ),
+-        )
+-        return encrypted_content, target_passphrase
+     except (ValueError, TypeError, cryptography.exceptions.UnsupportedAlgorithm):
+         # Likely already encrypted, invalid, or unsupported algorithm, return as-is.
+         return key_bytes, passphrase
+
++    # It's plaintext, encrypt it. Do not treat an encryption failure as an
++    # indication that the input key was already encrypted.
++    target_passphrase = passphrase
++    if target_passphrase is None:
++        target_passphrase = secrets.token_hex(32).encode("utf-8")
++    elif isinstance(target_passphrase, str):
++        target_passphrase = target_passphrase.encode("utf-8")
++
++    encrypted_content = pkey.private_bytes(
++        encoding=serialization.Encoding.PEM,
++        format=serialization.PrivateFormat.PKCS8,
++        encryption_algorithm=serialization.BestAvailableEncryption(
++            target_passphrase
++        ),
++    )
++    return encrypted_content, target_passphrase
++
+
+ def _secure_wipe_and_remove(file_path: str):
+     """Overwrites a file with null bytes before deleting it.

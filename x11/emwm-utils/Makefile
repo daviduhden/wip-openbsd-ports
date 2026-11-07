@@ -2,7 +2,7 @@ COMMENT =	utilities for Enhanced Motif Window Manager
 
 DISTNAME =	emwm-utils-src-2.0
 PKGNAME =	emwm-utils-2.0
-REVISION =       0
+REVISION =       1
 
 CATEGORIES =	x11
 HOMEPAGE =	https://fastestcode.org/emwm.html

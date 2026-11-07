@@ -1,0 +1,132 @@
+Check argument storage and detach helpers without unsafe vfork state.
+
+Index: src/tbmain.c
+--- src/tbmain.c.orig
++++ src/tbmain.c
+@@ -1130,9 +1130,54 @@ static void message_dialog_cb(Widget w,
+ 		*result=0;
+ }
+ 
++#ifdef __OpenBSD__
++static int spawn_detached(char *const argv[])
++{
++	int fd[2], rv = 0;
++	pid_t pid;
++	size_t received = 0;
++	ssize_t n;
++	if(pipe2(fd, O_CLOEXEC) == -1) return errno;
++	pid = fork();
++	if(pid == -1) {
++		rv = errno;
++		close(fd[0]);
++		close(fd[1]);
++		return rv;
++	}
++	if(pid == 0) {
++		close(fd[0]);
++		if(setsid() != -1) execvp(argv[0], argv);
++		rv = errno;
++		do {
++			n = write(fd[1], &rv, sizeof(rv));
++		} while(n == -1 && errno == EINTR);
++		_exit(EXIT_FAILURE);
++	}
++	close(fd[1]);
++	while(received < sizeof(rv)) {
++		n = read(fd[0], (char *)&rv + received, sizeof(rv) - received);
++		if(n == -1 && errno == EINTR) continue;
++		if(n == -1) {
++			rv = errno;
++			break;
++		}
++		if(n == 0) {
++			if(received) rv = EIO;
++			break;
++		}
++		received += n;
++	}
++	close(fd[0]);
++	return rv;
++}
++#endif
++
+ static int exec_command(const char *cmd_spec)
+ {
++#ifndef __OpenBSD__
+ 	pid_t pid;
++#endif
+ 	char *str;
+ 	char *p, *t;
+ 	char pc = 0;
+@@ -1143,6 +1188,7 @@ static int exec_command(const char *cmd_
+ 	volatile int errval = 0;
+ 	
+ 	str = strdup(cmd_spec);
++	if(!str) return ENOMEM;
+ 
+ 	p = str;
+ 	t = NULL;
+@@ -1150,7 +1196,7 @@ static int exec_command(const char *cmd_
+ 	/* split the command string into separate arguments */
+ 	while(!done){
+ 		if(!t){
+-			while(*p && isblank((int)*p)) p++;
++			while(*p && isblank((unsigned char)*p)) p++;
+ 			if(*p == '\0') break;
+ 			t = p;
+ 		}
+@@ -1165,6 +1211,7 @@ static int exec_command(const char *cmd_
+ 				while(*p != '\"' && *p != '\''){
+ 					if(*p == '\0'){
+ 						if(argv) free(argv);
++						free(str);
+ 						return EINVAL;
+ 					}
+ 					p++;
+@@ -1172,9 +1219,9 @@ static int exec_command(const char *cmd_
+ 				memmove(p, p + 1, strlen(p));
+ 			}
+ 		}
+-		if(isblank((int)*p) || *p == '\0'){
++		if(isblank((unsigned char)*p) || *p == '\0'){
+ 			if(*p == '\0') done = 1;
+-			if(argv_size < argc+1){
++			if(argv_size < argc+2){
+ 				char **new_ptr;
+ 				new_ptr = realloc(argv, (argv_size += 64) * sizeof(char*));
+ 				if(!new_ptr){
+@@ -1198,9 +1245,16 @@ static int exec_command(const char *cmd_
+ 		p++;
+ 	}
+ 	
+-	if(!argc) return EINVAL;
++	if(!argc) {
++		free(str);
++		free(argv);
++		return EINVAL;
++	}
+ 	argv[argc] = NULL;
+ 	
++#ifdef __OpenBSD__
++	errval = spawn_detached(argv);
++#else
+ 	pid = vfork();
+ 	if(pid == 0){
+ 		setsid();
+@@ -1212,6 +1266,7 @@ static int exec_command(const char *cmd_
+ 	}else if(pid == -1){
+ 		errval = errno;
+ 	}
++#endif
+ 	
+ 	free(str);
+ 	free(argv);
+@@ -1229,7 +1284,7 @@ static void report_exec_error(const char
+ 	char *buffer;
+ 
+ 	buffer=malloc(strlen(err_msg)+strlen(command)+strlen(errno_str)+10);
+-	if(!err_msg){
++	if(!buffer){
+ 		perror("malloc");
+ 		return;
+ 	}		

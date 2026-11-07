@@ -1,17 +1,20 @@
-Use BSD Authentication for screen unlocking on OpenBSD. This avoids
-reading password hashes with getpwnam_shadow(3) and crypt(3), so xmsm
-does not need setuid-root privileges. The package installs xmsm setgid
-auth so auth_userokay(3) can use the auth-xmsm authentication style.
-
-Drop the effective auth group before starting children, and reacquire it
-only around auth_userokay(3). This prevents the window manager, launcher
-and session script from inheriting group auth. Keep upstream
-authentication and privilege handling unchanged for other systems.
+Fail closed on credential reset and use checked process attributes.
 
 Index: src/smmain.c
 --- src/smmain.c.orig
 +++ src/smmain.c
-@@ -60,6 +60,9 @@
+@@ -30,6 +30,10 @@
+ #include <signal.h>
+ #include <sys/types.h>
+ #include <sys/wait.h>
++#ifdef __OpenBSD__
++#include <spawn.h>
++extern char **environ;
++#endif
+ #include <pwd.h>
+ #include <grp.h>
+ #include <Xm/Xm.h>
+@@ -60,6 +64,9 @@
  #if defined(__linux__) || defined(__svr4__)
  #include <crypt.h>
  #include <shadow.h>
@@ -21,7 +24,7 @@ Index: src/smmain.c
  #endif
  #include "smglobal.h"
  #include "smconf.h"
-@@ -200,6 +203,9 @@ XtResource xrdb_resources[]={
+@@ -200,6 +207,9 @@ XtResource xrdb_resources[]={
  #define log_msg(fmt,...) fprintf(stderr,"[XMSM] "fmt,##__VA_ARGS__)
  
  char *bin_name = NULL;
@@ -31,7 +34,7 @@ Index: src/smmain.c
  static Atom xa_mgr;
  static Atom xa_pid;
  static Atom xa_cmd;
-@@ -239,6 +245,13 @@ int main(int argc, char **argv)
+@@ -239,6 +249,13 @@ int main(int argc, char **argv)
  	
  	bin_name = argv[0];
  
@@ -45,7 +48,7 @@ Index: src/smmain.c
  	set_privileges(False);
  		
  	rsignal(SIGCHLD, sigchld_handler);
-@@ -417,7 +430,9 @@ static void lock_screen(void)
+@@ -417,7 +434,9 @@ static void lock_screen(void)
  {
  	Boolean can_auth = False;
  	char *login;
@@ -55,7 +58,7 @@ Index: src/smmain.c
  	
  	if(scr_locked) return;
  	
-@@ -429,6 +444,11 @@ static void lock_screen(void)
+@@ -429,6 +448,11 @@ static void lock_screen(void)
  		app_res.enable_locking = False;
  		return;
  	}
@@ -67,7 +70,7 @@ Index: src/smmain.c
  	
  	if(set_privileges(True)) {
  
-@@ -451,6 +471,7 @@ static void lock_screen(void)
+@@ -451,6 +475,7 @@ static void lock_screen(void)
  
  		set_privileges(False);
  	}
@@ -75,7 +78,7 @@ Index: src/smmain.c
  
  	if(!can_auth){
  		if(!app_res.silent) XBell(XtDisplay(wshell), 100);
-@@ -873,13 +894,38 @@ static int local_x_err_handler(Display *
+@@ -873,13 +898,40 @@ static int local_x_err_handler(Display *
  static void passwd_enter_cb(Widget w,
  	XtPointer client_data, XtPointer call_data)
  {
@@ -96,12 +99,14 @@ Index: src/smmain.c
 +#ifdef __OpenBSD__
 +	if(setegid(auth_gid) == -1){
 +		log_msg("Cannot enable authentication group: %s\n",strerror(errno));
++		explicit_bzero(pwb, strlen(pwb));
++		XmTextFieldSetString(wpasswd, "");
 +		return;
 +	}
 +	auth_result = auth_userokay(login, NULL, "auth-xmsm", pwb);
 +	if(setegid(getgid()) == -1){
 +		log_msg("Cannot drop authentication group: %s\n",strerror(errno));
-+		return;
++		_exit(EXIT_FAILURE);
 +	}
 +	if (auth_result) {
 +		unlock_screen();
@@ -114,7 +119,7 @@ Index: src/smmain.c
  	
  	set_privileges(True);
  	
-@@ -915,6 +961,7 @@ static void passwd_enter_cb(Widget w,
+@@ -915,6 +967,7 @@ static void passwd_enter_cb(Widget w,
  		if(!app_res.silent) XBell(XtDisplay(w),100);
  		set_unlock_message(MSG_NOACCESS);
  	}
@@ -122,7 +127,7 @@ Index: src/smmain.c
  
  	memset(pwb,0,strlen(pwb));
  	XmTextFieldSetString(wpasswd,"");
-@@ -1009,8 +1056,12 @@ static Boolean set_privileges(Boolean el
+@@ -1009,8 +1062,12 @@ static Boolean set_privileges(Boolean el
  		orig_gid = getegid();
  
  		if(orig_uid != 0){
@@ -135,7 +140,71 @@ Index: src/smmain.c
  			initialized = True;
  			can_elevate = False;
  			return False;
-@@ -1110,8 +1161,8 @@ static int launch_process(const char *pa
+@@ -1068,15 +1125,38 @@ static void register_screen_saver(void)
+  * Forks and execvs the specified binary.
+  * Returns zero on success, errno otherwise.
+  */
++#ifdef __OpenBSD__
++static int spawn_user_process(const char *path, char *const argv[], int search)
++{
++	posix_spawnattr_t attr;
++	pid_t pid;
++	int rv = posix_spawnattr_init(&attr);
++	int cleanup;
++	if(rv) return rv;
++	rv = posix_spawnattr_setflags(&attr,
++		POSIX_SPAWN_RESETIDS | POSIX_SPAWN_SETPGROUP);
++	if(!rv) rv = posix_spawnattr_setpgroup(&attr, 0);
++	if(!rv) {
++		rv = search ? posix_spawnp(&pid, path, NULL, &attr, argv, environ) :
++			posix_spawn(&pid, path, NULL, &attr, argv, environ);
++	}
++	cleanup = posix_spawnattr_destroy(&attr);
++	return rv ? rv : cleanup;
++}
++#endif
++
+ static int launch_process(const char *path)
+ {
++#ifndef __OpenBSD__
+ 	pid_t pid;
++#endif
+ 	volatile int errval = 0;
+ 	char *p = (char*)path;
+ 	char *str = NULL;
+ 	size_t argc = 1;
+ 	char **argv;
+ 	
++	if(!path || !*path) return EINVAL;
+ 	while((p = strchr(p, ' '))) {
+ 		while(*p && *p == ' ') p++;
+ 		argc++;
+@@ -1087,7 +1167,7 @@ static int launch_process(const char *pa
+ 	
+ 	if(argc > 1) {
+ 		size_t i = 0;
+-		char *str = strdup(path);
++		str = strdup(path);
+ 		if(!str) {
+ 			free(argv);
+ 			return ENOMEM;
+@@ -1099,7 +1179,15 @@ static int launch_process(const char *pa
+ 		argv[0] = (char*)path;
+ 	}
+ 	argv[argc] = NULL;
++	if(!argv[0]) {
++		free(str);
++		free(argv);
++		return EINVAL;
++	}
+ 
++#ifdef __OpenBSD__
++	errval = spawn_user_process(argv[0], argv, 0);
++#else
+ 	pid = vfork();
+ 	if(pid == 0){
+ 		pid_t fpid = getpid();
+@@ -1110,14 +1198,15 @@ static int launch_process(const char *pa
  		setpgrp(fpid,fpid);
  		#endif /* __linux__ || __svr4__ */
  		
@@ -146,7 +215,37 @@ Index: src/smmain.c
  
  		if(execv(argv[0], argv) == (-1)) errval = errno;
  		_exit(0);
-@@ -1165,6 +1216,8 @@ static void process_sessionetc(void)
+ 	}else if(pid == -1){
+ 		errval=errno;
+ 	}
++#endif
+ 	
+ 	free(argv);
+ 	if(str) free(str);
+@@ -1133,7 +1222,9 @@ static void process_sessionetc(void)
+ 	char *home;
+ 	char fname[]=".sessionetc";
+ 	char *path;
++#ifndef __OpenBSD__
+ 	pid_t pid;
++#endif
+ 	volatile int errval = 0;
+ 			
+ 	home=getenv("HOME");
+@@ -1154,6 +1245,12 @@ static void process_sessionetc(void)
+ 		free(path);
+ 		return;
+ 	}
++#ifdef __OpenBSD__
++	{
++		char *argv[] = {"sh", path, NULL};
++		errval = spawn_user_process("sh", argv, 1);
++	}
++#else
+ 	pid=vfork();
+ 	if(pid == 0){
+ 		char *argv[] = {"sh", path, NULL};
+@@ -1165,11 +1262,14 @@ static void process_sessionetc(void)
  		setpgrp(fpid,fpid);
  		#endif /* __linux__ || __svr4__ */
  				
@@ -155,3 +254,9 @@ Index: src/smmain.c
  		if(execvp("sh",argv) == (-1)) errval = errno;
  		_exit(0);
  	}else if(pid == (-1)){
+ 		errval = errno;
+ 	}
++#endif
+ 	if(errval){
+ 		log_msg("shell execution failed with: %s\n",strerror(errval));
+ 	}

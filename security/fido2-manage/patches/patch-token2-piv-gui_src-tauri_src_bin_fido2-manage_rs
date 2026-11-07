@@ -3,7 +3,8 @@ Use the system termios ABI for PIN input.
 Index: token2-piv-gui/src-tauri/src/bin/fido2-manage.rs
 --- token2-piv-gui/src-tauri/src/bin/fido2-manage.rs.orig
 +++ token2-piv-gui/src-tauri/src/bin/fido2-manage.rs
-@@ -179,8 +179,5 @@ fn read_masked() -> R<String> {
+@@ -178,22 +178,26 @@ fn read_masked() -> R<String> {
+     use std::io::Read;
 -    use std::os::unix::io::AsRawFd;
 -    // termios raw-ish: disable ECHO and canonical mode on the tty.
 -    #[repr(C)]
@@ -17,7 +18,7 @@ Index: token2-piv-gui/src-tauri/src/bin/fido2-manage.rs
 +    struct TtyRestore {
 +        fd: i32,
 +        original: libc::termios,
-@@ -188,3 +185,6 @@ fn read_masked() -> R<String> {
+     }
 -    const ECHO: u32 = 0o0000010;
 -    const ICANON: u32 = 0o0000002;
 -    const TCSANOW: i32 = 0;
@@ -27,7 +28,7 @@ Index: token2-piv-gui/src-tauri/src/bin/fido2-manage.rs
 +        }
 +    }
 +
-@@ -192,6 +192,9 @@ fn read_masked() -> R<String> {
+     let fd = std::io::stdin().as_raw_fd();
 -    let mut orig: Termios = unsafe { std::mem::zeroed() };
 -    let have = unsafe { tcgetattr(fd, &mut orig) } == 0;
 -    if have {
@@ -43,11 +44,16 @@ Index: token2-piv-gui/src-tauri/src/bin/fido2-manage.rs
 +    hidden.c_lflag &= !(libc::ECHO | libc::ICANON | libc::ISIG);
 +    if unsafe { libc::tcsetattr(fd, libc::TCSANOW, &hidden) } == -1 {
 +        return Err(std::io::Error::last_os_error().to_string());
-@@ -198,0 +202 @@ fn read_masked() -> R<String> {
+     }
 +
-@@ -207 +211 @@ fn read_masked() -> R<String> {
+     let mut out = String::new();
+@@ -206,3 +210,3 @@ fn read_masked() -> R<String> {
+             8 | 127 => { if out.pop().is_some() { eprint!("\u{8} \u{8}"); std::io::stderr().flush().ok(); } }
 -            3 => { if have { unsafe { tcsetattr(fd, TCSANOW, &orig); } } return Err("cancelled".into()); }
 +            3 | 26 => return Err("cancelled".into()),
-@@ -211 +215 @@ fn read_masked() -> R<String> {
+             c => { out.push(c as char); eprint!("*"); std::io::stderr().flush().ok(); }
+@@ -210,3 +214,3 @@ fn read_masked() -> R<String> {
+     }
 -    if have { unsafe { tcsetattr(fd, TCSANOW, &orig); } }
 +    drop(restore);
+     Ok(out)

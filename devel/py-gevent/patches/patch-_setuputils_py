@@ -7,7 +7,7 @@ Index: _setuputils.py
 @@ -219,11 +219,8 @@ def _dummy_cythonize(extensions, **_kwar
          extension.sources[:] = sources
      return extensions
- 
+
 -try:
 -    from Cython.Build import cythonize
 -except ImportError:
@@ -15,6 +15,6 @@ Index: _setuputils.py
 -    cythonize = _dummy_cythonize
 +# The .c files had better already exist.
 +cythonize = _dummy_cythonize
- 
+
  def cythonize1(ext):
      # All the directories we have .pxd files

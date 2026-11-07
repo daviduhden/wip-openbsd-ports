@@ -4,6 +4,8 @@ MODPY_DISTV=	26.9.0
 DISTNAME=	gevent-${MODPY_DISTV}
 PKGNAME=	py-${DISTNAME}
 
+REVISION =	0
+
 CATEGORIES=	devel
 HOMEPAGE=	https://www.gevent.org/
 

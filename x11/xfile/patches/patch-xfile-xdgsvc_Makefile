@@ -5,19 +5,17 @@ paths are passed on the command line instead.
 Index: xfile-xdgsvc/Makefile
 --- xfile-xdgsvc/Makefile.orig
 +++ xfile-xdgsvc/Makefile
-@@ -3,9 +3,9 @@
+@@ -3,7 +3,7 @@
  CFLAGS += -O2 $(INCDIRS)
- 
+
  xfile-xdgsvc: xfile-xdg.o
 -	$(CC) -o $@ xfile-xdg.o -ldbus-1
 +	$(CC) $(LIBDIRS) -o $@ xfile-xdg.o -ldbus-1
- 
+
  clean:
  	-rm *.o
- 	-rm xfile-xdgsvc
- 	-rm pkgconf.mf
-@@ -12,8 +12,3 @@
- 
+@@ -12,8 +12,3 @@ clean:
+
  install:
  	@echo "See README for installation instructions"
 -

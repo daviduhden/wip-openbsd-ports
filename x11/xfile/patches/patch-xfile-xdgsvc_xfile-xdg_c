@@ -1,40 +1,323 @@
-Avoid using uninitialized variables: 'rv' may be read without ever being
-assigned (it is only set in the vfork(2)ed child when execvp(3) fails)
-and 'exec_str' is never assigned at all, so the error message passed an
-indeterminate pointer to %s. Initialize 'rv' and report the name of the
-binary that failed to execute. Make process_message() return a value on
-all paths; it is declared to return int.
+Validate D-Bus requests and launch helpers without shared vfork state.
 
 Index: xfile-xdgsvc/xfile-xdg.c
 --- xfile-xdgsvc/xfile-xdg.c.orig
 +++ xfile-xdgsvc/xfile-xdg.c
-@@ -118,8 +118,6 @@
- 	int nargs = 0;
- 	char **args;
- 	char **arg_ptr;
+@@ -33,8 +33,12 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <errno.h>
++#include <spawn.h>
++#include <ctype.h>
+ #include <dbus/dbus.h>
+ 
++extern char **environ;
++
+ #define XFILE_BIN "xfile"
+ #define DBUS_NAME "org.freedesktop.FileManager1"
+ 
+@@ -48,19 +52,13 @@ DBusConnection *g_dbus;
+ 
+ int main(int argc, char **argv)
+ {
+-	char *home;
+ 	DBusError err;
+-	char *ptr;
+-	int i, status;
++	int status = EXIT_FAILURE;
+ 	int done = 0;
+-	
+-	if( (g_bin_name = strrchr(argv[0], '/')) )
+-		g_bin_name++;
+-	else
+-		g_bin_name = argv[0];
+ 
++	g_bin_name = strrchr(argv[0], '/');
++	g_bin_name = g_bin_name ? g_bin_name + 1 : argv[0];
+ 	dbus_error_init(&err);
+-	
+ 	g_dbus = dbus_bus_get(DBUS_BUS_SESSION, &err);
+ 	if(dbus_error_is_set(&err)) {
+ 		stderr_msg("DBUS connection error: %s", err.message);
+@@ -68,9 +66,8 @@ int main(int argc, char **argv)
+ 		if(g_dbus) dbus_connection_unref(g_dbus);
+ 		return EXIT_FAILURE;
+ 	}
+-
+ 	status = dbus_bus_request_name(g_dbus, DBUS_NAME,
+-			DBUS_NAME_FLAG_REPLACE_EXISTING, &err);	
++		DBUS_NAME_FLAG_REPLACE_EXISTING, &err);
+ 	if(dbus_error_is_set(&err)) {
+ 		stderr_msg("Failed to obtain DBUS name (%s), %s",
+ 			DBUS_NAME, err.message);
+@@ -78,114 +75,88 @@ int main(int argc, char **argv)
+ 		dbus_connection_unref(g_dbus);
+ 		return EXIT_FAILURE;
+ 	}
+-	
++	if(status != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER &&
++		status != DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER) {
++		stderr_msg("Failed to own DBUS name (%s)\n", DBUS_NAME);
++		dbus_connection_unref(g_dbus);
++		return EXIT_FAILURE;
++	}
++	status = EINVAL;
+ 	while(!done) {
+ 		DBusMessage *msg;
+ 		DBusMessage *reply;
+-		char *iface;
+-		char *member;
+-		int i;
+-		
++		const char *member;
++
+ 		dbus_connection_read_write_dispatch(g_dbus, 300);
+ 		msg = dbus_connection_pop_message(g_dbus);
+-		if(msg == NULL) {
++		if(!msg) {
+ 			stderr_msg("Timed out while waiting for messages.\n");
+ 			break;
+ 		}
+-
+-		iface = (char*) dbus_message_get_interface(msg);
+-		member = (char*) dbus_message_get_member(msg);
+-
+-		reply = dbus_message_new_method_return(msg);
+-		dbus_connection_send(g_dbus, reply, NULL);
+-		dbus_message_unref(reply);
+-				
+-		if(!strcmp(iface, DBUS_NAME)) {
++		if(!dbus_message_is_method_call(msg, DBUS_NAME, "ShowFolders") &&
++			!dbus_message_is_method_call(msg, DBUS_NAME, "ShowItems") &&
++			!dbus_message_is_method_call(msg, DBUS_NAME, "ShowItemProperties")) {
++			dbus_message_unref(msg);
++			continue;
++		}
++		if(!dbus_message_has_signature(msg, "ass")) {
++			reply = dbus_message_new_error(msg, DBUS_ERROR_INVALID_ARGS,
++				"Expected a URI array and a startup identifier");
++		} else {
++			member = dbus_message_get_member(msg);
+ 			status = process_message(member, msg);
++			reply = status ?
++				dbus_message_new_error(msg, DBUS_ERROR_FAILED, strerror(status)) :
++				dbus_message_new_method_return(msg);
+ 			done = 1;
+ 		}
++		if(reply) {
++			if(!dbus_connection_send(g_dbus, reply, NULL)) status = ENOMEM;
++			dbus_message_unref(reply);
++		} else {
++			status = ENOMEM;
++			done = 1;
++		}
++		dbus_message_unref(msg);
+ 	}
+-
++	dbus_connection_flush(g_dbus);
+ 	dbus_connection_unref(g_dbus);
+ 	return status ? EXIT_FAILURE : EXIT_SUCCESS;
+ }
+ 
+ int process_message(const char *action, DBusMessage *msg)
+ {
+-	DBusMessageIter it, it_sub;
+-	DBusMessageIter *it_ptr;
+-	int arg_type;
+-	int nargs = 0;
+-	char **args;
+-	char **arg_ptr;
 -	char *exec_str;
 -	size_t len;
++	DBusMessageIter it, uris;
++	size_t nargs = 0;
++	int status = 0;
++	char **args, **arg_ptr;
  	char *browser_bin = find_browser();
  
++	(void)action;
  	dbus_message_iter_init(msg, &it);
-@@ -189,6 +187,6 @@
- 	for(arg_ptr = args; *arg_ptr; arg_ptr++) {
--		int rv;
-+		int rv = 0;
- 		pid_t pid;
- 		struct stat st;
- 		char *exec_bin = XFILE_BIN;
- 		char *carg = *arg_ptr;
-@@ -227,10 +225,11 @@
- 			_exit(0);
+-
+-	for(it_ptr = &it ; ;) {
+-		arg_type = dbus_message_iter_get_arg_type(it_ptr);
+-
+-		if(arg_type == DBUS_TYPE_INVALID) {
+-			if(it_ptr == &it) {
+-				break;
+-			} else {
+-				it_ptr = &it;
+-				continue;
+-			}
+-		} else if(arg_type == DBUS_TYPE_ARRAY) {
+-			dbus_message_iter_recurse(&it, &it_sub);
+-			it_ptr = &it_sub;
+-			dbus_message_iter_next(&it);
+-			continue;
+-		}
++	dbus_message_iter_recurse(&it, &uris);
++	while(dbus_message_iter_get_arg_type(&uris) != DBUS_TYPE_INVALID) {
+ 		nargs++;
+-		dbus_message_iter_next(it_ptr);
++		dbus_message_iter_next(&uris);
+ 	}
+-
+-	args = malloc((nargs + 1) * sizeof(char*));
+-	args[0] = NULL;
+-
+-	if(nargs) {
+-		int i;
+-		
+-		arg_ptr = args;
+-		
+-		dbus_message_iter_init(msg, &it);
+-		
+-		for(it_ptr = &it; ; ) {
+-			arg_type = dbus_message_iter_get_arg_type(it_ptr);
+-
+-			if(arg_type == DBUS_TYPE_INVALID) {
+-				if(it_ptr == &it) {
+-					break;
+-				} else {
+-					it_ptr = &it;
+-					continue;
+-				}
+-			} else if(arg_type == DBUS_TYPE_ARRAY) {
+-				dbus_message_iter_recurse(&it, &it_sub);
+-				it_ptr = &it_sub;
+-				dbus_message_iter_next(&it);
+-				continue;
+-			} else if(arg_type == DBUS_TYPE_STRING) {
+-				const char *value;
+-				dbus_message_iter_get_basic(it_ptr, &value);
+-				if(strlen(value)) {
+-					*arg_ptr = strdup(value);
+-					arg_ptr++;
+-				}
++	args = calloc(nargs + 1, sizeof(*args));
++	if(!args) return ENOMEM;
++	arg_ptr = args;
++	dbus_message_iter_recurse(&it, &uris);
++	while(dbus_message_iter_get_arg_type(&uris) != DBUS_TYPE_INVALID) {
++		const char *value;
++		dbus_message_iter_get_basic(&uris, &value);
++		if(*value) {
++			*arg_ptr = strdup(value);
++			if(!*arg_ptr) {
++				for(arg_ptr = args; *arg_ptr; arg_ptr++) free(*arg_ptr);
++				free(args);
++				return ENOMEM;
+ 			}
+-			dbus_message_iter_next(it_ptr);
++			arg_ptr++;
  		}
- 		if(rv) stderr_msg("Error executing '%s' (%s).\n",
+-		*arg_ptr = NULL;
++		dbus_message_iter_next(&uris);
+ 	}
+-
+-
+-	dbus_message_unref(msg);
+-	dbus_connection_unref(g_dbus);	
+-
+ 	for(arg_ptr = args; *arg_ptr; arg_ptr++) {
+ 		int rv;
+ 		pid_t pid;
+@@ -200,74 +171,67 @@ int process_message(const char *action,
+ 				exec_bin = browser_bin;
+ 			} else {
+ 				stderr_msg("Cannot find browser to handle %s\n", carg);
+-				continue;
++				status = ENOENT;
++				goto next;
+ 			}
+ 		} else {
+ 			if(!strncasecmp("file://", carg, 7)) {
+ 				carg += 7;
+-				if( (rv = decode_url(carg)) ) {
+-					stderr_msg(strerror(rv), carg);
+-					continue;
++				if((rv = decode_url(carg))) {
++					stderr_msg("%s: %s\n", carg, strerror(rv));
++					status = rv;
++					goto next;
+ 				}
+ 			}
+-
+-			if(!stat(carg, &st) && !S_ISDIR(st.st_mode)) {
+-				carg = dirname(carg);
+-			}
++			if(!stat(carg, &st) && !S_ISDIR(st.st_mode)) carg = dirname(carg);
+ 		}
+-
+ 		exec_args[0] = exec_bin;
+ 		exec_args[1] = carg;
+ 		exec_args[2] = NULL;
+-		
+-		pid = vfork();
+-		if(!pid) {
+-			if(execvp(exec_bin, exec_args) == -1)
+-				rv = errno;
+-			_exit(0);
++		rv = posix_spawnp(&pid, exec_bin, NULL, NULL, exec_args, environ);
++		if(rv) {
++			stderr_msg("Error executing '%s' (%s).\n", exec_bin, strerror(rv));
++			status = rv;
+ 		}
+-		if(rv) stderr_msg("Error executing '%s' (%s).\n",
 -			exec_str, strerror(rv));
-+			exec_bin, strerror(rv));
- 
+-
++next:
  		free(*arg_ptr);
  	}
- 	
+-	
  	free(args);
-+	return 0;
++	return status;
  }
+ 
+ int decode_url(char *url)
+ {
+ 	char *p = url;
+-	char *r;
+-	char *buf;
+-	
++	char *r, *buf;
+ 	r = buf = malloc(strlen(url) + 1);
+-	
+ 	if(!buf) return ENOMEM;
+-	
+ 	while(*p) {
+-
+-		if(*p == '%' && p[1] && p[2]) {
++		if(*p == '%') {
+ 			char val[3];
+-			
++			if(!p[1] || !p[2] || !isxdigit((unsigned char)p[1]) ||
++				!isxdigit((unsigned char)p[2])) {
++				free(buf);
++				return EINVAL;
++			}
+ 			p++;
+ 			memcpy(val, p, 2);
+ 			val[2] = '\0';
+ 			*r = (char)strtol(val, NULL, 16);
+-			
++			if(!*r) {
++				free(buf);
++				return EINVAL;
++			}
+ 			p++;
+ 		} else {
+ 			*r = *p;
+ 		}
+-		
+ 		r++;
+ 		p++;
+-	};
++	}
+ 	*r = '\0';
+-
+ 	strcpy(url, buf);
+ 	free(buf);
+-
+ 	return 0;
+ }
+ 

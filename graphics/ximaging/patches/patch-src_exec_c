@@ -1,0 +1,65 @@
+Reserve space for the terminating argv pointer on every growth.
+Check allocation and parse cleanup; classify bytes as unsigned chars.
+
+Index: src/exec.c
+--- src/exec.c.orig
++++ src/exec.c
+@@ -38,6 +38,7 @@ int exec_file(const char *cmd_spec,
+ 	int pipe_fd[2];
+ 	
+ 	str = strdup(cmd_spec);
++	if(!str) return ENOMEM;
+ 
+ 	p = str;
+ 	t = NULL;
+@@ -45,7 +46,7 @@ int exec_file(const char *cmd_spec,
+ 	/* split the command string into separate arguments */
+ 	while(!done){
+ 		if(!t){
+-			while(*p && isblank((int)*p)) p++;
++			while(*p && isblank((unsigned char)*p)) p++;
+ 			if(*p == '\0') break;
+ 			t = p;
+ 		}
+@@ -72,7 +73,7 @@ int exec_file(const char *cmd_spec,
+ 				
+ 				/* next char must be blank, but in case it's not,
+ 				 * we assume it is a mistake and fix it */
+-				if(isblank((int)p[1])) p++; else *p = ' ';
++				if(isblank((unsigned char)p[1])) p++; else *p = ' ';
+ 				
+ 				/* replace token; skip parameter if no match */
+ 				if(!(t = match)) continue;
+@@ -81,6 +82,7 @@ int exec_file(const char *cmd_spec,
+ 				memmove(p, p + 1, strlen(p));
+ 				while(*p != '\"' && *p != '\''){
+ 					if(*p == '\0'){
++						free(str);
+ 						if(argv) free(argv);
+ 						return EINVAL;
+ 					}
+@@ -89,9 +91,9 @@ int exec_file(const char *cmd_spec,
+ 				memmove(p, p + 1, strlen(p));
+ 			}
+ 		}
+-		if(isblank((int)*p) || *p == '\0'){
++		if(isblank((unsigned char)*p) || *p == '\0'){
+ 			if(*p == '\0') done = 1;
+-			if(argv_size < (argc + 1)){
++			if(argv_size < (argc + 2)){
+ 				char **new_ptr;
+ 				new_ptr = realloc(argv, (argv_size += 64) * sizeof(char*));
+ 				if(!new_ptr){
+@@ -114,7 +116,11 @@ int exec_file(const char *cmd_spec,
+ 		p++;
+ 	}
+ 	
+-	if(!argc) return EINVAL;
++	if(!argc) {
++		free(str);
++		free(argv);
++		return EINVAL;
++	}
+ 	argv[argc] = NULL;
+ 
+ 	if(pipe_ret && pipe(pipe_fd)) {

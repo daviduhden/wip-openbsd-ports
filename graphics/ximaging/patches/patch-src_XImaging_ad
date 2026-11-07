@@ -4,10 +4,10 @@ for common formats which XImaging does not handle internally.
 Index: src/XImaging.ad
 --- src/XImaging.ad.orig
 +++ src/XImaging.ad
-@@ -26,6 +26,10 @@ XImaging*tileAspectRatio: 4:3
+@@ -26,6 +26,10 @@ XImaging*tileSizeList: 80,120,160
  XImaging*tileAspectRatio: 4:3
- 
- 
+
+
 +!! Additional formats handled by the ImageMagick runtime dependency.
 +XImaging.filter.imagemagick: convert %n pam:-
 +XImaging.filter.imagemagick.suffixes: gif psd svg xcf

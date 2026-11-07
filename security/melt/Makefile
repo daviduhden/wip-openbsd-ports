@@ -1,5 +1,7 @@
 COMMENT =		back up and restore SSH keys with seed words
 
+REVISION =	0
+
 MODGO_MODNAME =		github.com/charmbracelet/melt
 MODGO_VERSION =		v0.6.2
 

@@ -1,0 +1,53 @@
+Write restored keys atomically without following destination symlinks.
+
+Index: cmd/melt/main.go
+--- cmd/melt/main.go.orig
++++ cmd/melt/main.go
+@@ -8,6 +8,7 @@ import (
+ 	"fmt"
+ 	"io"
+ 	"os"
++	"path/filepath"
+ 	"strings"
+ 
+ 	"github.com/charmbracelet/lipgloss"
+@@ -297,17 +298,37 @@ func restoreToWriter(w io.Writer) func(p
+ 
+ func restoreToFiles(path string) func(pem, pub []byte) error {
+ 	return func(pem, pub []byte) error {
+-		if err := os.WriteFile(path, pem, 0o600); err != nil { //nolint: gomnd
++		if err := writeKeyFile(path, pem); err != nil {
+ 			return fmt.Errorf("failed to write private key: %w", err)
+ 		}
+ 
+-		if err := os.WriteFile(path+".pub", pub, 0o600); err != nil { //nolint: gomnd
++		if err := writeKeyFile(path+".pub", pub); err != nil {
+ 			return fmt.Errorf("failed to write public key: %w", err)
+ 		}
+ 		return nil
+ 	}
+ }
+ 
++func writeKeyFile(path string, data []byte) error {
++	file, err := os.CreateTemp(filepath.Dir(path), ".melt-key-*")
++	if err != nil {
++		return err
++	}
++	defer os.Remove(file.Name())
++	if _, err := file.Write(data); err != nil {
++		file.Close()
++		return err
++	}
++	if err := file.Sync(); err != nil {
++		file.Close()
++		return err
++	}
++	if err := file.Close(); err != nil {
++		return err
++	}
++	return os.Rename(file.Name(), path)
++}
++
+ func getWidth(max int) int {
+ 	w, _, err := term.GetSize(int(os.Stdout.Fd()))
+ 	if err != nil || w > max {

@@ -208,10 +208,20 @@ list_directories() {
 # directory whose Makefile only recurses into subdirectories
 # (bsd.port.subdir.mk) is not itself a port; its nested subports are
 # listed individually instead.
+is_repository_support_path() {
+	case "$1" in
+	audit/* | logs/* | tools/* | scripts/* | tests/* | docs/* | infrastructure/*)
+		return 0
+		;;
+	esac
+	return 1
+}
+
 list_all_directories() {
 	typeset makefile port found=0
 	for makefile in */*/Makefile */*/*/Makefile; do
 		[ -f "$makefile" ] || continue
+		is_repository_support_path "$makefile" && continue
 		if grep -q 'bsd\.port\.subdir\.mk' "$makefile"; then
 			continue
 		fi
@@ -261,6 +271,11 @@ choose_target_tree() {
 # a group directory (like sysutils/uutils/awk or lang/python/3).
 validate_port_path() {
 	typeset port=$1 prefix="" rest component depth=0
+
+	if is_repository_support_path "$port"; then
+		error "Repository support directory is not a port: $port"
+		return 1
+	fi
 
 	case "$port" in
 	/* | */ | ./* | ../* | *[!a-zA-Z0-9_+./-]* | *//*)

@@ -21,6 +21,11 @@ Read [BUILDING.md](../../../docs/BUILDING.md) and inspect [fetch-ports.ksh](../.
    ```
 
    `sysutils/uutils` is a group; select a child such as `sysutils/uutils/awk`. Category-only paths, parent traversal, and symlinked roots are rejected. `WIP_OPENBSD_PORTS_DIR` can explicitly identify the Git checkout.
+   Inventory and explicit selection must exclude repository support roots
+   (`audit`, `logs`, `tools`, `scripts`, `tests`, `docs`, `infrastructure`).
+   Pristine source archives extracted for review can contain Makefiles at
+   port-like depths under those roots; they are never installable overlay
+   ports. Run `prove -v tools/t/ports-inventory.t` after changing discovery.
 2. Inspect the destination with `cvs -nq update` and `cvs diff -uN` in the selected scope; the former contacts CVS but does not update files. For a Git tree, inspect its status and diff instead. Preserve modified, unknown, and removed files before replacement. Review shared parent files such as `sysutils/uutils/Makefile` and `Makefile.inc` separately: they affect siblings.
 3. Copy only the authorized selection, using `doas` only if filesystem permissions require it:
 

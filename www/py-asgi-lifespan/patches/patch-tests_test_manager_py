@@ -3,25 +3,25 @@ Use current Starlette, HTTPX and Trio APIs in tests.
 Index: tests/test_manager.py
 --- tests/test_manager.py.orig
 +++ tests/test_manager.py
-@@ -14,6 +14,14 @@ from asgi_lifespan._types import ASGIApp, Message, Rec
- 
- from . import concurrency
+@@ -16,6 +16,14 @@ from . import concurrency
  from .compat import ExceptionGroup
-+
-+
+
+
 +def raises(exception, concurrency):
 +    if concurrency == "trio":
 +        return pytest.RaisesGroup(
 +            exception, allow_unwrapped=True, flatten_subgroups=True
 +        )
 +    return pytest.raises(exception)
- 
- 
++
++
  class StartupFailed(Exception):
-@@ -59,7 +67,17 @@
- 
+     pass
+
+@@ -59,7 +67,17 @@ async def test_lifespan_manager(
+
          on_shutdown.append(shutdown)
- 
+
 -    router = Router(on_startup=on_startup, on_shutdown=on_shutdown)
 +    @contextlib.asynccontextmanager
 +    async def lifespan(app):
@@ -34,10 +34,10 @@ Index: tests/test_manager.py
 +                await handler()
 +
 +    router = Router(lifespan=lifespan)
- 
+
      # Set up spying on exchanged ASGI events.
- 
-@@ -83,7 +101,7 @@
+
+@@ -83,7 +101,7 @@ async def test_lifespan_manager(
      with contextlib.ExitStack() as stack:
          # Set up expected raised exceptions.
          if startup_exception is not None:
@@ -46,7 +46,7 @@ Index: tests/test_manager.py
          elif body_exception is not None:
              if shutdown_exception is not None:
                  # Trio now raises the new `ExceptionGroup` in case
-@@ -94,9 +112,9 @@
+@@ -94,9 +112,9 @@ async def test_lifespan_manager(
                      )
                  )
              else:
@@ -55,11 +55,11 @@ Index: tests/test_manager.py
          elif shutdown_exception is not None:
 -            stack.enter_context(pytest.raises(shutdown_exception))
 +            stack.enter_context(raises(shutdown_exception, concurrency))
- 
+
          async with LifespanManager(app):
              # NOTE: this block should not execute in case of startup exception.
-@@ -159,8 +177,8 @@
- 
+@@ -159,8 +177,8 @@ async def slow_shutdown(
+
  @pytest.mark.usefixtures("concurrency")
  @pytest.mark.parametrize("app", [slow_startup, slow_shutdown])
 -async def test_lifespan_timeout(app: typing.Callable) -> None:
@@ -68,8 +68,8 @@ Index: tests/test_manager.py
 +    with raises(TimeoutError, concurrency):
          async with LifespanManager(app, startup_timeout=0.01, shutdown_timeout=0.01):
              pass
- 
-@@ -215,13 +233,12 @@
+
+@@ -215,13 +233,12 @@ async def http_no_assert_before_receive_
              http_no_assert_before_receive_request,
              marks=pytest.mark.xfail(
                  reason="No way for us to detect unsupported lifespan in this case.",
@@ -84,9 +84,9 @@ Index: tests/test_manager.py
 +    with raises(LifespanNotSupported, concurrency):
          async with LifespanManager(app):
              pass  # pragma: no cover
- 
-@@ -241,7 +258,7 @@
- 
+
+@@ -241,7 +258,7 @@ async def test_lifespan_state_async_cm()
+
      async with LifespanManager(app) as manager:
          async with httpx.AsyncClient(
 -            app=manager.app, base_url="http://example.org"

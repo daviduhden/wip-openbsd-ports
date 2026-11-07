@@ -4,10 +4,10 @@ it.
 Index: cmake/FindLibunwind.cmake
 --- cmake/FindLibunwind.cmake.orig
 +++ cmake/FindLibunwind.cmake
-@@ -23,6 +23,7 @@ if(NOT LIBUNWIND_LIBRARIES STREQUAL "LIBUNWIND_LIBRARI
+@@ -23,6 +23,7 @@ if(NOT LIBUNWIND_LIBRARIES STREQUAL "LIB
    endif()
  endif()
- 
+
 +if(NOT CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
  # some versions of libunwind need liblzma, and we don't use pkg-config
  # so we just look whether liblzma is installed, and add it if it is.
@@ -15,7 +15,7 @@ Index: cmake/FindLibunwind.cmake
 @@ -34,6 +35,8 @@ if(NOT LIBLZMA_LIBRARIES STREQUAL "LIBLZ
    set(LIBUNWIND_LIBRARIES "${LIBUNWIND_LIBRARIES};${LIBLZMA_LIBRARIES}")
  endif()
- 
+
 +endif()
 +
  include(FindPackageHandleStandardArgs)

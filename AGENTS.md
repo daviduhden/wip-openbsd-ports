@@ -261,6 +261,32 @@ prefixed with `category/port:` when the change is port-specific. Do not commit
 `audit/`, `logs/`, work directories, packages, or downloaded distfiles. Report
 what was tested, what was not, and which checks require a real OpenBSD host.
 
+## Immutable GitHub Actions pins
+
+The only workflow is `.github/workflows/agent-knowledge-validation.yml`.
+Third-party actions stay pinned to immutable full-length commit SHAs, never
+floating tags, branches, or short SHAs. The trailing comment records the
+reviewed upstream release for human comparison:
+
+| Action | Release | Commit SHA |
+| --- | --- | --- |
+| `actions/checkout` | `v7.0.1` | `3d3c42e5aac5ba805825da76410c181273ba90b1` |
+| `actions/upload-artifact` | `v7.0.2` | `cf430e030ddbb5b0abf93d22962f4752f3646cd9` |
+| `actions/cache` | `v6.1.0` | `55cc8345863c7cc4c66a329aec7e433d2d1c52a9` |
+
+These pins were verified against upstream stable releases on 2026-11-07.
+`upload-artifact` and `cache` are not used yet; keep the map for the next
+workflow that needs them.
+
+- Write each pin as `owner/action@<40-hex-sha> # vX.Y.Z`.
+- Confirm the stable upstream release and its immutable commit before editing.
+  Replace the SHA and the trailing version comment in the same change.
+- Preserve triggers, permissions, job names, concurrency, and step behavior.
+  Do not add automatic triggers or unrelated workflow changes.
+- Review `git diff --check` and the complete workflow diff, then run
+  `actionlint .github/workflows/*.yml` and `yamllint` when a tracked
+  configuration exists. These are static checks, not a workflow run.
+
 ## Maintaining these instructions
 
 - Change this file when a repository-wide convention changes.

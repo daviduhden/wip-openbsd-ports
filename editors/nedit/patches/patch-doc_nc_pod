@@ -5,68 +5,68 @@ Index: doc/nc.pod
 --- doc/nc.pod.orig
 +++ doc/nc.pod
 @@ -3,11 +3,11 @@
- 
+
  =head1 NAME
- 
+
 -nc - Client program for NEdit text editor
 +ncl - Client program for NEdit text editor
- 
+
  =head1 SYNOPSYS
- 
+
 -nc [B<-read>] [B<-create>] [B<-line> I<n> | B<+>I<n>] [B<-do> I<command>] 
 +ncl [B<-read>] [B<-create>] [B<-line> I<n> | B<+>I<n>] [B<-do> I<command>] 
     [B<-ask>] [B<-noask>] [B<-svrname> I<name>] [B<-svrcmd> I<command>] 
     [B<-lm> I<languagemode>] 
     [B<-geometry> I<geometry> | B<-g> I<geometry>] [B<-icon> | B<-iconic>] 
-@@ -18,12 +18,12 @@
- 
+@@ -18,12 +18,12 @@ nc [B<-read>] [B<-create>] [B<-line> I<n
+
  =head1 DESCRIPTION
- 
+
 -B<nc> is the client interface to the NEdit text editor. A server can be started
 +B<ncl> is the client interface to the NEdit text editor. A server can be started
  explicitly by running NEdit in server mode:
- 
+
   nedit -server
- 
+
 -If no server is running, B<nc> will start one unless configured otherwise.
 +If no server is running, B<ncl> will start one unless configured otherwise.
  Client/server mode is useful for integrating NEdit with software development
  environments, mailers, and other programs; or just as a quick way to open files
  from the shell command line without starting a new NEdit session.
-@@ -49,25 +49,25 @@
+@@ -49,25 +49,25 @@ Go to line number I<n>.
  Execute an NEdit macro or action on the file following the -do argument on the
  command line.
- 
+
 -If you use this command without a filename, B<nc> would randomly choose one
 +If you use this command without a filename, B<ncl> would randomly choose one
  window to focus and execute the macro in.
- 
+
  =item  B<-ask>, B<-noask>
- 
+
 -Instructs B<nc> whether to automatically start a server if one is not
 +Instructs B<ncl> whether to automatically start a server if one is not
  available. This overrides the X resource `nc.autoStart'.
- 
- 
+
+
  =item  B<-svrname> I<name>
- 
+
 -Explicitly instructs B<nc> which server to connect to, an instance of
 +Explicitly instructs B<ncl> which server to connect to, an instance of
  L<nedit(1)> with a corresponding B<-svrname> argument.  By naming servers, you
  can run several simultaneously, and direct files and commands specifically to
  any one.
- 
+
  =item  B<-svrcmd> I<command>
- 
+
 -The command which B<nc> uses to start an NEdit server. It is also settable via
 +The command which B<ncl> uses to start an NEdit server. It is also settable via
  the X resource `nc.serverCommand', by default, I<"nedit -server">.
- 
+
  =item  B<-lm> I<languagemode>
-@@ -155,11 +155,11 @@
- 
+@@ -155,11 +155,11 @@ for your display:
+
  =head1 NOTES
- 
+
 -Communication between L<nc(1)> and L<nedit(1)> is through the X display. So as
 -long as X windows is set up and working properly, B<nc> will work properly
 -as well. B<nc> uses the `DISPLAY' environment variable, the machine name and
@@ -78,18 +78,18 @@ Index: doc/nc.pod
 +machines sharing a common file system, B<ncl> will not be able to find a server
  that is running on a machine with a different host name, even though it may be
  perfectly appropriate for editing a given file.
- 
-@@ -170,11 +170,11 @@
- 
+
+@@ -170,11 +170,11 @@ command line, for example:
+
  =item  incorrect:
- 
+
 -  nc file.c -line 25
 +  ncl file.c -line 25
- 
+
  =item  correct:
- 
+
 -  nc -line 25 file.c
 +  ncl -line 25 file.c
- 
+
  =back
- 
+

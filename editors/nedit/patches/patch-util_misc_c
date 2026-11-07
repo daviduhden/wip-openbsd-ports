@@ -4,7 +4,7 @@ sprintf return values to advance the output pointer instead.
 Index: util/misc.c
 --- util/misc.c.orig
 +++ util/misc.c
-@@ -1488,25 +1488,25 @@ void CreateGeometryString(char *string, int x, int y,
+@@ -1488,25 +1488,25 @@ void CreateGeometryString(char *string,
      int nChars;
      
      if (bitmask & WidthValue) {

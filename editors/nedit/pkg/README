@@ -13,3 +13,8 @@ To load them into NEdit, run the following command:
 
 The patterns can then be saved permanently into nedit's own resource
 file by using "Save Defaults" from the "Preferences" menu.
+
+On OpenBSD, formatted dialog messages are limited to the dialog's fixed
+buffer size. Oversized messages are truncated instead of overflowing the
+stack buffer; formatting failures display a fixed diagnostic. This does
+not restrict shell commands, macros or their ordinary user authority.

@@ -27,9 +27,9 @@ Index: source/nc.c
 +"            [-xrm resourcestring] [-display [host]:server[.screen]]\n"
 +"            [--] [file...]\n";
  #endif /*VMS*/
- 
+
  /* Structure to hold X Resource values */
-@@ -740,10 +740,10 @@
+@@ -740,10 +740,10 @@ static void parseCommandLine(int argc, c
                 The "long" cast on strlen() is necessary because size_t
                 is 64 bit on Alphas, and 32-bit on most others.  There is
                 no printf format specifier for "size_t", thanx, ANSI. */
@@ -42,7 +42,7 @@ Index: source/nc.c
      	    outPtr += charsWritten;
      	    strcpy(outPtr, path);
      	    outPtr += strlen(path);
-@@ -778,9 +778,9 @@
+@@ -778,9 +778,9 @@ static void parseCommandLine(int argc, c
       * iconic state (and optional language mode and geometry).
       */
      if (toDoCommand[0] != '\0' || fileCount == 0) {

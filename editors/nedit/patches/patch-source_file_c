@@ -3,7 +3,7 @@ Use mkstemp(3) for the print temporary file instead of tmpnam(3).
 Index: source/file.c
 --- source/file.c.orig
 +++ source/file.c
-@@ -1373,7 +1373,12 @@ void PrintWindow(WindowInfo *window, int selectedOnly)
+@@ -1373,7 +1373,12 @@ void PrintWindow(WindowInfo *window, int
  */
  void PrintString(const char *string, int length, Widget parent, const char *jobName)
  {
@@ -15,8 +15,8 @@ Index: source/file.c
 +#endif
      FILE *fp;
      int fd;
- 
-@@ -1384,6 +1389,10 @@
+
+@@ -1384,6 +1389,10 @@ void PrintString(const char *string, int
  	    1. Create a filename
  	    2. Open the file with the O_CREAT|O_EXCL flags
  	So all an attacker can do is a DoS on the print function. */
@@ -25,9 +25,9 @@ Index: source/file.c
 +    if ((fd = mkstemp(tmpFileName)) < 0 || (fp = fdopen(fd, "w")) == NULL)
 +#else
      tmpnam(tmpFileName);
- 
+
      /* open the temporary file */
-@@ -1392,6 +1401,7 @@
+@@ -1392,6 +1401,7 @@ void PrintString(const char *string, int
  #else
      if ((fd = open(tmpFileName, O_CREAT|O_EXCL|O_WRONLY, S_IRUSR | S_IWUSR)) < 0 || (fp = fdopen(fd, "w")) == NULL)
  #endif /* VMS */

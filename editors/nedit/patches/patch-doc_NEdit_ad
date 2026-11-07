@@ -376,4 +376,4 @@ Index: doc/NEdit.ad
 +    ~Meta~Ctrl~Shift<Btn1Up>: help-hyperlink("current", "process-cancel", "extend-end")\n\
 +    ~Meta~Ctrl~Shift<Btn2Down>: process-bdrag() help-hyperlink()\n\
 +    ~Meta~Ctrl~Shift<Btn2Up>: help-hyperlink(\"new", "process-cancel", "copy-to")
- 
+

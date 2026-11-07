@@ -12,7 +12,7 @@ Index: source/preferences.c
          Perl:.PL .PM .P5:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\":\n\
          PostScript:.ps .PS .eps .EPS .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\":\n\
          Python:.PY:\"^#!.*python\":Auto:None:::\"!\"\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~\":\n\
-@@ -790,7 +790,7 @@
+@@ -790,7 +790,7 @@ static PrefDescripRec PrefDescrip[] = {
          Makefile:Makefile makefile .gmk:::None:8:8::\n\
          Matlab:.m .oct .sci:::::::\n\
          NEdit Macro:.nm .neditmacro:::::::\n\

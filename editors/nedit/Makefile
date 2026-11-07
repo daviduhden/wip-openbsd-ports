@@ -3,7 +3,7 @@ COMMENT =		fast, compact Motif/X11 plain text editor (classic fork)
 COMMIT_ID =	dd408440cb392db2258edfef753c57e134cfbbd8
 DISTNAME =	nedit-classic-5.7.20260411
 PKGNAME =	nedit-5.7.20260411
-REVISION =       0
+REVISION =	1
 
 CATEGORIES =	editors x11
 HOMEPAGE =	https://github.com/alx210/nedit-classic

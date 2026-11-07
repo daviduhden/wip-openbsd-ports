@@ -1,0 +1,20 @@
+Bound formatted dialog messages to the actual stack buffer size.
+Truncate oversized messages on OpenBSD instead of risking overflow.
+Keep the legacy formatter on platforms without a known vsnprintf API.
+
+Index: util/DialogF.c
+--- util/DialogF.c.orig
++++ util/DialogF.c
+@@ -249,7 +249,12 @@ unsigned DialogF(int dialog_type, Widget
+        hold one file name (MAXPATHLEN). Therefore, DF_MAX_MSG_LENGTH must be
+        sufficiently larger than MAXPATHLEN.
+     */
++#ifdef __OpenBSD__
++    if (vsnprintf(msgstr_vsp, sizeof(msgstr_vsp), msgstr, var) < 0)
++        strcpy(msgstr_vsp, "Unable to format dialog message");
++#else
+     vsprintf (msgstr_vsp, msgstr, var);
++#endif
+     va_end(var);
+     
+     strncpy(&titleCopy[0], title, MAX_TITLE_LEN);

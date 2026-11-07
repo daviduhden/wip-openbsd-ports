@@ -1,13 +1,12 @@
-Detect OpenBSD as a test-harness host OS and skip the compatibility
-cases that differ on OpenBSD (pty/oracle output, ulimit to infinity,
-extglob handling).
+Skip the disabled-extglob filename expansion comparison on OpenBSD,
+where brush keeps extglob enabled and differs from the Bash oracle.
 
 Index: brush-shell/tests/cases/compat/patterns/filename_expansion.yaml
 --- brush-shell/tests/cases/compat/patterns/filename_expansion.yaml.orig
 +++ brush-shell/tests/cases/compat/patterns/filename_expansion.yaml
 @@ -97,6 +97,7 @@ cases:
      stdin: "echo file\\*.txt"
- 
+
    - name: "Pathname expansion: extglob disabled"
 +    incompatible_os: ["openbsd"] # brush forces extglob on
      ignore_stderr: true

@@ -6,7 +6,7 @@ Index: brush-shell/tests/cases/compat/builtins/history.yaml
 +++ brush-shell/tests/cases/compat/builtins/history.yaml
 @@ -9,6 +9,7 @@ cases:
        echo else
- 
+
    - name: "existing history file"
 +    incompatible_os: ["openbsd"] # Oracle prompt handling differs under the pty
      pty: true
@@ -14,7 +14,7 @@ Index: brush-shell/tests/cases/compat/builtins/history.yaml
        HISTFILE: "history-file.txt"
 @@ -26,6 +27,7 @@ cases:
        #send:Ctrl+D
- 
+
    - name: "existing history file with timestamps"
 +    incompatible_os: ["openbsd"] # Oracle prompt handling differs under the pty
      pty: true
@@ -22,7 +22,7 @@ Index: brush-shell/tests/cases/compat/builtins/history.yaml
        HISTFILE: "history-file.txt"
 @@ -45,6 +47,7 @@ cases:
        #send:Ctrl+D
- 
+
    - name: "existing history file with timestamps and HISTTIMEFORMAT"
 +    incompatible_os: ["openbsd"] # Oracle prompt handling differs under the pty
      pty: true

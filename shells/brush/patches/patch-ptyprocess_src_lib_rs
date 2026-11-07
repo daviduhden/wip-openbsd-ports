@@ -1,6 +1,6 @@
-Cast TIOCSCTTY to the platform ioctl request type.
-OpenBSD ioctl(2) takes c_ulong, which is 32-bit on i386 and armv7, so a
-hard-coded u64 breaks those builds.
+Use ptsname and acquire the controlling terminal through the PTY slave
+on OpenBSD, which lacks ptsname_r. Cast TIOCSCTTY to c_ulong, the ioctl
+request type on both 32-bit and 64-bit OpenBSD architectures.
 
 Index: ptyprocess/src/lib.rs
 --- ptyprocess/src/lib.rs.orig
@@ -17,7 +17,7 @@ Index: ptyprocess/src/lib.rs
 @@ -469,6 +469,11 @@ impl AsRawFd for Master {
      }
  }
- 
+
 +#[cfg(target_os = "openbsd")]
 +fn get_slave_name(fd: &PtyMaster) -> Result<String> {
 +    unsafe { ptsname(fd) }
@@ -28,7 +28,7 @@ Index: ptyprocess/src/lib.rs
      nix::pty::ptsname_r(fd)
 @@ -655,7 +660,7 @@ fn get_term_char(fd: RawFd, char: Specia
  }
- 
+
  fn make_controlling_tty(ptm: &Master) -> Result<()> {
 -    #[cfg(not(any(target_os = "freebsd", target_os = "macos")))]
 +    #[cfg(not(any(target_os = "freebsd", target_os = "macos", target_os = "openbsd")))]
@@ -38,14 +38,14 @@ Index: ptyprocess/src/lib.rs
 @@ -702,7 +707,7 @@ fn make_controlling_tty(ptm: &Master) ->
          close(fd)?;
      }
- 
+
 -    #[cfg(any(target_os = "freebsd", target_os = "macos"))]
 +    #[cfg(any(target_os = "freebsd", target_os = "macos", target_os = "openbsd"))]
      {
          let pts_fd = ptm.get_slave_fd()?;
- 
+
 @@ -711,7 +716,7 @@ fn make_controlling_tty(ptm: &Master) ->
- 
+
          use nix::libc::ioctl;
          use nix::libc::TIOCSCTTY;
 -        match unsafe { ioctl(pts_fd, TIOCSCTTY as u64, 0) } {

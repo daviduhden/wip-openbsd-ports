@@ -1,12 +1,22 @@
-Wait for the PTY reader before consuming output; fast commands otherwise
-race with io.Copy and can incorrectly report empty output on OpenBSD.
+Reject empty command expansions before indexing the argument list.
+Keep the OpenBSD PTY reader synchronization and timeout handling.
 
 Index: pty.go
 --- pty.go.orig
 +++ pty.go
-@@ -40,14 +40,25 @@ func executeCommand(config Config) (string, error) {
+@@ -18,6 +18,9 @@ func executeCommand(config Config) (stri
+ 	if err != nil {
+ 		return "", fmt.Errorf("could not execute: %w", err)
  	}
- 
++	if len(args) == 0 {
++		return "", fmt.Errorf("could not execute: command is empty")
++	}
+
+ 	ctx, cancel := context.WithTimeout(context.Background(), config.ExecuteTimeout)
+ 	defer cancel()
+@@ -40,14 +43,25 @@ func executeCommand(config Config) (stri
+ 	}
+
  	var out bytes.Buffer
 -	var errorOut bytes.Buffer
 +	done := make(chan struct{})
@@ -15,7 +25,7 @@ Index: pty.go
 -		errorOut.Write(out.Bytes())
 +		close(done)
  	}()
- 
+
 -	if err := xpty.WaitProcess(ctx, cmd); err != nil {
 -		return errorOut.String(), fmt.Errorf("could not execute: %w", err)
 +	err = xpty.WaitProcess(ctx, cmd)

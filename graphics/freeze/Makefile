@@ -9,6 +9,8 @@ WRKDIST =		${WRKDIR}/${MODGO_MODNAME}@${MODGO_VERSION}
 # distinct name and declare the conflict below.
 PKGNAME =		charm-freeze-${MODGO_VERSION:S/v//}
 
+REVISION =	0
+
 CATEGORIES =		graphics
 
 HOMEPAGE =		https://github.com/charmbracelet/freeze

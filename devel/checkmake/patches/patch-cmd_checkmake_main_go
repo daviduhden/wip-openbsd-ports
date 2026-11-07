@@ -1,5 +1,6 @@
-Report the Go runtime version even when the build does not inject a
-goversion linker value.
+Report the Go runtime version and sandbox linting and rule listing.
+Keep completion generation and its optional debug output unchanged.
+Refuse missing OpenBSD support instead of running unrestricted.
 
 Index: cmd/checkmake/main.go
 --- cmd/checkmake/main.go.orig
@@ -12,7 +13,7 @@ Index: cmd/checkmake/main.go
  	"strings"
  
  	"github.com/checkmake/checkmake/config"
-@@ -24,7 +25,7 @@
+@@ -24,12 +25,14 @@ var (
  	version   = ""
  	buildTime = ""
  	builder   = ""
@@ -21,3 +22,31 @@ Index: cmd/checkmake/main.go
  
  	cfgPath string
  	debug   bool
+ 	format  string
+ 	output  string
++
++	openbsdSandbox func([]string) error
+ )
+ 
+ func newRootCmd() *cobra.Command {
+@@ -39,6 +42,20 @@ func newRootCmd() *cobra.Command {
+ 		Long:         "checkmake scans Makefiles and reports potential issues according to configurable rules.",
+ 		Args:         cobra.ArbitraryArgs,
+ 		SilenceUsage: true,
++		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
++			if runtime.GOOS != "openbsd" {
++				return nil
++			}
++			if cmd.Name() == "list-rules" {
++				args = nil
++			} else if cmd.Name() != "checkmake" || len(args) == 0 {
++				return nil
++			}
++			if openbsdSandbox == nil {
++				return fmt.Errorf("OpenBSD sandbox support is missing")
++			}
++			return openbsdSandbox(args)
++		},
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if len(args) == 0 {
+ 				_ = cmd.Help()

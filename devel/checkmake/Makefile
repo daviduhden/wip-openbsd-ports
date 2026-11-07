@@ -3,6 +3,8 @@ COMMENT =		linter for Makefiles
 MODGO_MODNAME =		github.com/checkmake/checkmake
 MODGO_VERSION =		v0.3.2
 DISTNAME =		checkmake-${MODGO_VERSION}
+REVISION =	0
+
 CATEGORIES =		devel
 HOMEPAGE =		https://github.com/checkmake/checkmake
 

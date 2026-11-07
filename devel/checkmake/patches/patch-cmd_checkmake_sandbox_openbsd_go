@@ -1,0 +1,58 @@
+Expose only the selected config and input files to the parser.
+Lock unveil and pledge after timezone initialization; no recipes run.
+Reject directory inputs rather than exposing their contents.
+
+Index: cmd/checkmake/sandbox_openbsd.go
+--- /dev/null
++++ cmd/checkmake/sandbox_openbsd.go
+@@ -0,0 +1,50 @@
++package main
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"time"
++
++	"golang.org/x/sys/unix"
++)
++
++func init() {
++	openbsdSandbox = func(makefiles []string) error {
++		// Cache timezone data before logging enters the locked namespace.
++		_ = time.Local.String()
++		config := cfgPath
++		if _, err := os.Stat(config); os.IsNotExist(err) {
++			config = filepath.Join(os.Getenv("HOME"), "checkmake.ini")
++		}
++		for _, path := range append([]string{config}, makefiles...) {
++			info, err := os.Stat(path)
++			if os.IsNotExist(err) {
++				if err := unix.Unveil(path, "r"); err != nil {
++					return fmt.Errorf("unveil missing input %q: %w", path, err)
++				}
++				continue
++			}
++			if err != nil {
++				return fmt.Errorf("inspect sandbox input %q: %w", path, err)
++			}
++			if info.IsDir() {
++				return fmt.Errorf("sandbox input %q is a directory", path)
++			}
++			resolved, err := filepath.EvalSymlinks(path)
++			if err != nil {
++				return fmt.Errorf("resolve sandbox input %q: %w", path, err)
++			}
++			if err := unix.Unveil(resolved, "r"); err != nil {
++				return fmt.Errorf("unveil input %q: %w", path, err)
++			}
++		}
++		if err := unix.UnveilBlock(); err != nil {
++			return fmt.Errorf("lock filesystem sandbox: %w", err)
++		}
++		if err := unix.PledgePromises("stdio rpath"); err != nil {
++			return fmt.Errorf("pledge: %w", err)
++		}
++		return nil
++	}
++}

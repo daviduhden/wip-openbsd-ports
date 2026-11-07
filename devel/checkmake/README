@@ -1,0 +1,30 @@
+OpenBSD security integration
+===========================
+
+Linting and list-rules lock unveil to the selected configuration and
+input files, then pledge stdio/rpath. No recipes or helper commands run.
+A sandbox initialization failure aborts the command. Directory inputs
+are rejected rather than exposing entire directory trees. Named FIFO and
+other explicit non-directory inputs are retained; /dev/fd and symlink
+behavior still require native OpenBSD validation.
+
+Completion generation, completion queries, help and version output remain
+outside this parser policy. In particular, Cobra's optional
+BASH_COMP_DEBUG_FILE output retains its existing behavior. No claim is
+made that those modes provide a filesystem or syscall boundary.
+
+The parser stops on scanner errors, including oversized lines, reports
+the read failure and closes the input on all return paths. It does not
+silently accept a truncated Makefile. Configuration candidates and input
+paths must remain stable during startup; change them and rerun if an
+external rename or symlink change invalidates the selected namespace.
+
+OpenBSD compilation, runtime initialization, terminal rendering, config
+fallback, invalid-input, descriptor, symlink and denial checks remain
+outstanding. No project executable was run to establish these policies.
+
+The kernel limits the number of unveiled names and directories. Very
+large input lists may fail during policy setup; split them into smaller
+invocations. The port does not expose entire directories to bypass this
+limit. A dash argument retains the parser's original meaning of a file
+named '-', rather than acquiring a new stdin mode.

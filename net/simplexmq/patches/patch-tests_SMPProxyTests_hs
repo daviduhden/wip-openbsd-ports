@@ -18,13 +18,13 @@ Index: tests/SMPProxyTests.hs
 @@ -186,6 +186,9 @@ oneServer test msType = withSmpServerCon
  deliverMessageViaProxy :: (C.AlgorithmI a, C.AuthAlgorithm a) => SMPServer -> SMPServer -> C.SAlgorithm a -> ByteString -> ByteString -> IO ()
  deliverMessageViaProxy proxyServ relayServ alg msg msg' = deliverMessagesViaProxy proxyServ relayServ alg [msg] [msg']
- 
+
 +withProtocolClient :: Show err => IO (Either (ProtocolClientError err) (ProtocolClient v err msg)) -> (ProtocolClient v err msg -> IO a) -> IO a
 +withProtocolClient acquire = bracket (acquire >>= either (fail . show) pure) closeProtocolClient
 +
  deliverMessagesViaProxy :: (C.AlgorithmI a, C.AuthAlgorithm a) => SMPServer -> SMPServer -> C.SAlgorithm a -> [ByteString] -> [ByteString] -> IO ()
  deliverMessagesViaProxy = deliverMessagesViaProxyVR $ mkVersionRange minServerSMPRelayVersion currentClientSMPRelayVersion
- 
+
 @@ -194,60 +197,57 @@ deliverMessagesViaProxyVR clientVR proxy
    g <- C.newRandom
    -- set up proxy
@@ -105,7 +105,7 @@ Index: tests/SMPProxyTests.hs
 +            dec msgId' encBody' `shouldBe` Right msg'
 +            runExceptT' $ ackSMPMessage rc rPriv rcvId msgId'
 +        )
- 
+
  proxyConnectDeadRelay :: Int -> Int -> SMPServer -> IO ()
  proxyConnectDeadRelay n d proxyServ = do
    g <- C.newRandom
@@ -128,7 +128,7 @@ Index: tests/SMPProxyTests.hs
 +      case sess0 of
 +        Right !_noWay -> error "got unexpected client"
 +        Left !_err -> threadDelay d
- 
+
  agentDeliverMessageViaProxy :: (HasTestEnv, C.AlgorithmI a, C.AuthAlgorithm a) => (NonEmpty SMPServer, SMPProxyMode, Bool) -> (NonEmpty SMPServer, SMPProxyMode, Bool) -> C.SAlgorithm a -> ByteString -> ByteString -> AgentMsgId -> IO ()
  agentDeliverMessageViaProxy aTestCfg@(aSrvs, _, aViaProxy) bTestCfg@(bSrvs, _, bViaProxy) alg msg1 msg2 baseId =
 @@ -332,7 +332,7 @@ agentDeliverMessagesViaProxyConc agentSe
@@ -154,6 +154,6 @@ Index: tests/SMPProxyTests.hs
 +                tcpConnectTimeout = NetworkTimeout 4000000 4000000
 +              }
 +        }
- 
+
  testNoProxy :: HasTestEnv => AStoreType -> IO ()
  testNoProxy msType = do

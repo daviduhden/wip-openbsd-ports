@@ -10,7 +10,7 @@ Index: src/Simplex/Messaging/Transport.hs
 --- src/Simplex/Messaging/Transport.hs.orig
 +++ src/Simplex/Messaging/Transport.hs
 @@ -352,7 +352,7 @@ type ALPN = ByteString
- 
+
  connectTLS :: T.TLSParams p => Maybe HostName -> TransportConfig -> p -> Socket -> IO T.Context
  connectTLS host_ TransportConfig {logTLSErrors} params sock =
 -  E.bracketOnError (T.contextNew sock params) closeTLS $ \ctx ->
@@ -19,7 +19,7 @@ Index: src/Simplex/Messaging/Transport.hs
    where
      logHandshakeErrors = if logTLSErrors then (`catchAll` logThrow) else id
 @@ -369,12 +369,13 @@ getTLS cfg tlsCertSent tlsPeerCert cxt =
- 
+
  withTlsUnique :: forall c p. TransportPeerI p => T.Context -> (ByteString -> IO (c p)) -> IO (c p)
  withTlsUnique cxt f =
 -  cxtFinished cxt
@@ -35,6 +35,6 @@ Index: src/Simplex/Messaging/Transport.hs
 +
 +abortTLS :: T.Context -> IO ()
 +abortTLS ctx = T.contextClose ctx `catchAll_` pure ()
- 
+
  closeTLS :: T.Context -> IO ()
  closeTLS ctx =

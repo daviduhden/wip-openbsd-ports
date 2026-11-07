@@ -7,7 +7,7 @@ Index: tests/CoreTests/RetryIntervalTests.hs
 @@ -11,6 +11,15 @@ import Simplex.Messaging.Agent.RetryInte
  import Test.Hspec hiding (fit, it)
  import Util
- 
+
 +timeScale :: Int
 +timeScale = 10
 +
@@ -44,7 +44,7 @@ Index: tests/CoreTests/RetryIntervalTests.hs
 +      increaseAfter = scaleDelay 100000,
 +      maxInterval = scaleDelay 200000
      }
- 
+
  type WithRetry2 = RetryInterval2 -> (RI2State -> (RetryIntervalMode -> IO ()) -> IO ()) -> IO ()
 @@ -61,16 +70,18 @@ testRetryIntervalSameMode withRetry =
        when (length ints < 9) $ loop RIFast
@@ -72,7 +72,7 @@ Index: tests/CoreTests/RetryIntervalTests.hs
 +          (100000, 200000),
 +          (100000, 200000)
 +        ]
- 
+
  testRetryIntervalSwitchMode :: WithRetry2 -> Spec
  testRetryIntervalSwitchMode withRetry =
 @@ -84,18 +95,20 @@ testRetryIntervalSwitchMode withRetry =
@@ -105,7 +105,7 @@ Index: tests/CoreTests/RetryIntervalTests.hs
 +          (200000, 200000),
 +          (200000, 200000)
 +        ]
- 
+
  testRetryForeground :: Spec
  testRetryForeground =
 @@ -110,7 +123,7 @@ testRetryForeground =
@@ -114,7 +114,7 @@ Index: tests/CoreTests/RetryIntervalTests.hs
      (reverse <$> readTVarIO reportedIntervals)
 -      `shouldReturn` [50000, 50000, 75000, 112500, 168750, 200000, 200000, 200000]
 +      `shouldReturn` map scaleDelay [50000, 50000, 75000, 112500, 168750, 200000, 200000, 200000]
- 
+
  testRetryToBackground :: Spec
  testRetryToBackground =
 @@ -121,7 +134,7 @@ testRetryToBackground =
@@ -132,7 +132,7 @@ Index: tests/CoreTests/RetryIntervalTests.hs
      (reverse <$> readTVarIO reportedIntervals)
 -      `shouldReturn` [50000, 50000, 75000, 112500, 168750, 200000, 200000, 200000]
 +      `shouldReturn` map scaleDelay [50000, 50000, 75000, 112500, 168750, 200000, 200000, 200000]
- 
+
  testRetrySkipWhenForeground :: Spec
  testRetrySkipWhenForeground =
 @@ -142,11 +155,11 @@ testRetrySkipWhenForeground =
@@ -156,7 +156,7 @@ Index: tests/CoreTests/RetryIntervalTests.hs
      (reverse <$> readTVarIO reportedIntervals)
 -      `shouldReturn` [50000, 50000, 75000, 112500, 168750, 50000, 50000, 75000, 112500, 168750, 200000, 50000]
 +      `shouldReturn` map scaleDelay [50000, 50000, 75000, 112500, 168750, 50000, 50000, 75000, 112500, 168750, 200000, 50000]
- 
+
  addInterval :: TVar [Int] -> TVar UTCTime -> IO [Int]
  addInterval intervals ts = do
    ts' <- getCurrentTime

@@ -17,7 +17,7 @@ Index: tests/ServerTests.hs
          threadDelay 1500000
 +        -- Fully read and close before the next periodic writer opens the file.
          B.readFile testPrometheusMetricsFile >>= \m -> readServiceSubsMetric (B.unpack m) `shouldBe` Just 2
- 
+
        -- Phase 2: associate 1 more queue via SUB, reconnect with SUBS 3, check metric = 3
 @@ -1487,6 +1488,7 @@ testMessageServiceNotifications :: SpecW
  testMessageServiceNotifications =

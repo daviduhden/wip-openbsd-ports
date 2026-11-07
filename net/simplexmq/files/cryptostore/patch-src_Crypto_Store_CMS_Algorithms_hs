@@ -4,7 +4,7 @@ opaque Key built by ChaChaPoly1305.key and is total.
 Index: src/Crypto/Store/CMS/Algorithms.hs
 --- src/Crypto/Store/CMS/Algorithms.hs.orig
 +++ src/Crypto/Store/CMS/Algorithms.hs
-@@ -1333,8 +1333,8 @@
+@@ -1333,8 +1333,8 @@ ccpInit :: (ByteArrayAccess key, ByteArr
          -> ChaChaPoly1305.Nonce
          -> aad
          -> Either StoreError ChaChaPoly1305.State

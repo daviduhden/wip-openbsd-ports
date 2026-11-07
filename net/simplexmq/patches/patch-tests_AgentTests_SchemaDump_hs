@@ -15,10 +15,10 @@ Index: tests/AgentTests/SchemaDump.hs
 @@ -1,9 +1,10 @@
  {-# LANGUAGE NamedFieldPuns #-}
  {-# LANGUAGE OverloadedStrings #-}
- 
+
 -module AgentTests.SchemaDump where
 +module AgentTests.SchemaDump (schemaDumpTest) where
- 
+
  import Control.DeepSeq
 +import Control.Exception (bracket)
  import Control.Monad (unless, void)
@@ -34,7 +34,7 @@ Index: tests/AgentTests/SchemaDump.hs
 +  bracket (pure st) closeDBStore $ \_ ->
 +    getSchema testDB appSchema `shouldReturn` savedSchema
    removeFile testDB
- 
+
  testVerifyLintFKeyIndexes :: IO ()
  testVerifyLintFKeyIndexes = do
    savedLint <- ifM (doesFileExist appLint) (readFile appLint) (pure "")
@@ -45,7 +45,7 @@ Index: tests/AgentTests/SchemaDump.hs
 +  bracket (pure st) closeDBStore $ \_ ->
 +    getLintFKeyIndexes testDB "tests/tmp/agent_lint.sql" `shouldReturn` savedLint
    removeFile testDB
- 
+
  testSchemaMigrations :: IO ()
 @@ -94,8 +97,9 @@ testSchemaMigrations = do
  testVerifyStrict :: IO ()
@@ -56,6 +56,6 @@ Index: tests/AgentTests/SchemaDump.hs
 +  bracket (pure st) closeDBStore $ \st' ->
 +    withTransaction' st' (`SQL.query_` "SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence' AND sql NOT LIKE '% STRICT'")
 +      `shouldReturn` ([] :: [Only Text])
- 
+
  testUsersMigrationNew :: IO ()
  testUsersMigrationNew = do

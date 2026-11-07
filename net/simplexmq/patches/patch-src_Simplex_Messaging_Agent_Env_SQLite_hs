@@ -12,7 +12,7 @@ Index: src/Simplex/Messaging/Agent/Env/SQLite.hs
 +    xftpSndCompleteWorkers :: TMap () Worker,
      xftpDelWorkers :: TMap XFTPServer Worker
    }
- 
+
 @@ -330,13 +331,15 @@ newXFTPAgent = do
    xftpWorkDir <- newTVarIO Nothing
    xftpRcvWorkers <- TM.emptyIO
@@ -21,7 +21,7 @@ Index: src/Simplex/Messaging/Agent/Env/SQLite.hs
    xftpDelWorkers <- TM.emptyIO
 -  pure XFTPAgent {xftpWorkDir, xftpRcvWorkers, xftpSndWorkers, xftpDelWorkers}
 +  pure XFTPAgent {xftpWorkDir, xftpRcvWorkers, xftpSndWorkers, xftpSndCompleteWorkers, xftpDelWorkers}
- 
+
  data Worker = Worker
    { workerId :: Int,
      doWork :: TMVar (),
@@ -30,4 +30,4 @@ Index: src/Simplex/Messaging/Agent/Env/SQLite.hs
 +    cancelled :: TVar Bool,
      restarts :: TVar RestartCount
    }
- 
+

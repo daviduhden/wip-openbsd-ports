@@ -7,7 +7,7 @@ Index: tests/XFTPClient.hs
 +++ tests/XFTPClient.hs
 @@ -9,6 +9,7 @@
  module XFTPClient where
- 
+
  import Control.Concurrent (ThreadId, threadDelay)
 +import qualified Control.Exception as E
  import Data.String (fromString)
@@ -15,7 +15,7 @@ Index: tests/XFTPClient.hs
  import Network.Socket (ServiceName)
 @@ -242,11 +243,13 @@ testXFTPClient :: (HasCallStack, HasTest
  testXFTPClient = testXFTPClientWith testXFTPClientConfig
- 
+
  testXFTPClientWith :: (HasCallStack, HasTestEnv) => XFTPClientConfig -> (HasCallStack => XFTPClient -> IO a) -> IO a
 -testXFTPClientWith cfg client = do
 -  ts <- getCurrentTime
@@ -29,6 +29,6 @@ Index: tests/XFTPClient.hs
 +      getXFTPClient (1, testXFTPServer, Nothing) cfg [] ts (\_ -> pure Nothing) (\_ -> pure ()) >>= \case
 +        Right c -> pure c
 +        Left e -> error $ show e
- 
+
  testXFTPServerConfigSNI :: HasTestEnv => XFTPServerConfig STMFileStore
  testXFTPServerConfigSNI =

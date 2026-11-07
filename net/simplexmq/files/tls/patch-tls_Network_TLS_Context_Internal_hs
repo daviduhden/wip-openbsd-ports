@@ -6,51 +6,29 @@ Upstream: haskell-tls/hs-tls 218abdd67a4cde30854b5ca9b146b269da53bc07.
 Index: Network/TLS/Context/Internal.hs
 --- Network/TLS/Context/Internal.hs.orig
 +++ Network/TLS/Context/Internal.hs
-@@ -17,6 +17,7 @@
-     Hooks (..),
-     Limit (..),
+@@ -19,2 +19,3 @@ module Network.TLS.Context.Internal (
      Established (..),
 +    PendingRecv (..),
      PendingRecvAction (..),
-     RecordLayer (..),
-     Locks (..),
-@@ -36,6 +37,7 @@
-     updateMeasure,
-     withMeasure,
+@@ -38,2 +39,3 @@ module Network.TLS.Context.Internal (
      withReadLock,
 +    tryWithReadLock,
      withWriteLock,
-     withStateLock,
-     withRWLock,
-@@ -87,6 +89,7 @@
- 
- import Control.Concurrent.MVar
+@@ -89,2 +91,3 @@ import Control.Concurrent.MVar
  import Control.Exception (throwIO)
 +import qualified Control.Exception as E
  import Control.Monad.State.Strict
- import Data.ByteArray (convert)
- import qualified Data.ByteArray as BA
-@@ -203,7 +206,7 @@
-     , tls13stRecvSF :: Bool -- client
-     , tls13stSentCF :: Bool -- client
+@@ -205,3 +208,3 @@ data TLS13State = TLS13State
      , tls13stRecvCF :: Bool -- server
 -    , tls13stPendingRecvData :: Maybe ByteString -- client
 +    , tls13stPendingRecv :: PendingRecv -- client
      , tls13stPendingSentData :: [ByteString] -> [ByteString] -- client
-     , tls13stRTT :: Millisecond
-     , tls13st0RTT :: Bool -- client
-@@ -224,7 +227,7 @@
-         , tls13stRecvSF = False
-         , tls13stSentCF = False
+@@ -226,3 +229,3 @@ defaultTLS13State =
          , tls13stRecvCF = False
 -        , tls13stPendingRecvData = Nothing
 +        , tls13stPendingRecv = NoPendingRecv
          , tls13stPendingSentData = id
-         , tls13stRTT = 0
-         , tls13st0RTT = False
-@@ -271,6 +274,15 @@
-     | Established
-     deriving (Eq, Show)
+@@ -273,2 +276,11 @@ data Established
  
 +-- | Outcome of a read that was started on behalf of a caller who is no longer
 +-- waiting for it, held until the next receive hands it over.  Reads cannot be
@@ -62,11 +40,7 @@ Index: Network/TLS/Context/Internal.hs
 +    | PendingRecvError E.SomeException
 +
  data PendingRecvAction
-     = -- | simple pending action. The first 'Bool' is necessity of alignment.
-       PendingRecvAction Bool (Handshake13 -> IO ())
-@@ -450,5 +462,25 @@
- withReadLock :: Context -> IO a -> IO a
- withReadLock ctx f = withMVar (lockRead $ ctxLocks ctx) (const f)
+@@ -452,2 +464,22 @@ withReadLock ctx f = withMVar (lockRead
  
 +-- | Like 'withReadLock', but returns 'Nothing' immediately instead of waiting
 +-- when another thread already holds the read lock.
@@ -89,4 +63,3 @@ Index: Network/TLS/Context/Internal.hs
 +    release = mapM_ (putMVar lock)
 +
  withWriteLock :: Context -> IO a -> IO a
- withWriteLock ctx f = withMVar (lockWrite $ ctxLocks ctx) (const f)

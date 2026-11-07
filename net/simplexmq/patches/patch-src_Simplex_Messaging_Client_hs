@@ -12,7 +12,7 @@ Index: src/Simplex/Messaging/Client.hs
 +++ src/Simplex/Messaging/Client.hs
 @@ -130,7 +130,7 @@ module Simplex.Messaging.Client
  where
- 
+
  import Control.Applicative ((<|>))
 -import Control.Concurrent (ThreadId, forkFinally, forkIO, killThread, mkWeakThreadId)
 +import Control.Concurrent (ThreadId, forkIO, killThread, mkWeakThreadId)
@@ -27,7 +27,7 @@ Index: src/Simplex/Messaging/Client.hs
 +    msgQ :: Maybe (TBQueue (ServerTransmissionBatch v err msg)),
 +    clientClosed :: TMVar ()
    }
- 
+
  smpClientStub :: TVar ChaChaDRG -> ByteString -> VersionSMP -> Maybe (THandleAuth 'TClient) -> IO SMPClient
 @@ -218,6 +219,7 @@ smpClientStub g sessionId thVersion thAu
    timeoutErrorCount <- newTVarIO 0
@@ -46,7 +46,7 @@ Index: src/Simplex/Messaging/Client.hs
 +              clientClosed
              }
        }
- 
+
 @@ -592,6 +595,7 @@ getProtocolClient g nm transportSession@
        sentCommands <- TM.emptyIO
        sndQ <- newTBQueueIO qSize
@@ -63,7 +63,7 @@ Index: src/Simplex/Messaging/Client.hs
 +            msgQ,
 +            clientClosed
            }
- 
+
      runClient :: (ServiceName, ATransport 'TClient) -> TransportHost -> PClient v err msg -> IO (Either (ProtocolClientError err) (ProtocolClient v err msg))
 @@ -617,14 +622,17 @@ getProtocolClient g nm transportSession@
            socksCreds = clientSocksCredentials networkConfig proxySessTs transportSession
@@ -85,11 +85,11 @@ Index: src/Simplex/Messaging/Client.hs
 -        Nothing -> killThread tId $> Left (PCENetworkError NETimeoutError)
 +        Just (Left e) -> atomically (readTMVar $ clientClosed c) $> Left e
 +        Nothing -> stop $> Left (PCENetworkError NETimeoutError)
- 
+
      useTransport :: (ServiceName, ATransport 'TClient)
      useTransport = case port srv of
 @@ -760,7 +768,9 @@ unexpectedResponse = PCEUnexpectedRespon
- 
+
  -- | Disconnects client from the server and terminates client threads.
  closeProtocolClient :: ProtocolClient v err msg -> IO ()
 -closeProtocolClient = mapM_ (deRefWeak >=> mapM_ killThread) . action
@@ -97,5 +97,5 @@ Index: src/Simplex/Messaging/Client.hs
 +  mapM_ (deRefWeak >=> mapM_ killThread) action
 +  atomically $ readTMVar clientClosed
  {-# INLINE closeProtocolClient #-}
- 
+
  -- | SMP client error type.

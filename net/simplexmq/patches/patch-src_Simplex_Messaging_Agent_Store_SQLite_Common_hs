@@ -11,11 +11,11 @@ Index: src/Simplex/Messaging/Agent/Store/SQLite/Common.hs
  {-# LANGUAGE NamedFieldPuns #-}
 +{-# LANGUAGE OverloadedStrings #-}
  {-# LANGUAGE ScopedTypeVariables #-}
- 
+
  module Simplex.Messaging.Agent.Store.SQLite.Common
 @@ -70,17 +71,22 @@ data SQLiteFuncPtrs
    | SQLiteAggrPtrs {stepPtr :: FunPtr SQLiteFunc, finalPtr :: FunPtr SQLiteFuncFinal}
- 
+
  withConnectionPriority :: DBStore -> Bool -> (DB.Connection -> IO a) -> IO a
 -withConnectionPriority DBStore {dbSem, dbConnection} priority action
 -  | priority = E.bracket_ signal release $ withMVar dbConnection action
@@ -42,7 +42,7 @@ Index: src/Simplex/Messaging/Agent/Store/SQLite/Common.hs
 @@ -105,10 +111,10 @@ withTransactionPriority st@DBStore {dbCl
    where
      transaction db@DB.Connection {conn} = SQL.withImmediateTransaction conn $ action db
- 
+
 --- No-op for SQLite, just tries the action.
 --- This provides a consistent interface with the PostgreSQL version.
 +-- Roll back partial work before a uniqueness retry, as PostgreSQL does.
@@ -51,5 +51,5 @@ Index: src/Simplex/Messaging/Agent/Store/SQLite/Common.hs
 -withSavepoint _ _ = E.try
 +withSavepoint DB.Connection {conn} _ = E.try . SQL.withSavepoint conn
  {-# INLINE withSavepoint #-}
- 
+
  dbBusyLoop :: forall a. IO a -> IO a

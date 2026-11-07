@@ -6,13 +6,13 @@ Index: tests/XFTPWebTests.hs
 @@ -53,6 +53,9 @@ import Simplex.Messaging.Agent.Protocol
  import SMPAgentClient (agentCfg, initAgentServers, testDB)
  import qualified Simplex.Messaging.Crypto.File as CF
- 
+
 +toBS :: BA.ByteArrayAccess a => a -> B.ByteString
 +toBS = B.pack . BA.unpack
 +
  xftpWebDir :: FilePath
  xftpWebDir = "xftp-web"
- 
+
 @@ -605,7 +608,7 @@ tsKeyTests = describe "crypto/keys" $ do
        let seed = B.pack [1 .. 32]
            sk = throwCryptoError $ Ed25519.secretKey seed
@@ -308,15 +308,15 @@ Index: tests/XFTPWebTests.hs
 -      pubBRaw = BA.convert pubB :: B.ByteString
 +      pubBRaw = toBS pubB :: B.ByteString
        nonce24 = B.pack [0 .. 23]
- 
+
    describe "cbAuthenticate" $ do
 @@ -2433,13 +2436,13 @@ tsClientTests = describe "protocol/clien
- 
+
    describe "transport chunk encryption" $ do
      let dhSecret = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
 -        dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
 +        dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> toBS k :: B.ByteString
- 
+
      it "encryptTransportChunk matches Haskell" $ do
        let plaintext = B.pack [100 .. 199]
            state0 = either (error . show) id $ LC.cbInit dhSecret (C.unsafeCbNonce nonce24)
@@ -374,7 +374,7 @@ Index: tests/XFTPWebTests.hs
        tsResult <-
          callNode $
 @@ -2588,12 +2591,12 @@ tsDownloadTests = describe "download" $
- 
+
      it "rejects wrong digest" $ do
        let dhSecret = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
 -          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> BA.convert k :: B.ByteString
@@ -389,7 +389,7 @@ Index: tests/XFTPWebTests.hs
        tsResult <-
          callNode $
 @@ -2612,11 +2615,11 @@ tsDownloadTests = describe "download" $
- 
+
      it "allows null digest (skip verification)" $ do
        let dhSecret = C.dh' (C.PublicKeyX25519 pubA) (C.PrivateKeyX25519 privB)
 -          dhSecretBytes = case dhSecret of C.DhSecretX25519 k -> BA.convert k :: B.ByteString

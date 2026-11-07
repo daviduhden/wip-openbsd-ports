@@ -7,7 +7,7 @@ still maps to FILE_IO.
 Index: src/Simplex/FileTransfer/Transport.hs
 --- src/Simplex/FileTransfer/Transport.hs.orig
 +++ src/Simplex/FileTransfer/Transport.hs
-@@ -197,7 +197,9 @@ receiveFile getBody chunk = ExceptT $ ru
+@@ -198,7 +198,9 @@ receiveFile getBody chunk = ExceptT $ ru
      receive h sz = hReceiveFile getBody h sz >>= \sz' -> pure $ if sz' == 0 then Right () else Left SIZE
      handlers =
        [ E.Handler $ \(e :: HTTP2Error) -> logWarn (err e) $> Left TIMEOUT,
@@ -17,4 +17,4 @@ Index: src/Simplex/FileTransfer/Transport.hs
 +        E.Handler $ \(e :: E.IOException) -> logError (err e) $> Left FILE_IO
        ]
      err e = "receiveFile error: " <> tshow e
- 
+

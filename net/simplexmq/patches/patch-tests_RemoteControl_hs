@@ -13,9 +13,9 @@ TLS and encrypted packets.
 Index: tests/RemoteControl.hs
 --- tests/RemoteControl.hs.orig
 +++ tests/RemoteControl.hs
-@@ -8,7 +8,8 @@
+@@ -9,7 +9,8 @@
  module RemoteControl where
- 
+
  import AgentTests.FunctionalAPITests (runRight)
 -import Control.Logger.Simple
 +import qualified Control.Concurrent.Async as A
@@ -23,7 +23,7 @@ Index: tests/RemoteControl.hs
  import Control.Monad (void)
  import Control.Monad.Trans.Except (runExceptT)
  import Crypto.Random (ChaChaDRG)
-@@ -23,6 +24,7 @@ import Simplex.Messaging.Encoding.String
+@@ -24,6 +25,7 @@ import Simplex.Messaging.Encoding.String
  import Simplex.Messaging.Transport (TSbChainKeys (..))
  import Simplex.Messaging.Transport.Client (TransportHost)
  import qualified Simplex.RemoteControl.Client as HC (RCHostClient (action))
@@ -31,7 +31,7 @@ Index: tests/RemoteControl.hs
  import qualified Simplex.RemoteControl.Client as RC
  import Simplex.RemoteControl.Discovery (mkLastLocalHost, preferAddress)
  import Simplex.RemoteControl.Invitation
-@@ -138,65 +140,61 @@ testNewPairing :: IO ()
+@@ -140,65 +142,61 @@ testNewPairing :: IO ()
  testNewPairing = do
    drg <- C.newRandom
    hp <- RC.newRCHostPairing drg
@@ -146,11 +146,11 @@ Index: tests/RemoteControl.hs
 +    -- actions directly, using interruptible cancellation and a bounded join.
 +    stop :: A.Async a -> IO ()
 +    stop = bounded "client shutdown" . A.cancel
- 
+
  testExistingPairing :: IO ()
  testExistingPairing = do
-@@ -271,7 +269,10 @@ testAnnouncementTimestamp = do
- 
+@@ -292,7 +290,10 @@ testAnnouncementTimestamp = do
+
  runCtrl :: TVar ChaChaDRG -> Bool -> RCHostPairing -> MVar RCSignedInvitation -> IO (Async RCHostPairing)
  runCtrl drg multicast hp invVar = async . runRight $ do
 -  (_found, inv, hc, r) <- RC.connectRCHost drg hp (J.String "app") multicast Nothing Nothing

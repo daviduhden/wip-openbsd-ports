@@ -11,7 +11,7 @@ Index: tests/SMPClient.hs
 @@ -186,15 +186,14 @@ runSMPClient _ test' = testSMPClient tes
  runSMPServiceClient :: (HasTestEnv, Transport c) => TProxy c 'TServer -> (TLS.Credential, C.KeyPairEd25519) -> (THandleSMP c 'TClient -> IO a) -> IO a
  runSMPServiceClient _ serviceCreds test' = testSMPServiceClient serviceCreds test'
- 
+
 -testNtfServiceClient :: (HasTestEnv, Transport c) => TProxy c 'TServer -> C.KeyPairEd25519 -> (THandleSMP c 'TClient -> IO a) -> IO a
 -testNtfServiceClient _ keys client = do
 -  tlsNtfServerCreds <- loadServerCredential ntfTestServerCredentials

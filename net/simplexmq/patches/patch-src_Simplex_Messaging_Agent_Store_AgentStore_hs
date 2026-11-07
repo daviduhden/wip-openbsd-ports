@@ -28,7 +28,7 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
 @@ -1111,6 +1113,13 @@ getAllSndQueuesForDelivery db = map toSn
        WHERE c.deleted = 0
      |]
- 
+
 +-- A retry may outlive deletion of its connection or replacement of its queue.
 +isSndMsgPending :: DB.Connection -> ConnId -> SndQueue -> InternalId -> IO Bool
 +isSndMsgPending db connId SndQueue {dbQueueId} msgId =
@@ -49,12 +49,12 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
 +        -- can also be resolved after restarting the agent.
 +        (Just host,Just port,) <$> liftIO (createServer db srv)
        Nothing -> pure (Nothing, Nothing, Nothing)
- 
+
  insertedRowId :: DB.Connection -> IO Int64
 @@ -3685,6 +3697,34 @@ getNextSndFileToPrepare db ttl =
            |]
            (SFSNew, SFSEncrypting, SFSEncrypted, cutoffTs)
- 
+
 +-- Upload status is committed before notifications. Recover files with no
 +-- remaining uploads even if shutdown interrupted their final notification.
 +getNextSndFileToComplete :: DB.Connection -> NominalDiffTime -> IO (Either StoreError (Maybe SndFile))
@@ -110,6 +110,6 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
        |]
 -      (SFRSCreated, SFSEncrypted, SFSUploading, cutoffTs)
 +      (SFRSCreated, SFSUploading, cutoffTs)
- 
+
  getCleanupSndFilesPrefixPaths :: DB.Connection -> IO [(DBSndFileId, SndFileId, FilePath)]
  getCleanupSndFilesPrefixPaths db =

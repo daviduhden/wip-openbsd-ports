@@ -5,13 +5,13 @@ Index: apps/common/Web/Embedded.hs
 --- apps/common/Web/Embedded.hs.orig
 +++ apps/common/Web/Embedded.hs
 @@ -2,14 +2,14 @@
- 
+
  module Web.Embedded where
- 
+
 -import Data.FileEmbed (embedDir, embedFile)
 +import Data.FileEmbed (embedDir, embedFile, makeRelativeToProject)
  import Simplex.Messaging.Server.Web (EmbeddedContent (..))
- 
+
  embeddedContent :: EmbeddedContent
  embeddedContent =
    EmbeddedContent

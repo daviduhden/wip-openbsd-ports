@@ -15,18 +15,18 @@ Index: apps/xftp-server/XFTPWeb.hs
  import Web.Embedded (embeddedContent)
 @@ -26,13 +26,13 @@ import System.Directory (createDirectory
  import System.FilePath ((</>))
- 
+
  xftpWebContent :: [(FilePath, ByteString)]
 -xftpWebContent = $(embedDir "apps/xftp-server/static/xftp-web-bundle/")
 +xftpWebContent = $(embedDir =<< makeRelativeToProject "apps/xftp-server/static/xftp-web-bundle/")
- 
+
  xftpMediaContent :: [(FilePath, ByteString)]
 -xftpMediaContent = $(embedDir "apps/xftp-server/static/media/")
 +xftpMediaContent = $(embedDir =<< makeRelativeToProject "apps/xftp-server/static/media/")
- 
+
  xftpFilePageHtml :: ByteString
 -xftpFilePageHtml = $(embedFile "apps/xftp-server/static/file.html")
 +xftpFilePageHtml = $(embedFile =<< makeRelativeToProject "apps/xftp-server/static/file.html")
- 
+
  xftpGenerateSite :: XFTPServerConfig s -> Maybe ServerPublicInfo -> Maybe TransportHost -> FilePath -> IO ()
  xftpGenerateSite cfg info onionHost path = do

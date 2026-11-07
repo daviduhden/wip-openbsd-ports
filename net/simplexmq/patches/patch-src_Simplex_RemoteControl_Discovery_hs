@@ -27,7 +27,7 @@ Index: src/Simplex/RemoteControl/Discovery.hs
  {-# LANGUAGE OverloadedStrings #-}
  {-# LANGUAGE PatternSynonyms #-}
 +{-# LANGUAGE ScopedTypeVariables #-}
- 
+
  module Simplex.RemoteControl.Discovery
    ( pattern ANY_ADDR_V4,
 @@ -23,8 +23,9 @@ import Control.Logger.Simple
@@ -50,11 +50,11 @@ Index: src/Simplex/RemoteControl/Discovery.hs
 +import Simplex.RemoteControl.Discovery.Multicast (setMembership, setMulticastInterface)
  import Simplex.RemoteControl.Types
  import UnliftIO
- 
+
 @@ -100,49 +101,70 @@ startTLSServer port_ startedOnPort crede
            TLS.serverSupported = defaultSupportedParams
          }
- 
+
 -withSender :: (UDP.UDPSocket -> IO a) -> IO a
 -withSender = bracket (UDP.clientSocket MULTICAST_ADDR_V4 DISCOVERY_PORT False) (UDP.close)
 +withSender :: TransportHost -> (UDP.UDPSocket -> IO a) -> IO a
@@ -66,11 +66,11 @@ Index: src/Simplex/RemoteControl/Discovery.hs
 +    setMulticastInterface (UDP.udpSocket sock) $ N.tupleToHostAddress host
 +    pure sock
 +openSender _ = ioError $ userError "multicast discovery requires an IPv4 host"
- 
+
  withListener :: TMVar Int -> (UDP.ListenSocket -> IO a) -> IO a
 -withListener subscribers = bracket (openListener subscribers) (closeListener subscribers)
 +withListener _subscribers action = bracket openListener closeListener $ action . fst
- 
+
 -openListener :: TMVar Int -> IO UDP.ListenSocket
 -openListener subscribers = do
 -  sock <- UDP.serverSocket (MULTICAST_ADDR_V4, read DISCOVERY_PORT)
@@ -158,6 +158,6 @@ Index: src/Simplex/RemoteControl/Discovery.hs
 +
 +multicastHostAddr4 :: N.HostAddress
 +multicastHostAddr4 = N.tupleToHostAddress (224, 0, 0, 251)
- 
+
  recvAnnounce :: UDP.ListenSocket -> IO (N.SockAddr, ByteString)
  recvAnnounce sock = do

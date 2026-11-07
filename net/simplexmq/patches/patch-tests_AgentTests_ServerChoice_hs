@@ -13,12 +13,12 @@ Index: tests/AgentTests/ServerChoice.hs
 -import Test.QuickCheck
  import Util
  import XFTPClient (testXFTPServer)
- 
+
  serverChoiceTests :: Spec
  serverChoiceTests = do
    describe "Server operators" $ do
 -    it "should choose server of different operator" $ ioProperty $ testChooseDifferentOperator
 +    it "should choose server of different operator" testChooseDifferentOperator
- 
+
  operatorSimpleX :: Maybe OperatorId
  operatorSimpleX = Just 1

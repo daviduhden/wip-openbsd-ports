@@ -4,9 +4,9 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplexmq
-GH_COMMIT = a0eec7104c706ab0dab2ad604f280a7130f7a22c
+GH_COMMIT = c1830fb2dbf5a1a5cc3b56c6c65ef911a622ae6d
 
-V = 7.1.0.16
+V = 7.1.0.17
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -42,7 +42,7 @@ WANTLIB = c crypto ffi gmp iconv m pthread sqlcipher util z zstd
 
 MODULES = devel/cabal
 MODCABAL_STEM = simplexmq
-MODCABAL_VERSION = 7.1.0.16
+MODCABAL_VERSION = 7.1.0.17
 MODCABAL_EXECUTABLES = smp-server xftp-server
 
 .if ${DEBUG} == 1

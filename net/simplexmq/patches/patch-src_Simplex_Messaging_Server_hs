@@ -21,6 +21,6 @@ Index: src/Simplex/Messaging/Server.hs
 +        E.try @E.IOException (T.writeFile metricsFile $ prometheusMetrics sm rtm ts) >>= \case
 +          Left e -> logError $ "Error saving Prometheus metrics: " <> tshow e
 +          Right _ -> pure ()
- 
+
      getServerMetrics :: s -> ServerStats -> Text -> IO ServerMetrics
      getServerMetrics st ss rtsOptions = do

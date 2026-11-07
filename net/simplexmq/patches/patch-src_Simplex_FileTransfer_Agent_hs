@@ -44,7 +44,7 @@ Index: src/Simplex/FileTransfer/Agent.hs
              retryLoop loop e replicaDelay = do
                flip catchAllErrors (\_ -> pure ()) $ do
 @@ -266,17 +270,28 @@ runXFTPRcvWorker c srv Worker {doWork} =
- 
+
  -- The first call of action has n == 0, maxN is max number of retries
  withRetryIntervalLimit :: forall m. MonadIO m => Int -> RetryInterval -> (Int64 -> m () -> m ()) -> m ()
 -withRetryIntervalLimit maxN ri action =
@@ -55,7 +55,7 @@ Index: src/Simplex/FileTransfer/Agent.hs
    withRetryIntervalCount ri $ \n delay loop ->
 -    when (n < maxN) $ action delay loop
 +    when (n < maxN) $ action n delay loop
- 
+
  retryOnError :: Text -> AM a -> AM a -> AgentErrorType -> AM a
 -retryOnError name loop done e = do
 +retryOnError = retryOnErrorWhen temporaryOrHostError
@@ -67,7 +67,7 @@ Index: src/Simplex/FileTransfer/Agent.hs
 +  if retryable e
      then loop
      else done
- 
+
 +retryableDownloadError :: Int -> AgentErrorType -> Bool
 +retryableDownloadError n e = temporaryOrHostError e || case e of
 +  BROKER _ (RESPONSE "SIZE") -> n == 0
@@ -88,7 +88,7 @@ Index: src/Simplex/FileTransfer/Agent.hs
          AgentConfig {xftpMaxRecipientsPerRequest = maxRecipients, messageRetryInterval = ri} = cfg
          encryptFileForUpload :: SndFile -> FilePath -> AM (FileDigest, [(XFTPChunkSpec, FileDigest)])
 @@ -514,6 +530,7 @@ runXFTPSndPrepareWorker c Worker {doWork
- 
+
  sndWorkerInternalError :: AgentClient -> DBSndFileId -> SndFileId -> Maybe FilePath -> AgentErrorType -> AM ()
  sndWorkerInternalError c sndFileId sndFileEntityId prefixPath err = do
 +  -- INACTIVE during shutdown is cancellation, not a permanent file error.
@@ -297,6 +297,6 @@ Index: src/Simplex/FileTransfer/Agent.hs
 +chunkUploaded :: SndFileChunk -> Bool
 +chunkUploaded SndFileChunk {replicas} =
 +  any (\SndFileChunkReplica {replicaStatus} -> replicaStatus == SFRSUploaded) replicas
- 
+
  deleteSndFileInternal :: AgentClient -> SndFileId -> AM' ()
  deleteSndFileInternal c sndFileEntityId = deleteSndFilesInternal c [sndFileEntityId]

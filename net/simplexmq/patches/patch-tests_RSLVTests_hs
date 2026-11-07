@@ -6,7 +6,7 @@ Index: tests/RSLVTests.hs
 +++ tests/RSLVTests.hs
 @@ -12,6 +12,7 @@
  module RSLVTests (rslvTests) where
- 
+
  import Control.Concurrent (threadDelay)
 +import Control.Exception (bracket)
  import Control.Monad (forM_)
@@ -29,7 +29,7 @@ Index: tests/RSLVTests.hs
 +        case r of
 +          Left (PCETransportError TEVersion) -> pure ()
 +          _ -> expectationFailure $ "expected Left (PCETransportError TEVersion), got: " <> show r
- 
+
  forwardedResolveAlice :: HasTestEnv => IO (Either SMPClientError (Either ProxyClientError SMP.NameResponse))
  forwardedResolveAlice = do
 @@ -156,10 +158,11 @@ forwardedResolveAlice = do
@@ -45,11 +45,11 @@ Index: tests/RSLVTests.hs
 +    closeProtocolClient $ \pc -> do
 +      sess <- runExceptT (connectSMPProxiedRelay pc NRMInteractive relayServ Nothing) >>= either (fail . ("proxy relay session: " <>) . show) pure
 +      runExceptT (proxyResolveName pc NRMInteractive sess (domain "alice.simplex"))
- 
+
  testRslvForwarded :: HasTestEnv => IO ()
  testRslvForwarded =
 @@ -364,3 +367,4 @@ recvResponses h n
- 
+
  runExceptT' :: Show e => ExceptT e IO a -> IO a
  runExceptT' a = runExceptT a >>= either (fail . show) pure
 +

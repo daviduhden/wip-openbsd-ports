@@ -6,7 +6,7 @@ Upstream: haskell-tls/hs-tls 218abdd67a4cde30854b5ca9b146b269da53bc07.
 Index: test/Run.hs
 --- test/Run.hs.orig
 +++ test/Run.hs
-@@ -16,6 +16,8 @@
+@@ -16,6 +16,8 @@ module Run (
      runTLSFailure,
      expectMaybe,
      newPairContext,
@@ -15,7 +15,7 @@ Index: test/Run.hs
      withDataPipe,
      byeBye,
  ) where
-@@ -326,16 +328,32 @@
+@@ -326,16 +328,32 @@ debug = False
  
  withPairContext
      :: (ClientParams, ServerParams) -> ((Context, Context) -> IO ()) -> IO ()
@@ -51,7 +51,7 @@ Index: test/Run.hs
      pipe <- newPipe
      tids <- runPipe pipe
      let noFlush = return ()
-@@ -343,8 +361,8 @@
+@@ -343,8 +361,8 @@ newPairContext (cParams, sParams) = do
  
      let cBackend = Backend noFlush noClose (writePipeC pipe) (readPipeC pipe)
      let sBackend = Backend noFlush noClose (writePipeS pipe) (readPipeS pipe)

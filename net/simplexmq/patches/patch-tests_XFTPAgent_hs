@@ -26,12 +26,12 @@ Index: tests/XFTPAgent.hs
  {-# LANGUAGE PatternSynonyms #-}
  {-# LANGUAGE RankNTypes #-}
 @@ -11,7 +12,7 @@
- 
+
  module XFTPAgent where
- 
+
 -import AgentTests.FunctionalAPITests (get, rfGet, runRight, runRight_, sfGet, withAgent, testServerInformation)
 +import AgentTests.FunctionalAPITests (get, rfGet, runRight, runRight_, sfGet, shouldRespond, testServerInformation, withAgent)
- 
+
  import Control.Logger.Simple
  import Control.Monad
 @@ -20,9 +21,7 @@ import Control.Monad.IO.Class
@@ -98,7 +98,7 @@ Index: tests/XFTPAgent.hs
    where
 @@ -534,27 +537,22 @@ testXFTPAgentSendRestore = withGlobalLog
    filePath <- createRandomFile
- 
+
    -- send file - should not succeed with server down
 -  sfId <- withAgent 1 agentCfg initAgentServers testDB $ \sndr -> runRight $ do
 -    xftpStartWorkers sndr (Just senderFiles)
@@ -120,7 +120,7 @@ Index: tests/XFTPAgent.hs
 +
    doesDirectoryExist prefixPath `shouldReturn` True
    doesFileExist encPath `shouldReturn` True
- 
+
    withXFTPServerStoreLogOn $ \_ ->
      -- send file - should start uploading with server up
 -    withAgent 2 agentCfg initAgentServers testDB $ \sndr' -> do
@@ -131,7 +131,7 @@ Index: tests/XFTPAgent.hs
 -
 -  threadDelay 200000
 +      holdSndProgress sndr' sfId
- 
+
    withXFTPServerStoreLogOn $ \_ -> do
      -- send file - should continue uploading with server up
 @@ -565,10 +563,13 @@ testXFTPAgentSendRestore = withGlobalLog
@@ -143,16 +143,16 @@ Index: tests/XFTPAgent.hs
 +      doesDirectoryExist prefixPath `shouldReturn` False
 +      doesFileExist encPath `shouldReturn` False
        pure rfd1
- 
+
      -- prefix path should be removed after sending file
 -    threadDelay 500000
      doesDirectoryExist prefixPath `shouldReturn` False
      doesFileExist encPath `shouldReturn` False
- 
+
 @@ -580,37 +581,120 @@ testXFTPAgentSendCleanup :: (HasCallStac
  testXFTPAgentSendCleanup = withGlobalLogging logCfgNoLogs $ do
    filePath <- createRandomFile
- 
+
 -  sfId <- withXFTPServerStoreLogOn $ \_ ->
 -    -- send file
 -    withAgent 1 agentCfg initAgentServers testDB $ \sndr -> runRight $ do
@@ -181,7 +181,7 @@ Index: tests/XFTPAgent.hs
 +
    doesDirectoryExist prefixPath `shouldReturn` True
    doesFileExist encPath `shouldReturn` True
- 
+
    withXFTPServerThreadOn $ \_ ->
 -    -- send file - should fail with AUTH error
      withAgent 2 agentCfg initAgentServers testDB $ \sndr' -> do
@@ -191,11 +191,11 @@ Index: tests/XFTPAgent.hs
 -      sfId' `shouldBe` sfId
 +      sfGet sndr' `shouldRespond` ("", sfId, SFERR (XFTP srv AUTH))
        srv `shouldBe` testXFTPServerStr
- 
+
 -  -- prefix path should be removed after permanent error
    doesDirectoryExist prefixPath `shouldReturn` False
    doesFileExist encPath `shouldReturn` False
- 
+
 +-- Leave the fifth of six progress events queued. The last replica is then
 +-- committed, but final progress and completion cannot fit in subQ.
 +testXFTPAgentSendCompleteRestore :: (HasCallStack, HasTestEnv) => IO ()

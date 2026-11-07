@@ -48,7 +48,7 @@ Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
 -        Just (Left e) -> pure $ Left e
 +        Just (Left e) -> cancel action $> Left e
          Nothing -> cancel action $> Left (HCNetworkError NETimeoutError)
- 
+
      client :: HClient -> TMVar (Either HTTP2ClientError HTTP2Client) -> TLS p -> H.Client HTTP2Response
 -    client c cVar tls sendReq = do
 +    client c cVar tls sendReq aux = do
@@ -61,7 +61,7 @@ Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
          putTMVar cVar (Right c')
 -      process c' sendReq `E.finally` disconnected
 +      process c' sendReq aux `E.finally` disconnected
- 
+
      process :: HTTP2Client -> H.Client HTTP2Response
 -    process HTTP2Client {client_ = HClient {reqQ}} sendReq = forever $ do
 +    process HTTP2Client {client_ = HClient {reqQ}} sendReq _aux = forever $ do
@@ -69,12 +69,12 @@ Index: src/Simplex/Messaging/Transport/HTTP2/Client.hs
        sendReq req $ \r -> do
          respBody <- getHTTP2Body r (bodyHeadSize config)
 @@ -184,7 +188,7 @@ getVerifiedHTTP2ClientWith config host p
- 
+
  -- | Disconnects client from the server and terminates client threads.
  closeHTTP2Client :: HTTP2Client -> IO ()
 -closeHTTP2Client = mapM_ uninterruptibleCancel . action
 +closeHTTP2Client = mapM_ cancel . action
- 
+
  sendRequest :: HTTP2Client -> Request -> Maybe Int -> IO (Either HTTP2ClientError HTTP2Response)
  sendRequest HTTP2Client {client_ = HClient {config, reqQ}} req reqTimeout_ = do
 @@ -220,4 +224,19 @@ runHTTP2ClientWith :: forall a p. Buffer

@@ -20,15 +20,15 @@ Index: tests/CoreTests/TSessionSubs.hs
  import UnliftIO
 +import UnliftIO.Concurrent (forkIO, threadDelay)
  import Util
- 
+
  tSessionSubsTests :: Spec
 -tSessionSubsTests = it "subscription lifecycle" $ testSessionSubs
 +tSessionSubsTests = do
 +  it "subscription lifecycle" testSessionSubs
 +  it "worker cancellation waits for startup and is idempotent" testWorkerCancellation
- 
+
  instance IsString EntityId where fromString = EntityId . B.pack
- 
+
 +testWorkerCancellation :: IO ()
 +testWorkerCancellation = do
 +  doWork <- newTMVarIO ()

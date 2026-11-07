@@ -10,10 +10,10 @@ that has none. No assertion is dropped.
 Index: tests/ChatTests/Files.hs
 --- tests/ChatTests/Files.hs.orig
 +++ tests/ChatTests/Files.hs
-@@ -1231,9 +1231,13 @@ testXFTPCancelRcvRepeat =
+@@ -1262,9 +1262,13 @@ testXFTPCancelRcvRepeat =
        bob ##> "/fs 1"
        bob <## "receiving file 1 (testfile) not accepted yet, use /fr 1 to receive file"
- 
+
 -      bob ##> ("/fr 1 " <> tmpDir bob)
 +      let frCmd = "/fr 1 " <> tmpDir bob
 +      bob `send` frCmd

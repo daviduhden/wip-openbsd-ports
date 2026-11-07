@@ -19,16 +19,16 @@ interruptible.
 Index: src/Simplex/Messaging/Transport/Server.hs
 --- src/Simplex/Messaging/Transport/Server.hs.orig
 +++ src/Simplex/Messaging/Transport/Server.hs
-@@ -32,6 +32,8 @@ module Simplex.Messaging.Transport.Serve
+@@ -33,6 +33,8 @@ module Simplex.Messaging.Transport.Serve
  where
- 
+
  import Control.Applicative ((<|>))
 +import Control.Concurrent.STM (retry)
 +import qualified Control.Exception as CE
  import Control.Logger.Simple
  import Control.Monad
  import qualified Crypto.Store.X509 as SX
-@@ -50,7 +52,7 @@ import Network.Socket
+@@ -51,7 +53,7 @@ import Network.Socket
  import qualified Network.TLS as T
  import Simplex.Messaging.Transport
  import Simplex.Messaging.Transport.Shared
@@ -37,7 +37,7 @@ Index: src/Simplex/Messaging/Transport/Server.hs
  import System.Exit (exitFailure)
  import System.IO.Error (tryIOError)
  import System.Mem.Weak (Weak, deRefWeak)
-@@ -158,7 +160,8 @@ runTransportServerSocketState_ ss starte
+@@ -159,7 +161,8 @@ runTransportServerSocketState_ ss starte
    labelMyThread $ "transport server for " <> threadLabel
    runTCPServerSocket ss started getSocket $ \conn -> do
      labelMyThread $ threadLabel <> "/setup"
@@ -47,7 +47,7 @@ Index: src/Simplex/Messaging/Transport/Server.hs
        (timeout tlsSetupTimeout (setupTLS conn) >>= maybe (fail "tls setup timeout") pure)
        (closeConnection . snd)
        (server conn)
-@@ -172,16 +175,21 @@ runLocalTCPServer started port server =
+@@ -173,16 +176,21 @@ runLocalTCPServer started port server =
  -- | Wrap socket provider in a TCP server bracket.
  runTCPServerSocket :: SocketState -> TMVar Bool -> IO Socket -> (Socket -> IO ()) -> IO ()
  runTCPServerSocket (accepted, gracefullyClosed, clients) started getSocket server =
@@ -73,18 +73,18 @@ Index: src/Simplex/Messaging/Transport/Server.hs
 +      E.mask_ $ do
 +        tId <- mkWeakThreadId =<< server conn `forkFinallyUnmasked` closeConn
 +        atomically $ unlessM (readTVar closed) $ modifyTVar' clients $ IM.insert cId tId
- 
+
  -- | Recover from errors in `accept` whenever it is safe.
  -- Some errors are safe to ignore, while blindly restaring `accept` may trigger a busy loop.
-@@ -230,6 +238,7 @@ closeServer :: TMVar Bool -> TVar (IntMa
+@@ -231,6 +239,7 @@ closeServer :: TMVar Bool -> TVar (IntMa
  closeServer started clients sock = do
    close sock
    readTVarIO clients >>= mapM_ (deRefWeak >=> mapM_ killThread)
 +  atomically $ unlessM (IM.null <$> readTVar clients) retry
    void . atomically $ tryPutTMVar started False
- 
+
  startTCPServer :: TMVar Bool -> Maybe HostName -> ServiceName -> IO Socket
-@@ -237,8 +246,8 @@ startTCPServer started host port = withS
+@@ -238,8 +247,8 @@ startTCPServer started host port = withS
    where
      resolve =
        let hints = defaultHints {addrFlags = [AI_PASSIVE], addrSocketType = Stream}

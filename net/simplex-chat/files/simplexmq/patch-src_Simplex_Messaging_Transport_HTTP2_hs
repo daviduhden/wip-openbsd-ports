@@ -37,5 +37,5 @@ Index: src/Simplex/Messaging/Transport/HTTP2.hs
 +        HC.confMySockAddr = SockAddrInet 0 0,
 +        HC.confPeerSockAddr = SockAddrInet 0 0
        }
- 
+
  http2TLSParams :: T.Supported

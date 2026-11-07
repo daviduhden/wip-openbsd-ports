@@ -60,7 +60,7 @@ Index: tests/ChatTests/Direct.hs
  import Simplex.Chat.Options
  import Simplex.Chat.Protocol (supportedChatVRange)
 @@ -58,6 +63,15 @@ import Simplex.Chat.Options.DB
- 
+
  chatDirectTests :: SpecWith TestParams
  chatDirectTests = do
 +  describe "store cancellation" $ do
@@ -99,9 +99,9 @@ Index: tests/ChatTests/Direct.hs
 +          <##.. [ "confirmation sent!",
 +                  "smp agent error: BROKER {brokerAddress = \"smp://" <> testServerKeyHash <> "@localhost:" <> smpTestPort2 ps <> "\", brokerErr = TIMEOUT}"
 +                ]
- 
+
        pure inv
- 
+
 @@ -327,10 +350,12 @@ testRetryConnectingClientTimeout ps = do
          bob <## "invitation link: ok to connect"
          _sLinkData <- getTermLine bob
@@ -153,7 +153,7 @@ Index: tests/ChatTests/Direct.hs
      noDuration s = case words s of
        ws@(_ : _) | "(0" `isPrefixOf` last ws -> unwords $ init ws
        _ -> s
- 
+
 +    checkEndedCall :: TestCC -> Int -> String -> (UTCTime, UTCTime) -> UTCTime -> IO ()
 +    checkEndedCall cc direction label (connectedBefore, connectedAfter) endRequested = do
 +      cc ##> "/_get chat @2 count=100"
@@ -180,11 +180,11 @@ Index: tests/ChatTests/Direct.hs
 +
  testCfgCallV1 :: ChatConfig
  testCfgCallV1 = testCfg {callVRange = callInitialVRange}
- 
+
 @@ -2363,20 +2417,20 @@ testUsersDifferentCIExpirationTTL ps = d
        bob #> "@alisa alisa 2"
        alice <# "bob> alisa 2"
- 
+
 -      -- set ttl for first user
 +      -- use a large ttl so nothing expires while the test is set up; the time
 +      -- between sending and asserting must not decide the outcome
@@ -192,19 +192,19 @@ Index: tests/ChatTests/Direct.hs
        showActiveUser alice "alice (Alice)"
 -      alice #$> ("/_ttl 1 10", id, "ok")
 +      alice #$> ("/_ttl 1 100000", id, "ok")
- 
+
 -      -- set ttl for second user
        alice ##> "/user alisa"
        showActiveUser alice "alisa"
 -      alice #$> ("/_ttl 2 25", id, "ok")
 +      alice #$> ("/_ttl 2 100000", id, "ok")
- 
+
        -- first user messages
        alice ##> "/user alice"
        showActiveUser alice "alice (Alice)"
 -      alice #$> ("/ttl", id, "old messages are set to be deleted after: 10 second(s)")
 +      alice #$> ("/ttl", id, "old messages are set to be deleted after: 100000 second(s)")
- 
+
        alice #> "@bob alice 3"
        bob <# "alice> alice 3"
 @@ -2388,7 +2442,7 @@ testUsersDifferentCIExpirationTTL ps = d
@@ -213,33 +213,33 @@ Index: tests/ChatTests/Direct.hs
        showActiveUser alice "alisa"
 -      alice #$> ("/ttl", id, "old messages are set to be deleted after: 25 second(s)")
 +      alice #$> ("/ttl", id, "old messages are set to be deleted after: 100000 second(s)")
- 
+
        alice #> "@bob alisa 3"
        bob <# "alisa> alisa 3"
 @@ -2397,12 +2451,15 @@ testUsersDifferentCIExpirationTTL ps = d
- 
+
        alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2"), (1, "alisa 3"), (0, "alisa 4")])
- 
+
 -      threadDelay 12000000
 +      -- dropping the ttl synchronously expires everything older than it, so
 +      -- the result does not depend on how long the setup took
 +      threadDelay 1500000
- 
+
        -- messages both before and after setting chat item ttl are deleted
        -- first user messages
        alice ##> "/user alice"
        showActiveUser alice "alice (Alice)"
 +      alice #$> ("/_ttl 1 1", id, "ok")
        (alice ##> "/_get chat @2 count=100" >> chat <$> getTermLine alice) `shouldEventuallyReturn` [(1,"chat banner")]
- 
+
        -- second user messages
 @@ -2410,8 +2467,9 @@ testUsersDifferentCIExpirationTTL ps = d
        showActiveUser alice "alisa"
        alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2"), (1, "alisa 3"), (0, "alisa 4")])
- 
+
 -      threadDelay 15000000
 +      threadDelay 1500000
- 
+
 +      alice #$> ("/_ttl 2 1", id, "ok")
        (alice ##> "/_get chat @5 count=100" >> chat <$> getTermLine alice) `shouldEventuallyReturn` [(1,"chat banner")]
    where
@@ -254,14 +254,14 @@ Index: tests/ChatTests/Direct.hs
 +      -- duration; the expiry is triggered synchronously later
 +      alice #$> ("/_ttl 1 100000", id, "ok")
        connectUsers alice bob
- 
+
 -      -- create second user and set ttl
        alice ##> "/create user alisa"
        showActiveUser alice "alisa"
 -      alice #$> ("/_ttl 2 25", id, "ok")
 +      alice #$> ("/_ttl 2 100000", id, "ok")
        connectUsers alice bob
- 
+
        -- first user messages
 @@ -2459,7 +2517,7 @@ testUsersRestartCIExpiration ps = do
        -- first user messages
@@ -269,7 +269,7 @@ Index: tests/ChatTests/Direct.hs
        showActiveUser alice "alice (Alice)"
 -      alice #$> ("/ttl", id, "old messages are set to be deleted after: 10 second(s)")
 +      alice #$> ("/ttl", id, "old messages are set to be deleted after: 100000 second(s)")
- 
+
        alice #> "@bob alice 3"
        bob <# "alice> alice 3"
 @@ -2471,7 +2529,7 @@ testUsersRestartCIExpiration ps = do
@@ -278,32 +278,32 @@ Index: tests/ChatTests/Direct.hs
        showActiveUser alice "alisa"
 -      alice #$> ("/ttl", id, "old messages are set to be deleted after: 25 second(s)")
 +      alice #$> ("/ttl", id, "old messages are set to be deleted after: 100000 second(s)")
- 
+
        alice #> "@bob alisa 3"
        bob <# "alisa> alisa 3"
 @@ -2480,12 +2538,14 @@ testUsersRestartCIExpiration ps = do
- 
+
        alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2"), (1, "alisa 3"), (0, "alisa 4")])
- 
+
 -      threadDelay 12000000
 +      -- dropping the ttl expires the older items synchronously after restart
 +      threadDelay 1500000
- 
+
        -- messages both before and after restart are deleted
        -- first user messages
        alice ##> "/user alice"
        showActiveUser alice "alice (Alice)"
 +      alice #$> ("/_ttl 1 1", id, "ok")
        (alice ##> "/_get chat @2 count=100" >> chat <$> getTermLine alice) `shouldEventuallyReturn` [(1,"chat banner")]
- 
+
        -- second user messages
 @@ -2493,8 +2553,9 @@ testUsersRestartCIExpiration ps = do
        showActiveUser alice "alisa"
        alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2"), (1, "alisa 3"), (0, "alisa 4")])
- 
+
 -      threadDelay 15000000
 +      threadDelay 1500000
- 
+
 +      alice #$> ("/_ttl 2 1", id, "ok")
        (alice ##> "/_get chat @5 count=100" >> chat <$> getTermLine alice) `shouldEventuallyReturn` [(1,"chat banner")]
    where
@@ -318,7 +318,7 @@ Index: tests/ChatTests/Direct.hs
 +      -- checks below
 +      alice #$> ("/_ttl 2 100000", id, "ok")
        connectUsers alice bob
- 
+
        -- first user disables expiration
 @@ -2593,7 +2657,7 @@ testDisableCIExpirationOnlyForOneUser ps
        -- second user still has ttl configured
@@ -326,13 +326,13 @@ Index: tests/ChatTests/Direct.hs
        showActiveUser alice "alisa"
 -      alice #$> ("/ttl", id, "old messages are set to be deleted after: 5 second(s)")
 +      alice #$> ("/ttl", id, "old messages are set to be deleted after: 100000 second(s)")
- 
+
        alice #> "@bob alisa 1"
        bob <# "alisa> alisa 1"
 @@ -2602,7 +2666,12 @@ testDisableCIExpirationOnlyForOneUser ps
- 
+
        alice #$> ("/_get chat @5 count=100", chat, chatFeatures <> [(1, "alisa 1"), (0, "alisa 2")])
- 
+
 -      threadDelay 6000000
 +      -- now drop the ttl so the second user's items expire; the messages sent
 +      -- above are less than a second old and are deleted by the periodic
@@ -340,16 +340,16 @@ Index: tests/ChatTests/Direct.hs
 +      alice #$> ("/_ttl 2 1", id, "ok")
 +
 +      threadDelay 2000000
- 
+
        -- second user messages are deleted
        (alice ##> "/_get chat @5 count=100" >> chat <$> getTermLine alice) `shouldEventuallyReturn` [(1,"chat banner")]
 @@ -2612,7 +2681,7 @@ testDisableCIExpirationOnlyForOneUser ps
        alice <## "subscribed 1 connections on server localhost"
- 
+
        -- second user still has ttl configured after restart
 -      alice #$> ("/ttl", id, "old messages are set to be deleted after: 5 second(s)")
 +      alice #$> ("/ttl", id, "old messages are set to be deleted after: 1 second(s)")
- 
+
        alice #> "@bob alisa 3"
        bob <# "alisa> alisa 3"
 @@ -2633,13 +2702,13 @@ testUsersTimedMessages ps' = do
@@ -358,13 +358,13 @@ Index: tests/ChatTests/Direct.hs
        connectUsers alice bob
 -      configureTimedMessages alice bob "2" "10"
 +      configureTimedMessages alice bob "2" "20"
- 
+
        -- create second user and configure timed messages for contact
        alice ##> "/create user alisa"
        showActiveUser alice "alisa"
        connectUsers alice bob
 -      configureTimedMessages alice bob "5" "16"
 +      configureTimedMessages alice bob "5" "40"
- 
+
        -- first user messages
        alice ##> "/user alice"

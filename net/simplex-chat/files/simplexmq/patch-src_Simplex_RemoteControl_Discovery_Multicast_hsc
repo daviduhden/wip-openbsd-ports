@@ -11,16 +11,16 @@ Index: src/Simplex/RemoteControl/Discovery/Multicast.hsc
 +  ( setMembership,
 +    setMulticastInterface,
    ) where
- 
+
  import Foreign (Ptr, allocaBytes, castPtr, pokeByteOff)
 +import Foreign.C.Error (throwErrnoIfMinus1_)
  import Foreign.C.Types (CInt (..))
  import Network.Socket
- 
+
 @@ -10,20 +12,27 @@ import Network.Socket
- 
+
  {- | Toggle multicast group membership.
- 
+
 -NB: Group membership is per-host, not per-process. A socket is only used to access system interface for groups.
 +Group membership is per socket, so every listening socket has to join and
 +leave the group independently.
@@ -41,7 +41,7 @@ Index: src/Simplex/RemoteControl/Discovery/Multicast.hsc
 +      c_setsockopt fd c_IPPROTO_IP flag (castPtr mReqPtr) (#{size struct ip_mreq})
    where
      flag = if membership then c_IP_ADD_MEMBERSHIP else c_IP_DROP_MEMBERSHIP
- 
+
 +-- | Select the IPv4 interface used for outgoing multicast datagrams.
 +setMulticastInterface :: Socket -> HostAddress -> IO ()
 +setMulticastInterface sock interface = allocaBytes #{size struct in_addr} $ \interfacePtr -> do
@@ -51,25 +51,25 @@ Index: src/Simplex/RemoteControl/Discovery/Multicast.hsc
 +      c_setsockopt fd c_IPPROTO_IP c_IP_MULTICAST_IF (castPtr interfacePtr) (#{size struct in_addr})
 +
  #ifdef mingw32_HOST_OS
- 
+
  foreign import stdcall unsafe "setsockopt"
 @@ -33,6 +42,9 @@ c_IP_ADD_MEMBERSHIP, c_IP_DROP_MEMBERSHI
  c_IP_ADD_MEMBERSHIP  = 12
  c_IP_DROP_MEMBERSHIP = 13
- 
+
 +c_IP_MULTICAST_IF :: CInt
 +c_IP_MULTICAST_IF = 9
 +
  #else
- 
+
  foreign import ccall unsafe "setsockopt"
 @@ -42,6 +54,9 @@ c_IP_ADD_MEMBERSHIP, c_IP_DROP_MEMBERSHI
  c_IP_ADD_MEMBERSHIP  = #const IP_ADD_MEMBERSHIP
  c_IP_DROP_MEMBERSHIP = #const IP_DROP_MEMBERSHIP
- 
+
 +c_IP_MULTICAST_IF :: CInt
 +c_IP_MULTICAST_IF = #const IP_MULTICAST_IF
 +
  #endif
- 
+
  c_IPPROTO_IP :: CInt

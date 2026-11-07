@@ -12,6 +12,6 @@ Index: src/Simplex/Chat/Store/Profiles.hs
 +    hashSalt = \case
 +      Nothing -> (Nothing, Nothing)
 +      Just UserPwdHash {hash, salt} -> (Just hash, Just salt)
- 
+
  updateClientService :: DB.Connection -> UserId -> Bool -> IO ()
  updateClientService db userId enable =

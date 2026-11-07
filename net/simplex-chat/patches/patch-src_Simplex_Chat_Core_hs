@@ -8,7 +8,7 @@ Index: src/Simplex/Chat/Core.hs
 @@ -13,15 +13,13 @@ module Simplex.Chat.Core
    )
  where
- 
+
 -import Control.Concurrent (forkIO)
 -import Control.Exception (fromException, mask, onException, throwTo)
 +import Control.Concurrent.STM (retry)
@@ -38,7 +38,7 @@ Index: src/Simplex/Chat/Core.hs
 -import UnliftIO.Exception (finally)
 +import qualified UnliftIO.Exception as E
 +import UnliftIO.STM
- 
+
  simplexChatCore :: ChatConfig -> ChatOpts -> (User -> ChatController -> IO ()) -> IO ()
  simplexChatCore cfg@ChatConfig {confirmMigrations, testView, chatHooks} opts@ChatOpts {coreOptions = coreOptions@CoreChatOpts {dbOptions, logAgent, yesToUpMigrations, migrationBackupPath, maintenance}, createBot, userDisplayName, userImageFile} chat =
 @@ -86,29 +87,38 @@ simplexChatCore cfg@ChatConfig {confirmM
@@ -49,7 +49,7 @@ Index: src/Simplex/Chat/Core.hs
      noMaintenance = when maintenance $ do
        putStrLn "exiting: no active user in maintenance mode"
        exitFailure
- 
+
  runSimplexChat :: ChatConfig -> ChatOpts -> User -> ChatController -> (User -> ChatController -> IO ()) -> IO ()
  runSimplexChat ChatConfig {testView} ChatOpts {coreOptions = CoreChatOpts {chatRelay, chatRelayServer, headless, maintenance}} u cc@ChatController {config = ChatConfig {chatHooks}} chat
 -  | maintenance = wait =<< async (chat u cc)
@@ -92,6 +92,6 @@ Index: src/Simplex/Chat/Core.hs
 +        Nothing -> pure ()
 +        Just (Left e) -> E.throwIO e
 +        Just (Right ()) -> E.throwIO $ userError "Agent subscriber stopped unexpectedly"
- 
+
  sendChatCmdStr :: ChatController -> String -> IO (Either ChatError ChatResponse)
  sendChatCmdStr cc s = runReaderT (execChatCommand CSLocal (encodeUtf8 $ T.pack s) 0) cc

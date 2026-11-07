@@ -13,10 +13,10 @@ Index: tests/SchemaDump.hs
 @@ -3,11 +3,12 @@
  {-# LANGUAGE OverloadedStrings #-}
  {-# LANGUAGE ScopedTypeVariables #-}
- 
+
 -module SchemaDump where
 +module SchemaDump (schemaDumpTest, saveQueryPlans) where
- 
+
  import ChatTests.DBUtils
  import Control.Concurrent.STM
  import Control.DeepSeq
@@ -31,7 +31,7 @@ Index: tests/SchemaDump.hs
 +import System.Environment (lookupEnv)
  import System.Process (readCreateProcess, shell)
  import Test.Hspec
- 
+
 @@ -64,24 +66,26 @@ testVerifySchemaDump :: IO ()
  testVerifySchemaDump = do
    savedSchema <- ifM (doesFileExist appSchema) (readFile appSchema) (pure "")
@@ -42,7 +42,7 @@ Index: tests/SchemaDump.hs
 +  bracket (pure st) closeDBStore $ \_ ->
 +    getSchema testDB appSchema `shouldReturn` savedSchema
    removeFile testDB
- 
+
  testVerifyLintFKeyIndexes :: IO ()
  testVerifyLintFKeyIndexes = do
    savedLint <- ifM (doesFileExist appLint) (readFile appLint) (pure "")
@@ -53,7 +53,7 @@ Index: tests/SchemaDump.hs
 +  bracket (pure st) closeDBStore $ \_ ->
 +    getLintFKeyIndexes testDB "tests/tmp/chat_lint.sql" `shouldReturn` savedLint
    removeFile testDB
- 
+
  testSchemaMigrations :: IO ()
  testSchemaMigrations = do
    let noDownMigrations = dropWhileEnd (\Migration {down} -> isJust down) Store.migrations
@@ -74,7 +74,7 @@ Index: tests/SchemaDump.hs
 +  bracket (pure st) closeDBStore $ \st' ->
 +    withConnection st' (`DB.query_` "SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence' AND sql NOT LIKE '% STRICT'")
 +      `shouldReturn` ([] :: [Only Text])
- 
+
  skipComparisonForUpMigrations :: [String]
  skipComparisonForUpMigrations =
 @@ -179,8 +184,14 @@ saveQueryPlans = it "verify and overwrit

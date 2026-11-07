@@ -6,7 +6,7 @@ Upstream: haskell-tls/hs-tls 218abdd67a4cde30854b5ca9b146b269da53bc07.
 Index: Network/TLS/Context.hs
 --- Network/TLS/Context.hs.orig
 +++ Network/TLS/Context.hs
-@@ -8,6 +8,7 @@
+@@ -8,6 +8,7 @@ module Network.TLS.Context (
      Context (..),
      Hooks (..),
      Established (..),
@@ -14,7 +14,7 @@ Index: Network/TLS/Context.hs
      RecordLayer (..),
      ctxEOF,
      ctxEstablished,
-@@ -23,6 +24,7 @@
+@@ -23,6 +24,7 @@ module Network.TLS.Context (
      updateMeasure,
      withMeasure,
      withReadLock,

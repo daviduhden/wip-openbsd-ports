@@ -13,7 +13,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
 @@ -34,8 +34,7 @@ module Simplex.Messaging.Client.Agent
    )
  where
- 
+
 -import Control.Concurrent (forkIO)
 -import Control.Concurrent.Async (Async, uninterruptibleCancel)
 +import Control.Concurrent.Async (Async, mapConcurrently_, uninterruptibleCancel)
@@ -27,11 +27,11 @@ Index: src/Simplex/Messaging/Client/Agent.hs
 -import UnliftIO (async)
 +import UnliftIO (asyncWithUnmask)
  import UnliftIO.STM
- 
+
  type SMPClientVar = SessionVar (Either (SMPClientError, Maybe UTCTime) (OwnServer, SMPClient))
 @@ -204,7 +203,7 @@ getSMPServerClient' ca srv = snd <$> get
  {-# INLINE getSMPServerClient' #-}
- 
+
  getSMPServerClient'' :: SMPClientAgent p -> SMPServer -> ExceptT SMPClientError IO (OwnServer, SMPClient)
 -getSMPServerClient'' ca@SMPClientAgent {agentCfg, smpClients, smpSessions, workerSeq} srv = do
 +getSMPServerClient'' ca@SMPClientAgent {active, agentCfg, smpClients, smpSessions, workerSeq} srv = do
@@ -94,7 +94,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
      cancelReconnect :: SessionVar (Async ()) -> IO ()
 -    cancelReconnect v = void . forkIO $ atomically (readTMVar $ sessionVar v) >>= uninterruptibleCancel
 +    cancelReconnect v = atomically (readTMVar $ sessionVar v) >>= uninterruptibleCancel
- 
+
  closeSMPServerClients :: SMPClientAgent p -> IO ()
 -closeSMPServerClients c = atomically (smpClients c `swapTVar` M.empty) >>= mapM_ (forkIO . closeClient)
 +closeSMPServerClients c@SMPClientAgent {agentCfg = SMPClientAgentConfig {smpCfg = ProtocolClientConfig {networkConfig = NetworkConfig {tcpConnectTimeout}}}} =
@@ -106,5 +106,5 @@ Index: src/Simplex/Messaging/Client/Agent.hs
 +      netTimeoutInt tcpConnectTimeout NRMBackground `timeout` atomically (readTMVar $ sessionVar v) >>= \case
 +        Just (Right (_, smp)) -> closeProtocolClient smp `catchAll_` pure ()
          _ -> pure ()
- 
+
  cancelActions :: Foldable f => TVar (f (Async ())) -> IO ()

@@ -7,9 +7,9 @@ Index: src/Simplex/Chat/Controller.hs
 --- src/Simplex/Chat/Controller.hs.orig
 +++ src/Simplex/Chat/Controller.hs
 @@ -17,10 +17,8 @@
- 
+
  module Simplex.Chat.Controller where
- 
+
 -import Control.Concurrent (ThreadId)
  import Control.Concurrent.Async (Async)
  import Control.Exception (Exception)

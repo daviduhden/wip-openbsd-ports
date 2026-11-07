@@ -17,7 +17,7 @@ Index: src/Simplex/Chat/Library/Subscriber.hs
          RSYNC rss cryptoErr_ cStats ->
            case (rss, connectionCode, cryptoErr_) of
              (RSRequired, _, Just cryptoErr) -> processErr cryptoErr
-@@ -1198,11 +1198,11 @@ processAgentMessageConn cxt user@User {u
+@@ -1196,11 +1196,11 @@ processAgentMessageConn cxt user@User {u
            when (isUserGrpFwdRelay gInfo) $ serveRoster user g m -- roster ahead of the resumed backlog
            sendPendingGroupMessages user gInfo m conn
        SWITCH qd phase cStats -> do

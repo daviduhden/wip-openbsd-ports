@@ -24,13 +24,13 @@ Index: tests/ChatTests/Utils.hs
    where
 -    t = 180 * 1000000
 +    t = 300 * 1000000
- 
+
  xit' :: HasCallStack => String -> (ps -> Expectation) -> SpecWith (Arg (ps -> Expectation))
  xit' = if os == "linux" then xit else it
 @@ -479,6 +479,27 @@ getInAnyOrder f cc ls = do
  (<##?) :: HasCallStack => TestCC -> [ConsoleResponse] -> Expectation
  (<##?) = getInAnyOrder dropTime
- 
+
 +-- Consume up to as many optional lines as suffixes are given.
 +--
 +-- A line that arrives within the short window must end with one of the given
@@ -54,10 +54,10 @@ Index: tests/ChatTests/Utils.hs
 +
  (<#) :: HasCallStack => TestCC -> String -> Expectation
  cc <# line = (dropTime <$> getTermLine' (Just line) cc) `shouldReturn` line
- 
+
 @@ -694,9 +715,23 @@ shouldEventuallyReturn action expected =
          else threadDelay 100000 >> go (n - 1)
- 
+
  getProfilePictureByName :: TestCC -> String -> IO (Maybe String)
 -getProfilePictureByName cc displayName =
 -  withTransaction (chatStore $ chatController cc) $ \db ->
@@ -79,6 +79,6 @@ Index: tests/ChatTests/Utils.hs
 +      pure $ case rows of
 +        [Only image] -> image
 +        _ -> Nothing
- 
+
  getProfileShortDescrByName :: TestCC -> String -> IO (Maybe String)
  getProfileShortDescrByName cc displayName =

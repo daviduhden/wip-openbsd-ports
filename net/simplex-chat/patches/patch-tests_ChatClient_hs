@@ -28,10 +28,10 @@ Index: tests/ChatClient.hs
 +import Control.Concurrent.MVar (withMVar)
 +import Simplex.Messaging.Agent.Store.SQLite.Common (DBStore (dbConnection))
  #endif
- 
+
  #if defined(dbPostgres)
 @@ -410,17 +411,21 @@ startTestChat_ ps@TestParams {tmpPath, p
- 
+
  stopTestChat :: TestParams -> TestCC -> IO ()
  stopTestChat ps TestCC {chatController = cc@ChatController {smpAgent, chatStore}, chatAsync} = do
 +  -- Bound the shutdown so a stuck controller or agent cannot hang the suite.
@@ -65,7 +65,7 @@ Index: tests/ChatClient.hs
            }
  #endif
 @@ -542,7 +547,7 @@ getTermLine = getTermLine' Nothing
- 
+
  getTermLine' :: HasCallStack => Maybe String -> TestCC -> IO String
  getTermLine' expected cc@TestCC {printOutput} =
 -  20000000 `timeout` atomically (readTQueue $ termQ cc) >>= \case
@@ -79,7 +79,7 @@ Index: tests/ChatClient.hs
              Nothing -> ""
 -      error $ name <> ": no output for 20 seconds" <> expectedMsg
 +      error $ name <> ": no output for 30 seconds" <> expectedMsg
- 
+
  userName :: TestCC -> IO [Char]
  userName TestCC {chatController = ChatController {currentUser}} =
 @@ -764,6 +769,6 @@ serverBracket server f = do

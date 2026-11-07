@@ -4,9 +4,9 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-GH_TAGNAME = v7.1.0
+GH_TAGNAME = v7.1.2
 
-V = 7.1.0
+V = 7.1.2
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -15,7 +15,7 @@ WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 
 DIST_TUPLE += github simplex-chat simplexmq \
-		a0eec7104c706ab0dab2ad604f280a7130f7a22c ../simplexmq
+		c1830fb2dbf5a1a5cc3b56c6c65ef911a622ae6d ../simplexmq
 DIST_TUPLE += github supranational blst \
 		db3defd0d501cc2bb1cdd59cb955d1a421821441 ../simplexmq/cbits/blst
 DIST_TUPLE += github simplex-chat libbbs \
@@ -62,7 +62,7 @@ WANTLIB = c crypto ffi gmp iconv m pthread sqlcipher util z zstd
 
 MODULES = devel/cabal
 MODCABAL_STEM = simplex-chat
-MODCABAL_VERSION = 7.1.0.19
+MODCABAL_VERSION = 7.1.2.0
 MODCABAL_EXECUTABLES = simplex-chat
 
 .if ${DEBUG} == 1

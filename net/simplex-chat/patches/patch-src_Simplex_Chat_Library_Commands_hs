@@ -30,7 +30,7 @@ Index: src/Simplex/Chat/Library/Commands.hs
  import qualified UnliftIO.Exception as E
  import UnliftIO.IO (hClose)
 @@ -247,7 +246,7 @@ videoFilePrefix = "video_"
- 
+
  -- enableSndFiles has no effect when mainApp is True
  startChatController :: Bool -> Bool -> Bool -> CM' (Async ())
 -startChatController mainApp enableSndFiles serviceRequests = do
@@ -97,7 +97,7 @@ Index: src/Simplex/Chat/Library/Commands.hs
 @@ -383,38 +382,59 @@ restoreCalls = do
    calls <- asks currentCalls
    atomically $ writeTVar calls callsMap
- 
+
 -stopChatController :: ChatController -> IO ()
 -stopChatController ChatController {smpAgent, agentAsync = s, sndFiles, rcvFiles, expireCIFlags, remoteHostSessions, remoteCtrlSession, cleanupManagerAsync, relayGroupLinkChecksAsync, webPreviewState, expireCIThreads, timedItemThreads, deliveryTaskWorkers, deliveryJobWorkers, relayRequestWorkers, badgeWorkers, storeReceiptWorkers} = do
 -  readTVarIO remoteHostSessions >>= mapM_ (cancelRemoteHost False . snd)
@@ -180,7 +180,7 @@ Index: src/Simplex/Chat/Library/Commands.hs
 -      mapM_ hClose fs
 -      atomically $ writeTVar files M.empty
 +    closeFiles files = atomically (swapTVar files M.empty) >>= mapM_ hClose
- 
+
  updateNetworkConfig :: NetworkConfig -> SimpleNetCfg -> NetworkConfig
  updateNetworkConfig cfg SimpleNetCfg {socksProxy, socksMode, hostMode, requiredHostMode, smpProxyMode_, smpProxyFallback_, smpWebPortServers, tcpTimeout_, logTLSErrors} =
 @@ -627,8 +647,8 @@ processChatCommand cxt nm = \case
@@ -196,7 +196,7 @@ Index: src/Simplex/Chat/Library/Commands.hs
        mapM_ startStoreReceiptWork users
 @@ -6412,13 +6432,21 @@ assertDirectAllowed user dir ct event =
        _ -> True
- 
+
  startExpireCIThread :: User -> CM' ()
 -startExpireCIThread user@User {userId} = do
 -  expireThreads <- asks expireCIThreads

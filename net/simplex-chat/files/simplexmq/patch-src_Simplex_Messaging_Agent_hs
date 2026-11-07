@@ -35,7 +35,7 @@ Index: src/Simplex/Messaging/Agent.hs
 +import UnliftIO.Concurrent (forkIO, killThread, mkWeakThreadId, threadDelay)
  import qualified UnliftIO.Exception as E
  import UnliftIO.STM
- 
+
 @@ -292,25 +293,28 @@ getSMPAgentClient_ clientId cfg initServ
        liftIO $ checkServers "SMP" smp >> checkServers "XFTP" xftp
        currentTs <- liftIO getCurrentTime
@@ -80,10 +80,10 @@ Index: src/Simplex/Messaging/Agent.hs
 +      a `E.catchAny` \e -> whenM (readTVarIO active) $ do
          logError $ "Agent thread " <> name <> " crashed: " <> tshow e
          atomically $ writeTBQueue subQ ("", "", AEvt SAEConn $ ERR $ CRITICAL True $ show e)
- 
+
 @@ -325,14 +329,26 @@ logServersStats c = do
      liftIO $ threadDelay' int
- 
+
  saveServersStats :: AgentClient -> AM' ()
 -saveServersStats c@AgentClient {subQ, smpServersStats, xftpServersStats, ntfServersStats} = do
 +saveServersStats = saveServersStats_ False
@@ -109,11 +109,11 @@ Index: src/Simplex/Messaging/Agent.hs
 +    else tryAllErrors' (withStore' c (`updateServersStats` stats)) >>= \case
 +      Left e -> atomically $ writeTBQueue subQ ("", "", AEvt SAEConn $ ERR $ INTERNAL $ show e)
 +      Right () -> pure ()
- 
+
  restoreServersStats :: AgentClient -> AM' ()
  restoreServersStats c@AgentClient {smpServersStats, xftpServersStats, ntfServersStats, srvStatsStartedAt} = do
 @@ -347,22 +363,53 @@ restoreServersStats c@AgentClient {smpSe
- 
+
  disconnectAgentClient :: AgentClient -> IO ()
  disconnectAgentClient c@AgentClient {agentEnv = Env {ntfSupervisor = ns, xftpAgent = xa}} = do
 +  atomically $ writeTVar (active c) False
@@ -124,7 +124,7 @@ Index: src/Simplex/Messaging/Agent.hs
    closeNtfSupervisor ns
 -  closeXFTPAgent xa
    logConnection c False
- 
+
 --- only used in the tests
 +-- Stop all agent threads, including the statistics finalizer, before its
 +-- owner closes or replaces the store. Unlike dispose, this permits restart.
@@ -149,7 +149,7 @@ Index: src/Simplex/Messaging/Agent.hs
 +disposeAgentClient c@AgentClient {agentEnv = Env {store}} = withAgentLifecycle c $ do
 +  stopAgentClient_ c
 +  closeDBStore store
- 
+
  resumeAgentClient :: AgentClient -> IO ()
 -resumeAgentClient c = atomically $ writeTVar (active c) True
 -{-# INLINE resumeAgentClient #-}
@@ -172,7 +172,7 @@ Index: src/Simplex/Messaging/Agent.hs
 +withAgentLifecycle :: AgentClient -> IO a -> IO a
 +withAgentLifecycle AgentClient {acLifecycleLock} =
 +  E.bracket_ (atomically $ takeTMVar acLifecycleLock) (atomically $ putTMVar acLifecycleLock ()) . E.mask_
- 
+
  createUser :: AgentClient -> Bool -> NonEmpty (ServerCfg 'PSMP) -> NonEmpty (ServerCfg 'PXFTP) -> AE UserId
  createUser c = withAgentEnv c .:. createUser' c
 @@ -972,8 +1019,10 @@ joinConnAsync c corrId updateConn connId
@@ -186,11 +186,11 @@ Index: src/Simplex/Messaging/Agent.hs
 +      -- It must not wait behind an ACK to an unavailable receive server.
 +      enqueueCommand c corrId connId Nothing $ AClientCommand $ LET confId ownConnInfo
      _ -> throwE $ CMD PROHIBITED "allowConnectionAsync"
- 
+
  -- TODO
 @@ -994,7 +1043,7 @@ acceptContactAsync' c corrId connId enab
      throwE err
- 
+
  ackMessageAsync' :: AgentClient -> ACorrId -> ConnId -> AgentMsgId -> Maybe MsgReceiptInfo -> AM ()
 -ackMessageAsync' c corrId connId msgId rcptInfo_ = do
 +ackMessageAsync' c corrId connId msgId rcptInfo_ = withConnLock c connId "ackMessageAsync" $ do
@@ -209,7 +209,7 @@ Index: src/Simplex/Messaging/Agent.hs
 +      unless userAck $ do
 +        (RcvQueue {server}, _) <- withStore c $ \db -> setMsgUserAck db connId mId
 +        enqueueCommand c corrId connId (Just server) . AClientCommand $ ACK msgId rcptInfo_
- 
+
  deleteConnectionAsync' :: AgentClient -> Bool -> ConnId -> AM ()
  deleteConnectionAsync' c waitDelivery connId = deleteConnectionsAsync' c waitDelivery [connId]
 @@ -1634,7 +1684,7 @@ joinConnSrv' c nm userId connId enableNt
@@ -251,7 +251,7 @@ Index: src/Simplex/Messaging/Agent.hs
 +        pure commandServer
 +      lift . void $ getAsyncCmdWorker True c connId (Just commandServer)
      _ -> throwE $ CMD PROHIBITED "allowConnection"
- 
+
  -- | Accept contact (ACPT command) in Reader monad
 @@ -2279,20 +2336,9 @@ runCommandProcessing c@AgentClient {subQ
            tryCommand . withNextSrv c userId storageSrvs triedHosts [qServer q] $ \srv -> do

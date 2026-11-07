@@ -14,7 +14,7 @@ Index: src/Simplex/Messaging/Server/Web.hs
  {-# LANGUAGE OverloadedStrings #-}
 @@ -19,6 +20,9 @@ module Simplex.Messaging.Server.Web
    ) where
- 
+
  import qualified Codec.Compression.GZip as GZip
 +#if MIN_VERSION_warp(3,4,13)
 +import Control.Concurrent.STM (newTVarIO)

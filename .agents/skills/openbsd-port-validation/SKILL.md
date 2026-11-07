@@ -213,6 +213,11 @@ never close a native regeneration or build item without native evidence.
 Keep this ignored backlog
 as documentation, outside the installable port inventory and Git submissions.
 
+When cleaning audit artifacts, preserve explicitly retained handoffs byte for
+byte and remove disposable trees without following symlinks outside `audit/`.
+Deleting logs or source extractions does not close native validation items;
+keep their pending status in the retained backlog.
+
 ## Evidence levels
 
 | Level | Evidence | What it does not prove |

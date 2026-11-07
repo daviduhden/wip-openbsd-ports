@@ -1,5 +1,7 @@
 COMMENT =		the SSH directory
 
+REVISION =	0
+
 MODGO_MODNAME =		github.com/charmbracelet/wishlist
 MODGO_VERSION =		v0.15.2
 

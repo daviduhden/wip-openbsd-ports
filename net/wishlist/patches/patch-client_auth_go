@@ -1,0 +1,19 @@
+Reject SSH trust enrollment when the host key cannot be persisted.
+
+Index: client_auth.go
+--- client_auth.go.orig
++++ client_auth.go
+@@ -328,7 +328,12 @@ func hostKeyCallback(e *Endpoint, path s
+ 					return fmt.Errorf("possible man-in-the-middle attack: %w - if your host's key changed, you might need to edit %q", err, kh.Name())
+ 				}
+ 				// if want is empty, it means the host was not in the known_hosts file, so lets add it there.
+-				fmt.Fprintln(kh, knownhosts.Line([]string{e.Address}, key)) //nolint: errcheck
++				if _, err := fmt.Fprintln(kh, knownhosts.Line([]string{e.Address}, key)); err != nil {
++					return fmt.Errorf("failed to record host key: %w", err)
++				}
++				if err := kh.Sync(); err != nil {
++					return fmt.Errorf("failed to persist host key: %w", err)
++				}
+ 				return nil
+ 			}
+ 			return fmt.Errorf("failed to check known_hosts: %w", err)

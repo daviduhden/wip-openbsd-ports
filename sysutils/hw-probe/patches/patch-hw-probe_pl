@@ -1,5 +1,6 @@
-Validate options that reach a root shell and quote single-quoted values.
-Use list-form curl for the generated inventory request.
+Validate shell-bound options and preserve quoted curl requests.
+Keep uploads on HTTPS after certificate errors and in LWP fallbacks.
+Verify peer identity against OpenBSD's base certificate bundle.
 
 Index: hw-probe.pl
 --- hw-probe.pl.orig
@@ -46,7 +47,7 @@ Index: hw-probe.pl
  sub generateGroup()
  {
      my $GroupURL = $URL."/get_group.php";
-@@ -2774,8 +2802,24 @@ sub generateGroup()
+@@ -2774,11 +2802,27 @@ sub generateGroup()
      
      if(checkCmd("curl"))
      {
@@ -72,8 +73,47 @@ Index: hw-probe.pl
 +        }
      }
      else {
-         $Log = postRequest($GroupURL, { "get"=>"group", "email"=>$Opt{"Email"}, "tool_ver"=>$TOOL_VERSION }, "NoSSL");
-@@ -2966,13 +3010,13 @@ sub uploadData()
+-        $Log = postRequest($GroupURL, { "get"=>"group", "email"=>$Opt{"Email"}, "tool_ver"=>$TOOL_VERSION }, "NoSSL");
++        $Log = postRequest($GroupURL, { "get"=>"group", "email"=>$Opt{"Email"}, "tool_ver"=>$TOOL_VERSION });
+     }
+     
+     print $Log;
+@@ -2814,7 +2858,7 @@ sub remindGroup()
+         $Log = qx/$CurlCmd 2>&1/;
+     }
+     else {
+-        $Log = postRequest($GroupURL, { "hwaddr"=>$Sys{"HWaddr"} }, "NoSSL");
++        $Log = postRequest($GroupURL, { "hwaddr"=>$Sys{"HWaddr"} });
+     }
+     
+     print $Log;
+@@ -2826,9 +2870,9 @@ sub remindGroup()
+     }
+ }
+ 
+-sub postRequest($$$)
++sub postRequest($$)
+ {
+-    my ($UploadURL, $Data, $SSL) = @_;
++    my ($UploadURL, $Data) = @_;
+     
+     require LWP::UserAgent;
+     
+@@ -2838,10 +2882,9 @@ sub postRequest($$$)
+         $UAgent->proxy([ [ 'http', 'https' ] => "http://".$Opt{"Proxy"} ]);
+     }
+     
+-    if($SSL eq "NoSSL" or not checkModule("Mozilla/CA.pm"))
+-    {
+-        $UploadURL=~s/\Ahttps:/http:/g;
+-        $UAgent->ssl_opts(verify_hostname => 0, SSL_verify_mode => 0x00);
++    $UAgent->ssl_opts(verify_hostname => 1, SSL_verify_mode => 0x01);
++    if(isOpenBSD()) {
++        $UAgent->ssl_opts(SSL_ca_file => "/etc/ssl/cert.pem");
+     }
+     
+     my $Res = $UAgent->post(
+@@ -2966,13 +3009,13 @@ sub uploadData()
      
      if($Opt{"PC_Name"})
      {
@@ -89,7 +129,82 @@ Index: hw-probe.pl
          $Data{"group"} = $Opt{"Group"};
      }
      
-@@ -19526,12 +19570,6 @@ sub scenario()
+@@ -3005,20 +3048,13 @@ sub uploadData()
+     
+     my $CurlCmd = join(" ", @Cmd);
+     
+-    my ($Log, $WWWLog, $HttpsErr, $Err) = ();
++    my ($Log, $WWWLog, $Err) = ();
+ 
+     if(checkCmd("curl"))
+     {
+         $Log = runCmd("$CurlCmd 2>&1");
+         $Err = $?;
+ 
+-        if($Err and $Log=~/certificate|ssl/i
+-        and $CurlCmd=~s/https/http/)
+-        {
+-            $Log = runCmd("$CurlCmd 2>&1");
+-            $Err = $?;
+-            $HttpsErr = 1;
+-        }
+     }
+     else {
+         $Err = 1;
+@@ -3037,7 +3073,7 @@ sub uploadData()
+             }
+         }
+ 
+-        if($WWWLog = postRequest($UploadURL, \%Data, "NoSSL"))
++        if($WWWLog = postRequest($UploadURL, \%Data))
+         {
+             if(index($WWWLog, "probe=") != -1)
+             {
+@@ -3067,20 +3103,13 @@ sub uploadData()
+             $Log = runCmd("$CurlCmd 2>&1");
+             $Err = $?;
+ 
+-            if($Err and $Log=~/certificate|ssl/i
+-            and $CurlCmd=~s/https/http/)
+-            {
+-                $Log = runCmd("$CurlCmd 2>&1");
+-                $Err = $?;
+-                $HttpsErr = 1;
+-            }
+         }
+ 
+         if($Err and $UploadURL=~s/\Q$URL\E/$FallbackURL/)
+         {
+             sleep($RetryDelay);
+ 
+-            if($WWWLog = postRequest($UploadURL, \%Data, "NoSSL"))
++            if($WWWLog = postRequest($UploadURL, \%Data))
+             {
+                 if(index($WWWLog, "probe=") != -1)
+                 {
+@@ -3107,12 +3136,6 @@ sub uploadData()
+         exitStatus(1);
+     }
+     
+-    if($HttpsErr)
+-    {
+-        $Log=~s/https/http/;
+-        $URL=~s/https/http/;
+-    }
+-    
+     $Log=~s/\s*Private access:\s*http.+?token\=(\w+)\s*/\n/;
+     print $Log;
+     
+@@ -3208,7 +3231,7 @@ sub setupMonitoring()
+         $Log = qx/$CurlCmd 2>&1/;
+     }
+     else {
+-        $Log = postRequest($MonitoringURL, \%Data, "NoSSL");
++        $Log = postRequest($MonitoringURL, \%Data);
+     }
+     
+     print "\n";
+@@ -19526,12 +19549,6 @@ sub scenario()
          generateGroup();
      }
      

@@ -7,7 +7,7 @@ Index: src/LYBookmark.c
 @@ -17,6 +17,11 @@
  #include <GridText.h>
  #include <HTCJK.h>
- 
+
 +#ifdef __OpenBSD__
 +#include <stdlib.h>		/* mkstemp() */
 +#include <unistd.h>		/* mkstemp(), fdopen(), unlink() */
@@ -19,7 +19,7 @@ Index: src/LYBookmark.c
 @@ -33,6 +38,45 @@ char *MBM_A_subdescript[MBM_V_MAXFILES +
  static BOOLEAN is_mosaic_hotlist = FALSE;
  static const char *convert_mosaic_bookmark_file(const char *filename_buffer);
- 
+
 +#ifdef __OpenBSD__
 +/* Create an unlinked read/write temp file inside Lynx's private temp area. */
 +static FILE *lynx_bookmark_tmpfile(void)
@@ -87,7 +87,7 @@ Index: src/LYBookmark.c
 +	    BStrFree(tmp_data);
 +	    return;
 +	}
- 
+
  	rewind(fp);
  	memset(found_tag, 0, sizeof(found_tag));
 @@ -929,25 +986,18 @@ void remove_bookmark_link(int cur,

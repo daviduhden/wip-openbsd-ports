@@ -8,7 +8,7 @@ Index: src/LYMain.c
 @@ -1039,6 +1039,394 @@ static void SetLocale(void)
      LYSetTextDomain();
  }
- 
+
 +#ifdef __OpenBSD__
 +struct UnveilRule {
 +    struct UnveilRule *next;
@@ -402,7 +402,7 @@ Index: src/LYMain.c
   */
 @@ -2182,6 +2570,185 @@ int main(int argc,
      }
- 
+
      /*
 +     * Disabling features requiring 'proc' + 'exec' and applying the
 +     * OpenBSD sandbox.  Reads are limited to help/configuration, TLS

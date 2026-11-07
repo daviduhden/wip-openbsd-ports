@@ -6,7 +6,7 @@ Index: src/LYMainLoop.c
 @@ -7231,7 +7231,8 @@ int mainloop(void)
  	    handle_LYK_DOWN_HALF(&old_c, real_c);
  	    break;
- 
+
 -#ifdef CAN_CUT_AND_PASTE
 +/* Disabling clipboard interactions to avoid pledged calls to exec. */
 +#if 0

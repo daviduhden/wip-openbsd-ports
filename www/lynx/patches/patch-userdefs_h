@@ -11,7 +11,7 @@ Index: userdefs.h
 -#define PERSONAL_MAILCAP ".mailcap"
 +#define GLOBAL_MAILCAP "/dev/null"
 +#define PERSONAL_MAILCAP "/dev/null"
- 
+
  /**************************
   * XLOADIMAGE_COMMAND will be used as a default in src/HTInit.c
 @@ -327,8 +327,8 @@
@@ -22,7 +22,7 @@ Index: userdefs.h
 -#define PERSONAL_MAILCAP "~/.mailcap"
 +#define GLOBAL_MAILCAP "/dev/null"
 +#define PERSONAL_MAILCAP "/dev/null"
- 
+
  /**************************
   * XLOADIMAGE_COMMAND will be used as a default in src/HTInit.c for
 @@ -345,7 +345,7 @@
@@ -31,6 +31,6 @@ Index: userdefs.h
   */
 -#define XLOADIMAGE_COMMAND "xli %s &"
 +#define XLOADIMAGE_COMMAND NULL
- 
+
  /**************************
   * For UNIX systems, SYSTEM_MAIL and SYSTEM_MAIL_FLAGS are set by the

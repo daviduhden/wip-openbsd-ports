@@ -6,10 +6,10 @@ Index: WWW/Library/Implementation/HTNews.c
 +++ WWW/Library/Implementation/HTNews.c
 @@ -40,6 +40,7 @@ int HTNewsMaxChunk = 40;	/* Largest numb
  #endif /* NEWS_AUTH_FILE */
- 
+
  #ifdef USE_SSL
 +#include <HTTLS.h>
- 
+
  #if defined(LIBRESSL_VERSION_NUMBER)
  /* OpenSSL and LibreSSL version numbers do not correspond */
 @@ -2662,23 +2663,10 @@ static int HTLoadNews(const char *arg,
@@ -22,7 +22,7 @@ Index: WWW/Library/Implementation/HTNews.c
 -		    status = SSL_connect(Handle);
 +		    Handle = HTSSLConnect(s, url, HTTLS_ANY_VERSION,
 +					  HTTLS_ANY_VERSION);
- 
+
 -		    if (status <= 0) {
 -			unsigned long SSLerror;
 -
@@ -41,7 +41,7 @@ Index: WWW/Library/Implementation/HTNews.c
  			if (!(post_wanted || reply_wanted ||
 @@ -3076,23 +3064,11 @@ int HTNewsProxyConnect(int sock,
      char SSLprogress[256];
- 
+
      s = channel_s = sock;
 -    Handle = HTGetSSLHandle();
 -    SSL_set_fd(Handle, s);
@@ -52,7 +52,7 @@ Index: WWW/Library/Implementation/HTNews.c
 -	unsigned long SSLerror;
 +    Handle = HTSSLConnect(s, url, HTTLS_ANY_VERSION,
 +			  HTTLS_ANY_VERSION);
- 
+
 +    if (Handle == NULL) {
  	channel_s = -1;
 -	CTRACE((tfp,

@@ -10,7 +10,7 @@ Index: src/LYUtils.c
  	     */
 -	    struct passwd *pw = getpwuid(geteuid());
 +	    char *home;
- 
+
 -	    if (pw && pw->pw_dir) {
 -		StrAllocCopy(HomeDir, pw->pw_dir);
 +	    home = getenv("HOME");
@@ -20,7 +20,7 @@ Index: src/LYUtils.c
  #endif
  	    {
 @@ -6072,8 +6073,13 @@ FILE *LYOpenTemp(char *result,
- 
+
  	if (lstat(lynx_temp_space, &sb) == 0
  	    && S_ISDIR(sb.st_mode)) {
 +#ifdef __OpenBSD__
@@ -36,16 +36,16 @@ Index: src/LYUtils.c
 @@ -7055,7 +7061,7 @@ int LYCopyFile(char *src,
      int code;
      const char *program;
- 
+
 -    if ((program = HTGetProgramPath(ppCOPY)) != NULL) {
 +    if (!no_exec && (program = HTGetProgramPath(ppCOPY)) != NULL) {
  	char *the_command = NULL;
- 
+
  	HTAddParam(&the_command, COPY_COMMAND, 1, program);
 @@ -7135,6 +7141,11 @@ int LYSystem(char *command)
      int code;
      int do_free = 0;
- 
+
 +    if (no_exec) {
 +	HTAlert(EXECUTION_DISABLED);
 +	return -1;
@@ -55,7 +55,7 @@ Index: src/LYUtils.c
      struct sigaction saved_sigtstp_act;
      BOOLEAN sigtstp_saved = FALSE;
 @@ -7666,7 +7677,11 @@ void get_clip_release(void)
- 
+
  static int clip_grab(void)
  {
 -    char *cmd = LYGetEnv("RL_PASTE_CMD");
@@ -64,22 +64,22 @@ Index: src/LYUtils.c
 +    if (no_exec)
 +	return 0;
 +    cmd = LYGetEnv("RL_PASTE_CMD");
- 
+
      if (paste_handle)
  	pclose(paste_handle);
 @@ -7716,10 +7731,14 @@ char *get_clip_grab(void)
- 
+
  int put_clip(const char *s)
  {
 -    char *cmd = LYGetEnv("RL_CLCOPY_CMD");
 +    char *cmd;
      FILE *fh;
      size_t l = strlen(s), res;
- 
+
 +    if (no_exec)
 +	return -1;
 +    cmd = LYGetEnv("RL_CLCOPY_CMD");
 +
      if (!cmd)
  	return -1;
- 
+

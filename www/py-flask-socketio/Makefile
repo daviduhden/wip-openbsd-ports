@@ -1,6 +1,6 @@
 COMMENT =	Socket.IO integration for Flask
 
-MODPY_DISTV =	5.7.0
+MODPY_DISTV =	5.7.2
 DISTNAME =	flask_socketio-${MODPY_DISTV}
 PKGNAME =	py-flask-socketio-${MODPY_DISTV}
 
@@ -15,7 +15,7 @@ MODPY_PYBUILD =	setuptools
 MODPY_PI =	Yes
 NO_TEST =	Yes
 
-RUN_DEPENDS =	net/py-socketio>=5.12 \
+RUN_DEPENDS =	net/py-socketio>=5.18.0 \
 		www/py-flask
 
 .include <bsd.port.mk>

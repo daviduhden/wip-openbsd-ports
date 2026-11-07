@@ -1,6 +1,6 @@
 COMMENT =	Google API client core library
 
-MODPY_DISTV =	2.43.2
+MODPY_DISTV =	2.44.0
 DISTNAME =	google_api_core-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 

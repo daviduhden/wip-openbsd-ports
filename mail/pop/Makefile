@@ -1,5 +1,7 @@
 COMMENT =		terminal email client
 
+REVISION =	0
+
 MODGO_MODNAME =		github.com/charmbracelet/pop
 MODGO_VERSION =		v0.5.0
 

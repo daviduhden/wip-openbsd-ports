@@ -1,0 +1,32 @@
+Replace authentication files atomically with private permissions.
+
+Index: auth.go
+--- auth.go.orig
++++ auth.go
+@@ -104,9 +104,25 @@ func saveAuth(token *OAuthToken) error {
+ 	if err != nil {
+ 		return fmt.Errorf("marshaling auth: %w", err)
+ 	}
+-	if err := os.WriteFile(path, data, 0o600); err != nil {
++	file, err := os.CreateTemp(filepath.Dir(path), ".auth-*")
++	if err != nil {
++		return fmt.Errorf("creating auth file: %w", err)
++	}
++	defer os.Remove(file.Name())
++	if _, err := file.Write(data); err != nil {
++		file.Close()
+ 		return fmt.Errorf("writing auth file: %w", err)
+ 	}
++	if err := file.Sync(); err != nil {
++		file.Close()
++		return fmt.Errorf("syncing auth file: %w", err)
++	}
++	if err := file.Close(); err != nil {
++		return fmt.Errorf("closing auth file: %w", err)
++	}
++	if err := os.Rename(file.Name(), path); err != nil {
++		return fmt.Errorf("replacing auth file: %w", err)
++	}
+ 	return nil
+ }
+ 

@@ -1,12 +1,10 @@
-Skip the findutils tests that cannot pass on OpenBSD: the /etc/shadow
-permission check is bypassed when the suite runs as root, and the
-time/newer tests depend on the filesystem timestamp/birthtime resolution
-and clock, which differ in the OpenBSD test environment.
+Skip newer-time tests sensitive to filesystem timestamp resolution
+and wall-clock timing on OpenBSD.
 
 Index: src/find/matchers/time.rs
 --- src/find/matchers/time.rs.orig
 +++ src/find/matchers/time.rs
-@@ -411,6 +411,7 @@ mod tests {
+@@ -410,6 +410,7 @@ mod tests {
      use crate::find::tests::FakeDependencies;
  
      #[test]
@@ -14,7 +12,7 @@ Index: src/find/matchers/time.rs
      fn newer_matcher() {
          // this file should already exist
          let old_file = get_dir_entry_for("test_data", "simple");
-@@ -715,6 +716,7 @@ mod tests {
+@@ -714,6 +715,7 @@ mod tests {
      }
  
      #[test]
@@ -22,7 +20,7 @@ Index: src/find/matchers/time.rs
      fn newer_option_matcher() {
          let options = [
              "a",
-@@ -750,6 +752,7 @@ mod tests {
+@@ -749,6 +751,7 @@ mod tests {
      }
  
      #[test]

@@ -1,7 +1,7 @@
 COMMENT =	alternative implementation of GNU findutils
 
 GH_PROJECT =	findutils
-GH_TAGNAME =	0.10.0
+GH_TAGNAME =	0.11.0
 
 LIB_DEPENDS =	textproc/oniguruma
 

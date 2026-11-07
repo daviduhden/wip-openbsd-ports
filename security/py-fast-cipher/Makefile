@@ -4,6 +4,8 @@ MODPY_DISTV =	0.3.0
 DISTNAME =	fast_cipher-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 
+REVISION =	0
+
 CATEGORIES =	security
 
 HOMEPAGE =	https://pypi.org/project/fast-cipher/

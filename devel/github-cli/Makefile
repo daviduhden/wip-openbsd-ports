@@ -13,6 +13,8 @@ SURVEY_V =	vv2.3.8
 DIST_TUPLE =	github bsdmp survey ${SURVEY_V} ../survey
 EXTRACT_ONLY =	bsdmp-survey-${SURVEY_V}.tar.gz
 
+REVISION =	0
+
 CATEGORIES =	devel
 HOMEPAGE =	https://cli.github.com/
 

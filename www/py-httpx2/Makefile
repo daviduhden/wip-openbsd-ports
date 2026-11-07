@@ -4,6 +4,8 @@ MODPY_DISTV =	2.16.0
 DISTNAME =	httpx2-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 
+REVISION =	0
+
 CATEGORIES =	www
 
 # BSD-3-Clause

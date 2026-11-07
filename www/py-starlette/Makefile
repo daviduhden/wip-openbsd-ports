@@ -5,6 +5,8 @@ MODPY_DISTV =	1.10.0
 DISTNAME =	starlette-${MODPY_DISTV}
 PKGNAME =		py-${DISTNAME}
 
+REVISION =	0
+
 CATEGORIES =		www
 
 HOMEPAGE =		https://www.starlette.io/

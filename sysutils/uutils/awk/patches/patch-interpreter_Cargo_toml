@@ -10,6 +10,6 @@ Index: interpreter/Cargo.toml
  # supply-chain attacks. Hopefully upstream maintainers will change their mind.
 -indexmap-allocator-api = { git = 'https://github.com/Hans-Halverson/indexmap-allocator-api.git', rev = "36852f985c01fb9f58f2d9e510655ca1dbb1f4d0" }
 +indexmap-allocator-api = { path = "../../indexmap-allocator-api" }
- 
+
  [lints]
  workspace = true

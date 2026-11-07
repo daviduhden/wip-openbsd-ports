@@ -20,5 +20,5 @@ Index: interpreter/src/ir/lower/utils.rs
 -    }
 +    fn drop(&mut self) {}
  }
- 
+
  impl From<&LinearReg> for Reg {

@@ -1,6 +1,6 @@
 COMMENT =	uniform API for multiple LLM providers
 
-MODPY_DISTV =	1.106.4
+MODPY_DISTV =	1.106.6
 DISTNAME =	litellm-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME}
 
@@ -44,7 +44,7 @@ MODCARGO_CARGOTOML =	${WRKSRC}/litellm-rust/crates/python-bridge/Cargo.toml
 MODCARGO_CARGOLOCK =	${WRKSRC}/litellm-rust/Cargo.lock
 MODCARGO_CRATES_KEEP =	libsqlite3-sys
 
-BUILD_DEPENDS +=	devel/cmake/core devel/maturin=1.15.0
+BUILD_DEPENDS +=	devel/cmake/core devel/maturin=1.16.0
 LIB_DEPENDS =	textproc/oniguruma
 WANTLIB +=	${MODCARGO_WANTLIB} m onig
 

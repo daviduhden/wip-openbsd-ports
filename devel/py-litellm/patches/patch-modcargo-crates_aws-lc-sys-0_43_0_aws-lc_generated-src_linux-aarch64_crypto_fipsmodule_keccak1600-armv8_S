@@ -13,7 +13,7 @@ Index: modcargo-crates/aws-lc-sys-0.43.0/aws-lc/generated-src/linux-aarch64/cryp
  .align	8	// strategic alignment and padding that allows to use
  		// address value as loop termination condition...
  .quad	0,0,0,0,0,0,0,0
-@@ -36,11 +36,13 @@
+@@ -36,11 +36,13 @@ iotas_hw:
  .quad	0x0000000080000001
  .quad	0x8000000080008008
  .size	iotas_hw,.-iotas_hw

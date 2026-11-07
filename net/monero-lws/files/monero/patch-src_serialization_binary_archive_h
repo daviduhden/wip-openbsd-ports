@@ -14,7 +14,7 @@ Index: src/serialization/binary_archive.h
  #include <boost/endian/conversion.hpp>
 -#include <boost/type_traits/make_unsigned.hpp>
 +#include <boost/mpl/bool.hpp>
- 
+
  #include "common/varint.h"
  #include "span.h"
 @@ -106,7 +108,7 @@ struct binary_archive<false> : public bi
@@ -24,7 +24,7 @@ Index: src/serialization/binary_archive.h
 -    serialize_uint(*(typename boost::make_unsigned<T>::type *)&v);
 +    serialize_uint(*(typename std::make_unsigned<T>::type *)&v);
    }
- 
+
    /*! \fn serialize_uint
 @@ -137,7 +139,7 @@ struct binary_archive<false> : public bi
    template <class T>
@@ -33,7 +33,7 @@ Index: src/serialization/binary_archive.h
 -    serialize_uvarint(*(typename boost::make_unsigned<T>::type *)(&v));
 +    serialize_uvarint(*(typename std::make_unsigned<T>::type *)(&v));
    }
- 
+
    template <class T>
 @@ -190,7 +192,7 @@ struct binary_archive<true> : public bin
    template <class T>
@@ -51,5 +51,5 @@ Index: src/serialization/binary_archive.h
 -    serialize_uvarint(*(typename boost::make_unsigned<T>::type *)(&v));
 +    serialize_uvarint(*(typename std::make_unsigned<T>::type *)(&v));
    }
- 
+
    template <class T>

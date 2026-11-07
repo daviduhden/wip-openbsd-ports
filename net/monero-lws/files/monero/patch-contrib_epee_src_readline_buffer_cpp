@@ -13,13 +13,13 @@ Index: contrib/epee/src/readline_buffer.cpp
 +#ifdef __OpenBSD__
 +extern "C" int rl_done;
 +#endif
- 
+
  static bool same_as_last_line(const std::string&);
  static void install_line_handler();
 @@ -123,6 +128,16 @@ int rdln::readline_buffer::sync()
      return -1;
    }
- 
+
 +#ifdef __OpenBSD__
 +  const std::string prompt = rl_prompt ? rl_prompt : "";
 +  const bool redraw = rl_end || !prompt.empty();
@@ -38,13 +38,13 @@ Index: contrib/epee/src/readline_buffer.cpp
  #endif
    }
 +#endif
- 
+
    do
    {
 @@ -151,6 +167,10 @@ int rdln::readline_buffer::sync()
    }
    while ( this->snextc() != EOF );
- 
+
 +#ifdef __OpenBSD__
 +  if (redraw)
 +    rl_set_prompt(prompt.c_str());
@@ -63,7 +63,7 @@ Index: contrib/epee/src/readline_buffer.cpp
 +#else
    rl_redisplay();
 +#endif
- 
+
    return 0;
  }
 @@ -201,10 +226,10 @@ static void handle_line(char* line)
@@ -79,10 +79,10 @@ Index: contrib/epee/src/readline_buffer.cpp
 +  HIST_ENTRY *last = history_get(history_base + history_length - 1);
 +  return last && test_line.compare(last->line) == 0;
  }
- 
+
  static char* completion_matches(const char* text, int state)
 @@ -250,7 +275,9 @@ static void install_line_handler()
- 
+
  static void remove_line_handler()
  {
 +#ifndef __OpenBSD__
@@ -92,11 +92,11 @@ Index: contrib/epee/src/readline_buffer.cpp
    rl_redisplay();
    rl_callback_handler_remove();
 @@ -258,6 +285,8 @@ static void remove_line_handler()
- 
+
  void rdln::clear_screen()
  {
 +#ifndef __OpenBSD__
    rl_clear_screen(0, 0);
 +#endif
  }
- 
+

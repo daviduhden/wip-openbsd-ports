@@ -2,7 +2,7 @@ COMMENT = Monero Light Wallet Server
 
 GH_ACCOUNT = vtnerd
 GH_PROJECT = monero-lws
-GH_TAGNAME = v1.0.4
+GH_TAGNAME = v1.0.5
 
 # Monero release monero-lws is built against (its external/monero
 # submodule) and the version of the net/monero runtime dependency.

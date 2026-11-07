@@ -6,7 +6,7 @@ Index: cmake/CheckTrezor.cmake
 --- cmake/CheckTrezor.cmake.orig
 +++ cmake/CheckTrezor.cmake
 @@ -32,21 +32,29 @@ endfunction()
- 
+
  # Use Trezor master switch
  if (USE_DEVICE_TREZOR)
 -    # Protobuf is required to build protobuf messages for Trezor
@@ -25,7 +25,7 @@ Index: cmake/CheckTrezor.cmake
 +        find_package(Protobuf)
 +        _trezor_protobuf_fix_vars()
 +    endif()
- 
+
      # Protobuf handling the cache variables set in docker.
      if(NOT Protobuf_FOUND AND NOT Protobuf_LIBRARY AND NOT Protobuf_PROTOC_EXECUTABLE AND NOT Protobuf_INCLUDE_DIR)
          message(STATUS "Could not find Protobuf")

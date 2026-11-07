@@ -14,9 +14,9 @@ Index: codex-rs/core/src/tools/handlers/apply_patch.rs
  use codex_protocol::models::AdditionalPermissionProfile;
  use codex_protocol::models::FileSystemPermissions;
 @@ -63,6 +64,23 @@ use codex_utils_path_uri::PathUri;
- 
+
  const APPLY_PATCH_ARGUMENT_DIFF_BUFFER_INTERVAL: Duration = Duration::from_millis(500);
- 
+
 +fn apply_patch_verification_sandbox<'a>(
 +    environment: &TurnEnvironment,
 +    sandbox: &'a FileSystemSandboxContext,

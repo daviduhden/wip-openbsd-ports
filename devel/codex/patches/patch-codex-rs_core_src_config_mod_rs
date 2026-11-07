@@ -19,12 +19,12 @@ Index: codex-rs/core/src/config/mod.rs
          let permission_profile = Constrained::allow_only(snapshot.permission_profile().clone());
          self.permission_profile_state =
              PermissionProfileState::from_constrained_snapshot(permission_profile, snapshot)?;
-@@ -4311,7 +4318,7 @@ impl Config {
+@@ -4313,7 +4320,7 @@ impl Config {
          let compact_prompt = compact_prompt.or(file_compact_prompt);
          let review_model = override_review_model.or(cfg.review_model);
- 
+
 -        let check_for_update_on_startup = cfg.check_for_update_on_startup.unwrap_or(true);
 +        let check_for_update_on_startup = cfg.check_for_update_on_startup.unwrap_or(false);
          let model_catalog = load_model_catalog(cfg.model_catalog_json.clone())?;
- 
+
          let log_dir = cfg

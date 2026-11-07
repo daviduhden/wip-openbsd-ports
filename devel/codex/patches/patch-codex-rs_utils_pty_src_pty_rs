@@ -30,7 +30,7 @@ Index: codex-rs/utils/pty/src/pty.rs
 @@ -606,9 +611,126 @@ pub fn close_inherited_fds_except(preser
      }
  }
- 
+
 +// Allocate in the parent; take the descriptor snapshot only in the child so it
 +// includes std::process's private CLOEXEC error pipe and concurrent parent opens.
 +// KERN_FILE requires an unpledged process.

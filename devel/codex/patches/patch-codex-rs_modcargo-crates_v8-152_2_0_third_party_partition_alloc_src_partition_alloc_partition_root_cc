@@ -6,16 +6,16 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/third_party/partition_alloc/src/parti
 @@ -47,7 +47,7 @@
  #include "wow64apiset.h"
  #endif
- 
+
 -#if PA_BUILDFLAG(IS_LINUX) || PA_BUILDFLAG(IS_CHROMEOS)
 +#if PA_BUILDFLAG(IS_LINUX) || PA_BUILDFLAG(IS_CHROMEOS) || PA_BUILDFLAG(IS_BSD)
  #include <pthread.h>
  #endif  // PA_BUILDFLAG(IS_LINUX) || PA_BUILDFLAG(IS_CHROMEOS)
- 
+
 @@ -274,7 +274,7 @@ void PartitionAllocMallocInitOnce() {
      return;
    }
- 
+
 -#if PA_BUILDFLAG(IS_LINUX) || PA_BUILDFLAG(IS_CHROMEOS)
 +#if PA_BUILDFLAG(IS_LINUX) || PA_BUILDFLAG(IS_CHROMEOS) || PA_BUILDFLAG(IS_BSD)
    // When fork() is called, only the current thread continues to execute in the

@@ -70,7 +70,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
              eprintln!(
                  "warning: failed to ensure managed updater after app-server restart: {err:#}"
 @@ -824,6 +838,8 @@ impl Daemon {
- 
+
          if backend.is_some() {
              self.ensure_managed_codex_bin()?;
 +            #[cfg(target_os = "openbsd")]
@@ -100,7 +100,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          {
              use std::os::unix::fs::FileTypeExt;
 @@ -991,6 +1007,11 @@ impl Daemon {
- 
+
      async fn ensure_managed_updater(&self, settings: &DaemonSettings) -> Result<bool> {
          let updater = backend::pid_update_loop_backend(self.backend_paths(settings));
 +        if cfg!(target_os = "openbsd") {
@@ -114,7 +114,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
 @@ -1040,6 +1061,12 @@ impl Daemon {
          ))
      }
- 
+
 +    #[cfg(target_os = "openbsd")]
 +    fn current_managed_codex_bin(&self) -> Result<PathBuf> {
 +        Ok(self.managed_codex_bin.clone())

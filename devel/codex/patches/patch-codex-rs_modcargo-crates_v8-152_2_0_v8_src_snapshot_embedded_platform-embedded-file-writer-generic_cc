@@ -4,16 +4,16 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/v8/src/snapshot/embedded/platform-emb
 --- codex-rs/modcargo-crates/v8-152.2.0/v8/src/snapshot/embedded/platform-embedded-file-writer-generic.cc.orig
 +++ codex-rs/modcargo-crates/v8-152.2.0/v8/src/snapshot/embedded/platform-embedded-file-writer-generic.cc
 @@ -9,6 +9,10 @@
- 
+
  #include "src/objects/instruction-stream.h"
- 
+
 +#if V8_OS_OPENBSD
 +#include <sys/param.h>
 +#endif
 +
  namespace v8 {
  namespace internal {
- 
+
 @@ -35,6 +39,10 @@ const char* DirectiveAsString(DataDirect
  void PlatformEmbeddedFileWriterGeneric::SectionText() {
    if (target_os_ == EmbeddedTargetOs::kChromeOS) {
@@ -42,4 +42,4 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/v8/src/snapshot/embedded/platform-emb
 +  fprintf(fp_, ".balign %d\n", PAGE_SIZE);
  #endif
  }
- 
+

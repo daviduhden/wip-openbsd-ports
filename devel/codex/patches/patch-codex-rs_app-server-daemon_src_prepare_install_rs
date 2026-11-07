@@ -8,7 +8,7 @@ Index: codex-rs/app-server-daemon/src/prepare_install.rs
 @@ -26,6 +26,12 @@ pub struct InstallRequest {
      pub restart_required: bool,
  }
- 
+
 +#[cfg(target_os = "openbsd")]
 +pub(super) async fn prepare(daemon: &Daemon, _settings: &DaemonSettings) -> Result<()> {
 +    daemon.ensure_managed_codex_bin()

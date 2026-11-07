@@ -10,9 +10,9 @@ Index: codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs
  use std::ptr;
  use std::time::Duration;
 +use std::time::Instant;
- 
+
  pub use kqueue_sys::constants::*;
- 
+
 @@ -390,14 +391,14 @@ impl Watcher {
          filename: P,
          filter: EventFilter,
@@ -33,7 +33,7 @@ Index: codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs
 @@ -408,14 +409,15 @@ impl Watcher {
              })
              .collect();
- 
+
 -        if fd == 0 {
 +        self.watched = new_watched;
 +
@@ -44,14 +44,14 @@ Index: codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs
              ));
 -        }
 +        };
- 
+
 -        self.watched = new_watched;
          let ret = self.delete_kevents(Ident::Fd(fd), filter);
          let close_err = unsafe { close(fd) };
          if close_err != 0 {
 @@ -575,31 +577,47 @@ fn find_file_ident(watcher: &Watcher, fd
  }
- 
+
  fn get_event(watcher: &Watcher, timeout: Option<Duration>) -> Option<Event> {
 -    let mut kev = kevent::new(
 -        0,
@@ -120,4 +120,4 @@ Index: codex-rs/modcargo-crates/kqueue-1.1.1/src/lib.rs
 -        _ => Some(Event::new(kev, watcher)),
      }
  }
- 
+

@@ -25,5 +25,5 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/v8/src/trap-handler/handler-inside-po
 +         && info->si_code != SI_ASYNCIO && info->si_code != SI_MESGQ;
 +#endif
  }
- 
+
  class UnmaskOobSignalScope {

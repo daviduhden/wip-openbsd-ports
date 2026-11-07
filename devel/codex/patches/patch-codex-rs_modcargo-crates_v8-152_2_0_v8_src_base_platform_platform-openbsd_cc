@@ -12,9 +12,9 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/v8/src/base/platform/platform-openbsd
  #include <signal.h>
  #include <stdarg.h>
 @@ -122,6 +123,17 @@ void OS::SignalCodeMovingGC() {
- 
+
  void OS::AdjustSchedulingParams() {}
- 
+
 +// static
 +Stack::StackSlot Stack::ObtainCurrentThreadStackStart() {
 +  stack_t ss;

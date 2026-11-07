@@ -21,7 +21,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/v8/BUILD.gn
 +  enabled_external_v8_defines += [ "V8_TARGET_OS_OPENBSD" ]
 +  enabled_external_v8_defines += [ "V8_TARGET_OS_BSD" ]
  }
- 
+
  # Some V8_TARGET_ARCH_ defines that affect Api constants (see usages of
 @@ -1860,7 +1866,7 @@ config("toolchain") {
      # don't block compiler updates in Chromium. We'll resolve these when
@@ -31,11 +31,11 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/v8/BUILD.gn
 +        v8_current_cpu != "s390x" && !is_bsd) {
        cflags += [ "-Wlifetime-safety-permissive" ]
      }
- 
+
 @@ -7377,7 +7383,7 @@ v8_component("v8_libbase") {
      }
    }
- 
+
 -  if (is_linux || is_chromeos) {
 +  if ((is_linux || is_chromeos) && !is_bsd) {
      sources += [

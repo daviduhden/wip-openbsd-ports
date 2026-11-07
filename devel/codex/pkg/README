@@ -42,9 +42,14 @@ update`), `--from-cli` replacement and the updater loop are rejected. No
 separate daemon package or private manifest is installed in
 CODEX_HOME/packages.
 
-The installed binaries require the WXNEEDED property for V8 152.2.0. The
-filesystem containing ${LOCALBASE} must allow wxallowed. Python and Git
-are runtime dependencies; repository and worktree features execute Git.
+Code Mode defaults to V8 interpreter mode on OpenBSD, preserving
+JavaScript execution without runtime JIT compilation. WebAssembly was
+already unavailable in the exposed runtime. Performance may differ from
+JIT mode. The port no longer requests WXNEEDED: the reviewed interpreter and
+builtin-loading paths use non-executable writable mappings or switch
+from RW to RX. Native OpenBSD W^X and snapshot checks remain pending.
+Python and Git are runtime dependencies; repository and worktree
+features execute Git.
 OpenBSD uses its base /bin/ksh by default, so Bash is not a runtime
 dependency. Bash, Fish and Zsh completion files are generated and
 installed as data. Optional npm plugins, MCP servers and hooks may
@@ -76,12 +81,17 @@ the system-wide maxfiles and used login class limits.
 Secret Service storage needs a D-Bus session and compatible provider.
 Protect CODEX_HOME and credential backups, including file-backed auth.
 Browser login uses xdg-open when available; the URL is printed otherwise
-and `codex login --device-auth` remains available. Shell snapshots are
-limited to bash/zsh; the default OpenBSD shells run commands without a
-snapshot. Clipboard access uses the X11 backend when DISPLAY is set.
+and `codex login --device-auth` remains available. The generic Sh snapshot
+path also covers the default OpenBSD ksh; its startup and snapshot behavior
+still require native testing. Clipboard access uses X11 when DISPLAY is set.
 These optional helpers are not added as runtime dependencies by this
 port.
 
 Only static review has been performed. Compilation, generated package
 contents, V8, daemon, PTY, keyring and permission rejection require
 actual OpenBSD validation. No claim of runtime correctness is made here.
+
+The maintainer sandbox regression checks that managed profiles reject a
+command before execution, with an explicit full-access control. Exit 77
+means that OS command isolation is unsupported, even when rejection checks
+pass; it is not evidence of a working sandbox.

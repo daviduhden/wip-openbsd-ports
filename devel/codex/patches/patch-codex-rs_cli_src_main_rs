@@ -12,9 +12,9 @@ Index: codex-rs/cli/src/main.rs
  use clap::Args;
  use clap::CommandFactory;
  use clap::Parser;
-@@ -880,6 +882,11 @@ fn resolve_windows_update_command_from_p
+@@ -878,6 +880,11 @@ fn resolve_windows_update_command_from_p
  }
- 
+
  fn run_update_command() -> anyhow::Result<()> {
 +    if cfg!(target_os = "openbsd") {
 +        anyhow::bail!(

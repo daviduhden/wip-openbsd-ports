@@ -10,15 +10,12 @@ COMMENT =		OpenAI terminal-based coding agent
 
 DPB_PROPERTIES =	parallel
 
-USE_WXNEEDED =		Yes
-
-V =			0.166.0
+V =			0.167.0
 GH_ACCOUNT =		openai
 GH_PROJECT =		codex
 GH_TAGNAME =		rust-v${V}
 # Installs the upstream codex paths and binaries.
 PKGNAME =		codex-${V}
-REVISION =		1
 
 # Only build the Rust workspace (the upstream tree also contains JS tooling).
 WRKSRC =		${WRKDIST}/codex-rs
@@ -33,6 +30,8 @@ DIST_TUPLE += github microsoft mxc b21120168d70befe12356411423266bfef168446 ./mx
 DIST_TUPLE += github hyperium h3 e07e69412876f7e26f026bd75a48b2704d8c8283 ./h3
 
 MAINTAINER =		Kirill A. Korinsky <kirill@korins.ky>
+
+REVISION =	1
 
 CATEGORIES =		devel
 
@@ -131,5 +130,12 @@ post-install:
 	cp -r ${WRKDIST}/docs/* ${PREFIX}/share/doc/codex/
 
 .include "crates.inc"
+
+# Preserve strict upstream version checks; recognize base LibreSSL 4.4
+# in the port patch instead of the module's unknown-version fallback.
+MODCARGO_CRATES_KEEP +=	openssl-sys
+MODCARGO_ENV +=		OPENSSL_NO_VENDOR=1 \
+			OPENSSL_INCLUDE_DIR=/usr/include \
+			OPENSSL_LIB_DIR=/usr/lib
 
 .include <bsd.port.mk>

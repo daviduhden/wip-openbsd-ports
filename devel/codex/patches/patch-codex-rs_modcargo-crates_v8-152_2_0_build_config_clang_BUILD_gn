@@ -4,7 +4,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/config/clang/BUILD.gn
 --- codex-rs/modcargo-crates/v8-152.2.0/build/config/clang/BUILD.gn.orig
 +++ codex-rs/modcargo-crates/v8-152.2.0/build/config/clang/BUILD.gn
 @@ -243,7 +243,12 @@ template("clang_lib") {
- 
+
  # Adds a dependency on the Clang runtime library clang_rt.builtins.
  clang_lib("compiler_builtins") {
 -  if (is_mac) {
@@ -25,4 +25,4 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/config/clang/BUILD.gn
 +    #libname = "builtins"
    }
  }
- 
+

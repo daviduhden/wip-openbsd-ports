@@ -15,10 +15,10 @@ Index: codex-rs/shell-command/src/shell_detect.rs
 @@ -250,9 +251,17 @@ fn get_bash_shell() -> Option<DetectedSh
      })
  }
- 
+
 +#[cfg(not(target_os = "openbsd"))]
  const SH_FALLBACK_PATHS: &[&str] = &["/bin/sh"];
- 
+
  fn get_sh_shell() -> Option<DetectedShell> {
 +    #[cfg(target_os = "openbsd")]
 +    let shell_path = get_user_shell_path()
@@ -28,7 +28,7 @@ Index: codex-rs/shell-command/src/shell_detect.rs
 +        .or_else(|| file_exists(std::path::Path::new("/bin/sh")));
 +    #[cfg(not(target_os = "openbsd"))]
      let shell_path = get_shell_path(ShellType::Sh, "sh", SH_FALLBACK_PATHS);
- 
+
      shell_path.map(|shell_path| DetectedShell {
 @@ -331,6 +340,13 @@ pub fn ultimate_fallback_shell() -> Dete
              shell_type: ShellType::Cmd,

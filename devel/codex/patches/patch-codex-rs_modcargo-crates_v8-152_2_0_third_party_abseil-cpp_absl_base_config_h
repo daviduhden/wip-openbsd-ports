@@ -11,7 +11,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/third_party/abseil-cpp/absl/base/conf
 +    defined(__VXWORKS__) || defined(__OpenBSD__) || defined(__FreeBSD__)
  #define ABSL_HAVE_SCHED_YIELD 1
  #endif
- 
+
 @@ -427,7 +427,8 @@ static_assert(ABSL_INTERNAL_INLINE_NAMES
  // platforms.
  #ifdef ABSL_HAVE_SEMAPHORE_H
@@ -21,4 +21,4 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/third_party/abseil-cpp/absl/base/conf
 +    defined(__OpenBSD__) || defined(__FreeBSD__)
  #define ABSL_HAVE_SEMAPHORE_H 1
  #endif
- 
+

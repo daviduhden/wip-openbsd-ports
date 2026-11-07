@@ -1,0 +1,14 @@
+Recognize base LibreSSL 4.4 explicitly without disguising its version.
+Keep unknown releases rejected instead of mapping them to an older ABI.
+
+Index: codex-rs/modcargo-crates/openssl-sys-0.9.111/build/main.rs
+--- codex-rs/modcargo-crates/openssl-sys-0.9.111/build/main.rs.orig
++++ codex-rs/modcargo-crates/openssl-sys-0.9.111/build/main.rs
+@@ -434,6 +434,7 @@ See rust-openssl documentation for more
+             (4, 1, 0) => ('4', '1', '0'),
+             (4, 1, _) => ('4', '1', 'x'),
+             (4, 2, _) => ('4', '2', 'x'),
++            (4, 4, _) => ('4', '4', 'x'),
+             _ => version_error(),
+         };
+

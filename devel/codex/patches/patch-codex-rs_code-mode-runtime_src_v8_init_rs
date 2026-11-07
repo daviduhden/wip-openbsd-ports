@@ -1,0 +1,31 @@
+Use V8's supported interpreter mode by default on OpenBSD.
+Avoid generating writable executable code in the code-mode host.
+Other platforms retain the upstream JIT default.
+
+Index: codex-rs/code-mode-runtime/src/v8_init.rs
+--- codex-rs/code-mode-runtime/src/v8_init.rs.orig
++++ codex-rs/code-mode-runtime/src/v8_init.rs
+@@ -19,8 +19,8 @@ static V8_INITIALIZATION: OnceLock<Resul
+ ///
+ /// Call this before executing any code-mode cells when JIT must be disabled.
+ /// V8 cannot change JIT mode after initialization, so a later call requesting
+-/// a different mode returns an error. Code mode initializes V8 with JIT enabled
+-/// by default when this function has not been called explicitly.
++/// a different mode returns an error. Code mode defaults to interpreter mode
++/// on OpenBSD and JIT mode elsewhere unless initialized explicitly.
+ pub fn initialize_v8(jit_mode: V8JitMode) -> Result<(), String> {
+     match V8_INITIALIZATION.get_or_init(|| initialize_v8_with_mode(jit_mode)) {
+         Ok(initialization) if initialization.jit_mode == jit_mode => Ok(()),
+@@ -33,7 +33,11 @@ pub fn initialize_v8(jit_mode: V8JitMode
+ }
+ 
+ pub(crate) fn ensure_v8_initialized() -> Result<(), String> {
+-    match V8_INITIALIZATION.get_or_init(|| initialize_v8_with_mode(V8JitMode::Enabled)) {
++    #[cfg(target_os = "openbsd")]
++    let jit_mode = V8JitMode::Disabled;
++    #[cfg(not(target_os = "openbsd"))]
++    let jit_mode = V8JitMode::Enabled;
++    match V8_INITIALIZATION.get_or_init(|| initialize_v8_with_mode(jit_mode)) {
+         Ok(_) => Ok(()),
+         Err(error_text) => Err(error_text.clone()),
+     }

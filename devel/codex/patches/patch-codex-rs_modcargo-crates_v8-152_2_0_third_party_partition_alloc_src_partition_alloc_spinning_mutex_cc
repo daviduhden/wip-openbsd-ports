@@ -5,7 +5,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/third_party/partition_alloc/src/parti
 +++ codex-rs/modcargo-crates/v8-152.2.0/third_party/partition_alloc/src/partition_alloc/spinning_mutex.cc
 @@ -20,7 +20,16 @@
  #endif
- 
+
  #if PA_CONFIG(HAS_LINUX_KERNEL)
 +#if defined(OS_OPENBSD)
 +#include <sys/time.h>
@@ -19,11 +19,11 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/third_party/partition_alloc/src/parti
 +#endif
  #include <sys/syscall.h>
  #include <unistd.h>
- 
+
 @@ -150,8 +159,16 @@ PA_ALWAYS_INLINE long FutexSyscall(volat
    int saved_errno = errno;
    errno = 0;
- 
+
 +#if defined(OS_FREEBSD)
 +  long retval = _umtx_op(&state_, UMTX_OP_WAIT_UINT_PRIVATE,
 +                    kLockedContended, nullptr, nullptr);

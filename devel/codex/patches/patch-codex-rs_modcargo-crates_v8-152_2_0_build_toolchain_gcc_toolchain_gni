@@ -6,7 +6,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/toolchain/gcc_toolchain.gni
 @@ -46,6 +46,12 @@ if (enable_resource_allowlist_generation
        "enable_resource_allowlist_generation=true does not work for target_os=$target_os")
  }
- 
+
 +declare_args() {
 +  extra_cflags = ""
 +  extra_cppflags = ""
@@ -28,7 +28,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/toolchain/gcc_toolchain.gni
 -              [ get_path_info(rebase_path(ar, ".", root_out_dir), "abspath") ]
 -        }
        }
- 
+
        # Almost all targets build with //build/config/compiler:thin_archive which
 @@ -1008,22 +1007,13 @@ template("gcc_toolchain") {
  # actually just be doing a native compile.
@@ -43,7 +43,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/toolchain/gcc_toolchain.gni
 -    } else {
 -      prefix = rebase_path(_path, root_build_dir)
 -    }
- 
+
 -    cc = "${prefix}/clang"
 -    cxx = "${prefix}/clang++"
 +    cc = "cc"
@@ -55,6 +55,6 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/toolchain/gcc_toolchain.gni
 +    readelf = "readelf"
 +    ar = "ar"
 +    nm = "nm"
- 
+
      forward_variables_from(invoker, "*", [ "toolchain_args" ])
- 
+

@@ -15,7 +15,7 @@ Index: codex-rs/tui/src/clipboard_copy.rs
  //! so the copy worker can retain it for the lifetime of the TUI. On other platforms the lease
  //! is always `None`.
 @@ -142,19 +142,19 @@ fn copy_to_clipboard(
- 
+
  /// Keeps a platform clipboard owner alive when the backend requires one.
  ///
 -/// On Linux/X11 and some Wayland compositors, clipboard contents are served by the
@@ -31,7 +31,7 @@ Index: codex-rs/tui/src/clipboard_copy.rs
 +    #[cfg(any(target_os = "linux", target_os = "openbsd"))]
      _clipboard: Option<arboard::Clipboard>,
  }
- 
+
  impl ClipboardLease {
 -    #[cfg(target_os = "linux")]
 +    #[cfg(any(target_os = "linux", target_os = "openbsd"))]

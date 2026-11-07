@@ -8,7 +8,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/src/cppgc.rs
 @@ -451,11 +451,26 @@ impl<T: GarbageCollected> GetRustObj<T>
    }
  }
- 
+
 +// C++ stores a compressed uint32_t or an uncompressed pointer. The binding
 +// size selects the alignment; MaybeUninit keeps the slot opaque to Rust.
 +trait MemberStorage {
@@ -30,6 +30,6 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/src/cppgc.rs
 +      struct [< $name Inner >](
 +        <[u8; crate::binding:: [< cppgc__ $name _SIZE >]] as MemberStorage>::Aligned,
 +      );
- 
+
        impl [< $name Inner >] {
          fn new(ptr: *mut RustObj) -> Self {

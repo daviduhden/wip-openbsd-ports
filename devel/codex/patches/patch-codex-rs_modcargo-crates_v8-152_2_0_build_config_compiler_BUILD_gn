@@ -9,7 +9,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/config/compiler/BUILD.gn
    # debugging tools.
 -  simple_template_names = is_clang && !is_win && !is_apple
 +  simple_template_names = is_clang && !is_win && !is_apple && !is_bsd
- 
+
    # This switch is used to enable -Wexit-time-destructors by default. This
    # warning serves as a flip switch to allow a gradual migration of targets
 @@ -314,13 +314,16 @@ config("default_include_dirs") {
@@ -28,12 +28,12 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/config/compiler/BUILD.gn
 +    ldflags = [ "-Wl,-z,notext", "-Wl,--strip-all" ]
 +  }
  }
- 
+
  # compiler ---------------------------------------------------------------------
 @@ -440,6 +443,10 @@ config("compiler") {
      # --------------------------------
      cflags += [ "-fno-strict-aliasing" ]  # See http://crbug.com/32204
- 
+
 +    if (is_openbsd) {
 +      ldflags += [ "-Wl,-z,wxneeded" ]
 +    }
@@ -56,7 +56,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/config/compiler/BUILD.gn
 @@ -619,7 +626,7 @@ config("compiler") {
      }
    }
- 
+
 -  if (is_clang) {
 +  if (is_clang && !is_bsd) {
      cflags += [ "-fcrash-diagnostics-dir=" + clang_diagnostic_dir ]
@@ -82,7 +82,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/config/compiler/BUILD.gn
        asmflags = [ "-Wa,-fdebug-compilation-dir,." ]
      }
 @@ -1479,7 +1487,7 @@ config("compiler_deterministic") {
- 
+
  config("clang_revision") {
    if (is_clang && clang_base_path == default_clang_base_path &&
 -      current_os != "zos") {
@@ -96,7 +96,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/config/compiler/BUILD.gn
    sanitizer = "array-bounds"
 -  condition = !(is_asan && target_cpu == "x86") && !is_wasm
 +  condition = !(is_asan && target_cpu == "x86") && !is_wasm && !is_bsd
- 
+
    # Because we've enabled array-bounds sanitizing we also want to suppress
    # the related warning about "unsafe-buffer-usage-in-static-sized-array",
 @@ -1606,7 +1614,7 @@ ubsan_hardening("c_array_bounds") {
@@ -106,7 +106,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/config/compiler/BUILD.gn
 -  condition = !is_wasm
 +  condition = !is_wasm && !is_bsd
  }
- 
+
  config("rustc_revision") {
 @@ -1947,7 +1955,11 @@ config("default_warnings") {
        cflags += [
@@ -114,7 +114,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/config/compiler/BUILD.gn
          "-Wno-uninitialized-const-pointer",
 +      ]
 +    }
- 
+
 +    if (!is_wasm && !is_bsd) {
 +      cflags += [
          # TODO(crbug.com/495753203): Fix and re-enable.
@@ -159,15 +159,15 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/config/compiler/BUILD.gn
 -        [ "{{target_out_dir}}/{{label_name}}/{{source_name_part}}.dwo" ]
    }
  }
- 
+
 @@ -2935,7 +2943,7 @@ config("symbols") {
      }
- 
+
      if (current_os != "zos") {
 -      cflags += [ "-g2" ]
 +      cflags += [ "-g0" ]
      }
- 
+
      if (is_clang && !is_tsan && !is_asan && !use_dwarf5) {
 @@ -2958,7 +2966,7 @@ config("symbols") {
      # Disable debugger index for Android, which uses lldb. lldb can create (and
@@ -181,7 +181,7 @@ Index: codex-rs/modcargo-crates/v8-152.2.0/build/config/compiler/BUILD.gn
 @@ -2998,7 +3006,7 @@ config("symbols") {
      cflags += [ "-gomit-unreferenced-methods" ]
    }
- 
+
 -  if (is_clang) {
 +  if (is_clang && !is_bsd) {
      if (is_apple) {

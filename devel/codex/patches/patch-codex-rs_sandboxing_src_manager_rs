@@ -5,7 +5,7 @@ Index: codex-rs/sandboxing/src/manager.rs
 --- codex-rs/sandboxing/src/manager.rs.orig
 +++ codex-rs/sandboxing/src/manager.rs
 @@ -189,6 +189,8 @@ impl PendingSandboxedExecRequest {
- 
+
  #[derive(Debug)]
  pub enum SandboxTransformError {
 +    #[cfg(target_os = "openbsd")]

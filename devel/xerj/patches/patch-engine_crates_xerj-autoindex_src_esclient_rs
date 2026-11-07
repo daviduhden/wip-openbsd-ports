@@ -1,0 +1,15 @@
+Validate HTTPS certificates before sending index data or API keys.
+Use the configured native trust store instead of accepting every
+certificate, including for remote or redirected endpoints.
+
+Index: engine/crates/xerj-autoindex/src/esclient.rs
+--- engine/crates/xerj-autoindex/src/esclient.rs.orig
++++ engine/crates/xerj-autoindex/src/esclient.rs
+@@ -1272,7 +1272,6 @@ impl Es {
+         // URL keeps them, including NO_PROXY. Same rule as `xerj mcp`.
+         let http = node_blocking_builder(url)
+             .timeout(Duration::from_secs(300))
+-            .danger_accept_invalid_certs(true)
+             .build()
+             .context("build http client")?;
+         Ok(Es {

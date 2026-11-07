@@ -33,6 +33,11 @@ TLS-terminating proxy.  A self-signed certificate is generated only when
 TLS is enabled without certificate paths; supply a real certificate for
 any non-local service.
 
+The autoindex and corpus clients validate HTTPS certificates before sending
+index data or API keys. Self-signed servers require their certificate
+authority to be trusted by the client; an untrusted certificate is rejected
+even on loopback. The port removes upstream's implicit certificate bypass.
+
 Data, models and service
 ------------------------
 
@@ -46,6 +51,32 @@ A neural model (about 90 MB) is fetched only when `--embed-mode neural`
 is selected or configured.  Pre-download it or use a local model
 directory when the service has no outbound network.
 
+OpenBSD has no RLIMIT_AS, so isolated PDF and spreadsheet workers cannot
+apply their upstream address-space cap. The spreadsheet CPU limit and
+worker process-group cleanup remain; PDF workers retain their timeout.
+This is not a memory sandbox. Automatic total/available RAM and RSS probes
+are also unavailable on OpenBSD. Set memory and worker budgets explicitly
+rather than assuming that a memory-derived limit is enforced.
+
+The rc.101 source tag still declares rc.100 in its Cargo workspace, so
+--version reports rc.100. The package version identifies the rc.101 tag;
+the port preserves upstream's source metadata.
+
 No rc.d service or dedicated user is installed in this initial port.
 Runtime permissions, HOME-dependent pointer files, signal handling and
 pledge/unveil behaviour still need validation on OpenBSD.
+
+The standard OpenBSD PDF and legacy XLS parser workers close inherited
+non-protocol descriptors, unveil only the input file for reading, and
+pledge stdio/rpath before parsing it. Worker startup fails if either
+restriction cannot be installed. The supervisor clears the environment
+for these same-binary workers so server credentials are not inherited.
+Neither policy permits execution, networking or file modification.
+
+These restrictions cover the fresh parser workers, not the supervisor,
+other extractors, or arbitrary programs selected through the trusted
+XERJ_PDF_WORKER_BIN and XERJ_XLS_WORKER_BIN developer overrides. The
+supervisor remains responsible for file selection and command execution.
+Bounded output, timeouts and CPU limits do not provide an address-space
+limit on OpenBSD. Native validation of parser resources, signal handling,
+non-UTF-8 paths and symlink access remains required.

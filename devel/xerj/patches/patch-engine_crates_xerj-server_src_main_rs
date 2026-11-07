@@ -1,0 +1,41 @@
+Dispatch spreadsheet workers before Unicode argument normalization.
+Accept native file names just like PDF workers, before Tokio starts.
+
+Index: engine/crates/xerj-server/src/main.rs
+--- engine/crates/xerj-server/src/main.rs.orig
++++ engine/crates/xerj-server/src/main.rs
+@@ -3070,6 +3070,14 @@ fn main() -> Result<()> {
+         std::process::exit(xerj_autoindex::extract::pdf::run_worker_cli());
+     }
+ 
++    // Like PDF workers, dispatch before Unicode argv processing and Tokio.
++    // A native workbook path is not required to be valid UTF-8.
++    if std::env::args_os().nth(1).as_deref()
++        == Some(std::ffi::OsStr::new(xerj_autoindex::extract::xls::WORKER_ARG))
++    {
++        std::process::exit(xerj_autoindex::extract::xls::run_worker_cli());
++    }
++
+     // `xerj --url URL corpus index name` used to die here as an unknown
+     // server flag. Move those flags behind the subcommand before any
+     // dispatch reads argv.
+@@ -3078,19 +3086,6 @@ fn main() -> Result<()> {
+         is_top_level_command,
+     ));
+ 
+-    // The isolated legacy-`.xls` BIFF reader. calamine 0.26.1 panics on crafted
+-    // records (short `Lbl`/`ExternSheet`) and the release profile is
+-    // `panic = abort`, so the read runs here, in a short-lived rlimit-capped
+-    // child, where a crash dies with the child instead of aborting the indexer.
+-    // Dispatched before the Tokio pool for the same smallness reason as the PDF
+-    // worker above.
+-    if matches!(
+-        xerj_common::argv::subcommand().as_deref(),
+-        Some(xerj_autoindex::extract::xls::WORKER_ARG)
+-    ) {
+-        std::process::exit(xerj_autoindex::extract::xls::run_worker_cli());
+-    }
+-
+     // `xerj mcp` — MCP stdio server (newline-delimited JSON-RPC on
+     // stdin/stdout), proxying to an already-running XERJ node.
+     //

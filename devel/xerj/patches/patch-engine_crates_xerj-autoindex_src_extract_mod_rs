@@ -1,0 +1,16 @@
+Restrict fresh OpenBSD parser workers to their single input file.
+Close inherited descriptors and clear the normal worker environment.
+Retain existing limits, bounded IPC and OpenBSD resource adaptations.
+
+Index: engine/crates/xerj-autoindex/src/extract/mod.rs
+--- engine/crates/xerj-autoindex/src/extract/mod.rs.orig
++++ engine/crates/xerj-autoindex/src/extract/mod.rs
+@@ -17,6 +17,8 @@ pub mod logs;
+ pub mod man;
+ pub mod mbox;
+ pub(crate) mod opc;
++#[cfg(target_os = "openbsd")]
++mod openbsd_worker;
+ pub mod pdf;
+ pub mod pptx;
+ #[cfg(unix)]

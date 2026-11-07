@@ -1,10 +1,24 @@
-Do not apply RLIMIT_AS on OpenBSD, which has no such resource
-limit.  The CPU limit and process-group isolation remain in force.
+Restrict fresh OpenBSD parser workers to their single input file.
+Close inherited descriptors and clear the normal worker environment.
+Retain existing limits, bounded IPC and OpenBSD resource adaptations.
 
 Index: engine/crates/xerj-autoindex/src/extract/xls.rs
 --- engine/crates/xerj-autoindex/src/extract/xls.rs.orig
 +++ engine/crates/xerj-autoindex/src/extract/xls.rs
-@@ -534,12 +534,17 @@ fn set_worker_rlimits() -> std::io::Resu
+@@ -331,6 +331,12 @@ fn run_worker(
+         .context("locate the xerj binary for isolated .xls extraction")?;
+ 
+     let mut command = Command::new(exe);
++    // Do not expose server credentials to the standard parser worker.
++    // Explicit developer executables remain trusted, outside this boundary.
++    #[cfg(target_os = "openbsd")]
++    if std::env::var_os(WORKER_BIN_ENV).is_none() {
++        command.env_clear();
++    }
+     command
+         .arg(WORKER_ARG)
+         .arg(path.as_os_str())
+@@ -534,12 +540,17 @@ fn set_worker_rlimits() -> std::io::Resu
              }
          }};
      }
@@ -28,3 +42,16 @@ Index: engine/crates/xerj-autoindex/src/extract/xls.rs
      // Soft limit sends SIGXCPU; hard limit (a touch higher) escalates to SIGKILL.
      clamp!(
          libc::RLIMIT_CPU,
+@@ -626,6 +637,12 @@ pub fn run_worker_cli() -> i32 {
+     let path = std::path::PathBuf::from(path);
+     let name = std::path::PathBuf::from(name);
+ 
++    #[cfg(target_os = "openbsd")]
++    if let Err(error) = super::openbsd_worker::restrict(&path) {
++        eprintln!("cannot restrict parser worker: {error:#}");
++        return 1;
++    }
++
+     use std::io::Write;
+     let stdout = std::io::stdout();
+     let mut out = std::io::BufWriter::new(stdout.lock());

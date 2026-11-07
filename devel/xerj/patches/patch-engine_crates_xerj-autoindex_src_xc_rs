@@ -1,0 +1,15 @@
+Validate HTTPS certificates before sending index data or API keys.
+Use the configured native trust store instead of accepting every
+certificate, including for remote or redirected endpoints.
+
+Index: engine/crates/xerj-autoindex/src/xc.rs
+--- engine/crates/xerj-autoindex/src/xc.rs.orig
++++ engine/crates/xerj-autoindex/src/xc.rs
+@@ -231,7 +231,6 @@ fn fetch_catalog_run_prefixes(url: &str,
+     let http = crate::esclient::node_blocking_builder(url)
+         .connect_timeout(CATALOG_HINT_CONNECT)
+         .timeout(CATALOG_HINT_TIMEOUT)
+-        .danger_accept_invalid_certs(true)
+         .build()
+         .ok()?;
+     let body = json!({

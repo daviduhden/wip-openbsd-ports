@@ -1,0 +1,49 @@
+Restrict fresh OpenBSD parser workers to their single input file.
+Close inherited descriptors and clear the normal worker environment.
+Retain existing limits, bounded IPC and OpenBSD resource adaptations.
+
+Index: engine/crates/xerj-autoindex/src/extract/openbsd_worker.rs
+--- /dev/null
++++ engine/crates/xerj-autoindex/src/extract/openbsd_worker.rs
+@@ -0,0 +1,41 @@
++//! Filesystem and syscall boundary for fresh same-binary parser workers.
++
++use anyhow::{Context, Result, bail};
++use std::ffi::CString;
++use std::os::unix::ffi::OsStrExt;
++use std::path::Path;
++
++pub(super) fn restrict(path: &Path) -> Result<()> {
++    let path = path.canonicalize().context("resolve worker input")?;
++    if !path.metadata().context("inspect worker input")?.is_file() {
++        bail!("worker input must be a regular file");
++    }
++    let input = CString::new(path.as_os_str().as_bytes()).context("invalid worker input path")?;
++    // Dispatch runs before Tokio or parser threads. Only the protocol's
++    // stdin/stdout/stderr descriptors may survive into the parser.
++    loop {
++        // SAFETY: closefrom takes an integer and no borrowed memory.
++        if unsafe { libc::closefrom(3) } == 0 {
++            break;
++        }
++        let error = std::io::Error::last_os_error();
++        match error.raw_os_error() {
++            Some(libc::EINTR) => continue,
++            Some(libc::EBADF) => break,
++            _ => return Err(error).context("close inherited worker descriptors"),
++        }
++    }
++    // SAFETY: input and both literals are live NUL-terminated strings.
++    if unsafe { libc::unveil(input.as_ptr(), c"r".as_ptr()) } != 0 {
++        return Err(std::io::Error::last_os_error()).context("unveil worker input");
++    }
++    // SAFETY: the null pair locks the complete unveil policy.
++    if unsafe { libc::unveil(std::ptr::null(), std::ptr::null()) } != 0 {
++        return Err(std::io::Error::last_os_error()).context("lock worker unveil policy");
++    }
++    // SAFETY: the promise string is static; no exec policy is requested.
++    if unsafe { libc::pledge(c"stdio rpath".as_ptr(), std::ptr::null()) } != 0 {
++        return Err(std::io::Error::last_os_error()).context("pledge parser worker");
++    }
++    Ok(())
++}

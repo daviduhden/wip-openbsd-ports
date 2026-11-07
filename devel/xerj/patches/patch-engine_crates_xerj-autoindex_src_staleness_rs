@@ -1,0 +1,15 @@
+Validate HTTPS certificates before sending index data or API keys.
+Use the configured native trust store instead of accepting every
+certificate, including for remote or redirected endpoints.
+
+Index: engine/crates/xerj-autoindex/src/staleness.rs
+--- engine/crates/xerj-autoindex/src/staleness.rs.orig
++++ engine/crates/xerj-autoindex/src/staleness.rs
+@@ -661,7 +661,6 @@ impl CatalogClient {
+         let http = reqwest::blocking::Client::builder()
+             .timeout(CATALOG_TIMEOUT)
+             .connect_timeout(Duration::from_secs(1))
+-            .danger_accept_invalid_certs(true)
+             .build()
+             .ok()?;
+         let api_key = api_key

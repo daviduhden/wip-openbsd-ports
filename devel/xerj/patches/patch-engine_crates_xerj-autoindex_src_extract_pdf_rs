@@ -1,0 +1,32 @@
+Restrict fresh OpenBSD parser workers to their single input file.
+Close inherited descriptors and clear the normal worker environment.
+Retain existing limits, bounded IPC and OpenBSD resource adaptations.
+
+Index: engine/crates/xerj-autoindex/src/extract/pdf.rs
+--- engine/crates/xerj-autoindex/src/extract/pdf.rs.orig
++++ engine/crates/xerj-autoindex/src/extract/pdf.rs
+@@ -907,6 +907,11 @@ pub fn run_worker_cli() -> i32 {
+         eprintln!("PDF worker protocol error: unexpected arguments");
+         return 2;
+     }
++    #[cfg(target_os = "openbsd")]
++    if let Err(error) = super::openbsd_worker::restrict(&path) {
++        eprintln!("cannot restrict parser worker: {error:#}");
++        return 1;
++    }
+     match extract_in_process(&path) {
+         Ok(records) => {
+             let response = WorkerResponse {
+@@ -943,6 +948,12 @@ fn spawn_worker(path: &Path) -> Result<W
+         .or_else(|| std::env::current_exe().ok())
+         .context("cannot locate the xerj executable for isolated PDF extraction")?;
+     let mut command = Command::new(executable);
++    // Do not expose server credentials to the standard parser worker.
++    // Explicit developer executables remain trusted, outside this boundary.
++    #[cfg(target_os = "openbsd")]
++    if std::env::var_os("XERJ_PDF_WORKER_BIN").is_none() {
++        command.env_clear();
++    }
+     command
+         .arg("__extract-pdf")
+         .arg(path)

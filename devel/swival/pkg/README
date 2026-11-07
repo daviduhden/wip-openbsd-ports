@@ -1,0 +1,12 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+This port uses the host backend. Commands run with the invoking user's
+ordinary permissions. The optional AgentFS and nono backends are not
+provided or validated by this port; no OpenBSD command sandbox is claimed.
+The optional Starlark metaskills require an unavailable Go c-shared build.
+
+LiteLLM is pinned to the version required by Swival, which uses its internal
+APIs. Keep these packages aligned when upgrading. The port retains a JSON
+nesting limit in the Python bridge to bound decoder recursion.

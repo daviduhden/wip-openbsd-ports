@@ -1,5 +1,7 @@
 COMMENT = i2p-only BitTorrent client written in Go
 
+REVISION =	0
+
 MODGO_MODNAME = github.com/majestrate/XD
 MODGO_VERSION = v0.4.8
 

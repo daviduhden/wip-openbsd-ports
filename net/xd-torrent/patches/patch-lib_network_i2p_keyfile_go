@@ -1,0 +1,48 @@
+Store private destinations atomically and preserve key read errors.
+
+Index: lib/network/i2p/keyfile.go
+--- lib/network/i2p/keyfile.go.orig
++++ lib/network/i2p/keyfile.go
+@@ -6,6 +6,7 @@ import (
+ 	"io"
+ 	"net"
+ 	"os"
++	"path/filepath"
+ 	"strings"
+ )
+ 
+@@ -22,10 +23,21 @@ type Keyfile struct {
+ func (k *Keyfile) Store() (err error) {
+ 	if len(k.fname) > 0 {
+ 		var f *os.File
+-		f, err = os.OpenFile(k.fname, os.O_CREATE|os.O_WRONLY, 0600)
+-		if err == nil {
+-			err = k.write(f)
++		f, err = os.CreateTemp(filepath.Dir(k.fname), ".xd-key-*")
++		if err != nil {
++			return err
++		}
++		defer os.Remove(f.Name())
++		if err = k.write(f); err != nil {
++			f.Close()
++			return err
++		}
++		if err = f.Sync(); err != nil {
+ 			f.Close()
++			return err
++		}
++		if err = f.Close(); err == nil {
++			err = os.Rename(f.Name(), k.fname)
+ 		}
+ 	}
+ 	return
+@@ -52,6 +64,9 @@ func (k *Keyfile) write(w io.Writer) (er
+ func (k *Keyfile) read(r io.Reader) (err error) {
+ 	br := bufio.NewReader(r)
+ 	k.privkey, err = br.ReadString(10)
++	if err != nil {
++		return
++	}
+ 	k.pubkey, err = br.ReadString(10)
+ 	k.privkey = strings.Trim(k.privkey, "\n")
+ 	k.pubkey = strings.Trim(k.pubkey, "\n")

@@ -5,13 +5,14 @@ to avoid treating an invalid terminal device as a match.
 Index: src/system/term/find_tty.rs
 --- src/system/term/find_tty.rs.orig
 +++ src/system/term/find_tty.rs
-@@ -25,6 +25,8 @@
+@@ -25,7 +25,9 @@ pub(super) fn ttyname_from_dev() -> io::
  }
- 
+
  fn is_our_tty(metadata: fs::Metadata, tty_dev: DeviceId) -> bool {
 -    metadata.file_type().is_char_device() && metadata.rdev() == tty_dev.inner()
 +    metadata.file_type().is_char_device()
 +        && tty_dev.inner() >= 0
 +        && metadata.rdev() == tty_dev.inner() as u64
  }
- 
+
+ fn ttyname_from_stdioe(tty_dev: DeviceId) -> Option<OsString> {

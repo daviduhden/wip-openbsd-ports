@@ -29,7 +29,7 @@ DIST_TUPLE += github google boringssl \
 		./external/src/grpc/third_party/boringssl-with-bazel
 
 CATEGORIES =	net
-REVISION =		1
+REVISION =		2
 ONLY_FOR_ARCHS =	amd64 arm64 riscv64
 HOMEPAGE =	https://github.com/SChernykh/p2pool
 MAINTAINER =	David Uhden Collado <daviduhden@gmail.com>

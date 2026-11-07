@@ -1,0 +1,18 @@
+Validate TLS certificates and hostnames unless an explicit pin is set.
+
+Index: src/json_rpc_request.cpp
+--- src/json_rpc_request.cpp.orig
++++ src/json_rpc_request.cpp
+@@ -257,8 +257,10 @@ CurlContext::CurlContext(const std::stri
+ 	}
+ 
+ #ifdef WITH_TLS
+-	curl_easy_setopt_checked(m_handle, CURLOPT_SSL_VERIFYPEER, 0L);
+-	curl_easy_setopt_checked(m_handle, CURLOPT_SSL_VERIFYHOST, 0L);
++	// An explicit SPKI pin is an alternative to CA and hostname trust.
++	// Without a pin, use libcurl's normal authenticated TLS policy.
++	curl_easy_setopt_checked(m_handle, CURLOPT_SSL_VERIFYPEER, ssl_fingerprint.empty() ? 1L : 0L);
++	curl_easy_setopt_checked(m_handle, CURLOPT_SSL_VERIFYHOST, ssl_fingerprint.empty() ? 2L : 0L);
+ 
+ 	if (!ssl_fingerprint.empty()) {
+ 		char buf[128] = {};

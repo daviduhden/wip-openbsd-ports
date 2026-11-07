@@ -7,13 +7,13 @@ Index: runtime/help/options.md
 @@ -454,7 +454,7 @@ Here are the available options:
     on BSD it can be "doas." This option can be customized and is only used when
     saving with su.
- 
+
 -    default value: `sudo`
 +    default value: `doas`
- 
+
  * `syntax`: enables syntax highlighting.
- 
-@@ -624,7 +624,7 @@
+
+@@ -624,7 +624,7 @@ so that you can see what the formatting
      "statusformatl": "$(filename) $(modified)$(overwrite)($(line),$(col)) $(status.paste)| ft:$(opt:filetype) | $(opt:fileformat) | $(opt:encoding)",
      "statusformatr": "$(bind:ToggleKeyMenu): bindings, $(bind:ToggleHelp): help",
      "statusline": true,

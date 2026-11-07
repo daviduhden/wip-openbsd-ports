@@ -14,7 +14,7 @@ Index: CMakeLists.txt
 @@ -51,7 +52,20 @@ add_definitions(-D_FIDO_MAJOR=${FIDO_MAJ
  add_definitions(-D_FIDO_MINOR=${FIDO_MINOR})
  add_definitions(-D_FIDO_PATCH=${FIDO_PATCH})
- 
+
 -if(BUILD_SHARED_LIBS)
 +if(USE_SYSTEM_FIDO2)
 +	add_definitions(-DOPENSSL_API_COMPAT=0x10100000L)
@@ -45,17 +45,17 @@ Index: CMakeLists.txt
 +	else()
 +		pkg_search_module(ZLIB zlib)
 +	endif()
- 
+
  	if(NOT CBOR_FOUND AND NOT HAVE_CBOR_H)
  		message(FATAL_ERROR "could not find libcbor")
 @@ -482,7 +502,9 @@ if(BUILD_TESTS)
  	enable_testing()
  endif()
- 
+
 -add_subdirectory(src)
 +if(NOT USE_SYSTEM_FIDO2)
 +	add_subdirectory(src)
 +endif()
- 
+
  if(BUILD_TESTS)
  	add_subdirectory(regress)

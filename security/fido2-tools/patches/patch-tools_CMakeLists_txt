@@ -4,7 +4,7 @@ Index: tools/CMakeLists.txt
 --- tools/CMakeLists.txt.orig
 +++ tools/CMakeLists.txt
 @@ -68,7 +68,12 @@ add_executable(fido2-token
- 
+
  target_link_libraries(fido2-cred ${CRYPTO_LIBRARIES} ${_FIDO2_LIBRARY})
  target_link_libraries(fido2-assert ${CRYPTO_LIBRARIES} ${_FIDO2_LIBRARY})
 -target_link_libraries(fido2-token ${CRYPTO_LIBRARIES} ${_FIDO2_LIBRARY})
@@ -14,6 +14,6 @@ Index: tools/CMakeLists.txt
 +else()
 +	target_link_libraries(fido2-token ${CRYPTO_LIBRARIES} ${_FIDO2_LIBRARY})
 +endif()
- 
+
  install(TARGETS fido2-cred fido2-assert fido2-token
  	DESTINATION ${CMAKE_INSTALL_BINDIR})

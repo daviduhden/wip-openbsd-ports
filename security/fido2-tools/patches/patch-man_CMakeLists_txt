@@ -6,15 +6,15 @@ Index: man/CMakeLists.txt
 @@ -3,317 +3,19 @@
  # license that can be found in the LICENSE file.
  # SPDX-License-Identifier: BSD-2-Clause
- 
+
 -find_program(MANDOC_PATH mandoc)
 -find_program(GZIP_PATH gzip)
 +set(MANDOC_PATH "")
 +set(GZIP_PATH "")
- 
+
  message(STATUS "MANDOC_PATH: ${MANDOC_PATH}")
  message(STATUS "GZIP_PATH: ${GZIP_PATH}")
- 
+
  list(APPEND MAN_SOURCES
 -	eddsa_pk_new.3
 -	es256_pk_new.3
@@ -50,7 +50,7 @@ Index: man/CMakeLists.txt
 -	fido_strerr.3
 -	rs256_pk_new.3
  )
- 
+
 -list(APPEND MAN_ALIAS
 -	eddsa_pk_new eddsa_pk_free
 -	eddsa_pk_new eddsa_pk_from_EVP_PKEY
@@ -321,12 +321,12 @@ Index: man/CMakeLists.txt
 -	rs256_pk_new rs256_pk_to_EVP_PKEY
 -)
 +set(MAN_ALIAS)
- 
+
  list(LENGTH MAN_ALIAS MAN_ALIAS_LEN)
  math(EXPR MAN_ALIAS_MAX "${MAN_ALIAS_LEN} - 2")
 @@ -363,14 +65,16 @@ foreach(f ${MAN_SOURCES})
  endforeach()
- 
+
  macro(define_symlink_target NAME EXT)
 -	foreach(i RANGE 0 ${MAN_ALIAS_MAX} 2)
 -		math(EXPR j "${i} + 1")
@@ -348,7 +348,7 @@ Index: man/CMakeLists.txt
 +	endif()
  	add_custom_target(${NAME} DEPENDS ${${NAME}_LINK_FILES})
  endmacro()
- 
+
 @@ -403,12 +107,14 @@ if(MANDOC_PATH)
  		install(FILES ${PROJECT_BINARY_DIR}/man/${f}.html
  			DESTINATION "${CMAKE_INSTALL_DOCDIR}/html")
@@ -368,7 +368,7 @@ Index: man/CMakeLists.txt
 +		endforeach()
 +	endif()
  endif()
- 
+
  if(GZIP_PATH)
 @@ -424,12 +130,14 @@ if(GZIP_PATH)
  				DESTINATION "${CMAKE_INSTALL_MANDIR}/man3")

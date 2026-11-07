@@ -21,9 +21,9 @@ Index: main.c
  #include "config/lib.h"
  #include "email/lib.h"
 @@ -182,6 +184,223 @@
- 
+
  bool StartupComplete = false; ///< When the config has been read
- 
+
 +struct UnveilRule
 +{
 +  const char *path;
@@ -242,7 +242,7 @@ Index: main.c
 +}
 +
  void show_cli(enum HelpMode mode, bool use_color);
- 
+
  /**
 @@ -1079,6 +1298,7 @@ int main(int argc, char *argv[], char *e
  {
@@ -255,7 +255,7 @@ Index: main.c
 @@ -1128,6 +1348,42 @@ int main(int argc, char *argv[], char *e
    if (!get_user_info(cs))
      goto main_exit;
- 
+
 +  if (!neomutt_unveil(NeoMutt->home_dir, sandbox_tmpdir,
 +                      sizeof(sandbox_tmpdir)))
 +    goto main_curses;

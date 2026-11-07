@@ -1,0 +1,14 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+HTTPS requests to private prediction endpoints verify the certificate
+chain and the endpoint's DNS name or IP address. The port removes implicit
+verification bypasses, including authenticated Private Service Connect
+requests. A private network does not establish a TLS peer's identity.
+
+Configure a trusted CA and use an endpoint name present in its certificate.
+Requests-based PSC sessions honor REQUESTS_CA_BUNDLE; urllib3-based private
+endpoint requests use the Python SSL default trust configuration, including
+SSL_CERT_FILE and SSL_CERT_DIR. Self-signed or mismatched certificates are
+rejected. Endpoints explicitly using HTTP remain unencrypted.

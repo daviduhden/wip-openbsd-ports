@@ -4,6 +4,8 @@ MODPY_DISTV =	2.7.0
 DISTNAME =	google_cloud_aiplatform-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 
+REVISION =	0
+
 CATEGORIES =	devel
 
 # Apache 2.0

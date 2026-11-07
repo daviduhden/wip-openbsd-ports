@@ -1,0 +1,65 @@
+Verify HTTPS peer certificates for private prediction endpoints.
+Do not disable CA and hostname checks on authenticated PSC requests.
+Private endpoints need a trusted CA and a matching DNS or IP identity.
+
+Index: google/cloud/aiplatform/models.py
+--- google/cloud/aiplatform/models.py.orig
++++ google/cloud/aiplatform/models.py
+@@ -3746,7 +3746,7 @@ class PrivateEndpoint(Endpoint):
+                 "Please ensure the Endpoint being retrieved is a PrivateEndpoint."
+             )
+
+-        self._http_client = urllib3.PoolManager(cert_reqs="CERT_NONE")
++        self._http_client = urllib3.PoolManager(cert_reqs="CERT_REQUIRED")
+         self._authorized_session = None
+
+     @property
+@@ -4033,7 +4033,7 @@ class PrivateEndpoint(Endpoint):
+             credentials=credentials,
+         )
+
+-        endpoint._http_client = urllib3.PoolManager(cert_reqs="CERT_NONE")
++        endpoint._http_client = urllib3.PoolManager(cert_reqs="CERT_REQUIRED")
+         endpoint._authorized_session = None
+
+         return endpoint
+@@ -4212,7 +4212,6 @@ class PrivateEndpoint(Endpoint):
+                 self._authorized_session = google_auth_requests.AuthorizedSession(
+                     self.credentials,
+                 )
+-                self._authorized_session.verify = False
+
+             if parameters:
+                 data = json.dumps({"instances": instances, "parameters": parameters})
+@@ -4317,7 +4316,6 @@ class PrivateEndpoint(Endpoint):
+                 self._authorized_session = google_auth_requests.AuthorizedSession(
+                     self.credentials,
+                 )
+-                self._authorized_session.verify = False
+
+             url = f"https://{endpoint_override}/v1/projects/{self.project}/locations/{self.location}/endpoints/{self.name}:rawPredict"
+             return self._authorized_session.post(
+@@ -4397,7 +4395,6 @@ class PrivateEndpoint(Endpoint):
+                 self._authorized_session = google_auth_requests.AuthorizedSession(
+                     self.credentials,
+                 )
+-                self._authorized_session.verify = False
+
+             url = f"https://{endpoint_override}/v1/projects/{self.project}/locations/{self.location}/endpoints/{self.name}:streamRawPredict"
+             with self._authorized_session.post(
+@@ -4405,7 +4402,6 @@ class PrivateEndpoint(Endpoint):
+                 data=body,
+                 headers=headers,
+                 stream=True,
+-                verify=False,
+             ) as resp:
+                 for line in resp.iter_lines():
+                     yield line
+@@ -4502,7 +4498,6 @@ class PrivateEndpoint(Endpoint):
+                 self._authorized_session = google_auth_requests.AuthorizedSession(
+                     self.credentials,
+                 )
+-                self._authorized_session.verify = False
+             if len(request_path) < 0 or request_path[0] != "/":
+                 raise ValueError(
+                     "container path must be a string that starts with a forward slash."

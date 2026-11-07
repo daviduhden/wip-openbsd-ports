@@ -19,6 +19,6 @@ Index: lib/Xm/VirtKeys.c
 +    return;
 +
 +  EffectiveSMMask = EffectiveStdModMask( dpy, kc_map, ks_per_kc);
- 
+
    /* Get the modifiers from the actual event */
    Modifiers VirtualStdMods = 0;

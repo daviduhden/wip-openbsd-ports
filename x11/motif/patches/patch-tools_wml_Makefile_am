@@ -5,12 +5,12 @@ work with make(1).
 Index: tools/wml/Makefile.am
 --- tools/wml/Makefile.am.orig
 +++ tools/wml/Makefile.am
-@@ -1,5 +1,8 @@ MAINTAINERCLEANFILES = Makefile.in
+@@ -1,5 +1,8 @@
  MAINTAINERCLEANFILES = Makefile.in
- 
+
 +# GNU make defines RM; BSD make does not.
 +RM = rm -f
 +
  EXTRA_DIST = README wmllex.c wmllex.l motif.wml Uil.y Uil.c Uil.h UilLexPars.h UilLexPars.c
- 
+
  AM_YFLAGS = -d

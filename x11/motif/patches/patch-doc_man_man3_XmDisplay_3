@@ -3,7 +3,7 @@ Do not use a ^| table marker that OpenBSD groff rejects.
 Index: doc/man/man3/XmDisplay.3
 --- doc/man/man3/XmDisplay.3.orig
 +++ doc/man/man3/XmDisplay.3
-@@ -263,7 +263,7 @@ decision matrix is described in the following table\&.
+@@ -263,7 +263,7 @@ decision matrix is described in the foll
  .TS
  tab() box;
  c| c s s s c

@@ -1,0 +1,28 @@
+Protect existing token files before truncating or writing new secrets.
+On POSIX, require private permissions on the opened descriptor first;
+abort and close it if securing the inode fails.
+
+Index: src/huggingface_hub/utils/_auth.py
+--- src/huggingface_hub/utils/_auth.py.orig
++++ src/huggingface_hub/utils/_auth.py
+@@ -37,8 +37,18 @@ _SECRET_DIR_MODE = 0o700
+ def _write_secret(path: Path, content: str) -> None:
+     """Write content to file, restricting both the file and its parent directory to owner-only on POSIX systems."""
+     path.parent.mkdir(parents=True, exist_ok=True, mode=_SECRET_DIR_MODE)
+-    fd = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, _SECRET_FILE_MODE)
+-    with os.fdopen(fd, "w") as f:
++    fd = os.open(str(path), os.O_WRONLY | os.O_CREAT, _SECRET_FILE_MODE)
++    try:
++        if os.name != "nt":
++            # Protect an existing token inode before truncating it or writing
++            # a new secret. A failed permission change must abort the write.
++            os.fchmod(fd, _SECRET_FILE_MODE)
++        stream = os.fdopen(fd, "w")
++    except BaseException:
++        os.close(fd)
++        raise
++    with stream as f:
++        f.truncate(0)
+         f.write(content)
+     try:
+         path.chmod(_SECRET_FILE_MODE)

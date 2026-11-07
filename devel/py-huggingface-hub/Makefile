@@ -4,6 +4,8 @@ MODPY_DISTV =	1.33.0
 DISTNAME =	huggingface_hub-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 
+REVISION =	0
+
 CATEGORIES =	devel
 
 # Apache-2.0

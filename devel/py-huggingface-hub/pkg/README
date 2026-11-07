@@ -1,0 +1,11 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+Token and stored-token files use mode 0600. The port secures an existing
+file through its descriptor before truncation or writing; a permission
+failure now aborts the write instead of updating an exposed token file.
+Keep the configured token directory private and owned by the invoking user.
+
+CLI extensions and subprocess-backed helpers run with the invoking user's
+authority. The remote Jobs sandbox is not a local OpenBSD process sandbox.

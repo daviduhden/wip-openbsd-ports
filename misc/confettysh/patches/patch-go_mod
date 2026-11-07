@@ -8,11 +8,11 @@ changes; the dependency set is unchanged.
 Index: go.mod
 --- go.mod.orig
 +++ go.mod
-@@ -1,6 +1,6 @@ module github.com/charmbracelet/confettysh
+@@ -1,6 +1,6 @@
  module github.com/charmbracelet/confettysh
- 
+
 -go 1.18
 +go 1.21
- 
+
  require (
  	github.com/charmbracelet/bubbletea v1.2.4

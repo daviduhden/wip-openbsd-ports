@@ -1,0 +1,18 @@
+Preserve the allocated buffer when a growth allocation fails.
+Losing its only pointer leaks memory and prevents later cleanup.
+
+Index: nuklear.h
+--- nuklear.h.orig
++++ nuklear.h
+@@ -8733,8 +8733,9 @@ nk_buffer_alloc(struct nk_buffer *b, enu
+         /* buffer is full so allocate bigger buffer if dynamic */
+         capacity = (nk_size)((float)b->memory.size * b->grow_factor);
+         capacity = NK_MAX(capacity, nk_round_up_pow2((nk_uint)(b->allocated + size)));
+-        b->memory.ptr = nk_buffer_realloc(b, capacity, &b->memory.size);
+-        if (!b->memory.ptr) return 0;
++        memory = nk_buffer_realloc(b, capacity, &b->memory.size);
++        if (!memory) return 0;
++        b->memory.ptr = memory;
+
+         /* align newly allocated pointer */
+         if (type == NK_BUFFER_FRONT)

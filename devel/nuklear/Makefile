@@ -4,6 +4,8 @@ GH_ACCOUNT =		Immediate-Mode-UI
 GH_PROJECT =		Nuklear
 GH_TAGNAME =		v4.13.4
 PKGNAME =		nuklear-${GH_TAGNAME:S/v//}
+REVISION =	0
+
 CATEGORIES =		devel
 HOMEPAGE =		https://github.com/Immediate-Mode-UI/Nuklear
 

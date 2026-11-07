@@ -1,0 +1,15 @@
+End scanning on read errors as well as normal end of file.
+Otherwise oversized lines and failed reads can loop indefinitely.
+
+Index: parser/scanner.go
+--- parser/scanner.go.orig
++++ parser/scanner.go
+@@ -23,7 +23,7 @@ type MakefileScanner struct {
+ func (s *MakefileScanner) Scan() bool {
+ 	s.LineNumber++
+ 	scanResult := s.Scanner.Scan()
+-	if !scanResult && s.Scanner.Err() == nil {
++	if !scanResult {
+ 		s.Finished = true
+ 	}
+ 	return scanResult

@@ -1,0 +1,24 @@
+Close each parsed input and propagate scanner failures.
+Do not accept truncated Makefiles or retain descriptors after errors.
+
+Index: parser/parser.go
+--- parser/parser.go.orig
++++ parser/parser.go
+@@ -93,6 +93,7 @@ func Parse(filepath string) (ret Makefil
+ 	if err != nil {
+ 		return ret, err
+ 	}
++	defer scanner.Close()
+ 
+ 	for {
+ 		switch {
+@@ -129,6 +130,9 @@ func Parse(filepath string) (ret Makefil
+ 		}
+ 
+ 		if scanner.Finished {
++			if scanErr := scanner.Scanner.Err(); scanErr != nil {
++				return ret, fmt.Errorf("read %q: %w", filepath, scanErr)
++			}
+ 			return
+ 		}
+ 	}

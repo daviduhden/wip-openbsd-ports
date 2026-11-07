@@ -28,4 +28,7 @@ BUILD_DEPENDS +=	sysutils/py-packaging>=24.2
 
 # API replay recordings and tokenizer models are absent from the sdist.
 MODPY_PYTEST_ARGS = google/genai/tests/common google/genai/tests/errors
+
+# google-cloud-aiplatform requires google-genai <3.
+PORTROACH =	limit:^2\.
 .include <bsd.port.mk>

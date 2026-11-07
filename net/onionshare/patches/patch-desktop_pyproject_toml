@@ -16,11 +16,11 @@ Index: desktop/pyproject.toml
 +    "werkzeug >= 3.1.8, < 3.2",
      "python-gnupg",
 -    "onionshare_cli",
-+    "onionshare_cli == 2.7",
++    "onionshare_cli == 2.7.2",
  ]
 
  [project.urls]
-@@ -36,7 +36,6 @@ documentation = "https://docs.onionshare.org/"
+@@ -36,7 +36,6 @@ documentation = "https://docs.onionshare
 
  [project.scripts]
  onionshare = 'onionshare:main'
@@ -36,13 +36,13 @@ Index: desktop/pyproject.toml
  ]
 
  [tool.setuptools.package-data]
-@@ -57,9 +57,6 @@ onionshare = [
-     "resources/locale/*",
+@@ -58,9 +58,6 @@ onionshare = [
      "resources/countries/*",
  ]
--
+
 -[tool.poetry.dependencies]
 -onionshare_cli = { path = "../cli", develop = true }
-
+-
  [tool.poetry.group.dev.dependencies]
  click = "*"
+ black = "*"

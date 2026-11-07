@@ -1,7 +1,7 @@
 COMMENT-main =		share files and services privately over Tor
 COMMENT-gui =		Qt interface for OnionShare
 
-MODPY_DISTV =		2.7
+MODPY_DISTV =		2.7.2
 DISTNAME =		onionshare-${MODPY_DISTV}
 CATEGORIES =		net
 HOMEPAGE =		https://onionshare.org/

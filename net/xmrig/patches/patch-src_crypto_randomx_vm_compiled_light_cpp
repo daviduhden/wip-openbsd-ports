@@ -6,11 +6,11 @@ Index: src/crypto/randomx/vm_compiled_light.cpp
 +++ src/crypto/randomx/vm_compiled_light.cpp
 @@ -56,6 +56,9 @@ namespace randomx {
  #		endif
- 
+
  		compiler.generateProgramLight(program, config, datasetOffset);
 +#		ifdef XMRIG_SECURE_JIT
 +		compiler.enableExecution();
 +#		endif
- 
+
  		CompiledVm<softAes>::execute();
  	}

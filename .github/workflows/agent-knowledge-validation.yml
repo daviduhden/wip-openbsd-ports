@@ -1,13 +1,13 @@
 name: Agent Knowledge Validation
 
 on:
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: agent-knowledge-validation-${{ github.event.pull_request.number || github.run_id }}
+  group: agent-knowledge-validation-${{ github.run_id }}
   cancel-in-progress: true
 
 jobs:
@@ -24,8 +24,5 @@ jobs:
         run: perl -c scripts/validate-agent-knowledge.pl
       - name: Run canonical contract tests
         run: prove -v tests/agent_knowledge_validator
-      - name: Run canonical range validation
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: perl scripts/validate-agent-knowledge.pl --scope range --base "$BASE_SHA" --head "$HEAD_SHA"
+      - name: Run canonical worktree validation
+        run: perl scripts/validate-agent-knowledge.pl --scope worktree

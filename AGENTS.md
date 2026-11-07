@@ -330,9 +330,10 @@ local Markdown links and referenced paths, run
 complete diff. The validator checks changed paths, substantive instruction
 diffs, basic skill structure, and resolvable local Markdown links; it cannot
 judge semantic relevance, which requires human review. Its default comparison
-is against `HEAD`; use `--scope range --base BASE_REF --head HEAD_REF` for CI or
-branch review. The GitHub PR workflow runs the contract tests and the range
-validator; run the same commands locally before delivery.
+is against `HEAD`; use `--scope range --base BASE_REF --head HEAD_REF` for
+branch review. The GitHub workflow runs only on manual `workflow_dispatch` and
+runs the contract tests and the worktree validator; run the same commands
+locally before delivery.
 
 Every task is blocked from completion until repository changes include at
 least one relevant, substantive instruction or skill update, the validator
@@ -362,8 +363,8 @@ adopting repositories. Repository-specific requirements belong in the
 documented TOML configuration or a stable `AKX...` extension, never in a
 private fork of the shared rules. Do not reintroduce Python for project
 tooling: `lang/python` and the `py-*` ports are upstream port content, not
-repository scripts. The GitHub PR workflow runs the same tests and range command;
-it does not edit files or require secrets.
+repository scripts. The manually dispatched GitHub workflow runs the same tests
+and the worktree command; it does not edit files or require secrets.
 
 ### Mandatory Definition of Done
 

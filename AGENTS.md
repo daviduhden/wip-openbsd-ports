@@ -62,6 +62,25 @@ must include a static OpenBSD compatibility review using
 10. Document the remaining risk, unsupported features, and the checks that
     still require a native OpenBSD host. Static review is not runtime proof.
 
+## Collection-wide static security audits
+
+Use the security skill's collection-audit procedure before modifying source.
+Inventory every port from `fetch-ports.ksh --list`, including independent
+subports, and compare exact upstream inputs, official `-current` and local
+customizations. Keep original, official-patched, local-patched, development,
+review and final results in separate `mktemp -d` trees; only reviewed final
+integration may write the checkout. Use specialized authors and independent
+reviewers for every port, including ports needing no changes.
+
+A static-only audit does not authorize configure, compilation, linking,
+project execution, tests or installation. Preserve upstream versions and
+reserved generated files unless the task explicitly changes that scope.
+Report proposed isolation as a design, not as an implemented sandbox. New
+policies must never contain `exec` or `error`, even through configurable
+strings, macros or `execpromises`; investigate existing uses and document
+blocked architectures without introducing an unrestricted execution broker.
+The security skill owns the detailed lifecycle, dependency and review gates.
+
 ## Shell and Makefile hygiene
 
 - Do not embed Perl or Python in shell scripts, rc.d scripts, Makefiles or
@@ -243,6 +262,15 @@ The detailed update checklist is in
 `.agents/skills/openbsd-port-update/SKILL.md`.
 
 ## Verification and delivery
+
+For updates spanning the collection, follow the repository-wide procedure in
+[openbsd-port-update](.agents/skills/openbsd-port-update/SKILL.md). Account
+for every port returned by the inventory, including unchanged and blocked
+ports, and reconcile independent read-only research before editing. The
+delivery table must record local, official and selected upstream versions,
+patch dispositions, adopted or declined official changes with reasons,
+preserved customizations, deferred generated files and pending checks.
+An unresolved row means that the integral update remains incomplete.
 
 Choose the checks that match the change and record the exact commands,
 environment, and result. At minimum, inspect `git diff --check`, `git status`,

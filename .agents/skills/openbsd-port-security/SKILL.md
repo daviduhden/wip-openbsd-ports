@@ -43,6 +43,14 @@ Read the selected port's Makefile, patches, configuration, `pkg/README`, `pkg/DE
    command sandbox, reject it before any native-launch shortcut and at both
    session creation and exec preparation so app-server and direct CLI paths
    cannot bypass the guard.
+   Keep the Codex regression harness aligned with that missing-backend
+   behavior: test both named and built-in managed profiles, including
+   network-enabled profiles, require the actual backend-refusal diagnostic
+   and verify that a child marker was not created. Use the same child in an
+   explicit full-access control. Timeout, signal, command-not-found and
+   harness setup failures do not prove rejection. Retire old positive
+   confinement/compiler cases when no supported sandbox can execute them;
+   successful refusal checks still return 77 for unsupported OS isolation.
    For Codex updates, separately audit config loading, session creation,
    direct CLI execution, app-server/daemon execution, and PTY child launches.
    The current OpenBSD port has no native command sandbox: managed filesystem
@@ -61,9 +69,11 @@ Read the selected port's Makefile, patches, configuration, `pkg/README`, `pkg/DE
    mount. Add `USE_WXNEEDED` only when a component genuinely requires a
    simultaneous writable and executable mapping and no secure transition is
    available. RandomX enables `RANDOMX_FLAG_SECURE` on OpenBSD through
-   `jit_compiler.hpp`, so do not add the flag pre-emptively. Codex/V8 is an
-   existing exception requiring investigation, not a default for Rust or other
-   ports. Do not weaken W^X globally or edit mounts/fstab automatically.
+   `jit_compiler.hpp`, so do not add the flag pre-emptively. Codex uses a
+   reviewed interpreter-only production path on OpenBSD;
+   recheck allocator and explicit JIT-enable reachability before restoring
+   executable-memory exceptions or changing V8 inputs. Do not weaken W^X
+   globally or edit mounts/fstab automatically.
    Review privilege separation rather than applying setuid mechanically:
    emwm-utils uses setgid `auth`, drops the effective auth group before
    starting children, and reacquires it only around `auth_userokay(3)`;
@@ -147,6 +157,72 @@ Do not grant `sendfd`/`recvfd` unless a sendmsg/recvmsg or explicit
 descriptor-passing call site exists; NeoMutt has none. Leave
 `execpromises` unset. Review pledge's exec behavior and unveil's removal on
 exec before restoring external commands.
+
+## Collection-wide static audit procedure
+
+Before authoring changes, build an individual inventory for every maintained
+port: version, languages, build system, direct and vendored dependencies,
+actual crypto backend, patches, customizations, privileged operations and
+existing sandbox. Inventory multicall applets and independently installed
+subports as separate execution paths. Rank exposure to order the work, never
+to exclude a port. Preserve versions during a security-only audit.
+
+Use `mktemp -d` with separate original, official-patched, local-patched,
+development, sandbox, regenerated-patch, report and final-result trees.
+Retain exact distfiles and pinned dependency inputs for three-way comparison.
+Compare official `-current` patches with the matching official source version;
+a failing patch against a different version is not evidence of obsolescence.
+Assign disjoint author scopes and independent reviews for crypto, W^X,
+syscalls, libc/toolchains, pledge, unveil, IPC, process execution and ports
+integration. Cover unchanged ports in the second review too. Integrate only
+statically justified, independently reviewed changes after checking the
+current destination against the saved worktree baseline. Preserve conflicts
+for investigation rather than overwriting concurrent work.
+
+Trace every policy string, configuration override and `execpromises` value.
+Reject forbidden promises before installing a user-configurable policy;
+check embedded NULs and failed string conversion in language bindings so
+`pledge(NULL, NULL)` cannot masquerade as successful restriction. A generic
+policy-binding API is not an installed application policy; trace its concrete
+callers before changing supported arguments. Never add
+`exec` or `error`. If a correct execution-free boundary cannot preserve
+functionality, retain the existing implementation, name the blocker and mark
+hardening incomplete. A general command broker is not privilege separation.
+
+For document workers, dispatch before configuration, credentials and async
+runtime initialization. Close inherited descriptors with checked native
+semantics, minimize inherited environment, canonicalize and validate exact
+inputs, lock unveil and check pledge failure. Bound and drain worker output
+before decoding IPC; audit timeouts, child groups and error cleanup. Describe
+which worker is confined and which supervisor or explicit helper override
+remains trusted. Do not describe CPU limits or timeouts as memory limits.
+For library ports, do not install a process-wide policy on the embedding host.
+
+Check certificate-chain and identity verification separately, including
+HTTP fallbacks and command-line download retries. Treat explicit SPKI pins
+as a separately reviewed authentication mechanism. TLS configuration setter
+failure must propagate with correct ownership cleanup. Never accept a failed
+TOFU persistence write as a successful authenticated connection. Protect
+credential files before truncating or writing, check persistence errors and
+avoid replacing an unreadable existing identity with a new one.
+
+When disabling a JIT to preserve W^X, establish all installed entry points,
+explicit enable paths, WebAssembly exposure and allocator reachability before
+removing `USE_WXNEEDED`. Distinguish reservation maximum permissions from
+active RWX mappings. Document interpreter performance effects and defer ELF
+and kernel behavior to native validation. Do not copy this conclusion to a
+full-featured runtime with reachable JIT paths. An extracted header patch
+also does not fix an untouched archive installed for downstream consumers;
+trace the actual packaged input and generated configuration.
+
+The final Markdown report must contain every port in a crypto/W^X/syscall/
+sandbox/patch matrix, individual compatibility and security findings, patch
+and official-change dispositions, preserved customizations, integration
+status and prioritized native checks. Record previous `exec`/`error` usage,
+removed promises, helper authority and remaining architecture blockers.
+Distinguish static compatibility, static corrections, partial implementation,
+design proposals, incompatibility and pending investigation. Never present
+an unimplemented design or a static review as a functioning sandbox.
 
 ## Acceptance and diagnosis
 

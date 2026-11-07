@@ -30,6 +30,27 @@ Read the target Makefile, inherited `Makefile.inc`, generated includes, upstream
    Queries evaluate Makefiles; inspect unfamiliar hooks first. Preserve subpackage-specific dependencies (`-main`, `-gui`, `-server`, `-data`) and distinguish independent `sysutils/uutils` children from `MULTI_PACKAGES`.
 2. Prefer official packages for available tools and dependencies that need no changes. Once installation is within the authorized task, use `doas pkg_add package-name` with a verified package name and matching repository. Build only dependencies requiring new ports or changes. A dependency such as `devel/libev:configure` or `devel/abseil-cpp:patch` requires source-stage work; a binary package alone may not satisfy it. Do not set global package or make configuration for convenience.
 3. Select the existing module's mechanism. Regenerate `crates.inc`, `modules.inc`, and `cabal.inc`; do not hand-edit generated lists. Treat generator output as a candidate: check successful completion, unexpected diagnostic text, licenses, replacements, and added or removed dependencies before replacing an include.
+   These operations require OpenBSD. During a foreign-host update, inspect
+   the new upstream lockfile and direct requirements, but leave all generated
+   `*.inc`, `distinfo` and packing lists untouched. List each pending file
+   and module target in the update table described by the update skill.
+   Compare requirements with reverse consumers before crossing a major
+   version; a newer registry release does not supersede a justified pin.
+   For Python/Rust bindings, inspect the exact sdist for a lockfile and for
+   prebuilt foreign executables. A repository workspace lock cannot simply
+   replace the lock of a different sdist layout. Prefer the tagged upstream
+   workspace when it provides the reviewed lock and Python sources. Trace
+   both the cargo module's manifest path and maturin's pyproject selection:
+   an explicit manifest can select workspace metadata instead of the Python
+   package metadata. Preserve offline and locked builds, and defer any
+   resulting packing-list changes to OpenBSD.
+   For Cabal sources, inspect the revision field in the existing manifest
+   and the matching module's extraction recipe. Hackage can publish a
+   revised `.cabal` file separately from the source tarball; the module
+   installs that revision before dependency patches run. Reproduce that
+   declared input and the port's line-ending normalization when checking
+   patches statically. A tarball-only failure does not justify dropping a
+   patch or changing dependency bounds.
 4. Keep non-registry dependencies reproducible. Use immutable upstream revisions with `DIST_TUPLE`, appropriate extraction paths, local source replacement patches or module mechanisms, and `distinfo`. Examples are Git Cargo dependencies in uutils and codex, and github-cli's local survey replacement. Do not introduce build-time Git clones, `pip install`, `go get`, or arbitrary package-manager downloads.
    For `devel/codex`, inspect upstream `Cargo.toml`, `Cargo.lock`,
    `rust-toolchain.toml`, `crates.inc`, and official `-current` together.
@@ -39,6 +60,22 @@ Read the target Makefile, inherited `Makefile.inc`, generated includes, upstream
    `crates.inc` or `distinfo` outside OpenBSD. Check the upstream Rust toolchain
    pin against the available OpenBSD ports toolchain.
 5. Update `LIB_DEPENDS` for native libraries and `WANTLIB` for actual linkage; language source manifests do not replace either. Preserve compiler modules and justified bundled-library exceptions. Validate from a fresh work directory after generation; ordinary configure/build must use fetched, checksummed inputs without new network dependency resolution.
+
+### Strict LibreSSL version metadata
+
+Inspect the exact cargo module and `openssl-sys` build script before relying
+on its unknown-LibreSSL fallback. When the base release is unsupported by the
+crate's version table, add only that verified release's metadata mapping and
+retain rejection of unknown future versions. Confirm downstream consumers use
+the actual numeric version and review their FFI cfg branches. Do not disguise
+an unknown release as an older supported profile.
+
+If `MODCARGO_CRATES_KEEP += openssl-sys` prevents a module rewrite, preserve
+other KEEP entries and explicitly retain `OPENSSL_NO_VENDOR=1` with the base
+include/library paths: the module may otherwise omit its environment setup.
+Keep the override effective even when generated includes are deferred. Source
+lockfiles, registry crates and stale generated metadata must be distinguished;
+never hand-edit reserved manifests to conceal their mismatch.
 
 ## Acceptance and diagnosis
 

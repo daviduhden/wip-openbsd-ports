@@ -6,6 +6,8 @@
 *.cabal text eol=lf
 *.sql text eol=lf
 patches/* text eol=lf
+# Unified patch context prefixes a tabbed source line with one space.
+**/patch-* whitespace=-space-before-tab
 files/* text eol=lf
 *.rc text eol=lf
 *.ksh text eol=lf

@@ -163,6 +163,56 @@ Confirm that only intended files changed. Inspect generated includes,
 Report the exact commands, host/release/architecture, work directory, and
 failures. If a stage was not run, say so.
 
+For collection-wide updates, reconcile the final table with the authoritative
+inventory from the update skill. Require a source comparison and a patch
+disposition for every row; distinguish pending investigation from a port
+verified to need no source change. Check that no reserved generated file was
+modified when the task defers regeneration, even if an official copy exists.
+List pending native targets per port rather than reporting the collection as
+package-ready on the strength of static checks.
+
+The canonical agent-knowledge validator discovers instruction files even
+inside ignored source extractions. If imported upstream AGENTS/SKILL files
+cause unrelated structure/link failures, keep them out of the maintained
+instruction review. Validate an isolated local Git clone containing the
+exact HEAD baseline, the complete tracked worktree diff and all non-ignored
+untracked files. Preserve deletions and file modes, compare that snapshot
+with the original, and run the unchanged validator there. Record both the
+original failure and the isolated result; do not weaken the shared rules or
+rewrite upstream instruction files to make them pass.
+
+### Explicit no-execution audit boundary
+
+When the user prohibits project execution and tests, do not invoke configure,
+compiler/linker commands, project help/version probes or test suites. Even
+`perl -c` can run upstream `BEGIN` blocks; inspect such project scripts as
+text instead. Source extraction, diff generation, patch application, repository
+patch-format checks and the unchanged agent-knowledge validator are static
+maintenance operations. Record omitted contract tests as not run, rather than
+claiming the usual complete maintenance check set passed.
+
+Compare maintained paths against an immutable pre-task worktree hash inventory
+so earlier uncommitted changes are not attributed to the audit. Inspect new
+untracked files as well as the full Git diff. Check that reserved `distinfo`,
+`PLIST*`, `*.inc` and CVS metadata remain byte-identical to that baseline.
+A complete individual source review can coexist with unresolved hardening;
+report those two conclusions separately and name every remaining blocker.
+
+### Native regeneration backlog
+
+When maintaining `audit/generated-manifests.txt`, reconcile its rows with
+`fetch-ports.ksh --list` and the latest update/security handoffs. Replace stale
+current-state summaries instead of accumulating contradictory snapshots.
+Distinguish absent or empty files, known regeneration pending, and files whose
+freshness still needs checking. File existence is not validation; a source
+patch alone does not require new checksums or dependency manifests. Preserve
+unclosed older work, recognize every MULTI_PACKAGES list and inherited module,
+and list native build/package checks separately from regeneration. Record new
+installed README entries, blockers and module-specific regeneration targets;
+never close a native regeneration or build item without native evidence.
+Keep this ignored backlog
+as documentation, outside the installable port inventory and Git submissions.
+
 ## Evidence levels
 
 | Level | Evidence | What it does not prove |

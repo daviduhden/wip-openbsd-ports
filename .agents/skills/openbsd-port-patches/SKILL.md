@@ -102,6 +102,35 @@ upstream, and update vendor-version paths. This source-level regeneration is
 static evidence only; verify the resulting patch set with a fresh OpenBSD
 `make patch` before claiming validation.
 
+Use the archive selected by the Makefile: a release asset, PyPI sdist and
+repository tag archive can have different generated files and extraction
+layouts. If research used another archive for the same tag, compare every
+patched target with the actual distfile before accepting its regenerated
+series; version equality alone does not establish source equality.
+
+Preserve source whitespace when regenerating patches. Empty context lines
+may omit their single-space prefix if the resulting series is rechecked.
+The repository's patch-file whitespace attribute disables only Git's
+space-before-tab warning: unified context necessarily adds a space before
+upstream indentation. Keep trailing-whitespace checks active and inspect
+actual added source lines independently; do not reformat upstream code to
+silence warnings about patch context.
+
+During an integral update, this regeneration applies to every retained
+patch, including unchanged-version ports and ports whose official counterpart
+has not been updated. Record each patch as regenerated, added, removed or
+pending; never count a style-only check as source regeneration. Record the
+specific upstream change or retained replacement that justifies a removal.
+
+For a security-only audit without a source version change, regenerate only
+patches requiring corrections; leave correct unchanged patches intact. This
+is distinct from the integral release-update rule above. A changed existing
+target must combine its retained local hunks and the reviewed correction in
+one diff against pristine upstream. Reconstruct the complete main and pinned
+dependency series, including any extraction or line-ending preparation,
+without fuzz, then compare each edited target with the reviewed result.
+Record the exact inputs and logs; application is static evidence only.
+
 ## Acceptance and diagnosis
 
 - No unexpected targets, absolute workstation paths, generated build noise, or unrelated changes appear in the diff. Backports identify their upstream commit and retain relevant notices.

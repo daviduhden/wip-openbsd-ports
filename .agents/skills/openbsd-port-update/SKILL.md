@@ -42,6 +42,11 @@ in `SUBST_VARS`. A port can use several at once.
    `git clean`, or `make clean=all` over work you have not inspected.
 
 2. Read upstream release notes and the full source diff for the new version.
+   Always establish the newest stable upstream release and the official
+   OpenBSD `-current` version, even when neither appears newer locally.
+   Cross-check release listings with tags and the project's changelog or
+   download page: a latest-release endpoint can omit newer stable tags.
+   Conversely, a numeric tag alone does not establish release stability.
    Identify removed or renamed binaries, configuration keys, data formats,
    services, licenses, and dependencies. Check for security fixes that make a
    local patch obsolete. When an official ports update exists, inspect its
@@ -59,6 +64,15 @@ in `SUBST_VARS`. A port can use several at once.
    is unchanged, bump `REVISION` (add `REVISION = 0` when it was absent). Use
    `EPOCH` only when the version ordering genuinely moves backwards, not as a
    substitute for a correct version.
+
+   For an explicit collection-wide request to add `REVISION = 0`, intersect
+   the authoritative inventory with the reviewed official tree and initialize
+   only missing declarations. Preserve already assigned revisions and leave
+   local-only ports alone; adding an initial declaration is not a request to
+   reset existing package revisions. Follow an explicit user-selected zero
+   even when the usual customized-overlay collision rule would choose a
+   higher value, and recheck that rule before packaging. Record the official
+   reference and verify every selected Makefile has exactly one declaration.
 
 4. Fetch and review the new inputs before extraction:
 
@@ -189,10 +203,32 @@ set, compile one translation unit with the implementation macro enabled, and
 keep `pkg/PLIST` unchanged when the header and license are still the only
 installed files.
 
-If `distinfo` cannot be regenerated with OpenBSD `make makesum`, derive the
-SHA-256 and size from the exact release tarball, record the source URL and
-method in the handoff, and require `make checksum` on OpenBSD before
-packaging.  Do not carry an old checksum for a new tag.
+Outside OpenBSD, leave `distinfo`, every packing list and generated `*.inc`
+unchanged, including for single-header ports. Record the exact source URL
+and pending `make makesum`, `make checksum` and `make update-plist` targets.
+An unchanged checksum file after a source bump is deferred metadata, not
+evidence that the new source can be fetched through the framework.
+
+### Repository-wide updates
+
+Discover the full selection with `ksh ./fetch-ports.ksh --list` when the
+host has no `/bin/ksh`; do not change the script's native shebang to work
+around the host. Assign read-only research by disjoint port sets when
+subagents are available, then reconcile their source and official-tree
+evidence before editing. Keep a row for every inventoried port, including
+unchanged, pinned, unavailable and blocked cases. Never infer completion
+from a registry's latest-version field alone.
+
+For each row, record local/official/selected versions, exact source
+references, retained customizations, adopted and declined official changes,
+patch dispositions, deferred generated files and pending native checks.
+An official update between the local and upstream versions is an input to
+the final upstream update, not a reason to stop at the official version.
+Regenerate every retained patch even if the official port has not moved;
+use the patch skill's pristine-source and full-series checks. Do not bump
+a version before the selected source and its compatibility changes have
+been reviewed. Report unresolved ports as incomplete rather than hiding
+them behind a repository-wide success claim.
 
 ### XERJ (`devel/xerj`)
 
@@ -237,6 +273,15 @@ package from the `engine/` Cargo workspace.  Before any update:
 12. Report static inspection separately from `make build`, `make test` and
     runtime evidence.
 
+Trace TLS clients reachable through `xerj-server`, including its autoindex
+and corpus dispatch paths. Preserve certificate verification for remote
+URLs carrying API keys; do not restore upstream's implicit invalid-certificate
+acceptance. A loopback test alone is insufficient when redirects can leave
+that host. Document unsupported OpenBSD memory probes and address-space
+limits, distinguishing the worker timeout and CPU limit from a memory
+sandbox. When an upstream tag and workspace version differ, preserve the
+source metadata and report the package/binary version discrepancy.
+
 ### Codex CLI (`devel/codex`)
 
 When subagents are available, delegate read-only reviews in parallel for the
@@ -258,6 +303,17 @@ runtime shell executables; retain them unless they directly invoke the shell.
 On OpenBSD, an existing `ksh`-as-`Sh` path can use POSIX `-c`/`-lc` and generic
 `Sh` snapshots, but Bash-only command syntax is not translated. Preserve other
 platforms' selection order and test shell startup/snapshot behavior natively.
+
+For security revisions without a release change, keep the selected upstream
+inputs and bump the package revision once for the coherent patch set. Use the
+security skill's collection procedure rather than regenerating unchanged
+correct patches. Preserve Codex's OpenBSD interpreter default until every
+installed explicit-enable path and V8 allocator has been re-audited. For XERJ,
+recheck early native-argument worker dispatch, descriptor/environment cleanup,
+exact-file unveil, bounded IPC and the distinction between restricted document
+workers and the unrestricted supervisor. Explicit worker executable overrides
+remain trusted configuration outside that worker boundary; do not advertise
+application-wide confinement.
 
 ### LibreSSL-native ports
 

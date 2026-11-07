@@ -1,28 +1,29 @@
-- fix include paths to find ports - fix include order to find bundled
-protobuf before port - find versioned abseil libraries globbing.
+Use OpenBSD ports headers and versioned Abseil shared libraries. Keep
+bundled UPB headers before system protobuf headers to avoid mixing
+incompatible protobuf implementations.
 
 Index: setup.py
 --- setup.py.orig
 +++ setup.py
 @@ -353,27 +353,27 @@ if BUILD_WITH_SYSTEM_ZLIB:
- 
+
  if BUILD_WITH_SYSTEM_CARES:
      CORE_C_FILES = filter(lambda x: "third_party/cares" not in x, CORE_C_FILES)
 -    CARES_INCLUDE = (os.path.join("/usr", "include"),)
 +    CARES_INCLUDE = (os.path.join("/usr", "local", "include"),)
- 
+
  if BUILD_WITH_SYSTEM_RE2:
      CORE_C_FILES = filter(lambda x: "third_party/re2" not in x, CORE_C_FILES)
 -    RE2_INCLUDE = (os.path.join("/usr", "include", "re2"),)
 +    RE2_INCLUDE = (os.path.join("/usr", "local", "include", "re2"),)
- 
+
  if BUILD_WITH_SYSTEM_ABSL:
      CORE_C_FILES = filter(
          lambda x: "third_party/abseil-cpp" not in x, CORE_C_FILES
      )
 -    ABSL_INCLUDE = (os.path.join("/usr", "include"),)
 +    ABSL_INCLUDE = (os.path.join("/usr", "local", "include"),)
- 
+
  EXTENSION_INCLUDE_DIRECTORIES = (
      (PYTHON_STEM,)
      + CORE_INCLUDE
@@ -47,5 +48,5 @@ Index: setup.py
 +        for lib in sorted(pathlib.Path("/usr/local/lib").glob("libabsl_*.so.*"))
 +        ))
      )
- 
+
  DEFINE_MACROS = (("_WIN32_WINNT", 0x600),)

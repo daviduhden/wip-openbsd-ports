@@ -16,11 +16,11 @@ Index: tests/integration.rs
 +            1024_u64.pow(4)
 +        };
 +        a.set_len(14 * unit).unwrap();
- 
+
          let b_path = tmp_dir.path().join("b");
          let b = File::create(&b_path).unwrap();
 -        b.set_len(15 * 1024 * 1024 * 1024 * 1024).unwrap();
 +        b.set_len(15 * unit).unwrap();
- 
+
          let dev_null = OpenOptions::new().write(true).open("/dev/null").unwrap();
- 
+

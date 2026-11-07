@@ -13,5 +13,5 @@ Index: src/main.rs
 +        let s = exe_name.to_string_lossy();
 +        OsString::from(s.strip_prefix("uu-").unwrap_or_else(|| s.as_ref()))
      };
- 
+
      match util_name.as_encoded_bytes() {

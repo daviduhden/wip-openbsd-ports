@@ -4,7 +4,10 @@ binary required by upstream tests. Only diff and cmp are installed.
 Index: Cargo.toml
 --- Cargo.toml.orig
 +++ Cargo.toml
-@@ -16,0 +17,8 @@
+@@ -14,6 +14,14 @@ path = "src/lib.rs"
+ name = "diffutils"
+ path = "src/main.rs"
+
 +[[bin]]
 +name = "diff"
 +path = "src/main.rs"
@@ -13,3 +16,6 @@ Index: Cargo.toml
 +name = "cmp"
 +path = "src/main.rs"
 +
+ [dependencies]
+ chrono = "0.4.38"
+ diff = "0.1.13"

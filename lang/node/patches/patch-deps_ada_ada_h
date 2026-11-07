@@ -9,6 +9,6 @@ Index: deps/ada/ada.h
     */
 -  QUERY,
 +  ADAQUERY,
- 
+
    /**
     * @see https://url.spec.whatwg.org/#path-state

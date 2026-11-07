@@ -1,0 +1,23 @@
+Use separate RW and RX closure mappings on OpenBSD.
+Follow the official libffi port rather than attempting an RWX mapping.
+
+Index: deps/libffi/src/closures.c
+--- deps/libffi/src/closures.c.orig
++++ deps/libffi/src/closures.c
+@@ -904,6 +904,7 @@ dlmmap (void *start, size_t length, int
+       return ptr;
+     }
+
++#ifndef __OpenBSD__
+   /* -1 != execfd hints that we already decided to use dlmmap_locked
+      last time.  */
+   if (execfd == -1 && is_mprotect_enabled ())
+@@ -933,6 +934,8 @@ dlmmap (void *start, size_t length, int
+ 	 MREMAP_DUP and prot at this point.  */
+     }
+
++#endif
++
+   pthread_mutex_lock (&open_temp_exec_file_mutex);
+   ptr = dlmmap_locked (start, length, prot, flags, offset);
+   pthread_mutex_unlock (&open_temp_exec_file_mutex);

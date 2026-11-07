@@ -3,10 +3,10 @@ Define DNS classes and types missing from OpenBSD headers.
 Index: src/cares_wrap.h
 --- src/cares_wrap.h.orig
 +++ src/cares_wrap.h
-@@ -444,4 +444,109 @@ QUERY_TYPES(V)
- 
+@@ -472,4 +472,109 @@ QUERY_TYPES(V)
+
  #endif  // defined(NODE_WANT_INTERNALS) && NODE_WANT_INTERNALS
- 
+
 +// arpa/nameser.h does not define these for OpenBSD
 +typedef enum __ns_class {
 +    ns_c_invalid = 0,       /* Cookie. */

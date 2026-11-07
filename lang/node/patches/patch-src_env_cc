@@ -3,10 +3,10 @@ Remove the obsolete OpenBSD executable path workaround.
 Index: src/env.cc
 --- src/env.cc.orig
 +++ src/env.cc
-@@ -910,19 +910,6 @@ std::string Environment::GetExecPath(const std::vector
+@@ -933,19 +933,6 @@ std::string Environment::GetExecPath(con
      exec_path = argv[0];
    }
- 
+
 -  // On OpenBSD process.execPath will be relative unless we
 -  // get the full path before process.execPath is used.
 -#if defined(__OpenBSD__)
@@ -22,4 +22,4 @@ Index: src/env.cc
 -
    return exec_path;
  }
- 
+

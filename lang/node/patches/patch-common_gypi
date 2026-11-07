@@ -5,17 +5,17 @@ rpath is no longer needed because this port uses base LibreSSL.
 Index: common.gypi
 --- common.gypi.orig
 +++ common.gypi
-@@ -46,6 +46,9 @@
- 
+@@ -48,6 +48,9 @@
+
      ##### V8 defaults for Node.js #####
- 
+
 +    # Enable CET / IBT
 +    'v8_enable_cet_ibt': 'true',
 +
      # Turn on SipHash for hash seed generation, addresses HashWick
      'v8_use_siphash': 'true',
- 
-@@ -203,7 +206,6 @@
+
+@@ -196,7 +199,6 @@
              }],
            ],
          },
@@ -23,7 +23,7 @@ Index: common.gypi
          'conditions': [
            ['enable_lto=="true"', {
              'cflags': ['<(lto)'],
-@@ -596,7 +598,7 @@
+@@ -608,7 +610,7 @@
              'standalone_static_library': 1,
            }],
            ['OS=="openbsd"', {
@@ -31,8 +31,8 @@ Index: common.gypi
 +            'cflags': [ '-idirafter /usr/local/include' ],
              'ldflags': [ '-Wl,-z,wxneeded' ],
            }],
-           ['_toolset=="host"', {
-@@ -609,7 +611,7 @@
+           [ 'OS=="zos"', {
+@@ -624,7 +626,7 @@
                  'cflags': [ '-m64' ],
                  'ldflags': [ '-m64' ],
                }],
@@ -41,7 +41,7 @@ Index: common.gypi
                  'conditions': [
                    [ 'clang==0', {
                      'cflags': [ '-mminimal-toc' ],
-@@ -638,7 +640,7 @@
+@@ -653,7 +655,7 @@
                  'cflags': [ '-m64' ],
                  'ldflags': [ '-m64' ],
                }],

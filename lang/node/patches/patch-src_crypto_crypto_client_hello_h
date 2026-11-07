@@ -1,0 +1,23 @@
+Exclude early ClientHello interfaces unavailable in LibreSSL.
+Keep the shared ALPN protocol helpers available for normal TLS.
+
+Index: src/crypto/crypto_client_hello.h
+--- src/crypto/crypto_client_hello.h.orig
++++ src/crypto/crypto_client_hello.h
+@@ -16,6 +16,7 @@ namespace node::crypto {
+ // once a complete ClientHello has been received but before version
+ // negotiation and before any session or ticket resumption.
+ 
++#ifndef LIBRESSL_VERSION_NUMBER
+ enum class ClientHelloResult {
+   kContinue,
+   // Unwind out of the TLS library, leaving the handshake suspended. The
+@@ -106,6 +107,8 @@ inline void SetClientHelloCallback(SSL_C
+ #endif
+ }
+ 
++#endif  // !LIBRESSL_VERSION_NUMBER
++
+ bool AlpnListContains(std::span<const uint8_t> protocols,
+                       std::string_view protocol);
+ 

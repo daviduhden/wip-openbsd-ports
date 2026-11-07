@@ -7,7 +7,7 @@ Index: src/crypto/crypto_util.cc
 @@ -23,6 +23,11 @@
  #include "openssl/provider.h"
  #endif
- 
+
 +#ifdef LIBRESSL_VERSION_NUMBER
 +#include <openssl/conf.h>
 +#include <cstdlib>
@@ -16,7 +16,7 @@ Index: src/crypto/crypto_util.cc
  #if !defined(OPENSSL_IS_BORINGSSL) && OPENSSL_VERSION_PREREQ(3, 4)
  #include <openssl/indicator.h>
  #endif
-@@ -504,6 +509,14 @@ void InitCryptoOnce() {
+@@ -502,6 +507,14 @@ void InitCryptoOnce() {
    Mutex::ScopedLock lock(per_process::cli_options_mutex);
    Mutex::ScopedLock fips_lock(fips_mutex);
  #ifndef OPENSSL_IS_BORINGSSL
@@ -30,23 +30,23 @@ Index: src/crypto/crypto_util.cc
 +#else
    OPENSSL_INIT_SETTINGS* settings = OPENSSL_INIT_new();
    CHECK_NOT_NULL(settings);
- 
-@@ -526,11 +539,14 @@ void InitCryptoOnce() {
+
+@@ -524,11 +537,14 @@ void InitCryptoOnce() {
  #endif
- 
+
    OPENSSL_init_ssl(0, settings);
 +#endif
    InstallFipsIndicatorCallback();
- 
+
    ncrypto::ConfigurePqcEncoding();
 +#ifndef LIBRESSL_VERSION_NUMBER
    OPENSSL_INIT_free(settings);
    settings = nullptr;
 +#endif
- 
+
  #ifndef _WIN32
    if (per_process::cli_options->secure_heap != 0) {
-@@ -539,6 +555,12 @@ void InitCryptoOnce() {
+@@ -537,6 +553,12 @@ void InitCryptoOnce() {
          per_process::cli_options->secure_heap_min)) {
        case DataPointer::InitSecureHeapResult::FAILED:
          fprintf(stderr, "Unable to initialize openssl secure heap.\n");
@@ -59,8 +59,8 @@ Index: src/crypto/crypto_util.cc
          break;
        case DataPointer::InitSecureHeapResult::UNABLE_TO_MEMORY_MAP:
          // Not a fatal error but worthy of a warning.
-@@ -939,6 +961,16 @@ Maybe<void> Decorate(Environment* env,
- 
+@@ -941,6 +963,16 @@ Maybe<void> Decorate(Environment* env,
+
  #ifdef OPENSSL_IS_BORINGSSL
  #define OSSL_ERROR_CODES_MAP_OPENSSL_ONLY(V)
 +#elif defined(LIBRESSL_VERSION_NUMBER)

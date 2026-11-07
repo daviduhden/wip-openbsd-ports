@@ -4,10 +4,10 @@ Upstream commit: 7c165d90f0800b78c92fd0c13690e7b40683026a.
 Index: deps/v8/src/compiler/turboshaft/int64-lowering-reducer.h
 --- deps/v8/src/compiler/turboshaft/int64-lowering-reducer.h.orig
 +++ deps/v8/src/compiler/turboshaft/int64-lowering-reducer.h
-@@ -295,10 +295,10 @@ class Int64LoweringReducer : public Next {
+@@ -295,10 +295,10 @@ class Int64LoweringReducer : public Next
      FATAL("%s", str.str().c_str());
    }
- 
+
 -  std::pair<OptionalV<Word32>, int32_t> IncreaseOffset(OptionalV<Word32> index,
 -                                                       int32_t offset,
 -                                                       int32_t add_offset,
@@ -19,7 +19,7 @@ Index: deps/v8/src/compiler/turboshaft/int64-lowering-reducer.h
      // Note that the offset will just wrap around. Still, we need to always
      // use an offset that is not std::numeric_limits<int32_t>::min() on tagged
      // loads.
-@@ -308,13 +308,17 @@ class Int64LoweringReducer : public Next {
+@@ -308,13 +308,17 @@ class Int64LoweringReducer : public Next
          static_cast<uint32_t>(offset) + static_cast<uint32_t>(add_offset);
      OptionalV<Word32> new_index = index;
      if (!LoadOp::OffsetIsValid(new_offset, tagged_base)) {
@@ -42,7 +42,7 @@ Index: deps/v8/src/compiler/turboshaft/int64-lowering-reducer.h
        }
      }
      return {new_index, new_offset};
-@@ -342,8 +346,8 @@ class Int64LoweringReducer : public Next {
+@@ -347,8 +351,8 @@ class Int64LoweringReducer : public Next
      }
      if (loaded_rep == MemoryRepresentation::Int64() ||
          loaded_rep == MemoryRepresentation::Uint64()) {
@@ -50,10 +50,10 @@ Index: deps/v8/src/compiler/turboshaft/int64-lowering-reducer.h
 -          IncreaseOffset(index, offset, sizeof(int32_t), kind.tagged_base);
 +      auto [high_index, high_offset] = IncreaseOffset(
 +          index, offset, sizeof(int32_t), element_scale, kind.tagged_base);
-       return __ Tuple(
+       return __ MakeTuple(
            Next::ReduceLoad(base, index, kind, MemoryRepresentation::Int32(),
                             RegisterRepresentation::Word32(), offset,
-@@ -378,8 +382,8 @@ class Int64LoweringReducer : public Next {
+@@ -388,8 +392,8 @@ class Int64LoweringReducer : public Next
                          maybe_initializing_or_transitioning,
                          maybe_indirect_pointer_tag);
        // high store

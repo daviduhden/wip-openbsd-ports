@@ -1,0 +1,23 @@
+Exclude early ClientHello interfaces unavailable in LibreSSL.
+Keep the shared ALPN protocol helpers available for normal TLS.
+
+Index: src/crypto/crypto_client_hello.cc
+--- src/crypto/crypto_client_hello.cc.orig
++++ src/crypto/crypto_client_hello.cc
+@@ -4,6 +4,7 @@
+
+ namespace node::crypto {
+
++#ifndef LIBRESSL_VERSION_NUMBER
+ SSL* ClientHelloContext::ssl() const {
+ #ifdef OPENSSL_IS_BORINGSSL
+   return handle_->ssl;
+@@ -99,6 +100,8 @@ std::optional<std::span<const uint8_t>>
+   return data.subspan(2, len);
+ }
+
++#endif  // !LIBRESSL_VERSION_NUMBER
++
+ bool AlpnListContains(std::span<const uint8_t> protocols,
+                       std::string_view protocol) {
+   for (size_t n = 0; n < protocols.size();) {

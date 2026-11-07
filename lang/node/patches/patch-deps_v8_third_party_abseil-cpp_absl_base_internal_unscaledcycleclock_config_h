@@ -4,7 +4,7 @@ Index: deps/v8/third_party/abseil-cpp/absl/base/internal/unscaledcycleclock_conf
 --- deps/v8/third_party/abseil-cpp/absl/base/internal/unscaledcycleclock_config.h.orig
 +++ deps/v8/third_party/abseil-cpp/absl/base/internal/unscaledcycleclock_config.h
 @@ -21,7 +21,7 @@
- 
+
  // The following platforms have an implementation of a hardware counter.
  #if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__) || \
 -    defined(__powerpc__) || defined(__ppc__) || defined(_M_IX86) ||     \

@@ -3,10 +3,10 @@ Disable regexp JIT by default.
 Index: deps/v8/src/flags/flag-definitions.h
 --- deps/v8/src/flags/flag-definitions.h.orig
 +++ deps/v8/src/flags/flag-definitions.h
-@@ -2835,7 +2835,13 @@ DEFINE_BOOL(serialization_statistics, false,
-             "Collect statistics on serialized objects.")
- // Regexp
- DEFINE_BOOL(regexp_optimization, true, "generate optimized regexp code")
+@@ -3287,7 +3287,13 @@ DEFINE_BOOL(regexp_optimization, true, "
+ DEFINE_BOOL(regexp_unroll, true, "unroll small {} repeats when optimizing")
+ DEFINE_BOOL(regexp_quick_check, true,
+             "generate quickcheck code when optimizing")
 +#ifdef V8_OS_OPENBSD
 +// OpenBSD: Irregexp JIT rewrites a C++ return address, which conflicts with
 +// retguard. Use bytecode interpretation by default.

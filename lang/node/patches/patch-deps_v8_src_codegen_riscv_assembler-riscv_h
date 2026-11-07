@@ -3,7 +3,7 @@ Match RISC-V assembler immediates to pointer-sized integers.
 Index: deps/v8/src/codegen/riscv/assembler-riscv.h
 --- deps/v8/src/codegen/riscv/assembler-riscv.h.orig
 +++ deps/v8/src/codegen/riscv/assembler-riscv.h
-@@ -425,15 +425,15 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBa
+@@ -438,15 +438,15 @@ class V8_EXPORT_PRIVATE Assembler : publ
    // Assembler Pseudo Instructions (Tables 25.2, 25.3, RISC-V Unprivileged ISA)
    void nop();
  #if defined(V8_TARGET_ARCH_RISCV64)

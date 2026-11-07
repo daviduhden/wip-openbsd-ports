@@ -5,15 +5,17 @@ USE_WXNEEDED =		Yes
 
 COMMENT = JavaScript runtime built on Chrome's V8 JavaScript engine
 
-NODE_VERSION =		v24.22.2
+NODE_VERSION =		v26.13.0
 DISTFILES =		${DISTNAME}-headers.tar.gz \
 			${DISTNAME}.tar.xz
 DIST_TUPLE =		codeberg qbit node-pledge 1.1.4 \
 			deps/npm/node_modules/node-pledge
 DISTNAME =		node-${NODE_VERSION}
+WRKDIST =		${WRKDIR}/${DISTNAME}
 PKGNAME =		${DISTNAME:S/v//g}
 EPOCH =			0
-REVISION =		2
+
+REVISION =	1
 
 CATEGORIES =		lang devel
 
@@ -43,6 +45,7 @@ CONFIGURE_STYLE =	simple
 CONFIGURE_SCRIPT =	configure
 
 CONFIGURE_ARGS =	--prefix=${PREFIX} \
+			--v8-disable-temporal-support \
 			--with-intl=system-icu \
 			--shared-cares \
 			--shared-libuv \
@@ -59,7 +62,7 @@ SUBST_VARS +=		WRKDIST
 SUBST_VARS +=		NODE_VERSION
 
 LIB_DEPENDS +=		\
-			devel/libuv>=1.51.0p0 \
+			devel/libuv>=1.52.0 \
 			net/libcares \
 			textproc/icu4c \
 			textproc/simdutf \

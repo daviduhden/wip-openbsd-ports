@@ -1,14 +1,15 @@
-Use the Python mock implementation without deprecated asyncio calls.
+Use the standard-library mock module in unit tests instead of requiring
+the separate mock package.
 
 Index: tests/unit/test_bucket.py
 --- tests/unit/test_bucket.py.orig
 +++ tests/unit/test_bucket.py
-@@ -15,7 +15,7 @@ import datetime
+@@ -15,7 +15,7 @@
  import datetime
  import unittest
- 
+
 -import mock
 +from unittest import mock
  import pytest
- 
+
  from google.cloud.storage._helpers import _NOW, _UTC, _get_default_storage_base_url

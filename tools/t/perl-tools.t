@@ -315,6 +315,26 @@ if ( !$ENV{PERL_AUDIT_BASELINE} ) {
       capture( $tmp, $tmp, [ $^X, "$root/tools/t/fixtures/sleep-5.pl" ], 0.1 );
     ok( $timed_out, 'capture timeout is explicitly reported' );
     isnt( $exit, 0, 'timed-out target is terminated and reaped' );
+
+    my $diagnostic = 'OpenBSD has no supported command sandbox';
+    ok( managed_rejection_passed( 1, 0, $diagnostic, 0 ),
+        'managed profile refusal requires the backend diagnostic' );
+    for my $bad_exit ( 0, 125, 126, 127, 128, 143, 255 ) {
+        ok( !managed_rejection_passed( $bad_exit, 0, $diagnostic, 0 ),
+            "status $bad_exit cannot prove managed profile rejection" );
+    }
+    ok( !managed_rejection_passed( 1, 1, $diagnostic, 0 ),
+        'timeout cannot prove managed profile rejection' );
+    ok( !managed_rejection_passed( 1, 0, $diagnostic, 1 ),
+        'an executed child invalidates managed profile rejection' );
+    for my $wrong_diagnostic (
+        '', 'network isolation is unavailable',
+        'unveil rules are discarded by execve'
+      )
+    {
+        ok( !managed_rejection_passed( 1, 0, $wrong_diagnostic, 0 ),
+            'unrelated failure cannot prove missing-backend rejection' );
+    }
 }
 
 done_testing();

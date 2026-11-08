@@ -213,6 +213,13 @@ never close a native regeneration or build item without native evidence.
 Keep this ignored backlog
 as documentation, outside the installable port inventory and Git submissions.
 
+Present the backlog as a manual work queue: group missing files, dependency
+regeneration, source/package metadata and verification-only work. Spell out
+per-port actions and filenames instead of requiring readers to decode status
+letters or wide tables. Include module-specific commands, manual review
+checkpoints, prerequisites and completion evidence; keep every inventory row
+and its original pending state when reorganizing the document.
+
 When cleaning audit artifacts, preserve explicitly retained handoffs byte for
 byte and remove disposable trees without following symlinks outside `audit/`.
 Deleting logs or source extractions does not close native validation items;

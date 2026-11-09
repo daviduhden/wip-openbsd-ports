@@ -131,6 +131,21 @@ dependency series, including any extraction or line-ending preparation,
 without fuzz, then compare each edited target with the reviewed result.
 Record the exact inputs and logs; application is static evidence only.
 
+### C++ weak-reference captures
+
+When a patch replaces a bound `this` handler with a `weak_ptr` capture, check
+the class hierarchy first. If a base already derives from
+`std::enable_shared_from_this<Base>`, `shared_from_this()` returns
+`shared_ptr<Base>`, which does not convert to `weak_ptr<Derived>`. Recover
+the derived object with
+`std::static_pointer_cast<Derived> (shared_from_this ())`; do not add a
+second `enable_shared_from_this<Derived>` base, which makes
+`shared_from_this()` ambiguous and leaves the new base's control block
+uninitialized. Use the cast only where every instance is owned as
+`shared_ptr<Derived>`, such as `std::make_shared`, and confirm the pattern
+with a `-std=c++23` libc++ syntax check. Regenerate the patch from pristine
+sources and reapply the whole series.
+
 ## Acceptance and diagnosis
 
 - No unexpected targets, absolute workstation paths, generated build noise, or unrelated changes appear in the diff. Backports identify their upstream commit and retain relevant notices.

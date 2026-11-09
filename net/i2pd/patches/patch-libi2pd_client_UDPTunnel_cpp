@@ -1,5 +1,6 @@
 Bind daemon timers to weak references and guard their cancellation.
 A queued handler must not run after the tunnel object is destroyed.
+Recover the derived type; UDPConnection owns the shared_from_this base.
 
 Index: libi2pd_client/UDPTunnel.cpp
 --- libi2pd_client/UDPTunnel.cpp.orig
@@ -98,7 +99,7 @@ Index: libi2pd_client/UDPTunnel.cpp
 
  		auto dgram = m_LocalDest->GetDatagramDestination ();
  		if (dgram)
-@@ -927,11 +943,14 @@ namespace client
+@@ -927,11 +943,15 @@ namespace client
 
  	void I2PUDPClientTunnel::ScheduleKeepAliveTimer ()
  	{
@@ -109,14 +110,15 @@ Index: libi2pd_client/UDPTunnel.cpp
  			m_KeepAliveTimer->expires_after (std::chrono::seconds (m_KeepAliveInterval));
 -			m_KeepAliveTimer->async_wait (std::bind (&I2PUDPClientTunnel::HandleKeepAliveTimer,
 -				this, std::placeholders::_1));
-+			std::weak_ptr<I2PUDPClientTunnel> weak = shared_from_this ();
++			std::weak_ptr<I2PUDPClientTunnel> weak =
++				std::static_pointer_cast<I2PUDPClientTunnel> (shared_from_this ());
 +			m_KeepAliveTimer->async_wait ([weak](const boost::system::error_code& ecode) {
 +				if (auto self = weak.lock ()) self->HandleKeepAliveTimer (ecode);
 +			});
  		}
  	}
 
-@@ -947,11 +966,14 @@ namespace client
+@@ -947,11 +967,15 @@ namespace client
 
  	void I2PUDPClientTunnel::ScheduleStatsTimer ()
  	{
@@ -127,7 +129,8 @@ Index: libi2pd_client/UDPTunnel.cpp
  			m_StatsTimer->expires_after (std::chrono::seconds (10));
 -			m_StatsTimer->async_wait (std::bind (&I2PUDPClientTunnel::HandleStatsTimer,
 -				this, std::placeholders::_1));
-+			std::weak_ptr<I2PUDPClientTunnel> weak = shared_from_this ();
++			std::weak_ptr<I2PUDPClientTunnel> weak =
++				std::static_pointer_cast<I2PUDPClientTunnel> (shared_from_this ());
 +			m_StatsTimer->async_wait ([weak](const boost::system::error_code& ecode) {
 +				if (auto self = weak.lock ()) self->HandleStatsTimer (ecode);
 +			});

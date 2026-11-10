@@ -84,8 +84,12 @@ README format on maintainer documentation.
    PID file to imitate backgrounding; use `rc_bg`. Bind a service without
    authentication to loopback by default and document how to expose it. Do not
    combine `daemon_user` with a program that drops privileges itself: the
-   second `setgroups(2)` is root-only, so the service fails at startup (tor is
-   the current example: start as root and let its `User` setting drop).
+   second `setgroups(2)` is root-only, so the service fails at startup. When
+   `rc.subr` supplies `daemon_user`, remove the daemon's own `User` setting
+   from the packaged configuration, and drop any `RunAsDaemon` or
+   `--RunAsDaemon` override so `rc.subr` controls backgrounding. Set
+   `rc_bg=YES` when the daemon then runs in the foreground (tor is the
+   current example).
    Set every listener variable the daemon reads; omitting one leaves upstream's
    all-interfaces default in place.
 6. Keep recipes declarative. Version variables, dependency lists, patch

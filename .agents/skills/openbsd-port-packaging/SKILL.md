@@ -62,6 +62,10 @@ README format on maintainer documentation.
    - `@sample` for configuration and state paths that must not overwrite a
      user's existing file or directory. Verify the packaged path and the
      runtime path are the same; a mismatch leaves the service unable to start.
+     `@sample` attaches to the last preceding file entry; `@sample dir/`
+     creates a directory without consuming it. List plain example files after
+     the sample annotation, or the wrong file becomes the installed
+     configuration (i2pd once installed `torrents.conf` as `i2pd.conf`).
    - `@mode`, `@owner`, and `@group` apply to following entries. Reset them
      with bare `@mode`, `@owner`, and `@group`; otherwise later files inherit
      unintended ownership.

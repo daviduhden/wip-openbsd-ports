@@ -9,8 +9,9 @@ Sandbox is enabled. External SOCKS4/SOCKS5 client proxies and external server
 proxies do not require Tor to execute a program and remain supported under
 the sandbox profile when their endpoints are accessible.
 
-The rc.d(8) script starts tor as root and the packaged torrc drops
-privileges to _tor after binding. A custom torrc that binds a listener below
-port 1024 must keep the privileged start and the matching User setting; it
-must not combine an rc.d daemon_user with User, because the second
-privilege drop cannot call setgroups(2).
+The rc.d(8) script starts tor as the unprivileged _tor user through
+daemon_user and lets rc.subr handle backgrounding. The packaged torrc does
+not set User or RunAsDaemon. Do not combine daemon_user with tor's User
+setting: the second privilege drop cannot call setgroups(2). Binding a
+listener below port 1024 requires a privileged wrapper and a separately
+reviewed service configuration.

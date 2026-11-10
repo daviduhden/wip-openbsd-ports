@@ -1,11 +1,12 @@
-# Use packaged OpenBSD defaults and enable the sandbox by default.
+# Use the packaged OpenBSD defaults, enable the sandbox by default, and
+# leave daemonization and the service account to rc.subr.
 # Managed transports remain rejected because pledge's exec promise is
 # intentionally not granted.
 
 Index: src/config/torrc.sample.in
 --- src/config/torrc.sample.in.orig
 +++ src/config/torrc.sample.in
-@@ -39,18 +39,21 @@
+@@ -39,7 +39,7 @@
  ## Send every possible message to @LOCALSTATEDIR@/log/tor/debug.log
  #Log debug file @LOCALSTATEDIR@/log/tor/debug.log
  ## Use the system log instead of Tor's logfiles
@@ -14,11 +15,7 @@ Index: src/config/torrc.sample.in
  ## To send all messages to stderr:
  #Log debug stderr
 
- ## Uncomment this to start the process in the background... or use
- ## --runasdaemon 1 on the command line. This is ignored on Windows;
- ## see the FAQ entry if you want Tor to run as an NT service.
--#RunAsDaemon 1
-+RunAsDaemon 1
+@@ -50,7 +50,10 @@
 
  ## The directory for keeping all the keys/etc. By default, we store
  ## things in $HOME/.tor on Unix, and in Application Data\tor on Windows.
@@ -30,7 +27,7 @@ Index: src/config/torrc.sample.in
 
  ## The port on which Tor will listen for local connections from Tor
  ## controller applications, as documented in control-spec.txt.
-@@ -69,10 +72,10 @@
+@@ -69,11 +72,11 @@
  ## HiddenServicePort x y:z says to redirect requests on port x to the
  ## address y:z.
 
@@ -43,12 +40,4 @@ Index: src/config/torrc.sample.in
  #HiddenServicePort 80 127.0.0.1:80
  #HiddenServicePort 22 127.0.0.1:22
 
-@@ -218,6 +221,8 @@
- ## and any public IPv4 and IPv6 addresses on any interface on the relay.
- ## See the man page entry for ExitPolicyRejectPrivate if you want to allow
- ## "exit enclaving".
-+## Revoke privileges
-+User _tor
- ##
- #ExitPolicy accept *:6660-6667,reject *:* # allow irc ports on IPv4 and IPv6 but no more
- #ExitPolicy accept *:119 # accept nntp ports on IPv4 and IPv6 as well as default exit policy
+ ################ This section is just for relays #####################

@@ -7,7 +7,7 @@ GH_TAGNAME =	v${MODPY_DISTV}
 
 PKGNAME =	py-ripe.atlas.cousteau-${MODPY_DISTV}
 
-REVISION =	0
+REVISION =	1
 
 CATEGORIES =	net
 HOMEPAGE =	https://github.com/RIPE-NCC/ripe-atlas-cousteau

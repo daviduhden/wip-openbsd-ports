@@ -1,0 +1,32 @@
+Drop the unported python-sbom build hook.
+It only generates SBOM metadata and is not available in ports.
+
+Index: pyproject.toml
+--- pyproject.toml.orig
++++ pyproject.toml
+@@ -4,7 +4,6 @@ requires = [
+   "hatch-fancy-pypi-readme>=25.1",
+   "hatch-vcs>=0.5",
+   "hatchling>=1.29",
+-  "python-sbom[hatch]>=0.1.2",
+ ]
+ 
+ [project]
+@@ -127,7 +126,6 @@ version.source = "vcs"
+ metadata.hooks.fancy-pypi-readme.content-type = "text/markdown"
+ metadata.hooks.fancy-pypi-readme.fragments = [ { path = "README.md" } ]
+ build.hooks.vcs.version-file = "src/filelock/version.py"
+-build.hooks.python-sbom = {}
+ build.targets.sdist.include = [
+   "/docs",
+   "/src",
+@@ -318,9 +316,6 @@ standalone.lazy-exclude-modules = [
+   "sqlite3",
+ ]
+ 
+-[tool.python-sbom]
+-supplier = { name = "tox-dev", url = [ "https://github.com/tox-dev" ] }
+-
+ [tool.nab]
+ mode = "universal"
+ base-group = "project-runtime"

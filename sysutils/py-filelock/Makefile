@@ -1,10 +1,8 @@
 COMMENT =	platform independent file lock
 
-MODPY_DISTV =	3.32.7
+MODPY_DISTV =	4.2.10
 DISTNAME =	filelock-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME}
-REVISION =       0
-
 CATEGORIES =	sysutils
 
 # https://github.com/tox-dev/filelock
@@ -16,6 +14,9 @@ PERMIT_PACKAGE =	Yes
 MODULES =	lang/python
 MODPY_PYBUILD =	hatch-vcs
 MODPY_PI =	Yes
+
+BUILD_DEPENDS =	devel/py-hatch-fancy-pypi-readme>=25.1 \
+		devel/py-hatch-vcs>=0.5
 
 # disable failing tests with a long timeout
 MODPY_PYTEST_ARGS = -v \
@@ -32,10 +33,5 @@ post-test:
 	@echo; echo Tests using threaded locks have been deselected as they; \
 	echo fail with long timeouts: test_threaded_shared_lock_obj,; \
 	echo test_threaded_lock_different_lock_obj; echo
-
-# LiteLLM requires filelock <4.
-PORTROACH =	limit:^3\.
-
-BUILD_DEPENDS +=	devel/py-hatch-vcs>=0.5
 
 .include <bsd.port.mk>

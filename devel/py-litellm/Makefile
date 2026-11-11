@@ -1,6 +1,8 @@
 COMMENT =	uniform API for multiple LLM providers
 
-MODPY_DISTV =	1.106.6
+# 1.109.0 requires anyio>=4.14; the ports tree still ships 4.10.
+# Select the newest release before that dependency floor.
+MODPY_DISTV =	1.108.5
 DISTNAME =	litellm-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME}
 
@@ -24,13 +26,13 @@ RUN_DEPENDS =	devel/py-certifi>=2026.10.19 \
 		devel/py-huggingface-hub>=0.34.0,<2.0 \
 		devel/py-importlib-metadata>=8.0.0,<9.0 \
 		devel/py-jsonschema>=4.0.0,<5.0 \
-		devel/py-openai>=2.20.0,<3.0.0 \
+		devel/py-openai>=2.20.0,<4.0.0 \
 		devel/py-pydantic>=2.12.0,<3.0.0 \
 		devel/py-pydantic-settings>=2.14.1,<3.0 \
 		devel/py-typing-extensions>=4.13.0,<5.0 \
 		net/py-boto3>=1.43.117,<2.0 \
 		sysutils/py-dotenv>=1.0.0,<2.0 \
-		sysutils/py-filelock>=3.16.1,<4.0 \
+		sysutils/py-filelock>=3.16.1,<5.0 \
 		sysutils/py-packaging>=24.0 \
 		textproc/py-tiktoken>=0.12.0,<1.0 \
 		textproc/py-tokenizers>=0.21.0,<1.0 \

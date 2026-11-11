@@ -3,14 +3,12 @@ COMMENT =		local search engine and MCP server for AI agents
 # Upstream CI and release artifacts cover x86_64 and aarch64 only.
 ONLY_FOR_ARCHS =	amd64 aarch64
 
-V =			1.0.0-rc.101
+V =			1.0.0-rc.102
 GH_ACCOUNT =		xerj-org
 GH_PROJECT =		xerj
 GH_TAGNAME =		v${V}
 # The upstream tag contains a hyphen; pkg(8) versions do not.
-PKGNAME =		xerj-1.0.0rc101
-
-REVISION =	0
+PKGNAME =		xerj-1.0.0rc102
 
 CATEGORIES =		devel
 

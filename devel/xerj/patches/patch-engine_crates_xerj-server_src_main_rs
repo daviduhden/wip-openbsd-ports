@@ -4,7 +4,7 @@ Accept native file names just like PDF workers, before Tokio starts.
 Index: engine/crates/xerj-server/src/main.rs
 --- engine/crates/xerj-server/src/main.rs.orig
 +++ engine/crates/xerj-server/src/main.rs
-@@ -3070,6 +3070,14 @@ fn main() -> Result<()> {
+@@ -3075,6 +3075,14 @@ fn main() -> Result<()> {
          std::process::exit(xerj_autoindex::extract::pdf::run_worker_cli());
      }
  
@@ -19,7 +19,7 @@ Index: engine/crates/xerj-server/src/main.rs
      // `xerj --url URL corpus index name` used to die here as an unknown
      // server flag. Move those flags behind the subcommand before any
      // dispatch reads argv.
-@@ -3078,19 +3086,6 @@ fn main() -> Result<()> {
+@@ -3083,19 +3091,6 @@ fn main() -> Result<()> {
          is_top_level_command,
      ));
  

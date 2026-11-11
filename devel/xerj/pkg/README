@@ -38,6 +38,13 @@ index data or API keys. Self-signed servers require their certificate
 authority to be trusted by the client; an untrusted certificate is rejected
 even on loopback. The port removes upstream's implicit certificate bypass.
 
+Live PostgreSQL sources (`xerj connect`) verify the database certificate
+and host name against the public Mozilla root set. A private database CA
+is not accepted. The default `sslmode=prefer` falls back to cleartext when
+the server refuses TLS, so use `sslmode=require` or `verify-full` for any
+remote database. Passwords are read from an environment variable or file,
+never from the URL.
+
 Data, models and service
 ------------------------
 
@@ -58,9 +65,9 @@ This is not a memory sandbox. Automatic total/available RAM and RSS probes
 are also unavailable on OpenBSD. Set memory and worker budgets explicitly
 rather than assuming that a memory-derived limit is enforced.
 
-The rc.101 source tag still declares rc.100 in its Cargo workspace, so
---version reports rc.100. The package version identifies the rc.101 tag;
-the port preserves upstream's source metadata.
+The package version follows the upstream rc.102 tag, and the Cargo
+workspace declares the same version, so --version reports 1.0.0-rc.102.
+The port preserves upstream's source metadata.
 
 No rc.d service or dedicated user is installed in this initial port.
 Runtime permissions, HOME-dependent pointer files, signal handling and

@@ -5,7 +5,7 @@ rusqlite bundled feature cannot be used in this port.
 Index: engine/crates/xerj-autoindex/Cargo.toml
 --- engine/crates/xerj-autoindex/Cargo.toml.orig
 +++ engine/crates/xerj-autoindex/Cargo.toml
-@@ -164,7 +164,7 @@ calamine = { version = "=0.38.0", featur
+@@ -165,7 +165,7 @@ calamine = { version = "=0.38.0", featur
  cfb = "=0.15.0"
  serde_yaml = "0.9"                               # YAML multi-doc
  # The one C dependency (bundled SQLite), isolated to this crate.

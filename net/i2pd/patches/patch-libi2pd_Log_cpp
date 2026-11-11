@@ -1,0 +1,28 @@
+Keep daemon log lines out of the system console and out of stdout.
+Use syslog without the LOG_CONS console fallback, and fall back to
+syslog rather than stdout when a configured log file cannot be opened.
+
+Index: libi2pd/Log.cpp
+--- libi2pd/Log.cpp.orig
++++ libi2pd/Log.cpp
+@@ -224,6 +224,9 @@ namespace log {
+ 			m_LogStream = os;
+ 			return;
+ 		}
++		// Keep messages out of a daemon's stdout, which is /dev/null
++		// under rc.subr but a terminal when started by hand.
++		SendTo ("i2pd", LOG_DAEMON);
+ 		LogPrint(eLogCritical, "Log: Can't open file ", path);
+ 	}
+ 
+@@ -239,7 +242,9 @@ namespace log {
+ 		m_HasColors = false;
+ 		m_Destination = eLogSyslog;
+ 		m_LogStream = nullptr;
+-		openlog(name, LOG_CONS | LOG_PID, facility);
++		// LOG_CONS copies messages to /dev/console when syslogd is not
++		// accepting them, bypassing the configured log destination.
++		openlog(name, LOG_PID, facility);
+ 	}
+ #endif
+ 

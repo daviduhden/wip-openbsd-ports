@@ -91,7 +91,6 @@ The package installs the web interface files under
 ${LOCALSTATEDIR}/i2pd/torrents/web.
 
 
-
 Graceful shutdown
 =================
 
@@ -113,6 +112,17 @@ Logging
 
 By default, this package sends its log messages to syslogd(8), which
 writes them to the /var/log/daemon file.
+
+The port disables upstream's LOG_CONS fallback, so a stopped syslogd(8)
+does not copy daemon messages to /dev/console. Start syslogd(8) and use
+/var/log/daemon as the destination. An existing
+${SYSCONFDIR}/i2pd/i2pd.conf is not replaced on package update: verify
+that it contains log = syslog or a writable logfile, and that it does
+not force daemon = false.
+
+If you select log = file, create a directory writable by _i2pd before
+starting the daemon. When that file cannot be opened, the port falls
+back to syslog instead of stdout.
 
 The default log level of i2pd ("warn") can be very verbose. You may want
 to reduce this log verbosity by changing the "loglevel" parameter in

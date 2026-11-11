@@ -14,8 +14,8 @@ Index: libi2pd/Log.cpp
 +		SendTo ("i2pd", LOG_DAEMON);
  		LogPrint(eLogCritical, "Log: Can't open file ", path);
  	}
- 
-@@ -239,7 +242,9 @@ namespace log {
+
+@@ -239,8 +242,10 @@ namespace log {
  		m_HasColors = false;
  		m_Destination = eLogSyslog;
  		m_LogStream = nullptr;
@@ -25,4 +25,5 @@ Index: libi2pd/Log.cpp
 +		openlog(name, LOG_PID, facility);
  	}
  #endif
- 
+
+ 	void Log::Reopen() {

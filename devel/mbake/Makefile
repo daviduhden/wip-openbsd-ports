@@ -1,6 +1,6 @@
 COMMENT =		formatter and linter for GNU Makefiles
 
-MODPY_DISTV =		1.4.6
+MODPY_DISTV =		1.5.0
 GH_ACCOUNT =		EbodShojaei
 GH_PROJECT =		bake
 GH_TAGNAME =		v${MODPY_DISTV}

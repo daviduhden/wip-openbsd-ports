@@ -230,6 +230,47 @@ a version before the selected source and its compatibility changes have
 been reviewed. Report unresolved ports as incomplete rather than hiding
 them behind a repository-wide success claim.
 
+### Upstream selection under cross-port constraints
+
+The newest registry or tag release is not automatically the selected update.
+Before bumping a Python, Rust or Haskell port, read the declared requirements
+of every port in this collection that consumes it. A maintained dependent can
+cap a major version even when the dependency itself has moved on.
+
+- Record the exact requirement (for example `importlib-metadata<9`,
+  `filelock<5`, `huggingface-hub<2`, `google-genai<3`, `websockets<18`) and
+  select the newest release inside the intersection of all maintained bounds.
+- Keep `PORTROACH` aligned with the selected major and cite the limiting port
+  in a short comment.
+- When a bound is obsolete because the consumer raised it, update both sides
+  in the same change and regenerate the consumer's generated metadata on
+  OpenBSD.
+- When the newest upstream release cannot be selected, list it, the blocking
+  requirement and the source of that requirement in the final report. Do not
+  silently pin an old version and call the collection current.
+- Re-check optional extras separately from runtime requirements; an upper
+  bound that appears only in an extra does not block a runtime update.
+
+### Official tree access and comparison
+
+Use an official `-current` checkout when one is available. A read-only CVSweb
+endpoint or a current Git mirror is acceptable for inspection, but record
+which one was used and its revision or date. Fetch the official `Makefile`,
+`patches/`, `pkg/README` and `pkg/DESCR`; compare them individually with the
+local files instead of replacing a directory. Official ports may be behind
+the overlay, so a missing official patch is not evidence that a local patch
+is unnecessary.
+
+### Required collection record
+
+Maintain one row per inventoried port for the whole task. The row records the
+local version, official version, selected upstream version, patch
+dispositions, adopted official changes, declined official changes with
+reasons, retained local customizations, deferred generated files and pending
+native checks. Unchanged and blocked ports stay in the table. A port with an
+unresolved row makes the integral update incomplete; report it as such rather
+than claiming collection-wide success.
+
 ### XERJ (`devel/xerj`)
 
 `devel/xerj` pins a prerelease tag and builds only the `xerj-server`

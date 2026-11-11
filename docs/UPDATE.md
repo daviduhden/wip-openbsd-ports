@@ -44,6 +44,13 @@ header. Every rationale line must be at most 72 columns. Remove obsolete or
 empty patches only after confirming the upstream source or another retained
 change provides their behavior. Check the patch style and applicability.
 
+Before choosing a version, check the requirements declared by other ports in
+this collection. A maintained consumer can cap a dependency major even when a
+newer release exists. Select the newest release inside the intersection of all
+maintained bounds, keep `PORTROACH` accurate, and record the excluded upstream
+release and the port that blocks it. Do not update one port past a sibling's
+declared requirement.
+
 When the task or host defers framework-generated files, do not regenerate
 `distinfo`, `pkg/PLIST*`, or any generated `*.inc` outside a matching OpenBSD
 ports tree. List each stale/deferred file and the OpenBSD target/check required

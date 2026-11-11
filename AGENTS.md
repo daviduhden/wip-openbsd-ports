@@ -30,6 +30,51 @@ for version updates. The specialized procedures are in `.agents/skills/`:
 | `openbsd-port-security` | Auditing crypto, sandboxing, privileges, or service exposure. |
 | `openbsd-ports-sync` | Moving tested sources between this Git checkout and `/usr/ports`. |
 
+## Mandatory integral update procedure
+
+Every request to update a port, a group of ports, or the whole collection
+must run the full procedure in
+`.agents/skills/openbsd-port-update/SKILL.md`. Selecting a version is not an
+update. The minimum policy is:
+
+1. Read the authoritative inventory and record each port's current version,
+   every version carrier, local patches, README and local behavior.
+2. Establish the newest stable upstream release from the project's own
+   release source; do not infer it from a tag or a registry summary alone.
+   Check the matching port in official OpenBSD `-current` even when the local
+   copy looks newer.
+3. Compare upstream, official and local sources file by file. Integrate the
+   official maintainer fixes that remain valid, and keep local behavior that
+   upstream or official changes do not make obsolete. Record every declined
+   official change with its reason.
+4. Resolve cross-port dependency bounds before choosing a version. When a
+   maintained port requires an older major (for example a capped
+   `importlib-metadata`, `filelock`, `huggingface-hub`, `google-genai` or
+   `websockets`), select the highest release inside that bound, keep the
+   `PORTROACH` limit accurate, and document the excluded upstream release.
+   Never break a sibling port by bumping past its declared requirement.
+5. Bump the version carriers only after the selected source and its
+   compatibility changes have been reviewed. Remove `REVISION` for a new
+   upstream version, bump it for packaging-only changes, and keep a customized
+   overlay's `REVISION` above the official effective value. Use `EPOCH` only
+   when version ordering genuinely moves backwards.
+6. Rebase every retained patch against a pristine extraction of the exact new
+   source with `diff -u -p`, one target per `Index:` header, and a specific
+   rationale whose lines are at most 72 columns. Delete patches that upstream
+   incorporated, that another retained change replaces, or that no longer
+   apply. Verify the whole series in sorted order with zero fuzz.
+7. Review the port `Makefile` and installed `pkg/README` after each update:
+   dependencies, `WANTLIB`, services, configuration, security notes and
+   obsolete version statements must match the new source.
+8. Off OpenBSD, never regenerate `distinfo`, `pkg/PLIST*`, `crates.inc`,
+   `modules.inc`, `cabal.inc` or other generated files. Name each stale file
+   and the exact OpenBSD target that refreshes it in the handoff.
+9. Report every inventoried port, including unchanged and blocked ones, with
+   local, official and selected versions, patch dispositions, adopted and
+   declined official changes, retained customizations, deferred files and
+   pending native checks. Static inspection is not build, package or runtime
+   evidence.
+
 ## Mandatory compatibility and sandbox review
 
 Any change to source, patches, dependencies, service scripts, or build flags

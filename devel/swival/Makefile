@@ -1,6 +1,6 @@
 COMMENT =		coding agent for AI models
 
-MODPY_DISTV =		1.9.3
+MODPY_DISTV =		1.9.4
 GH_ACCOUNT =		swival
 GH_PROJECT =		swival
 GH_TAGNAME =		${MODPY_DISTV}
@@ -15,13 +15,15 @@ MODULES =		lang/python
 MODPY_PYBUILD =		hatchling
 
 BUILD_DEPENDS =		devel/py-hatchling>=1.33.0
-RUN_DEPENDS =		converters/py-html-to-markdown>=3.19.0,<4 \
+
+# Upstream pins litellm 1.108.4; 1.108.5 is the packaged bugfix.
+RUN_DEPENDS =		converters/py-html-to-markdown>=3.22.0,<4 \
 			devel/py-google-cloud-aiplatform>=2.7.0,<3 \
-			devel/py-litellm=1.106.6 \
+			devel/py-litellm=1.108.5 \
 			devel/py-mcp>=2.3.0,<3 \
 			devel/py-prompt_toolkit>=3.0.53 \
 			devel/py-rich>=15.0.0 \
-			net/py-boto3>=1.43.123 \
+			net/py-boto3>=1.43.127 \
 			security/py-fast-cipher>=0.3.0 \
 			textproc/py-rank-bm25>=0.2.2 \
 			textproc/py-tiktoken>=0.14.0 \

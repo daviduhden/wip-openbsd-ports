@@ -342,9 +342,9 @@ confirm that `Cargo.toml` rewrites each one to its extracted path. The
 security skill defines supported sandbox claims; the dependency skill
 covers Cargo/V8 source mapping. Review `pkg/README` even when it needs no
 edit. Never claim OpenBSD sandboxing works unless a supported
-kernel-enforced backend is implemented
-and tested. Outside OpenBSD, leave `distinfo`, `pkg/PLIST`, and `crates.inc`
-to the framework and list each pending file. When removing a runtime shell
+kernel-enforced backend is implemented and tested. Outside OpenBSD, leave
+`distinfo`, `pkg/PLIST`, and `crates.inc` to the framework and list each
+pending file. When removing a runtime shell
 package such as `shells/bash`, trace shell detection, default fallback order,
 explicit account-shell handling, remote `ShellInfo` handoffs, and all command
 launchers. Separate Rust parser crates and generated completion data from

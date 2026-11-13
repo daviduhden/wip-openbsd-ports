@@ -1,0 +1,28 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+This package links the base-system LibreSSL rather than
+security/openssl. Node selects its legacy ncrypto backend because
+LibreSSL reports OPENSSL_VERSION_NUMBER 0x20000000L and does not define
+OPENSSL_VERSION_MAJOR. Do not treat process.versions.openssl as an
+OpenSSL 3 release.
+
+The following upstream features are unavailable and fail closed:
+--secure-heap, pskCallback, asynchronous certificate and OCSPRequest
+callbacks, scrypt, XOF digests, Ed448, X448, SM2, OCB and multi-prime
+RSA. Raw TLS ticket bytes, getSharedSigalgs and asynchronous
+certificate callbacks are rejected instead of silently ignored.
+
+LibreSSL does not provide the client-hello and per-connection
+certificate-store interfaces used by recent upstream TLS hardening.
+The SNI pinning and session-binding paths added for CVE-2026-123872 and
+the certificate-store mitigation for CVE-2026-123867 are therefore not
+compiled in this build. Server-side SNI and session configurations need
+a native security review before they are exposed to untrusted clients.
+The port's LibreSSL re-read path also calls ClearOut() from DoWrite();
+nested-write re-entry needs native review against the new cycle guard.
+
+Compilation, generated package contents, V8, TLS, pledge/unveil and the
+complete regression suite still require validation on a native OpenBSD
+host. Static patch review is not runtime evidence.

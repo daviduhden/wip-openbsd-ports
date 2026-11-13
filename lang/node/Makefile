@@ -5,7 +5,7 @@ USE_WXNEEDED =		Yes
 
 COMMENT = JavaScript runtime built on Chrome's V8 JavaScript engine
 
-NODE_VERSION =		v26.13.0
+NODE_VERSION =		v26.13.1
 DISTFILES =		${DISTNAME}-headers.tar.gz \
 			${DISTNAME}.tar.xz
 DIST_TUPLE =		codeberg qbit node-pledge 1.1.4 \
@@ -14,8 +14,6 @@ DISTNAME =		node-${NODE_VERSION}
 WRKDIST =		${WRKDIR}/${DISTNAME}
 PKGNAME =		${DISTNAME:S/v//g}
 EPOCH =			0
-
-REVISION =	1
 
 CATEGORIES =		lang devel
 

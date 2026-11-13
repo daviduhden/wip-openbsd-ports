@@ -3,7 +3,7 @@ Reject signature-algorithm configuration unsupported by LibreSSL.
 Index: src/crypto/crypto_context.cc
 --- src/crypto/crypto_context.cc.orig
 +++ src/crypto/crypto_context.cc
-@@ -1964,8 +1964,14 @@ void SecureContext::SetSigalgs(const Fun
+@@ -1965,8 +1965,14 @@ void SecureContext::SetSigalgs(const Fun
 
    const Utf8Value sigalgs(env->isolate(), args[0]);
 

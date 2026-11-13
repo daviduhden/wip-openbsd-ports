@@ -15,7 +15,7 @@ Index: deps/ncrypto/ncrypto.cc
  #define EVP_PKEY_CTX_set_dsa_paramgen_q_bits(ctx, qbits)                       \
    EVP_PKEY_CTX_ctrl((ctx),                                                     \
                      EVP_PKEY_DSA,                                              \
-@@ -422,6 +423,13 @@ size_t DataPointer::GetSecureHeapUsed()
+@@ -429,6 +430,13 @@ size_t DataPointer::GetSecureHeapUsed()
 
  DataPointer::InitSecureHeapResult DataPointer::TryInitSecureHeap(size_t amount,
                                                                   size_t min) {
@@ -29,7 +29,7 @@ Index: deps/ncrypto/ncrypto.cc
    switch (CRYPTO_secure_malloc_init(amount, min)) {
      case 0:
        return InitSecureHeapResult::FAILED;
-@@ -432,6 +440,7 @@ DataPointer::InitSecureHeapResult DataPo
+@@ -439,6 +447,7 @@ DataPointer::InitSecureHeapResult DataPo
      default:
        return InitSecureHeapResult::FAILED;
    }
@@ -37,7 +37,7 @@ Index: deps/ncrypto/ncrypto.cc
  }
 
  DataPointer DataPointer::Copy(const Buffer<const void>& buffer) {
-@@ -499,9 +508,17 @@ DataPointer DataPointer::resize(size_t l
+@@ -506,9 +515,17 @@ DataPointer DataPointer::resize(size_t l
    auto buf = release();
    if (actual_len == 0) return DataPointer(buf.data, actual_len);
 
@@ -58,7 +58,7 @@ Index: deps/ncrypto/ncrypto.cc
  }
 
  // ============================================================================
-@@ -2942,7 +2959,15 @@ bool ScryptDerive(const Buffer<const cha
+@@ -2949,7 +2966,15 @@ bool ScryptDerive(const Buffer<const cha
  #endif
 
  bool checkScryptParams(uint64_t N, uint64_t r, uint64_t p, uint64_t maxmem) {
@@ -75,7 +75,7 @@ Index: deps/ncrypto/ncrypto.cc
    // A null output validates the parameters without deriving a key.
    return ScryptDerive({nullptr, 0}, {nullptr, 0}, N, r, p, maxmem, nullptr, 0);
  #else
-@@ -2958,6 +2983,16 @@ DataPointer scrypt(const Buffer<const ch
+@@ -2965,6 +2990,16 @@ DataPointer scrypt(const Buffer<const ch
                     uint64_t p,
                     uint64_t maxmem,
                     size_t length) {
@@ -92,7 +92,7 @@ Index: deps/ncrypto/ncrypto.cc
    if (pass.len > INT_MAX || salt.len > INT_MAX) {
      return {};
    }
-@@ -2982,6 +3017,7 @@ DataPointer scrypt(const Buffer<const ch
+@@ -2989,6 +3024,7 @@ DataPointer scrypt(const Buffer<const ch
    }
 
    return {};
@@ -100,7 +100,7 @@ Index: deps/ncrypto/ncrypto.cc
  }
 
  DataPointer pbkdf2(const Digest& md,
-@@ -3311,8 +3347,10 @@ const LegacyKeyAlgorithm kLegacyKeyAlgor
+@@ -3318,8 +3354,10 @@ const LegacyKeyAlgorithm kLegacyKeyAlgor
      {KeyAlgorithm::X25519.name(), EVP_PKEY_X25519},
  #endif
      {"HKDF", EVP_PKEY_HKDF},
@@ -111,7 +111,7 @@ Index: deps/ncrypto/ncrypto.cc
  #ifndef OPENSSL_NO_SM2
      {KeyAlgorithm::SM2.name(), EVP_PKEY_SM2},
  #endif
-@@ -4939,7 +4977,13 @@ bool SSLPointer::setSniContext(const SSL
+@@ -4946,7 +4984,13 @@ bool SSLPointer::setSniContext(const SSL
      // SSL_use_certificate replaces only the certificate matching the key
      // type. Clear all existing certificates so credentials from the default
      // context cannot be selected for a different key type.
@@ -125,7 +125,7 @@ Index: deps/ncrypto/ncrypto.cc
      err = SSL_use_certificate(get(), x509);
    }
    if (err == 1) err = SSL_use_PrivateKey(get(), pkey);
-@@ -4958,9 +5002,12 @@ std::optional<uint32_t> SSLPointer::veri
+@@ -4965,9 +5009,12 @@ std::optional<uint32_t> SSLPointer::veri
    // Allow no-cert for PSK authentication in TLS1.2 and lower.
    // In TLS1.3 check that session was reused because TLS1.3 PSK
    // looks like session resumption.
@@ -141,7 +141,7 @@ Index: deps/ncrypto/ncrypto.cc
      return X509_V_OK;
    }
 
-@@ -5033,7 +5080,13 @@ std::optional<std::string_view> SSLPoint
+@@ -5040,7 +5087,13 @@ std::optional<std::string_view> SSLPoint
  std::optional<std::string_view> SSLPointer::getCipherStandardName() const {
    auto cipher = getCipher();
    if (cipher == nullptr) return std::nullopt;
@@ -155,7 +155,7 @@ Index: deps/ncrypto/ncrypto.cc
  }
 
  std::optional<std::string_view> SSLPointer::getCipherVersion() const {
-@@ -5477,7 +5530,7 @@ const Cipher& Cipher::AES_256_KW() {
+@@ -5484,7 +5537,7 @@ const Cipher& Cipher::AES_256_KW() {
    return GetPredefinedCipher<NID_id_aes256_wrap>();
  }
 
@@ -164,7 +164,7 @@ Index: deps/ncrypto/ncrypto.cc
  const Cipher& Cipher::AES_128_OCB() {
    return GetPredefinedCipher<NID_aes_128_ocb>();
  }
-@@ -5525,8 +5578,12 @@ bool Cipher::isCtsMode() const {
+@@ -5532,8 +5585,12 @@ bool Cipher::isCtsMode() const {
  }
 
  bool Cipher::isOcbMode() const {
@@ -177,7 +177,7 @@ Index: deps/ncrypto/ncrypto.cc
  }
 
  bool Cipher::isSivMode() const {
-@@ -5597,8 +5654,10 @@ std::string_view Cipher::getModeLabel()
+@@ -5604,8 +5661,10 @@ std::string_view Cipher::getModeLabel()
        return "ecb";
      case EVP_CIPH_GCM_MODE:
        return "gcm";
@@ -188,7 +188,7 @@ Index: deps/ncrypto/ncrypto.cc
      case EVP_CIPH_OFB_MODE:
        return "ofb";
  #if OPENSSL_WITH_AES_SIV
-@@ -5792,8 +5851,12 @@ bool CipherCtxPointer::isGcmMode() const
+@@ -5799,8 +5858,12 @@ bool CipherCtxPointer::isGcmMode() const
  }
 
  bool CipherCtxPointer::isOcbMode() const {
@@ -201,7 +201,7 @@ Index: deps/ncrypto/ncrypto.cc
  }
 
  bool CipherCtxPointer::isCcmMode() const {
-@@ -6715,7 +6778,9 @@ EVPKeyPointer EVPKeyCtxPointer::paramgen
+@@ -6722,7 +6785,9 @@ EVPKeyPointer EVPKeyCtxPointer::paramgen
  bool EVPKeyCtxPointer::publicCheck() const {
    if (!ctx_) return false;
  #ifndef OPENSSL_IS_BORINGSSL
@@ -212,7 +212,7 @@ Index: deps/ncrypto/ncrypto.cc
    return EVP_PKEY_public_check_quick(ctx_.get()) == 1;
  #else
    return EVP_PKEY_public_check(ctx_.get()) == 1;
-@@ -6731,7 +6796,11 @@ bool EVPKeyCtxPointer::publicCheck() con
+@@ -6738,7 +6803,11 @@ bool EVPKeyCtxPointer::publicCheck() con
  bool EVPKeyCtxPointer::privateCheck() const {
    if (!ctx_) return false;
  #ifndef OPENSSL_IS_BORINGSSL
@@ -224,7 +224,7 @@ Index: deps/ncrypto/ncrypto.cc
  #else
    // Boringssl appears not to support this operation.
    // TODO(jasnell): Is there an alternative approach that Boringssl does
-@@ -7074,7 +7143,7 @@ const Rsa::OtherPrimeInfos Rsa::getOther
+@@ -7081,7 +7150,7 @@ const Rsa::OtherPrimeInfos Rsa::getOther
    for (const auto& info : other_prime_infos_) {
      infos.push_back({info.r.get(), info.d.get(), info.t.get()});
    }
@@ -233,7 +233,7 @@ Index: deps/ncrypto/ncrypto.cc
    if (rsa_ == nullptr) return infos;
    const int count = RSA_get_multi_prime_extra_count(rsa_);
    if (count <= 0) return infos;
-@@ -7253,7 +7322,7 @@ bool Rsa::setPrivateKey(BignumPointer&&
+@@ -7260,7 +7329,7 @@ bool Rsa::setPrivateKey(BignumPointer&&
    dq.release();
    qi.release();
 
@@ -242,7 +242,7 @@ Index: deps/ncrypto/ncrypto.cc
    if (!other_prime_infos.empty()) {
      std::vector<BIGNUM*> factors;
      std::vector<BIGNUM*> exponents;
-@@ -7835,9 +7904,16 @@ bool EVPMDCtxPointer::digestFinalInto(Bu
+@@ -7842,9 +7911,16 @@ bool EVPMDCtxPointer::digestFinalInto(Bu
 
    auto ptr = static_cast<unsigned char*>(buf->data);
 
@@ -259,7 +259,7 @@ Index: deps/ncrypto/ncrypto.cc
 
    if (ret != 1) [[unlikely]]
      return false;
-@@ -7860,8 +7936,12 @@ const EVP_MD* EVPMDCtxPointer::getDigest
+@@ -7867,8 +7943,12 @@ const EVP_MD* EVPMDCtxPointer::getDigest
  }
 
  bool EVPMDCtxPointer::hasXofFlag() const {

@@ -132,8 +132,8 @@ post-install:
 
 .include "crates.inc"
 
-# Preserve strict upstream version checks; recognize base LibreSSL 4.4
-# in the port patch instead of the module's unknown-version fallback.
+# Keep strict upstream version checks; openssl-sys 0.9.118 recognizes
+# base LibreSSL 4.4 instead of using the module's fallback.
 MODCARGO_CRATES_KEEP +=	openssl-sys
 MODCARGO_ENV +=		OPENSSL_NO_VENDOR=1 \
 			OPENSSL_INCLUDE_DIR=/usr/include \

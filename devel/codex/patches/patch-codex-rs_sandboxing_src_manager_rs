@@ -1,53 +1,26 @@
-Select and transform the OpenBSD backend through the arg0 helper.
-Resolve the helper executable with getexecpath(3), never a PATH search.
+Reject restricted launches when OpenBSD cannot provide a sandbox.
+Never interpret the absent backend as permission to run a managed or
+restricted command without isolation.
 
 Index: codex-rs/sandboxing/src/manager.rs
 --- codex-rs/sandboxing/src/manager.rs.orig
 +++ codex-rs/sandboxing/src/manager.rs
-@@ -189,6 +189,8 @@ impl PendingSandboxedExecRequest {
-
- #[derive(Debug)]
- pub enum SandboxTransformError {
-+    #[cfg(target_os = "openbsd")]
-+    OpenBsdSandboxUnavailable,
-     InvalidCommandCwd {
-         cwd: PathUri,
-         source: io::Error,
-@@ -213,6 +215,11 @@ pub enum SandboxTransformError {
- impl std::fmt::Display for SandboxTransformError {
-     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-         match self {
-+            #[cfg(target_os = "openbsd")]
-+            Self::OpenBsdSandboxUnavailable => write!(
-+                f,
-+                "OpenBSD has no supported command sandbox; select explicit danger-full-access or provide external isolation"
-+            ),
-             Self::InvalidCommandCwd { cwd, source } => {
-                 write!(
-                     f,
-@@ -256,6 +263,8 @@ impl std::error::Error for SandboxTransf
-             Self::MissingLinuxSandboxExecutable => None,
-             Self::WindowsMxcPreparation(_) => None,
-             Self::EnvironmentNetworkProxy(_) => None,
-+            #[cfg(target_os = "openbsd")]
-+            Self::OpenBsdSandboxUnavailable => None,
-             #[cfg(target_os = "macos")]
-             Self::SeatbeltPreparation(_) => None,
-             #[cfg(target_os = "linux")]
-@@ -375,6 +384,29 @@ impl SandboxManager {
-             network.and_then(NetworkProxy::managed_mitm_ca_trust_bundle_path);
-         let base_effective_permission_profile =
-             effective_permission_profile(permissions, additional_permissions.as_ref());
+@@ -402,6 +402,31 @@ impl SandboxManager {
+             request.runtime_readable_paths,
+         )
+         .map_err(SandboxTransformError::InvalidPolicy)?;
 +        // OpenBSD has no upstream sandbox backend. Never interpret a missing
 +        // backend as permission to run a restricted request without isolation.
 +        #[cfg(target_os = "openbsd")]
 +        {
++            let requires_backend = match request.selection {
++                SandboxSelection::RequirePlatform => true,
++                SandboxSelection::Explicit(sandbox) => sandbox != SandboxType::None,
++            };
 +            let (file_system_policy, network_policy) =
-+                base_effective_permission_profile.to_runtime_permissions();
-+            if matches!(
-+                &base_effective_permission_profile,
-+                PermissionProfile::Managed { .. }
-+            ) || sandbox != SandboxType::None
++                policy.permissions.to_runtime_permissions();
++            if requires_backend
++                || matches!(&policy.permissions, PermissionProfile::Managed { .. })
 +                || (matches!(
 +                    file_system_policy.kind,
 +                    codex_protocol::permissions::FileSystemSandboxKind::Restricted
@@ -55,12 +28,12 @@ Index: codex-rs/sandboxing/src/manager.rs
 +                || should_require_platform_sandbox(
 +                    &file_system_policy,
 +                    network_policy,
-+                    enforce_managed_network,
++                    request.enforce_managed_network,
 +                )
 +            {
-+                return Err(SandboxTransformError::OpenBsdSandboxUnavailable);
++                return Err(SandboxTransformError::SandboxUnavailable);
 +            }
 +        }
-         let pending_sandboxed_request = PendingSandboxedExecRequest::new(
-             &command.cwd,
-             sandbox_policy_cwd,
+         let backend = match request.selection {
+             SandboxSelection::Explicit(sandbox) => sandbox,
+             SandboxSelection::RequirePlatform => {

@@ -4,7 +4,7 @@ not offer self-installation actions for a distributor-owned executable.
 Index: codex-rs/tui/src/app/daemon_menu.rs
 --- codex-rs/tui/src/app/daemon_menu.rs.orig
 +++ codex-rs/tui/src/app/daemon_menu.rs
-@@ -54,6 +54,10 @@ impl App {
+@@ -57,6 +57,10 @@ impl App {
              Some(
                  "Manage this server on its host. Local daemon updates are unavailable for remote connections.",
              )
@@ -15,13 +15,12 @@ Index: codex-rs/tui/src/app/daemon_menu.rs
          } else if self.daemon_cli_executable.is_none() {
              Some("Run the Codex CLI to manage the daemon from this menu.")
          } else {
-@@ -160,7 +164,9 @@ impl App {
-         let Some(executable) = &self.daemon_cli_executable else {
-             return;
-         };
--        if matches!(self.app_server_target, AppServerTarget::Remote { .. }) {
-+        if matches!(self.app_server_target, AppServerTarget::Remote { .. })
-+            || cfg!(target_os = "openbsd")
+@@ -166,7 +170,8 @@ impl App {
+         if matches!(
+             self.app_server_target,
+             AppServerTarget::Remote { .. } | AppServerTarget::Cloud
+-        ) {
++        ) || cfg!(target_os = "openbsd")
 +        {
              return;
          }

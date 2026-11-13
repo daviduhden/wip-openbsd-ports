@@ -1,6 +1,5 @@
 Raise the CLI macro recursion limit and dispatch codex sandbox on
-OpenBSD. Include OpenBSD in the common sandbox argument parser
-regressions. Reject the package-manager update path with an explicit
+OpenBSD. Reject the package-manager update path with an explicit
 pkg_add message.
 
 Index: codex-rs/cli/src/main.rs
@@ -12,7 +11,7 @@ Index: codex-rs/cli/src/main.rs
  use clap::Args;
  use clap::CommandFactory;
  use clap::Parser;
-@@ -878,6 +880,11 @@ fn resolve_windows_update_command_from_p
+@@ -889,6 +891,11 @@ fn resolve_windows_update_command_from_p
  }
 
  fn run_update_command() -> anyhow::Result<()> {

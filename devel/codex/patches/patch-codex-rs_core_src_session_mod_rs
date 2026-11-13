@@ -5,7 +5,7 @@ app-server startup remain usable.
 Index: codex-rs/core/src/session/mod.rs
 --- codex-rs/core/src/session/mod.rs.orig
 +++ codex-rs/core/src/session/mod.rs
-@@ -617,6 +617,15 @@ impl Session {
+@@ -679,6 +679,15 @@ impl Session {
              .config_layer_stack
              .ensure_config_server_applied()?;
          args.config.validate_windows_mxc_requirement()?;

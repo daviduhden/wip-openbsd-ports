@@ -4,7 +4,7 @@ Run checks before saving settings or restarting the daemon.
 Index: codex-rs/app-server-daemon/src/lib.rs
 --- codex-rs/app-server-daemon/src/lib.rs.orig
 +++ codex-rs/app-server-daemon/src/lib.rs
-@@ -295,6 +295,10 @@ pub async fn run_pid_update_loop(
+@@ -300,6 +300,10 @@ pub async fn run_pid_update_loop(
      restore_release: Option<String>,
  ) -> Result<()> {
      ensure_supported_platform()?;
@@ -15,7 +15,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
      #[cfg(windows)]
      backend::windows::ensure_not_elevated()?;
      update_loop::run(http_client_factory, restore_release).await
-@@ -318,6 +322,10 @@ pub async fn update(
+@@ -323,6 +327,10 @@ pub async fn update(
      http_client_factory: codex_http_client::HttpClientFactory,
  ) -> Result<UpdateOutput> {
      ensure_supported_platform()?;
@@ -26,7 +26,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
      #[cfg(windows)]
      backend::windows::ensure_not_elevated()?;
      update_loop::request_manual_update(&Daemon::from_environment()?, http_client_factory).await
-@@ -355,7 +363,7 @@ impl Daemon {
+@@ -360,7 +368,7 @@ impl Daemon {
              .as_path()
              .to_path_buf();
          let state_dir = codex_home.as_path().join(STATE_DIR_NAME);
@@ -35,8 +35,8 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          // Old CLIs must not mistake a daemon-owned installation for their backend.
          let (pid_file, update_pid_file) =
              if managed_codex_bin.starts_with(codex_home.as_path().join("packages/standalone")) {
-@@ -438,6 +446,8 @@ impl Daemon {
-     async fn start(&self, feature_overrides: &BTreeMap<String, bool>) -> Result<LifecycleOutput> {
+@@ -449,6 +457,8 @@ impl Daemon {
+     ) -> Result<LifecycleOutput, StartError> {
          let mut managed = self.clone();
          let mut settings = self.load_settings().await?;
 +        #[cfg(target_os = "openbsd")]
@@ -44,7 +44,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          let (status, backend, pid, info) = if let Ok(info) = client::probe(&self.socket_path).await
          {
              (
-@@ -477,6 +487,7 @@ impl Daemon {
+@@ -494,6 +504,7 @@ impl Daemon {
                  self.wait_until_ready().await?,
              )
          };
@@ -52,7 +52,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          if backend.is_some()
              && let Err(err) = managed.ensure_managed_updater(&settings).await
          {
-@@ -500,6 +511,8 @@ impl Daemon {
+@@ -517,6 +528,8 @@ impl Daemon {
          prepare_install::prepare(self, &settings).await?;
          let mut managed = self.clone();
          managed.managed_codex_bin = self.current_managed_codex_bin()?;
@@ -61,7 +61,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          if !settings.auto_update_enabled {
              backend::pid_update_loop_backend(self.backend_paths(&settings))
                  .stop()
-@@ -523,6 +536,7 @@ impl Daemon {
+@@ -540,6 +553,7 @@ impl Daemon {
          }
          let pid = managed.start_managed_backend(&settings).await?;
          let info = self.wait_until_ready().await?;
@@ -69,7 +69,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          if let Err(err) = managed.ensure_managed_updater(&settings).await {
              eprintln!(
                  "warning: failed to ensure managed updater after app-server restart: {err:#}"
-@@ -824,6 +838,8 @@ impl Daemon {
+@@ -849,6 +863,8 @@ impl Daemon {
 
          if backend.is_some() {
              self.ensure_managed_codex_bin()?;
@@ -78,7 +78,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          }
          settings.remote_control_enabled = remote_control_enabled;
          settings.save(&self.settings_file).await?;
-@@ -839,6 +855,7 @@ impl Daemon {
+@@ -864,6 +880,7 @@ impl Daemon {
                  .await?;
              let _ = self.start_managed_backend(&settings).await?;
              let info = self.wait_until_ready().await?;
@@ -86,7 +86,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
              if let Err(err) = self.ensure_managed_updater(&settings).await {
                  eprintln!(
                      "warning: failed to ensure managed updater after remote-control change: {err:#}"
-@@ -871,11 +888,10 @@ impl Daemon {
+@@ -896,11 +913,10 @@ impl Daemon {
          let mut managed = self.clone();
          managed.managed_codex_bin = self.current_managed_codex_bin()?;
          managed.ensure_managed_codex_bin()?;
@@ -99,7 +99,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          #[cfg(unix)]
          {
              use std::os::unix::fs::FileTypeExt;
-@@ -991,6 +1007,11 @@ impl Daemon {
+@@ -1016,6 +1032,11 @@ impl Daemon {
 
      async fn ensure_managed_updater(&self, settings: &DaemonSettings) -> Result<bool> {
          let updater = backend::pid_update_loop_backend(self.backend_paths(settings));
@@ -111,7 +111,7 @@ Index: codex-rs/app-server-daemon/src/lib.rs
          if !settings.auto_update_enabled {
              updater.stop().await?;
              return Ok(false);
-@@ -1040,6 +1061,12 @@ impl Daemon {
+@@ -1065,6 +1086,12 @@ impl Daemon {
          ))
      }
 

@@ -4,7 +4,7 @@ packages.
 Index: setup.py
 --- setup.py.orig
 +++ setup.py
-@@ -315,7 +315,6 @@ setuptools.setup(
+@@ -316,7 +316,6 @@ setuptools.setup(
              "tb-gcp-uploader=google.cloud.aiplatform.tensorboard.uploader_main:run_main"
          ],
      },

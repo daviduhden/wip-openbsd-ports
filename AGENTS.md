@@ -52,7 +52,9 @@ update. The minimum policy is:
    `importlib-metadata`, `filelock`, `huggingface-hub`, `google-genai` or
    `websockets`), select the highest release inside that bound, keep the
    `PORTROACH` limit accurate, and document the excluded upstream release.
-   Never break a sibling port by bumping past its declared requirement.
+   Never break a sibling port by bumping past its declared requirement. When a
+   sibling declares an exact pin, update that pin in the same change; prefer
+   the packaged patch release and record any deviation from upstream's pin.
 5. Bump the version carriers only after the selected source and its
    compatibility changes have been reviewed. Remove `REVISION` for a new
    upstream version, bump it for packaging-only changes, and keep a customized
@@ -62,7 +64,9 @@ update. The minimum policy is:
    source with `diff -u -p`, one target per `Index:` header, and a specific
    rationale whose lines are at most 72 columns. Delete patches that upstream
    incorporated, that another retained change replaces, or that no longer
-   apply. Verify the whole series in sorted order with zero fuzz.
+   apply. Verify the whole series in sorted order with zero fuzz. A previous
+   review does not carry over to a new tag, even a patch release; re-run the
+   series check against the selected archive.
 7. Review the port `Makefile` and installed `pkg/README` after each update:
    dependencies, `WANTLIB`, services, configuration, security notes and
    obsolete version statements must match the new source.

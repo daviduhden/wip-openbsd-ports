@@ -225,10 +225,12 @@ patch dispositions, deferred generated files and pending native checks.
 An official update between the local and upstream versions is an input to
 the final upstream update, not a reason to stop at the official version.
 Regenerate every retained patch even if the official port has not moved;
-use the patch skill's pristine-source and full-series checks. Do not bump
-a version before the selected source and its compatibility changes have
-been reviewed. Report unresolved ports as incomplete rather than hiding
-them behind a repository-wide success claim.
+use the patch skill's pristine-source and full-series checks. A prior review
+does not carry over to a new tag, including a patch release: re-run the
+series check against the selected archive. Do not bump a version before the
+selected source and its compatibility changes have been reviewed. Report
+unresolved ports as incomplete rather than hiding them behind a
+repository-wide success claim.
 
 ### Upstream selection under cross-port constraints
 
@@ -250,6 +252,9 @@ cap a major version even when the dependency itself has moved on.
   silently pin an old version and call the collection current.
 - Re-check optional extras separately from runtime requirements; an upper
   bound that appears only in an extra does not block a runtime update.
+- When a sibling declares an exact pin, update it in the same change. Prefer
+  the packaged patch release over upstream's tested pin and record the
+  deviation in the port comment or handoff.
 
 ### Official tree access and comparison
 
@@ -331,10 +336,13 @@ dependencies, and OpenBSD process/security behavior. Reconcile their evidence
 before editing. Compare all three source states; use the official patch set as
 a reviewed update, not a replacement for local behavior. Recheck daemon
 lifecycle and package-manager ownership, V8 source/version and GN patches,
-PTY/exec behavior, and every sandbox fail-closed guard. The security skill
-defines supported sandbox claims; the dependency skill covers Cargo/V8 source
-mapping. Review `pkg/README` even when it needs no edit. Never claim OpenBSD
-sandboxing works unless a supported kernel-enforced backend is implemented
+PTY/exec behavior, and every sandbox fail-closed guard. Recheck every
+`DIST_TUPLE` git source, including newly added crates such as sqlx, and
+confirm that `Cargo.toml` rewrites each one to its extracted path. The
+security skill defines supported sandbox claims; the dependency skill
+covers Cargo/V8 source mapping. Review `pkg/README` even when it needs no
+edit. Never claim OpenBSD sandboxing works unless a supported
+kernel-enforced backend is implemented
 and tested. Outside OpenBSD, leave `distinfo`, `pkg/PLIST`, and `crates.inc`
 to the framework and list each pending file. When removing a runtime shell
 package such as `shells/bash`, trace shell detection, default fallback order,

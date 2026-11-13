@@ -1,6 +1,6 @@
 COMMENT =	command-line access to github pull requests, issues and more
 
-V =		2.103.3
+V =		2.104.0
 MODGO_MODNAME =	github.com/cli/cli/v${V:R:R}
 MODGO_VERSION =	v${V}
 
@@ -12,8 +12,6 @@ PKGNAME =	github-cli-${V}
 SURVEY_V =	vv2.3.8
 DIST_TUPLE =	github bsdmp survey ${SURVEY_V} ../survey
 EXTRACT_ONLY =	bsdmp-survey-${SURVEY_V}.tar.gz
-
-REVISION =	0
 
 CATEGORIES =	devel
 HOMEPAGE =	https://cli.github.com/

@@ -258,6 +258,12 @@ cap a major version even when the dependency itself has moved on.
 - When a sibling declares an exact pin, update it in the same change. Prefer
   the packaged patch release over upstream's tested pin and record the
   deviation in the port comment or handoff.
+- When a port vendors a sibling's upstream through `DIST_TUPLE` and its own
+  `files/<dependency>/` patches, advance both pins in the same change and
+  copy the sibling's rebased patches back into the vendored directory. Drop
+  patches that the new release incorporated from both copies, confirm the
+  consumer's manifest still accepts the version, and bump the consumer's
+  `REVISION` when only the bundled source changed.
 
 ### Official tree access and comparison
 

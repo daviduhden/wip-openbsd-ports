@@ -252,6 +252,9 @@ cap a major version even when the dependency itself has moved on.
   silently pin an old version and call the collection current.
 - Re-check optional extras separately from runtime requirements; an upper
   bound that appears only in an extra does not block a runtime update.
+- When a port pins a commit, check whether upstream has published a stable
+  tag. Switch to the tag or its commit, follow the manifest version, and
+  drop patches that the new release incorporated.
 - When a sibling declares an exact pin, update it in the same change. Prefer
   the packaged patch release over upstream's tested pin and record the
   deviation in the port comment or handoff.
@@ -264,7 +267,9 @@ which one was used and its revision or date. Fetch the official `Makefile`,
 `patches/`, `pkg/README` and `pkg/DESCR`; compare them individually with the
 local files instead of replacing a directory. Official ports may be behind
 the overlay, so a missing official patch is not evidence that a local patch
-is unnecessary.
+is unnecessary. When official `-current` matches the local version, compare
+the files anyway and adopt new maintainer fixes without changing the version;
+a matching version does not mean the official port is unchanged.
 
 ### Required collection record
 

@@ -41,8 +41,9 @@ update. The minimum policy is:
    every version carrier, local patches, README and local behavior.
 2. Establish the newest stable upstream release from the project's own
    release source; do not infer it from a tag or a registry summary alone.
-   Check the matching port in official OpenBSD `-current` even when the local
-   copy looks newer.
+   When a port pins a commit, prefer a newly published stable tag and its
+   manifest version. Check the matching port in official OpenBSD `-current`
+   even when the local copy looks newer.
 3. Compare upstream, official and local sources file by file. Integrate the
    official maintainer fixes that remain valid, and keep local behavior that
    upstream or official changes do not make obsolete. Record every declined
@@ -58,8 +59,10 @@ update. The minimum policy is:
 5. Bump the version carriers only after the selected source and its
    compatibility changes have been reviewed. Remove `REVISION` for a new
    upstream version, bump it for packaging-only changes, and keep a customized
-   overlay's `REVISION` above the official effective value. Use `EPOCH` only
-   when version ordering genuinely moves backwards.
+   overlay's `REVISION` above the official effective value. Preserve an
+   explicit user-selected `REVISION = 0` and record the package-name collision
+   risk instead of overriding it. Use `EPOCH` only when version ordering
+   genuinely moves backwards.
 6. Rebase every retained patch against a pristine extraction of the exact new
    source with `diff -u -p`, one target per `Index:` header, and a specific
    rationale whose lines are at most 72 columns. Delete patches that upstream

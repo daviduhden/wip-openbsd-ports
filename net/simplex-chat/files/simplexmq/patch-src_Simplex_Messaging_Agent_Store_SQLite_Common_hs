@@ -13,7 +13,7 @@ Index: src/Simplex/Messaging/Agent/Store/SQLite/Common.hs
  {-# LANGUAGE ScopedTypeVariables #-}
 
  module Simplex.Messaging.Agent.Store.SQLite.Common
-@@ -70,17 +71,22 @@ data SQLiteFuncPtrs
+@@ -73,17 +74,22 @@ data SQLiteFuncPtrs
    | SQLiteAggrPtrs {stepPtr :: FunPtr SQLiteFunc, finalPtr :: FunPtr SQLiteFuncFinal}
 
  withConnectionPriority :: DBStore -> Bool -> (DB.Connection -> IO a) -> IO a
@@ -39,9 +39,9 @@ Index: src/Simplex/Messaging/Agent/Store/SQLite/Common.hs
      signal = atomically $ modifyTVar' dbSem (+ 1)
      release = atomically $ modifyTVar' dbSem $ \sem -> if sem > 0 then sem - 1 else 0
      wait = unlessM free $ atomically $ unlessM ((0 ==) <$> readTVar dbSem) retry
-@@ -105,10 +111,10 @@ withTransactionPriority st@DBStore {dbCl
-   where
-     transaction db@DB.Connection {conn} = SQL.withImmediateTransaction conn $ action db
+@@ -117,10 +123,10 @@ withTransactionIsolation st _ = withTran
+ isTransactionConflict :: E.SomeException -> Bool
+ isTransactionConflict _ = False
 
 --- No-op for SQLite, just tries the action.
 --- This provides a consistent interface with the PostgreSQL version.

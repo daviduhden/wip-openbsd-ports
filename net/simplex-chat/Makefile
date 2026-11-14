@@ -8,6 +8,7 @@ GH_TAGNAME = v7.1.2
 
 V = 7.1.2
 DISTNAME = ${GH_PROJECT}-${V}
+REVISION = 1
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
 WRKDIST = ${WRKDIR}/${GH_PROJECT}-${GH_TAGNAME:S/^v//}
@@ -15,7 +16,7 @@ WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 
 DIST_TUPLE += github simplex-chat simplexmq \
-		c1830fb2dbf5a1a5cc3b56c6c65ef911a622ae6d ../simplexmq
+		fdbcb24d86460977382e1237591cd505c3b37fa1 ../simplexmq
 DIST_TUPLE += github supranational blst \
 		db3defd0d501cc2bb1cdd59cb955d1a421821441 ../simplexmq/cbits/blst
 DIST_TUPLE += github simplex-chat libbbs \
@@ -178,7 +179,6 @@ SIMPLEXMQ_PATCHES = \
 	patch-src_Simplex_Messaging_Notifications_Server_Main_hs \
 	patch-src_Simplex_Messaging_Notifications_Server_hs \
 	patch-src_Simplex_Messaging_Server_CLI_hs \
-	patch-src_Simplex_Messaging_Server_hs \
 	patch-src_Simplex_Messaging_Server_Web_hs \
 	patch-src_Simplex_Messaging_Transport_hs \
 	patch-src_Simplex_Messaging_Transport_Client_hs \

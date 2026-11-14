@@ -17,7 +17,7 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
      getConnectionsForDelivery,
      getAllSndQueuesForDelivery,
      updatePendingMsgRIState,
-@@ -244,6 +245,7 @@ module Simplex.Messaging.Agent.Store.Age
+@@ -245,6 +246,7 @@ module Simplex.Messaging.Agent.Store.Age
      getSndFile,
      getSndFileByEntityId,
      getNextSndFileToPrepare,
@@ -25,7 +25,7 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
      updateSndFileError,
      updateSndFileStatus,
      updateSndFileEncrypted,
-@@ -1111,6 +1113,13 @@ getAllSndQueuesForDelivery db = map toSn
+@@ -1113,6 +1115,13 @@ getAllSndQueuesForDelivery db = map toSn
        WHERE c.deleted = 0
      |]
 
@@ -39,7 +39,7 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
  getPendingQueueMsg :: DB.Connection -> ConnId -> SndQueue -> IO (Either StoreError (Maybe (Maybe RcvQueue, PendingMsgData)))
  getPendingQueueMsg db connId SndQueue {dbQueueId} =
    getWorkItem "message" getMsgId getMsgData markMsgFailed
-@@ -1649,7 +1658,10 @@ createCommand db corrId connId srv_ cmd
+@@ -1655,7 +1664,10 @@ createCommand db corrId connId srv_ cmd
      serverFields :: ExceptT StoreError IO (Maybe (NonEmpty TransportHost), Maybe ServiceName, Maybe C.KeyHash)
      serverFields = case srv_ of
        Just srv@(SMPServer host port _) ->
@@ -51,7 +51,7 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
        Nothing -> pure (Nothing, Nothing, Nothing)
 
  insertedRowId :: DB.Connection -> IO Int64
-@@ -3685,6 +3697,34 @@ getNextSndFileToPrepare db ttl =
+@@ -3698,6 +3710,34 @@ getNextSndFileToPrepare db ttl =
            |]
            (SFSNew, SFSEncrypting, SFSEncrypted, cutoffTs)
 
@@ -86,7 +86,7 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
  markSndFileFailed :: DB.Connection -> DBSndFileId -> IO ()
  markSndFileFailed db fileId =
    DB.execute db "UPDATE snd_files SET failed = 1 WHERE snd_file_id = ?" (Only fileId)
-@@ -3773,12 +3813,12 @@ getNextSndChunkToUpload db server@Protoc
+@@ -3786,12 +3826,12 @@ getNextSndChunkToUpload db server@Protoc
              JOIN snd_files f ON f.snd_file_id = c.snd_file_id
              WHERE s.xftp_host = ? AND s.xftp_port = ? AND s.xftp_key_hash = ?
                AND r.replica_status = ? AND r.replica_number = 1
@@ -101,7 +101,7 @@ Index: src/Simplex/Messaging/Agent/Store/AgentStore.hs
      getChunkData :: (Int64, DBSndFileId) -> IO (Either StoreError SndFileChunk)
      getChunkData (sndFileChunkReplicaId, _fileId) = do
        chunk_ <-
-@@ -3857,9 +3897,9 @@ getPendingSndFilesServers db ttl = do
+@@ -3870,9 +3910,9 @@ getPendingSndFilesServers db ttl = do
          JOIN snd_file_chunks c ON c.snd_file_chunk_id = r.snd_file_chunk_id
          JOIN snd_files f ON f.snd_file_id = c.snd_file_id
          WHERE r.replica_status = ? AND r.replica_number = 1

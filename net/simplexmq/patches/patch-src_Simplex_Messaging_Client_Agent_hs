@@ -22,7 +22,7 @@ Index: src/Simplex/Messaging/Client/Agent.hs
  import Control.Logger.Simple
 @@ -84,7 +83,7 @@ import qualified Simplex.Messaging.TMap
  import Simplex.Messaging.Transport
- import Simplex.Messaging.Util (catchAll_, ifM, safeDecodeUtf8, toChunks, tshow, whenM, ($>>=), (<$$>))
+ import Simplex.Messaging.Util (catchAll_, ifM, safeDecodeUtf8, stateTVar', toChunks, tshow, whenM, ($>>=), (<$$>))
  import System.Timeout (timeout)
 -import UnliftIO (async)
 +import UnliftIO (asyncWithUnmask)

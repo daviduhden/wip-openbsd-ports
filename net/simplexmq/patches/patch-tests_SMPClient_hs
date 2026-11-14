@@ -8,7 +8,7 @@ service identity.
 Index: tests/SMPClient.hs
 --- tests/SMPClient.hs.orig
 +++ tests/SMPClient.hs
-@@ -186,15 +186,14 @@ runSMPClient _ test' = testSMPClient tes
+@@ -176,15 +176,14 @@ runSMPClient _ test' = testSMPClient tes
  runSMPServiceClient :: (HasTestEnv, Transport c) => TProxy c 'TServer -> (TLS.Credential, C.KeyPairEd25519) -> (THandleSMP c 'TClient -> IO a) -> IO a
  runSMPServiceClient _ serviceCreds test' = testSMPServiceClient serviceCreds test'
 

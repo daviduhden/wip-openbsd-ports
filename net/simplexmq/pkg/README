@@ -35,6 +35,11 @@ its chain. Anyone who obtains the CA key can issue certificates that
 clients trust. Publish the CA certificate
 fingerprint printed by `init` through a channel independent of the server.
 
+Version 7.1.0 removes the journal message store. A server configured
+with store_messages=journal must export its messages with smp-server
+7.1.0.11 or earlier before upgrading, then select memory or database
+storage. See the upstream CHANGELOG for the migration commands.
+
 The OpenBSD port defaults XFTP certificate generation to ED25519 because
 LibreSSL does not provide ED448.  ED448 can still be selected explicitly
 when using a compatible openssl(1) implementation.

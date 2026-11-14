@@ -1,8 +1,3 @@
-Credential rotation is a finite CLI command, not a daemon. Do not cancel
-it after 100 ms and suppress the resulting exception: that can leave a
-partial certificate set and makes the assertion inspect empty captured
-output.
-
 The generated configuration should still be checked for the upstream
 production defaults, but the test daemons must not bind privileged port
 443. Rewrite only the temporary test configurations to use unprivileged
@@ -66,10 +61,10 @@ Index: tests/CLITests.hs
    r `shouldContain` (if storeLog then ["Store log: " <> ntfLogPath <> "/ntf-server-store.log"] else ["Store log disabled."])
 -  r `shouldContain` ["Serving NTF protocol on port 443 (TLS)..."]
 +  r `shouldContain` ["Serving NTF protocol on port 16001 (TLS)..."]
+   r `shouldNotSatisfy` any (B.unpack ntfTestServerDBConnstr `isInfixOf`)
    capture_ (withStdin "Y" . withArgs ["delete"] $ ntfServerCLI ntfCfgPath ntfLogPath)
      >>= (`shouldSatisfy` ("WARNING: deleting the server will make all queues inaccessible" `isPrefixOf`))
-   doesFileExist (cfgPath <> "/ca.key") `shouldReturn` False
-@@ -268,10 +282,12 @@ xftpServerTest storeLog = do
+@@ -269,10 +283,12 @@ xftpServerTest storeLog = do
    lookupValue "STORE_LOG" "log_stats" ini `shouldBe` Right "off"
    lookupValue "TRANSPORT" "port" ini `shouldBe` Right "443"
    doesFileExist (fileCfgPath <> "/ca.key") `shouldReturn` True

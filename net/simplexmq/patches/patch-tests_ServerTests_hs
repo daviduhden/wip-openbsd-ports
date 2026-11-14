@@ -11,7 +11,7 @@ exception terminates the server and makes the client fail with TLS EOF.
 Index: tests/ServerTests.hs
 --- tests/ServerTests.hs.orig
 +++ tests/ServerTests.hs
-@@ -966,6 +966,7 @@ testServiceSubsTotalCount =
+@@ -1121,6 +1121,7 @@ testServiceSubsTotalCount =
                  _ -> pure Nothing
              ]
          threadDelay 1500000
@@ -19,7 +19,7 @@ Index: tests/ServerTests.hs
          B.readFile testPrometheusMetricsFile >>= \m -> readServiceSubsMetric (B.unpack m) `shouldBe` Just 2
 
        -- Phase 2: associate 1 more queue via SUB, reconnect with SUBS 3, check metric = 3
-@@ -1487,6 +1488,7 @@ testMessageServiceNotifications :: SpecW
+@@ -1889,6 +1890,7 @@ testMessageServiceNotifications :: SpecW
  testMessageServiceNotifications =
    it "should create simplex connection, subscribe notifier as service and deliver notifications" $ \(ATransport t, msType) -> do
      g <- C.newRandom
@@ -27,7 +27,7 @@ Index: tests/ServerTests.hs
      smpTest2 t msType $ \rh sh -> do
        (sPub, sKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
        (sId, rId, rKey, dhShared) <- createAndSecureQueue rh sPub
-@@ -1495,7 +1497,7 @@ testMessageServiceNotifications =
+@@ -1897,7 +1899,7 @@ testMessageServiceNotifications =
        (rcvNtfPubDhKey, _) <- atomically $ C.generateKeyPair g
        Resp "1" _ (NID nId _) <- signSendRecv rh rKey ("1", rId, NKEY nPub rcvNtfPubDhKey)
        serviceKeys@(_, servicePK) <- atomically $ C.generateKeyPair g
@@ -36,7 +36,7 @@ Index: tests/ServerTests.hs
          -- can't subscribe without service signature in service connection
          Resp "2a" _ (ERR SERVICE) <- signSendRecv nh1 nKey ("2a", nId, NSUB)
          Resp "2b" _ (SOK (Just serviceId)) <- serviceSignSendRecv nh1 nKey servicePK ("2b", nId, NSUB)
-@@ -1503,7 +1505,7 @@ testMessageServiceNotifications =
+@@ -1905,7 +1907,7 @@ testMessageServiceNotifications =
          Resp "2c" _ (SOK (Just serviceId'')) <- serviceSignSendRecv nh1 nKey servicePK ("2c", nId, NSUB)
          serviceId'' `shouldBe` serviceId
          deliverMessage rh rId rKey sh sId sKey nh1 "hello" dec
@@ -45,7 +45,7 @@ Index: tests/ServerTests.hs
            Resp "4" _ (SOK (Just serviceId')) <- serviceSignSendRecv nh2 nKey servicePK ("4", nId, NSUB)
            serviceId' `shouldBe` serviceId
            -- service subscription is terminated
-@@ -1564,6 +1566,7 @@ testServiceNotificationsTwoRestarts :: S
+@@ -1966,6 +1968,7 @@ testServiceNotificationsTwoRestarts :: S
  testServiceNotificationsTwoRestarts =
    it "subscribe notifier as service and deliver notifications after two restarts" $ \ps@(ATransport t, _) -> do
      g <- C.newRandom
@@ -53,7 +53,7 @@ Index: tests/ServerTests.hs
      (sPub, sKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
      (nPub, nKey) <- atomically $ C.generateAuthKeyPair C.SEd25519 g
      serviceKeys@(_, servicePK) <- atomically $ C.generateKeyPair g
-@@ -1572,14 +1575,14 @@ testServiceNotificationsTwoRestarts =
+@@ -1974,14 +1977,14 @@ testServiceNotificationsTwoRestarts =
        (sId, rId, rKey, dhShared) <- createAndSecureQueue rh sPub
        let dec = decryptMsgV3 dhShared
        Resp "0" _ (NID nId _) <- signSendRecv rh rKey ("0", rId, NKEY nPub rcvNtfPubDhKey)
@@ -70,7 +70,7 @@ Index: tests/ServerTests.hs
          Resp "2.1" serviceId' (SOKS n _) <- signSendRecv nh (C.APrivateAuthKey C.SEd25519 servicePK) ("2.1", serviceId, NSUBS 1 idsHash)
          n `shouldBe` 1
          Resp "2.2" _ (SOK Nothing) <- signSendRecv rh rKey ("2.2", rId, SUB)
-@@ -1587,7 +1590,7 @@ testServiceNotificationsTwoRestarts =
+@@ -1989,7 +1992,7 @@ testServiceNotificationsTwoRestarts =
          deliverMessage rh rId rKey sh sId sKey nh "hello 2" dec
      threadDelay 250000
      withSmpServerStoreLogOn ps testPort $ runTest2 t $ \sh rh ->
@@ -79,3 +79,16 @@ Index: tests/ServerTests.hs
          Resp "3.1" _ (SOKS n _) <- signSendRecv nh (C.APrivateAuthKey C.SEd25519 servicePK) ("3.1", serviceId, NSUBS 1 idsHash)
          n `shouldBe` 1
          Resp "3.2" _ (SOK Nothing) <- signSendRecv rh rKey ("3.2", rId, SUB)
+@@ -2016,10 +2019,11 @@ testNotificationsInChunks = do
+       runSMPClient t $ \nh -> subscribeNotifiers nh Nothing ntfs
+   it "should deliver pending notifications in chunks to service subscriber" $ \(ATransport t, msType) -> do
+     g <- C.newRandom
++    serviceCreds <- tlsCredentials . pure <$> genCredentials g Nothing (0, 2400) "simplex-ntf-service"
+     serviceKeys@(_, servicePK) <- atomically $ C.generateKeyPair g
+     smpTest2Cfg (ntfChunkCfg msType) supportedClientSMPRelayVRange t $ \rh sh -> do
+       ntfs <- replicateM 5 $ createQueueWithPendingNtf rh sh
+-      testNtfServiceClient t serviceKeys $ \nh -> subscribeNotifiers nh (Just servicePK) ntfs
++      testNtfServiceClient t serviceCreds serviceKeys $ \nh -> subscribeNotifiers nh (Just servicePK) ntfs
+   where
+     ntfChunkCfg :: HasTestEnv => AStoreType -> AServerConfig
+     ntfChunkCfg msType = updateCfg (cfgMS msType) $ \cfg_ -> cfg_ {ntfDeliveryChunk = 2}

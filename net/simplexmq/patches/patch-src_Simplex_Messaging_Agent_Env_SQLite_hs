@@ -5,7 +5,7 @@ XFTP completion independently from network uploads and file preparation.
 Index: src/Simplex/Messaging/Agent/Env/SQLite.hs
 --- src/Simplex/Messaging/Agent/Env/SQLite.hs.orig
 +++ src/Simplex/Messaging/Agent/Env/SQLite.hs
-@@ -322,6 +322,7 @@ data XFTPAgent = XFTPAgent
+@@ -320,6 +320,7 @@ data XFTPAgent = XFTPAgent
      xftpWorkDir :: TVar (Maybe FilePath),
      xftpRcvWorkers :: TMap (Maybe XFTPServer) Worker,
      xftpSndWorkers :: TMap (Maybe XFTPServer) Worker,
@@ -13,7 +13,7 @@ Index: src/Simplex/Messaging/Agent/Env/SQLite.hs
      xftpDelWorkers :: TMap XFTPServer Worker
    }
 
-@@ -330,13 +331,15 @@ newXFTPAgent = do
+@@ -328,13 +329,15 @@ newXFTPAgent = do
    xftpWorkDir <- newTVarIO Nothing
    xftpRcvWorkers <- TM.emptyIO
    xftpSndWorkers <- TM.emptyIO

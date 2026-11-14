@@ -10,7 +10,7 @@ queue. Include the local XFTP completion worker in worker diagnostics.
 Index: src/Simplex/Messaging/Agent/Client.hs
 --- src/Simplex/Messaging/Agent/Client.hs.orig
 +++ src/Simplex/Messaging/Agent/Client.hs
-@@ -194,7 +194,7 @@ where
+@@ -200,7 +200,7 @@ where
  import Control.Applicative ((<|>))
  import Control.Concurrent (ThreadId, killThread)
  import Control.Concurrent.Async (Async, uninterruptibleCancel)
@@ -19,7 +19,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
  import Control.Exception (AsyncException (..), BlockedIndefinitelyOnSTM (..))
  import Control.Logger.Simple
  import Control.Monad
-@@ -318,7 +318,7 @@ import Simplex.Messaging.Version
+@@ -324,7 +324,7 @@ import Simplex.Messaging.Version
  import System.Mem.Weak (Weak, deRefWeak)
  import System.Random (randomR)
  import UnliftIO (mapConcurrently, timeout)
@@ -28,7 +28,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
  import UnliftIO.Concurrent (forkIO, mkWeakThreadId)
  import UnliftIO.Directory (doesFileExist, getTemporaryDirectory, removeFile)
  import qualified UnliftIO.Exception as E
-@@ -341,6 +341,9 @@ type XFTPTransportSession = TransportSes
+@@ -347,6 +347,9 @@ type XFTPTransportSession = TransportSes
 
  data AgentClient = AgentClient
    { acThread :: TVar (Maybe (Weak ThreadId)),
@@ -38,7 +38,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
      active :: TVar Bool,
      subQ :: TBQueue ATransmission,
      msgQ :: TBQueue (ServerTransmissionBatch SMPVersion ErrorType BrokerMsg),
-@@ -406,15 +409,17 @@ getAgentWorker = getAgentWorker' id pure
+@@ -414,15 +417,17 @@ getAgentWorker = getAgentWorker' id pure
  {-# INLINE getAgentWorker #-}
 
  getAgentWorker' :: forall a k e m. (Ord k, Show k, AnyError e, MonadUnliftIO m) => (a -> Worker) -> (Worker -> STM a) -> String -> Bool -> AgentClient -> k -> TMap k a -> (a -> ExceptT e m ()) -> m a
@@ -59,7 +59,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
        where
          runWork :: m ()
          runWork = tryAllErrors' (work w) >>= restartOrDelete
-@@ -428,7 +433,7 @@ getAgentWorker' toW fromW name hasWork c
+@@ -436,7 +441,7 @@ getAgentWorker' toW fromW name hasWork c
          shouldRestart e_ Worker {workerId = wId, doWork, restarts} t maxRestarts w'
            | wId == workerId (toW w') = do
                rc <- readTVar restarts
@@ -68,9 +68,9 @@ Index: src/Simplex/Messaging/Agent/Client.hs
                checkRestarts isActive $ updateRestartCount t rc
            | otherwise =
                pure False -- there is a new worker in the map, no action
-@@ -453,18 +458,21 @@ newWorker :: AgentClient -> STM Worker
+@@ -461,18 +466,21 @@ newWorker :: AgentClient -> STM Worker
  newWorker c = do
-   workerId <- stateTVar (workerSeq c) $ \next -> (next, next + 1)
+   workerId <- stateTVar' (workerSeq c) $ \next -> (next, next + 1)
    doWork <- newTMVar () -- new worker is created  with "some work to do" (indicated by () in TMVar)
 -  action <- newTMVar Nothing
 +  (action, cancelled) <- (,) <$> newTMVar Nothing <*> newTVar False
@@ -95,9 +95,9 @@ Index: src/Simplex/Messaging/Agent/Client.hs
 +      t <- work `forkFinallyUnmasked` const (atomically $ putTMVar done ())
 +      atomically . putTMVar action . Just . (,done) =<< mkWeakThreadId t
 
- data AgentOperation = AONtfNetwork | AORcvNetwork | AOMsgDelivery | AOSndNetwork | AODatabase
+ data AgentOperation = AONtfNetwork | AORcvNetwork | AOSndFiles | AOMsgDelivery | AOSndNetwork | AODatabase
    deriving (Eq, Show)
-@@ -514,6 +522,8 @@ newAgentClient clientId InitialAgentServ
+@@ -523,6 +531,8 @@ newAgentClient clientId InitialAgentServ
        qSize = tbqSize cfg
    proxySessTs <- newTVarIO =<< getCurrentTime
    acThread <- newTVarIO Nothing
@@ -106,7 +106,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    active <- newTVarIO True
    subQ <- newTBQueueIO qSize
    msgQ <- newTBQueueIO qSize
-@@ -556,6 +566,9 @@ newAgentClient clientId InitialAgentServ
+@@ -567,6 +577,9 @@ newAgentClient clientId InitialAgentServ
    return
      AgentClient
        { acThread,
@@ -116,7 +116,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
          active,
          subQ,
          msgQ,
-@@ -681,6 +694,7 @@ getSMPServerClient :: AgentClient -> Net
+@@ -694,6 +707,7 @@ getSMPServerClient :: AgentClient -> Net
  getSMPServerClient c@AgentClient {active, smpClients, workerSeq} nm tSess = do
    unlessM (readTVarIO active) $ throwE INACTIVE
    ts <- liftIO getCurrentTime
@@ -124,7 +124,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    withGetSessVar workerSeq tSess smpClients ts newClient (waitForProtocolClient c nm tSess smpClients)
    where
      newClient v = do
-@@ -693,6 +707,7 @@ getSMPProxyClient c@AgentClient {active,
+@@ -706,6 +720,7 @@ getSMPProxyClient c@AgentClient {active,
    proxySrv <- maybe (getNextServer c userId proxySrvs [destSrv]) pure proxySrv_
    ts <- liftIO getCurrentTime
    (tSess, auth) <- liftIO $ proxiedTransportSession proxySrv
@@ -132,7 +132,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    withGetSessVar workerSeq tSess smpClients ts (newProxyClient tSess auth ts) (waitForProxyClient tSess auth)
    where
      proxiedTransportSession :: SMPServerWithAuth -> IO (SMPTransportSession, Maybe SMP.BasicAuth)
-@@ -814,7 +829,7 @@ smpClientDisconnected c@AgentClient {act
+@@ -827,7 +842,7 @@ smpClientDisconnected c@AgentClient {act
  resubscribeSMPSession :: AgentClient -> SMPTransportSession -> AM' ()
  resubscribeSMPSession c@AgentClient {smpSubWorkers, workerSeq} tSess = do
    ts <- liftIO getCurrentTime
@@ -141,7 +141,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    where
      getWorkerVar ts =
        ifM
-@@ -822,7 +837,7 @@ resubscribeSMPSession c@AgentClient {smp
+@@ -835,7 +850,7 @@ resubscribeSMPSession c@AgentClient {smp
          (pure Nothing) -- prevent race with cleanup and adding pending queues in another call
          (Just <$> getSessVar workerSeq tSess smpSubWorkers ts)
      newSubWorker v = do
@@ -150,7 +150,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
        atomically $ putTMVar (sessionVar v) a
      runSubWorker v = do
        ri <- asks $ reconnectInterval . config
-@@ -860,6 +875,7 @@ getNtfServerClient :: AgentClient -> Net
+@@ -873,6 +888,7 @@ getNtfServerClient :: AgentClient -> Net
  getNtfServerClient c@AgentClient {active, ntfClients, workerSeq, proxySessTs, presetDomains} nm tSess@(_, srv, _) = do
    unlessM (readTVarIO active) $ throwE INACTIVE
    ts <- liftIO getCurrentTime
@@ -158,7 +158,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    withGetSessVar workerSeq tSess ntfClients ts (newProtocolClient c tSess ntfClients connectClient) (waitForProtocolClient c nm tSess ntfClients)
    where
      connectClient :: NtfClientVar -> AM NtfClient
-@@ -874,7 +890,8 @@ getNtfServerClient c@AgentClient {active
+@@ -887,7 +903,8 @@ getNtfServerClient c@AgentClient {active
      clientDisconnected :: NtfClientVar -> NtfClient -> IO ()
      clientDisconnected v client = do
        atomically $ removeSessVar v tSess ntfClients
@@ -168,7 +168,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
        logInfo . decodeUtf8 $ "Agent disconnected from " <> showServer srv
 
  getXFTPServerClient :: AgentClient -> XFTPTransportSession -> AM XFTPClient
-@@ -911,9 +928,22 @@ getXFTPServerClient c@AgentClient {activ
+@@ -924,9 +941,22 @@ getXFTPServerClient c@AgentClient {activ
      clientDisconnected :: XFTPClientVar -> XFTPClient -> IO ()
      clientDisconnected v client = do
        atomically $ removeSessVar v tSess xftpClients
@@ -192,7 +192,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
  waitForProtocolClient ::
    (ProtocolTypeI (ProtoType msg), ProtocolServerClient v err msg) =>
    AgentClient ->
-@@ -948,10 +978,16 @@ newProtocolClient ::
+@@ -961,10 +991,16 @@ newProtocolClient ::
  newProtocolClient c tSess@(userId, srv, entityId_) clients connectClient v =
    tryAllErrors (connectClient v) >>= \case
      Right client -> do
@@ -213,7 +213,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
      Left e -> do
        ei <- asks $ persistErrorInterval . config
        if ei == 0
-@@ -999,11 +1035,11 @@ waitForUserNetwork c =
+@@ -1012,11 +1048,11 @@ waitForUserNetwork c =
  closeAgentClient :: AgentClient -> IO ()
  closeAgentClient c = do
    atomically $ writeTVar (active c) False
@@ -226,7 +226,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    clearWorkers smpDeliveryWorkers >>= mapM_ (cancelWorker . fst)
    clearWorkers asyncCmdWorkers >>= mapM_ cancelWorker
    atomically $ SS.clear $ currentSubs c
-@@ -1015,12 +1051,14 @@ closeAgentClient c = do
+@@ -1029,12 +1065,14 @@ closeAgentClient c = do
      clear :: Monoid m => (AgentClient -> TVar m) -> IO ()
      clear sel = atomically $ writeTVar (sel c) mempty
      cancelReconnect :: SessionVar (Async ()) -> IO ()
@@ -244,7 +244,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
 
  waitUntilActive :: AgentClient -> IO ()
  waitUntilActive AgentClient {active} = unlessM (readTVarIO active) $ atomically $ unlessM (readTVar active) retry
-@@ -1037,7 +1075,7 @@ throwWhenNoDelivery c sq =
+@@ -1051,7 +1089,7 @@ throwWhenNoDelivery c sq =
 
  closeProtocolServerClients :: ProtocolServerClient v err msg => AgentClient -> (AgentClient -> TMap (TransportSession msg) (ClientVar msg)) -> IO ()
  closeProtocolServerClients c clientsSel =
@@ -253,7 +253,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
 
  reconnectServerClients :: ProtocolServerClient v err msg => AgentClient -> (AgentClient -> TMap (TransportSession msg) (ClientVar msg)) -> IO ()
  reconnectServerClients c clientsSel =
-@@ -2763,7 +2801,9 @@ getAgentWorkersDetails AgentClient {smpC
+@@ -2832,7 +2870,9 @@ getAgentWorkersDetails AgentClient {smpC
    ntfWorkers_ <- workerStats =<< readTVarIO ntfWorkers
    ntfSMPWorkers_ <- workerStats =<< readTVarIO ntfSMPWorkers
    xftpRcvWorkers_ <- workerStats =<< readTVarIO xftpRcvWorkers
@@ -264,7 +264,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    xftpDelWorkers_ <- workerStats =<< readTVarIO xftpDelWorkers
    pure
      AgentWorkersDetails
-@@ -2792,7 +2832,7 @@ getAgentWorkersDetails AgentClient {smpC
+@@ -2861,7 +2901,7 @@ getAgentWorkersDetails AgentClient {smpC
        pure (textKey qa, WorkersDetails {restarts = restartCount, hasWork, hasAction})
      Env {ntfSupervisor, xftpAgent} = agentEnv
      NtfSupervisor {ntfWorkers, ntfSMPWorkers} = ntfSupervisor
@@ -273,7 +273,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
 
  data AgentWorkersSummary = AgentWorkersSummary
    { smpClientsCount :: Int,
-@@ -2827,7 +2867,8 @@ getAgentWorkersSummary AgentClient {smpC
+@@ -2896,7 +2936,8 @@ getAgentWorkersSummary AgentClient {smpC
    ntfWorkersCount <- readTVarIO ntfWorkers >>= workerSummary
    ntfSMPWorkersCount <- readTVarIO ntfSMPWorkers >>= workerSummary
    xftpRcvWorkersCount <- readTVarIO xftpRcvWorkers >>= workerSummary
@@ -283,7 +283,7 @@ Index: src/Simplex/Messaging/Agent/Client.hs
    xftpDelWorkersCount <- readTVarIO xftpDelWorkers >>= workerSummary
    pure
      AgentWorkersSummary
-@@ -2846,8 +2887,8 @@ getAgentWorkersSummary AgentClient {smpC
+@@ -2915,8 +2956,8 @@ getAgentWorkersSummary AgentClient {smpC
    where
      Env {ntfSupervisor, xftpAgent} = agentEnv
      NtfSupervisor {ntfWorkers, ntfSMPWorkers} = ntfSupervisor

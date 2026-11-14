@@ -15,7 +15,7 @@ opposite peer.
 Index: tests/SMPProxyTests.hs
 --- tests/SMPProxyTests.hs.orig
 +++ tests/SMPProxyTests.hs
-@@ -186,6 +186,9 @@ oneServer test msType = withSmpServerCon
+@@ -184,6 +184,9 @@ oneServer test msType = withSmpServerCon
  deliverMessageViaProxy :: (C.AlgorithmI a, C.AuthAlgorithm a) => SMPServer -> SMPServer -> C.SAlgorithm a -> ByteString -> ByteString -> IO ()
  deliverMessageViaProxy proxyServ relayServ alg msg msg' = deliverMessagesViaProxy proxyServ relayServ alg [msg] [msg']
 
@@ -25,7 +25,7 @@ Index: tests/SMPProxyTests.hs
  deliverMessagesViaProxy :: (C.AlgorithmI a, C.AuthAlgorithm a) => SMPServer -> SMPServer -> C.SAlgorithm a -> [ByteString] -> [ByteString] -> IO ()
  deliverMessagesViaProxy = deliverMessagesViaProxyVR $ mkVersionRange minServerSMPRelayVersion currentClientSMPRelayVersion
 
-@@ -194,60 +197,57 @@ deliverMessagesViaProxyVR clientVR proxy
+@@ -192,60 +195,57 @@ deliverMessagesViaProxyVR clientVR proxy
    g <- C.newRandom
    -- set up proxy
    ts <- getCurrentTime
@@ -131,7 +131,7 @@ Index: tests/SMPProxyTests.hs
 
  agentDeliverMessageViaProxy :: (HasTestEnv, C.AlgorithmI a, C.AuthAlgorithm a) => (NonEmpty SMPServer, SMPProxyMode, Bool) -> (NonEmpty SMPServer, SMPProxyMode, Bool) -> C.SAlgorithm a -> ByteString -> ByteString -> AgentMsgId -> IO ()
  agentDeliverMessageViaProxy aTestCfg@(aSrvs, _, aViaProxy) bTestCfg@(bSrvs, _, bViaProxy) alg msg1 msg2 baseId =
-@@ -332,7 +332,7 @@ agentDeliverMessagesViaProxyConc agentSe
+@@ -330,7 +330,7 @@ agentDeliverMessagesViaProxyConc agentSe
            forever $
              get bob >>= \case
                ("", _, A.SENT _ _) -> pure ()
@@ -140,11 +140,11 @@ Index: tests/SMPProxyTests.hs
                huh -> fail (show huh)
        bSender <- async $ forM_ msgs $ runExceptT' . A.sendMessage bob aliceId pqEnc noMsgFlags
        aRecipient <-
-@@ -443,6 +443,16 @@ agentViaProxyRetryNoSession = do
+@@ -440,7 +440,15 @@ agentViaProxyRetryNoSession = do
+           pure ()
    where
      withServer2 = withSmpServerConfigOn (transport @TLS) proxyCfgS2 testPort2
-     servers srv = initAgentServersProxy {smp = userServers [srv]}
-+    withServer2 = withSmpServerConfigOn (transport @TLS) proxyCfgS2 testPort2
+-    servers srv = initAgentServersProxy {smp = userServers [srv]}
 +    servers srv =
 +      initAgentServersProxy
 +        { smp = userServers [srv],

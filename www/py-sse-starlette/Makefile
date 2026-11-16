@@ -5,9 +5,11 @@ MODPY_DISTV =	3.7.0
 DISTNAME =	sse_starlette-${MODPY_DISTV}
 PKGNAME =		py-${DISTNAME}
 
-REVISION =	0
+REVISION =	1
 
 CATEGORIES =		www
+
+HOMEPAGE =		https://github.com/sysid/sse-starlette
 
 # BSD
 PERMIT_PACKAGE =	Yes

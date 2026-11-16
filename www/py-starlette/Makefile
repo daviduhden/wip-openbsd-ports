@@ -5,11 +5,11 @@ MODPY_DISTV =	1.10.0
 DISTNAME =	starlette-${MODPY_DISTV}
 PKGNAME =		py-${DISTNAME}
 
-REVISION =	0
+REVISION =	1
 
 CATEGORIES =		www
 
-HOMEPAGE =		https://www.starlette.io/
+HOMEPAGE =		https://starlette.dev/
 
 # BSD
 PERMIT_PACKAGE =	Yes
@@ -19,7 +19,6 @@ MODULES =		lang/python
 MODPY_PI =		Yes
 MODPY_PYBUILD =	hatchling
 
-# XXX: needs httpx2
 TEST_DEPENDS =		devel/py-trio \
 			textproc/py-yaml \
 			www/py-httpx \
@@ -27,7 +26,8 @@ TEST_DEPENDS =		devel/py-trio \
 			www/py-jinja2 \
 			www/py-python-multipart
 
-RUN_DEPENDS =	net/py-anyio>=4.0.0,<5
+RUN_DEPENDS =	net/py-anyio>=4.0.0,<5 \
+		www/py-httpx2>=2.0.0
 
 TEST_DEPENDS += devel/py-blockbuster
 # The optional OpenTelemetry SDK is not ported.

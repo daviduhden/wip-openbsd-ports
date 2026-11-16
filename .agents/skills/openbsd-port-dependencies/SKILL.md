@@ -61,6 +61,18 @@ Read the target Makefile, inherited `Makefile.inc`, generated includes, upstream
    pin against the available OpenBSD ports toolchain.
 5. Update `LIB_DEPENDS` for native libraries and `WANTLIB` for actual linkage; language source manifests do not replace either. Preserve compiler modules and justified bundled-library exceptions. Validate from a fresh work directory after generation; ordinary configure/build must use fetched, checksummed inputs without new network dependency resolution.
 
+### Python entry points and optional dependencies
+
+Read the exact selected source's console entry points as well as its base
+requirements. A package may advertise CLI dependencies as an extra while
+installing a command that imports them unconditionally; include those runtime
+dependencies when that command is packaged. Conversely, a lazy optional
+adapter does not justify importing every official optional dependency into a
+minimal local package. Record the relevant import paths and preserve declared
+version bounds. For HTTP clients, trace the actual CA loader, default peer and
+hostname checks, and explicit user overrides before changing a trust-store
+dependency by analogy with the official port.
+
 ### Strict LibreSSL version metadata
 
 Inspect the exact cargo module and `openssl-sys` build script before relying

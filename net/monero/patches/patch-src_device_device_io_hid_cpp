@@ -3,11 +3,9 @@ OpenBSD's hidapi package renames hid_init to avoid a usbhid.h conflict.
 Index: src/device/device_io_hid.cpp
 --- src/device/device_io_hid.cpp.orig
 +++ src/device/device_io_hid.cpp
-@@ -94,3 +94,7 @@ namespace hw {
-       int r;
+@@ -94,0 +95,3 @@ namespace hw {
 +#ifdef __OpenBSD__
 +      r = hidapi_hid_init();
 +#else
-       r = hid_init();
+@@ -95,0 +99 @@ namespace hw {
 +#endif
-       ASSERT_X(r>=0, "Unable to init hidapi library. Error "+std::to_string(r)+": "+safe_hid_error(this->usb_device));

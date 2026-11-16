@@ -115,6 +115,10 @@ space-before-tab warning: unified context necessarily adds a space before
 upstream indentation. Keep trailing-whitespace checks active and inspect
 actual added source lines independently; do not reformat upstream code to
 silence warnings about patch context.
+If regenerated context exposes upstream trailing whitespace or an otherwise
+unchanged blank EOF, reduce unified context with `diff -U<n> -p`
+instead of changing upstream source formatting. Recheck the complete series
+without fuzz and compare the resulting source bytes after this adjustment.
 
 During an integral update, this regeneration applies to every retained
 patch, including unchanged-version ports and ports whose official counterpart

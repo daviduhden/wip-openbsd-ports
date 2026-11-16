@@ -5,6 +5,7 @@ GH_ACCOUNT =		EbodShojaei
 GH_PROJECT =		bake
 GH_TAGNAME =		v${MODPY_DISTV}
 PKGNAME =		mbake-${MODPY_DISTV}
+REVISION =		0
 CATEGORIES =		devel
 HOMEPAGE =		https://github.com/EbodShojaei/bake
 

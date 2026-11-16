@@ -126,6 +126,14 @@ has not been updated. Record each patch as regenerated, added, removed or
 pending; never count a style-only check as source regeneration. Record the
 specific upstream change or retained replacement that justifies a removal.
 
+For unchanged-version regeneration, check the actual selected archive too;
+an old patch may have been prepared from a different source layout or stale
+context. Save generation and full-series replay evidence even when the new
+patch is byte-identical to the tracked file. Missing vendored sources or a
+new-file target require reconstructing the declared extraction inputs and
+`/dev/null` origin, respectively; neither is evidence that the patch is
+obsolete. Do not integrate a partly reconstructed series as a verified port.
+
 For a security-only audit without a source version change, regenerate only
 patches requiring corrections; leave correct unchanged patches intact. This
 is distinct from the integral release-update rule above. A changed existing

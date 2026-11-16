@@ -287,6 +287,24 @@ native checks. Unchanged and blocked ports stay in the table. A port with an
 unresolved row makes the integral update incomplete; report it as such rather
 than claiming collection-wide success.
 
+Keep a source-identity ledger alongside that table: record the official
+checkout commit or CVS revisions, the exact selected archive URL, its
+extraction root, and any pinned dependency inputs used by patches. Resolve a
+mutable mirror branch to an immutable revision before final reconciliation.
+If a release tag, manifest version and package version differ, record all
+three and explain the selection rather than making the strings agree by
+editing upstream metadata. In particular, a Cabal release tag can advance
+while its `.cabal` version remains unchanged; `MODCABAL_VERSION` follows the
+reviewed manifest, not a version inferred from the tag.
+
+List dispositions for individual official files, including shared parent
+Makefiles, and distinguish adopted fixes, already-equivalent local behavior,
+obsolete fixes, declined changes and unresolved comparisons. Track retained
+patch regeneration separately from changes in patch bytes: an identical
+regenerated diff still needs the exact input, generation and replay evidence.
+A registry discovery result or an unchanged version does not close the
+source-review, compatibility or patch-regeneration gates.
+
 ### XERJ (`devel/xerj`)
 
 `devel/xerj` pins a prerelease tag and builds only the `xerj-server`

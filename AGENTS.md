@@ -39,6 +39,8 @@ update. The minimum policy is:
 
 1. Read the authoritative inventory and record each port's current version,
    every version carrier, local patches, README and local behavior.
+   Keep the source-identity and per-file disposition ledger required by the
+   update skill; matching version strings do not establish matching inputs.
 2. Establish the newest stable upstream release from the project's own
    release source; do not infer it from a tag or a registry summary alone.
    When a port pins a commit, prefer a newly published stable tag and its

@@ -224,6 +224,15 @@ When cleaning audit artifacts, preserve explicitly retained handoffs byte for
 byte and remove disposable trees without following symlinks outside `audit/`.
 Deleting logs or source extractions does not close native validation items;
 keep their pending status in the retained backlog.
+Before removal, consolidate current versions, exact coupled pins, known
+manifest mismatches and outstanding functional/security checks from the
+superseded reports into the retained handoff. Remove references to artifacts
+being deleted and distinguish historical static results from retained raw
+evidence. Verify inventory coverage and pending states before deleting any
+source report. After updating the handoff, record its hash, delete only
+non-retained immediate children of the audit root without following symlinks,
+and confirm both its unchanged hash and the final directory contents. Keep
+cleanup validation logs outside the directory being reduced to one file.
 
 ## Evidence levels
 

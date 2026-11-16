@@ -4,6 +4,7 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplexmq
+# Match the SimpleXMQ source selected by SimpleX Chat v7.1.4.
 GH_COMMIT = fdbcb24d86460977382e1237591cd505c3b37fa1
 
 V = 7.1.0.18

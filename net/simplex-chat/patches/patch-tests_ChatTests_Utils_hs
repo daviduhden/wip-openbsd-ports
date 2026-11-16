@@ -55,7 +55,7 @@ Index: tests/ChatTests/Utils.hs
  (<#) :: HasCallStack => TestCC -> String -> Expectation
  cc <# line = (dropTime <$> getTermLine' (Just line) cc) `shouldReturn` line
 
-@@ -694,9 +715,23 @@ shouldEventuallyReturn action expected =
+@@ -698,9 +719,23 @@ shouldEventuallyReturn action expected =
          else threadDelay 100000 >> go (n - 1)
 
  getProfilePictureByName :: TestCC -> String -> IO (Maybe String)

@@ -258,6 +258,14 @@ cap a major version even when the dependency itself has moved on.
 - When a sibling declares an exact pin, update it in the same change. Prefer
   the packaged patch release over upstream's tested pin and record the
   deviation in the port comment or handoff.
+  An explicit request to match the consumer's exact upstream input overrides
+  that preference. For SimpleX Chat, inspect the selected tag's
+  `cabal.project` and the referenced SimpleXMQ commit's `.cabal` version;
+  release numbers need not match between the two projects. Keep the server
+  port and vendored Chat input aligned with that commit. If both already
+  match, record the verified no-op instead of inventing a version or package
+  revision. If the requested tag is marked prerelease, report that status
+  while honoring the explicit selection.
 - When a port vendors a sibling's upstream through `DIST_TUPLE` and its own
   `files/<dependency>/` patches, advance both pins in the same change and
   copy the sibling's rebased patches back into the vendored directory. Drop

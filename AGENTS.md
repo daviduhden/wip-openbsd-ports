@@ -57,7 +57,8 @@ update. The minimum policy is:
    `PORTROACH` limit accurate, and document the excluded upstream release.
    Never break a sibling port by bumping past its declared requirement. When a
    sibling declares an exact pin, update that pin in the same change; prefer
-   the packaged patch release and record any deviation from upstream's pin.
+   the packaged patch release unless the user requests upstream's exact pin.
+   Follow the update skill's coupled-source selection and record deviations.
 5. Bump the version carriers only after the selected source and its
    compatibility changes have been reviewed. Remove `REVISION` for a new
    upstream version, bump it for packaging-only changes, and keep a customized

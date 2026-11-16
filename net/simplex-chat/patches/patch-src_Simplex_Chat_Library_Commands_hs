@@ -101,7 +101,7 @@ Index: src/Simplex/Chat/Library/Commands.hs
 -stopChatController :: ChatController -> IO ()
 -stopChatController ChatController {smpAgent, agentAsync = s, sndFiles, rcvFiles, expireCIFlags, remoteHostSessions, remoteCtrlSession, cleanupManagerAsync, relayGroupLinkChecksAsync, webPreviewState, expireCIThreads, timedItemThreads, deliveryTaskWorkers, deliveryJobWorkers, relayRequestWorkers, badgeWorkers, storeReceiptWorkers} = do
 -  readTVarIO remoteHostSessions >>= mapM_ (cancelRemoteHost False . snd)
--  atomically (stateTVar remoteCtrlSession (,Nothing)) >>= mapM_ (cancelRemoteCtrl False . snd)
+-  atomically (stateTVar' remoteCtrlSession (,Nothing)) >>= mapM_ (cancelRemoteCtrl False . snd)
 -  disconnectAgentClient smpAgent
 -  readTVarIO s >>= mapM_ (\(a1, a2) -> uninterruptibleCancel a1 >> mapM_ uninterruptibleCancel a2)
 -  cancelAsync cleanupManagerAsync
@@ -167,7 +167,7 @@ Index: src/Simplex/Chat/Library/Commands.hs
 +      stopBadgeWorkers badgeWorkers
 +      atomically (swapTVar storeReceiptWorkers M.empty) >>= mapM_ cancelWorker
 +      readTVarIO remoteHostSessions >>= mapM_ (cancelRemoteHost False . snd)
-+      atomically (stateTVar remoteCtrlSession (,Nothing)) >>= mapM_ (cancelRemoteCtrl False . snd)
++      atomically (stateTVar' remoteCtrlSession (,Nothing)) >>= mapM_ (cancelRemoteCtrl False . snd)
 +      stopAgentClient smpAgent
 +      closeFiles sndFiles
 +      closeFiles rcvFiles

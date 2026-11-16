@@ -4,17 +4,18 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-GH_TAGNAME = v7.1.2
+# Upstream marks this explicitly selected release as a prerelease.
+GH_TAGNAME = v7.1.4
 
-V = 7.1.2
+V = 7.1.4
 DISTNAME = ${GH_PROJECT}-${V}
-REVISION = 1
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
 WRKDIST = ${WRKDIR}/${GH_PROJECT}-${GH_TAGNAME:S/^v//}
 WRKSRC = ${WRKDIST}
 ONLY_FOR_ARCHS = amd64 arm64
 
+# Match the exact upstream Cabal pin and the standalone simplexmq port.
 DIST_TUPLE += github simplex-chat simplexmq \
 		fdbcb24d86460977382e1237591cd505c3b37fa1 ../simplexmq
 DIST_TUPLE += github supranational blst \
@@ -63,7 +64,7 @@ WANTLIB = c crypto ffi gmp iconv m pthread sqlcipher util z zstd
 
 MODULES = devel/cabal
 MODCABAL_STEM = simplex-chat
-MODCABAL_VERSION = 7.1.2.0
+MODCABAL_VERSION = 7.1.4.0
 MODCABAL_EXECUTABLES = simplex-chat
 
 .if ${DEBUG} == 1

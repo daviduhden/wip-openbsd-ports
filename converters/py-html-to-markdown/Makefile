@@ -1,6 +1,6 @@
 COMMENT =	High-performance HTML to Markdown converter
 
-MODPY_DISTV =	3.22.0
+MODPY_DISTV =	3.22.2
 GH_ACCOUNT =	xberg-io
 GH_PROJECT =	html-to-markdown
 GH_TAGNAME =	v${MODPY_DISTV}

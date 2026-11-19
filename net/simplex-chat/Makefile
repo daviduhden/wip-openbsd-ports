@@ -4,7 +4,6 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-# Upstream marks this explicitly selected release as a prerelease.
 GH_TAGNAME = v7.1.4
 
 V = 7.1.4

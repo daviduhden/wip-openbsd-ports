@@ -6,30 +6,19 @@ Upstream: haskell-tls/hs-tls 218abdd67a4cde30854b5ca9b146b269da53bc07.
 Index: Network/TLS/Context/Internal.hs
 --- Network/TLS/Context/Internal.hs.orig
 +++ Network/TLS/Context/Internal.hs
-@@ -19,2 +19,3 @@ module Network.TLS.Context.Internal (
-     Established (..),
+@@ -19,0 +20 @@ module Network.TLS.Context.Internal (
 +    PendingRecv (..),
-     PendingRecvAction (..),
-@@ -38,2 +39,3 @@ module Network.TLS.Context.Internal (
-     withReadLock,
+@@ -38,0 +40 @@ module Network.TLS.Context.Internal (
 +    tryWithReadLock,
-     withWriteLock,
-@@ -89,2 +91,3 @@ import Control.Concurrent.MVar
- import Control.Exception (throwIO)
+@@ -89,0 +92 @@ import Control.Exception (throwIO)
 +import qualified Control.Exception as E
- import Control.Monad.State.Strict
-@@ -205,3 +208,3 @@ data TLS13State = TLS13State
-     , tls13stRecvCF :: Bool -- server
+@@ -206 +209 @@ data TLS13State = TLS13State
 -    , tls13stPendingRecvData :: Maybe ByteString -- client
 +    , tls13stPendingRecv :: PendingRecv -- client
-     , tls13stPendingSentData :: [ByteString] -> [ByteString] -- client
-@@ -226,3 +229,3 @@ defaultTLS13State =
-         , tls13stRecvCF = False
+@@ -227 +230 @@ defaultTLS13State =
 -        , tls13stPendingRecvData = Nothing
 +        , tls13stPendingRecv = NoPendingRecv
-         , tls13stPendingSentData = id
-@@ -273,2 +276,11 @@ data Established
- 
+@@ -273,0 +277,9 @@ data Established
 +-- | Outcome of a read that was started on behalf of a caller who is no longer
 +-- waiting for it, held until the next receive hands it over.  Reads cannot be
 +-- abandoned once started -- see 'Network.TLS.Core.handshake' -- so a reader that
@@ -39,9 +28,8 @@ Index: Network/TLS/Context/Internal.hs
 +    | PendingRecvData ByteString
 +    | PendingRecvError E.SomeException
 +
- data PendingRecvAction
-@@ -452,2 +464,22 @@ withReadLock ctx f = withMVar (lockRead
- 
+@@ -451,0 +464,20 @@ withReadLock ctx f = withMVar (lockRead
++
 +-- | Like 'withReadLock', but returns 'Nothing' immediately instead of waiting
 +-- when another thread already holds the read lock.
 +--
@@ -61,5 +49,3 @@ Index: Network/TLS/Context/Internal.hs
 +    lock = lockRead $ ctxLocks ctx
 +    acquire = tryTakeMVar lock
 +    release = mapM_ (putMVar lock)
-+
- withWriteLock :: Context -> IO a -> IO a

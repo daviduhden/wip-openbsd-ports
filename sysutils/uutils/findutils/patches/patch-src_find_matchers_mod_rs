@@ -6,7 +6,7 @@ Index: src/find/matchers/mod.rs
 +++ src/find/matchers/mod.rs
 @@ -2263,7 +2263,7 @@ mod tests {
          assert!(file.is_ok());
- 
+
          // test error when file no permission
 -        #[cfg(unix)]
 +        #[cfg(all(unix, not(target_os = "openbsd")))]

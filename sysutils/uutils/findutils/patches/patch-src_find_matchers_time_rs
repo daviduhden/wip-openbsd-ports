@@ -6,7 +6,7 @@ Index: src/find/matchers/time.rs
 +++ src/find/matchers/time.rs
 @@ -410,6 +410,7 @@ mod tests {
      use crate::find::tests::FakeDependencies;
- 
+
      #[test]
 +    #[cfg(not(target_os = "openbsd"))]
      fn newer_matcher() {
@@ -14,7 +14,7 @@ Index: src/find/matchers/time.rs
          let old_file = get_dir_entry_for("test_data", "simple");
 @@ -714,6 +715,7 @@ mod tests {
      }
- 
+
      #[test]
 +    #[cfg(not(target_os = "openbsd"))]
      fn newer_option_matcher() {
@@ -22,7 +22,7 @@ Index: src/find/matchers/time.rs
              "a",
 @@ -749,6 +751,7 @@ mod tests {
      }
- 
+
      #[test]
 +    #[cfg(not(target_os = "openbsd"))]
      fn newer_time_matcher() {

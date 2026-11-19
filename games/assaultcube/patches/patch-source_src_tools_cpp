@@ -7,25 +7,13 @@ naming worker threads; retain pthread_setname_np elsewhere.
 Index: source/src/tools.cpp
 --- source/src/tools.cpp.orig
 +++ source/src/tools.cpp
-@@ -715,6 +715,9 @@ bool glmatrixf::invert(const glmatrixf &
-     #include "SDL_thread.h"      // also fetches SDL_mutex.h
- #else
-     #include <pthread.h>
+@@ -717,0 +718,3 @@ bool glmatrixf::invert(const glmatrixf &
 +    #ifdef __OpenBSD__
 +        #include <pthread_np.h>
 +    #endif
-     #include <semaphore.h>
-     #include <sys/shm.h>
- #endif
-@@ -889,7 +892,11 @@ void *sl_createthread(int (*fn)(void *),
-     ti->fn = fn;
-     ti->done = 0;
-     pthread_create(&(ti->handle), NULL, sl_thread_indir, ti);
+@@ -891,0 +895,3 @@ void *sl_createthread(int (*fn)(void *),
 +#ifdef __OpenBSD__
 +    if(name) pthread_set_name_np(ti->handle, name);
 +#else
-     if(name) pthread_setname_np(ti->handle, name);
+@@ -892,0 +899 @@ void *sl_createthread(int (*fn)(void *),
 +#endif
-     return (void *) ti;
- }
-

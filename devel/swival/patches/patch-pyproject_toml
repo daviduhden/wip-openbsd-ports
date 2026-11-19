@@ -1,0 +1,15 @@
+Align installed Python metadata with the packaged LiteLLM LTS bugfix.
+Keep Swival's 1.108 series and pin the reviewed patch release.
+
+Index: pyproject.toml
+--- pyproject.toml.orig
++++ pyproject.toml
+@@ -22,7 +22,7 @@ classifiers = [
+     "Typing :: Typed",
+ ]
+ dependencies = [
+-    "litellm==1.108.4",
++    "litellm==1.108.12",
+     "tiktoken>=0.14.0",
+     "html-to-markdown>=3.22.0,<4",
+     "rich>=15.0.0",

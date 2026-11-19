@@ -4,6 +4,7 @@ MODPY_DISTV =		1.9.4
 GH_ACCOUNT =		swival
 GH_PROJECT =		swival
 GH_TAGNAME =		${MODPY_DISTV}
+REVISION =		0
 
 CATEGORIES =		devel
 HOMEPAGE =		https://swival.dev/
@@ -16,10 +17,10 @@ MODPY_PYBUILD =		hatchling
 
 BUILD_DEPENDS =		devel/py-hatchling>=1.33.0
 
-# Upstream pins litellm 1.108.4; 1.108.5 is the packaged bugfix.
+# Upstream pins litellm 1.108.4; 1.108.12 is the packaged LTS bugfix.
 RUN_DEPENDS =		converters/py-html-to-markdown>=3.22.0,<4 \
 			devel/py-google-cloud-aiplatform>=2.7.0,<3 \
-			devel/py-litellm=1.108.5 \
+			devel/py-litellm=1.108.12 \
 			devel/py-mcp>=2.3.0,<3 \
 			devel/py-prompt_toolkit>=3.0.53 \
 			devel/py-rich>=15.0.0 \

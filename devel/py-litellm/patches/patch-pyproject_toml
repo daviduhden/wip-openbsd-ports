@@ -16,7 +16,7 @@ Index: pyproject.toml
  [dependency-groups]
  dev = [
      "numpy>=1.26.0,<3.0",
-@@ -307,7 +302,7 @@ benchmarks = [
+@@ -308,7 +303,7 @@ benchmarks = [
  ]
 
  [build-system]

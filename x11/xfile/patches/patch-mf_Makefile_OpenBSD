@@ -4,9 +4,7 @@ upstream's warnings and avoid adding the include directories twice.
 Index: mf/Makefile.OpenBSD
 --- mf/Makefile.OpenBSD.orig
 +++ mf/Makefile.OpenBSD
-@@ -1,17 +1,19 @@
- # XFile OpenBSD Makefile
-
+@@ -3,4 +3,4 @@
 -PREFIX = /usr/local
 -MANDIR = /usr/local/man
 -SHAREDIR = $(PREFIX)/share/xfile
@@ -15,21 +13,16 @@ Index: mf/Makefile.OpenBSD
 +MANDIR ?= ${PREFIX}/man
 +SHAREDIR ?= ${PREFIX}/share/xfile
 +APPLRESDIR ?= ${PREFIX}/lib/X11/app-defaults
-+
+@@ -8,2 +8,4 @@ APPLRESDIR = /usr/X11R6/lib/X11/app-defa
+-INCDIRS = -I/usr/X11R6/include -I/usr/local/include
+-LIBDIRS = -L/usr/X11R6/lib -L/usr/local/lib
 +X11BASE ?= /usr/X11R6
 +LOCALBASE ?= /usr/local
 +INCDIRS += -I${X11BASE}/include -I${LOCALBASE}/include
 +LIBDIRS += -L${X11BASE}/lib -L${LOCALBASE}/lib
-
--INCDIRS = -I/usr/X11R6/include -I/usr/local/include
--LIBDIRS = -L/usr/X11R6/lib -L/usr/local/lib
--
+@@ -11 +13 @@ LIBDIRS = -L/usr/X11R6/lib -L/usr/local/
 -CFLAGS = -O2 -Wall
 +CFLAGS += -Wall
-
- .c.o:
+@@ -14 +16 @@ CFLAGS = -O2 -Wall
 -	$(CC) $(CFLAGS) $(INCDIRS) -c -o $(@D)/$(@F) $<
 +	$(CC) $(CFLAGS) -c -o $(@D)/$(@F) $<
-
- include common.mf
-

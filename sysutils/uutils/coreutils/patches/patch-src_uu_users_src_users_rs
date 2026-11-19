@@ -12,7 +12,7 @@ Index: src/uu/users/src/users.rs
 +use uucore::{display::Quotable, error::USimpleError};
  use uucore::format_usage;
  use uucore::translate;
- 
+
 @@ -46,7 +48,8 @@ pub fn uumain(args: impl uucore::Args) -
      #[cfg(target_os = "openbsd")]
      {

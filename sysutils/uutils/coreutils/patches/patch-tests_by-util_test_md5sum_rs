@@ -4,14 +4,8 @@ read the fixture despite its restricted permissions.
 Index: tests/by-util/test_md5sum.rs
 --- tests/by-util/test_md5sum.rs.orig
 +++ tests/by-util/test_md5sum.rs
-@@ -727,6 +727,10 @@ fn test_check_directory_error() {
- #[test]
- #[cfg(not(windows))]
- fn test_continue_after_directory_error() {
+@@ -729,0 +730,4 @@ fn test_continue_after_directory_error()
 +    if uutests::util::is_root() {
 +        // The filesystem permission checks are bypassed when running as root.
 +        return;
 +    }
-     let scene = TestScenario::new(util_name!());
-     let at = &scene.fixtures;
-

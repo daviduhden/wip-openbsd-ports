@@ -5,27 +5,13 @@ operations.
 Index: libi2pd/PostQuantum.cpp
 --- libi2pd/PostQuantum.cpp.orig
 +++ libi2pd/PostQuantum.cpp
-@@ -6,6 +6,8 @@
- * See full license text in LICENSE file at top of project tree
- */
-
+@@ -8,0 +9,2 @@
 +#include <cstring>
 +#include <openssl/crypto.h>
- #include "Log.h"
- #include "PostQuantum.h"
-
-@@ -14,227 +16,173 @@
- #ifndef LIBRESSL_VERSION_NUMBER
- #include <openssl/param_build.h>
- #include <openssl/core_names.h>
+@@ -17,2 +18,0 @@
 -#else
 -#include<openssl/mlkem.h>
- #endif
-
- namespace i2p
- {
- namespace crypto
- {
+@@ -24,0 +25,18 @@ namespace crypto
 +#ifdef LIBRESSL_VERSION_NUMBER
 +	// LibreSSL allocates operation outputs. Always wipe and release them,
 +	// including when an operation or a subsequent length check fails.
@@ -44,7 +30,7 @@ Index: libi2pd/PostQuantum.cpp
 +	};
 +#endif
 +
- 	MLKEMKeys::MLKEMKeys (MLKEMTypes type):
+@@ -26,6 +44,5 @@ namespace crypto
 -#ifndef LIBRESSL_VERSION_NUMBER
 -		m_Name (std::get<0>(MLKEMS[type])), m_KeyLen (std::get<1>(MLKEMS[type])),
 -		m_CTLen (std::get<2>(MLKEMS[type])),
@@ -56,43 +42,34 @@ Index: libi2pd/PostQuantum.cpp
 +#ifdef LIBRESSL_VERSION_NUMBER
 +		, m_PublicKey (nullptr),
 +		m_Rank (type == eMLKEM768 ? MLKEM768_RANK : type == eMLKEM1024 ? MLKEM1024_RANK : 0)
- #endif
+@@ -33 +49,0 @@ namespace crypto
 -		m_Pkey (nullptr)
- 	{
- 	}
-
- 	MLKEMKeys::~MLKEMKeys ()
- 	{
+@@ -39 +55 @@ namespace crypto
 -		FreeKeys();
 +		FreeKeys ();
- 	}
-
- 	void MLKEMKeys::FreeKeys ()
- 	{
- #ifndef LIBRESSL_VERSION_NUMBER
+@@ -45 +61 @@ namespace crypto
 -		if (m_Pkey) EVP_PKEY_free (m_Pkey);
 +		EVP_PKEY_free (m_Pkey);
- #else
+@@ -47 +63,3 @@ namespace crypto
 -	    if (m_Pkey) MLKEM_private_key_free (m_Pkey);
 +		MLKEM_private_key_free (m_Pkey);
 +		MLKEM_public_key_free (m_PublicKey);
 +		m_PublicKey = nullptr;
- #endif
+@@ -49 +67 @@ namespace crypto
 -		if (m_Pkey) m_Pkey = nullptr;
 +		m_Pkey = nullptr;
- 	}
-
+@@ -52 +70 @@ namespace crypto
 -	void MLKEMKeys::GenerateKeys ()
 +	bool MLKEMKeys::GenerateKeys ()
- 	{
+@@ -54 +72 @@ namespace crypto
 -		FreeKeys();
 +		FreeKeys ();
- #ifndef LIBRESSL_VERSION_NUMBER
+@@ -56,2 +74,2 @@ namespace crypto
 -		m_Pkey = EVP_PKEY_Q_keygen(NULL, NULL, m_Name.c_str ());
 -		LogPrint(eLogDebug, "MLKEM: GenerateKeys [ openssl ]");
 +		m_Pkey = EVP_PKEY_Q_keygen (nullptr, nullptr, m_Name.c_str ());
 +		if (m_Pkey) return true;
- #else
+@@ -59,27 +77,8 @@ namespace crypto
 -		m_Pkey = MLKEM_private_key_new( MLKEM768_RANK);
 -
 -		uint8_t * pub_key = nullptr;
@@ -128,25 +105,25 @@ Index: libi2pd/PostQuantum.cpp
 +			MLKEM_generate_key (m_Pkey, &pub.data, &pub.len, nullptr, nullptr) == 1 &&
 +			pub.len == m_KeyLen &&
 +			MLKEM_public_from_private (m_Pkey, m_PublicKey) == 1) return true;
- #endif
+@@ -87 +86,4 @@ namespace crypto
 -	} // end method
 +		FreeKeys ();
 +		LogPrint (eLogError, "MLKEM: Failed to generate keys");
 +		return false;
 +	}
-
+@@ -89 +91 @@ namespace crypto
 -	void MLKEMKeys::GetPublicKey (uint8_t * pub) const
 +	bool MLKEMKeys::GetPublicKey (uint8_t * pub) const
- 	{
+@@ -91,2 +92,0 @@ namespace crypto
 -		if (m_Pkey)
 -		{
- #ifndef LIBRESSL_VERSION_NUMBER
+@@ -94,2 +94,3 @@ namespace crypto
 -			size_t len = m_KeyLen;
 -			EVP_PKEY_get_octet_string_param (m_Pkey, OSSL_PKEY_PARAM_PUB_KEY, pub, m_KeyLen, &len);
 +		size_t len = 0;
 +		if (m_Pkey && EVP_PKEY_get_octet_string_param (m_Pkey,
 +			OSSL_PKEY_PARAM_PUB_KEY, pub, m_KeyLen, &len) == 1 && len == m_KeyLen) return true;
- #else
+@@ -97,12 +98,6 @@ namespace crypto
 -			if (!m_Pkey) return;
 -
 -			LogPrint(eLogDebug, "MLKEM: GetPublicKey [ libressl ]");
@@ -165,30 +142,27 @@ Index: libi2pd/PostQuantum.cpp
 +		{
 +			memcpy (pub, encoded.data, m_KeyLen);
 +			return true;
- 		}
+@@ -109,0 +105,3 @@ namespace crypto
 +#endif
 +		LogPrint (eLogError, "MLKEM: Failed to export public key");
 +		return false;
- 	}
-
+@@ -112,2 +110 @@ namespace crypto
 -
 -	void MLKEMKeys::SetPublicKey (const uint8_t * pub)
 +	bool MLKEMKeys::SetPublicKey (const uint8_t * pub)
- 	{
+@@ -114,0 +112,2 @@ namespace crypto
 +		// A failed import must not leave a previous key available for use.
 +		FreeKeys ();
- #ifndef LIBRESSL_VERSION_NUMBER
+@@ -116,5 +114,0 @@ namespace crypto
 -		if (m_Pkey)
 -		{
 -			EVP_PKEY_free (m_Pkey);
 -			m_Pkey = nullptr;
 -		}
- 		OSSL_PARAM params[] =
- 		{
+@@ -123 +117 @@ namespace crypto
 -			OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_PUB_KEY, (void*)pub, m_KeyLen),
 +			OSSL_PARAM_octet_string (OSSL_PKEY_PARAM_PUB_KEY, (void *)pub, m_KeyLen),
- 			OSSL_PARAM_END
- 		};
+@@ -126,11 +120,5 @@ namespace crypto
 -
 -		EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_from_name(NULL, m_Name.c_str(), NULL);
 -		if (ctx)
@@ -205,7 +179,7 @@ Index: libi2pd/PostQuantum.cpp
 +			EVP_PKEY_fromdata (ctx, &m_Pkey, OSSL_KEYMGMT_SELECT_PUBLIC_KEY, params) == 1;
 +		EVP_PKEY_CTX_free (ctx);
 +		if (ok) return true;
- #else
+@@ -138,10 +126,2 @@ namespace crypto
 -		MLKEM_public_key * pub_key = MLKEM_public_key_new(MLKEM768_RANK);
 -		if (MLKEM_parse_public_key(pub_key, pub, m_KeyLen))
 -		{
@@ -218,16 +192,14 @@ Index: libi2pd/PostQuantum.cpp
 -		if (pub_key) MLKEM_public_key_free(pub_key);
 +		m_PublicKey = MLKEM_public_key_new (m_Rank);
 +		if (m_PublicKey && MLKEM_parse_public_key (m_PublicKey, pub, m_KeyLen) == 1) return true;
- #endif
+@@ -148,0 +129,3 @@ namespace crypto
 +		FreeKeys ();
 +		LogPrint (eLogError, "MLKEM: Failed to parse public key");
 +		return false;
- 	}
-
+@@ -151 +134 @@ namespace crypto
 -	void MLKEMKeys::Encaps (uint8_t * ciphertext, uint8_t * shared)
 +	bool MLKEMKeys::Encaps (uint8_t * ciphertext, uint8_t * shared)
- 	{
- #ifndef LIBRESSL_VERSION_NUMBER
+@@ -154,15 +137,7 @@ namespace crypto
 -		if (!m_Pkey)
 -		{
 -			LogPrint(eLogError, "MLKEM: No public key for Encaps");
@@ -250,7 +222,7 @@ Index: libi2pd/PostQuantum.cpp
 +			len == m_CTLen && sharedLen == 32;
 +		EVP_PKEY_CTX_free (ctx);
 +		if (ok) return true;
- #else
+@@ -170,7 +145,3 @@ namespace crypto
 -		if (!m_IsPubCached)
 -		{
 -			LogPrint(eLogError, "MLKEM: No public key for Encaps");
@@ -261,13 +233,13 @@ Index: libi2pd/PostQuantum.cpp
 +		MLKEMBuffer ct, secret;
 +		if (m_PublicKey && MLKEM_encap (m_PublicKey, &ct.data, &ct.len, &secret.data, &secret.len) == 1 &&
 +			ct.len == m_CTLen && secret.len == 32)
- 		{
+@@ -178,2 +149,3 @@ namespace crypto
 -			LogPrint(eLogError, "MLKEM can't parse cached public key");
 -			return;
 +			memcpy (ciphertext, ct.data, m_CTLen);
 +			memcpy (shared, secret.data, 32);
 +			return true;
- 		}
+@@ -181,17 +152,0 @@ namespace crypto
 -		uint8_t * out_ct = nullptr;
 -		size_t out_ct_len = 0;
 -		uint8_t * out_ss = nullptr;
@@ -285,17 +257,16 @@ Index: libi2pd/PostQuantum.cpp
 -		else
 -			LogPrint(eLogError, "MLKEM [libressl]: encapsulation failed");
 -		MLKEM_public_key_free(pub_key);
- #endif
+@@ -198,0 +154,3 @@ namespace crypto
 +		OPENSSL_cleanse (shared, 32);
 +		LogPrint (eLogError, "MLKEM: Encapsulation failed");
 +		return false;
- 	}
-
+@@ -201 +159 @@ namespace crypto
 -	void MLKEMKeys::Decaps (const uint8_t * ciphertext, uint8_t * shared)
 +	bool MLKEMKeys::Decaps (const uint8_t * ciphertext, uint8_t * shared)
- 	{
+@@ -203 +160,0 @@ namespace crypto
 -		if (!m_Pkey) return;
- #ifndef LIBRESSL_VERSION_NUMBER
+@@ -205,2 +162,11 @@ namespace crypto
 -		auto ctx = EVP_PKEY_CTX_new_from_pkey (NULL, m_Pkey, NULL);
 -		if (ctx)
 +		auto ctx = m_Pkey ? EVP_PKEY_CTX_new_from_pkey (nullptr, m_Pkey, nullptr) : nullptr;
@@ -309,14 +280,14 @@ Index: libi2pd/PostQuantum.cpp
 +		// Success includes implicit rejection. The following Noise AEAD
 +		// authentication detects an invalid, correctly sized ciphertext.
 +		if (m_Pkey && MLKEM_decap (m_Pkey, ciphertext, m_CTLen, &secret.data, &secret.len) == 1 && secret.len == 32)
- 		{
+@@ -208,4 +174,2 @@ namespace crypto
 -			EVP_PKEY_decapsulate_init (ctx, NULL);
 -			size_t sharedLen = 32;
 -			EVP_PKEY_decapsulate (ctx, shared, &sharedLen, ciphertext, m_CTLen);
 -			EVP_PKEY_CTX_free (ctx);
 +			memcpy (shared, secret.data, 32);
 +			return true;
- 		}
+@@ -213,18 +176,0 @@ namespace crypto
 -		else
 -			LogPrint (eLogError, "MLKEM can't create PKEY context");
 -#else
@@ -335,17 +306,11 @@ Index: libi2pd/PostQuantum.cpp
 -			{
 -				LogPrint(eLogError, "MLKEM [libressl]: decapsulation failed");
 -			}
- #endif
+@@ -231,0 +178,3 @@ namespace crypto
 +		OPENSSL_cleanse (shared, 32);
 +		LogPrint (eLogError, "MLKEM: Decapsulation failed");
 +		return false;
- 	}
-
- 	std::unique_ptr<MLKEMKeys> CreateMLKEMKeys (i2p::data::CryptoKeyType type)
- 	{
+@@ -236,2 +185 @@ namespace crypto
 -		if (type <= i2p::data::CRYPTO_KEY_TYPE_ECIES_X25519_AEAD ||
 -		    type - i2p::data::CRYPTO_KEY_TYPE_ECIES_X25519_AEAD > (int)MLKEMS.size ()) return nullptr;
 +		if (!IsMLKEMSupported (type)) return nullptr;
- 		return std::make_unique<MLKEMKeys>((MLKEMTypes)(type - i2p::data::CRYPTO_KEY_TYPE_ECIES_X25519_AEAD - 1));
- 	}
-

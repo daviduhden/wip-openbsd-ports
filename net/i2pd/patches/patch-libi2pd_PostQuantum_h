@@ -4,19 +4,10 @@ retain separate public and private keys for LibreSSL.
 Index: libi2pd/PostQuantum.h
 --- libi2pd/PostQuantum.h.orig
 +++ libi2pd/PostQuantum.h
-@@ -15,7 +15,7 @@
- #include <tuple>
- #include "Crypto.h"
- #include "Identity.h"
+@@ -18 +18 @@
 -#ifdef LIBRESSL_VERSION_NUMBER
 +#if OPENSSL_PQ && defined(LIBRESSL_VERSION_NUMBER)
- #	include <openssl/mlkem.h>
- #endif
-
-@@ -60,6 +60,16 @@ namespace crypto
- 		return std::get<2>(MLKEMS[type - i2p::data::CRYPTO_KEY_TYPE_ECIES_X25519_AEAD - 1]);
- 	}
-
+@@ -62,0 +63,10 @@ namespace crypto
 +	constexpr bool IsMLKEMSupported (i2p::data::CryptoKeyType type)
 +	{
 +		if (!GetMLKEMPublicKeyLen (type)) return false;
@@ -27,13 +18,7 @@ Index: libi2pd/PostQuantum.h
 +#endif
 +	}
 +
- 	class MLKEMKeys
- 	{
- 		public:
-@@ -67,13 +77,18 @@ namespace crypto
- 			MLKEMKeys (MLKEMTypes type);
- 			~MLKEMKeys ();
-
+@@ -70,3 +80,8 @@ namespace crypto
 -			void GenerateKeys ();
 -			void GetPublicKey (uint8_t * pub) const;
 -			void SetPublicKey (const uint8_t * pub);
@@ -45,23 +30,13 @@ Index: libi2pd/PostQuantum.h
 +			[[nodiscard]] bool GenerateKeys ();
 +			[[nodiscard]] bool GetPublicKey (uint8_t * pub) const;
 +			[[nodiscard]] bool SetPublicKey (const uint8_t * pub);
- 			size_t GetKeyLen () const { return m_KeyLen; };
- 			size_t GetCTLen () const { return m_CTLen; };
+@@ -75,2 +90,2 @@ namespace crypto
 -			void Encaps (uint8_t * ciphertext, uint8_t * shared);
 -			void Decaps (const uint8_t * ciphertext, uint8_t * shared);
 +			[[nodiscard]] bool Encaps (uint8_t * ciphertext, uint8_t * shared);
 +			[[nodiscard]] bool Decaps (const uint8_t * ciphertext, uint8_t * shared);
-
-
- 		private:
-@@ -88,8 +103,8 @@ namespace crypto
- 			EVP_PKEY * m_Pkey;
- #else
- 			MLKEM_private_key * m_Pkey;
+@@ -91,2 +106,2 @@ namespace crypto
 -			uint8_t m_CachedPub[MLKEM768_KEY_LENGTH];
 -			bool m_IsPubCached = false;
 +			MLKEM_public_key * m_PublicKey;
 +			const int m_Rank;
- #endif
- 	};
-

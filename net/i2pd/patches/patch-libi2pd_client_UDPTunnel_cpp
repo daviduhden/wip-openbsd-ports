@@ -5,55 +5,32 @@ Recover the derived type; UDPConnection owns the shared_from_this base.
 Index: libi2pd_client/UDPTunnel.cpp
 --- libi2pd_client/UDPTunnel.cpp.orig
 +++ libi2pd_client/UDPTunnel.cpp
-@@ -484,7 +484,7 @@ namespace client
-
- 	void I2PUDPServerTunnel::Start ()
- 	{
+@@ -487 +487 @@ namespace client
 -		m_IsStarted = true;
 +		m_IsStarted.store (true, std::memory_order_release);
- 		m_LocalDest->Start ();
-
- 		auto dgram = m_LocalDest->CreateDatagramDestination (m_Gzip);
-@@ -505,11 +505,14 @@ namespace client
-
- 	void I2PUDPServerTunnel::ScheduleCleanupTimer ()
- 	{
+@@ -508 +508,2 @@ namespace client
 -		if (m_CleanupTimer)
 +		std::lock_guard<std::mutex> lock (m_CleanupTimerMutex);
 +		if (m_IsStarted.load (std::memory_order_acquire) && m_CleanupTimer)
- 		{
- 			m_CleanupTimer->expires_after (std::chrono::seconds (I2P_UDP_SESSION_CLEANUP_INTERVAL));
+@@ -511,2 +512,4 @@ namespace client
 -			m_CleanupTimer->async_wait (std::bind (&I2PUDPServerTunnel::HandleCleanupTimer,
 -				this, std::placeholders::_1));
 +			std::weak_ptr<I2PUDPServerTunnel> weak = shared_from_this ();
 +			m_CleanupTimer->async_wait ([weak](const boost::system::error_code& ecode) {
 +				if (auto self = weak.lock ()) self->HandleCleanupTimer (ecode);
 +			});
- 		}
- 	}
-
-@@ -524,11 +527,14 @@ namespace client
-
- 	void I2PUDPServerTunnel::ScheduleStatsTimer ()
- 	{
+@@ -527 +530,2 @@ namespace client
 -		if (m_StatsTimer)
 +		std::lock_guard<std::mutex> lock (m_StatsTimerMutex);
 +		if (m_IsStarted.load (std::memory_order_acquire) && m_StatsTimer)
- 		{
- 			m_StatsTimer->expires_after (std::chrono::seconds (10));
+@@ -530,2 +534,4 @@ namespace client
 -			m_StatsTimer->async_wait (std::bind (&I2PUDPServerTunnel::HandleStatsTimer,
 -				this, std::placeholders::_1));
 +			std::weak_ptr<I2PUDPServerTunnel> weak = shared_from_this ();
 +			m_StatsTimer->async_wait ([weak](const boost::system::error_code& ecode) {
 +				if (auto self = weak.lock ()) self->HandleStatsTimer (ecode);
 +			});
- 		}
- 	}
-
-@@ -558,10 +564,15 @@ namespace client
- 		// a config reload builds a second tunnel object and drops it when the same
- 		// one is already there. Its destructor must not reset the receiver of the
- 		// live tunnel: they share the datagram destination
+@@ -561,4 +567,9 @@ namespace client
 -		if (!m_IsStarted) return;
 -		m_IsStarted = false;
 -		if (m_StatsTimer) m_StatsTimer->cancel ();
@@ -67,22 +44,10 @@ Index: libi2pd_client/UDPTunnel.cpp
 +			std::lock_guard<std::mutex> lock (m_CleanupTimerMutex);
 +			if (m_CleanupTimer) m_CleanupTimer->cancel ();
 +		}
- 		auto dgram = m_LocalDest->GetDatagramDestination ();
- 		if (dgram) {
- 			dgram->ResetReceiver (m_inPort);
-@@ -617,7 +628,7 @@ namespace client
-
- 	void I2PUDPClientTunnel::Start ()
- 	{
+@@ -620 +631 @@ namespace client
 -		m_IsStarted = true;
 +		m_IsStarted.store (true, std::memory_order_release);
- 		UDPConnection::Start ();
- 		// Reset flag in case of tunnel reload
- 		if (m_cancel_resolve) m_cancel_resolve = false;
-@@ -652,10 +663,15 @@ namespace client
-
- 	void I2PUDPClientTunnel::Stop ()
- 	{
+@@ -655,4 +666,9 @@ namespace client
 -		if (!m_IsStarted) return; // see the comment in I2PUDPServerTunnel::Stop
 -		m_IsStarted = false;
 -		if (m_KeepAliveTimer) m_KeepAliveTimer->cancel ();
@@ -96,18 +61,11 @@ Index: libi2pd_client/UDPTunnel.cpp
 +			std::lock_guard<std::mutex> lock (m_StatsTimerMutex);
 +			if (m_StatsTimer) m_StatsTimer->cancel ();
 +		}
-
- 		auto dgram = m_LocalDest->GetDatagramDestination ();
- 		if (dgram)
-@@ -927,11 +943,15 @@ namespace client
-
- 	void I2PUDPClientTunnel::ScheduleKeepAliveTimer ()
- 	{
+@@ -930 +946,2 @@ namespace client
 -		if (m_KeepAliveTimer)
 +		std::lock_guard<std::mutex> lock (m_KeepAliveTimerMutex);
 +		if (m_IsStarted.load (std::memory_order_acquire) && m_KeepAliveTimer)
- 		{
- 			m_KeepAliveTimer->expires_after (std::chrono::seconds (m_KeepAliveInterval));
+@@ -933,2 +950,5 @@ namespace client
 -			m_KeepAliveTimer->async_wait (std::bind (&I2PUDPClientTunnel::HandleKeepAliveTimer,
 -				this, std::placeholders::_1));
 +			std::weak_ptr<I2PUDPClientTunnel> weak =
@@ -115,18 +73,11 @@ Index: libi2pd_client/UDPTunnel.cpp
 +			m_KeepAliveTimer->async_wait ([weak](const boost::system::error_code& ecode) {
 +				if (auto self = weak.lock ()) self->HandleKeepAliveTimer (ecode);
 +			});
- 		}
- 	}
-
-@@ -947,11 +967,15 @@ namespace client
-
- 	void I2PUDPClientTunnel::ScheduleStatsTimer ()
- 	{
+@@ -950 +970,2 @@ namespace client
 -		if (m_StatsTimer)
 +		std::lock_guard<std::mutex> lock (m_StatsTimerMutex);
 +		if (m_IsStarted.load (std::memory_order_acquire) && m_StatsTimer)
- 		{
- 			m_StatsTimer->expires_after (std::chrono::seconds (10));
+@@ -953,2 +974,5 @@ namespace client
 -			m_StatsTimer->async_wait (std::bind (&I2PUDPClientTunnel::HandleStatsTimer,
 -				this, std::placeholders::_1));
 +			std::weak_ptr<I2PUDPClientTunnel> weak =
@@ -134,6 +85,3 @@ Index: libi2pd_client/UDPTunnel.cpp
 +			m_StatsTimer->async_wait ([weak](const boost::system::error_code& ecode) {
 +				if (auto self = weak.lock ()) self->HandleStatsTimer (ecode);
 +			});
- 		}
- 	}
-

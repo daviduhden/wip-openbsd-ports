@@ -6,7 +6,7 @@ Index: daemon/UnixDaemon.cpp
 @@ -19,6 +19,19 @@
  #include <sys/stat.h>
  #include <sys/resource.h>
- 
+
 +#ifdef __OpenBSD__
 +#include <fstream>
 +#include <sstream>
@@ -26,7 +26,7 @@ Index: daemon/UnixDaemon.cpp
 @@ -33,6 +46,18 @@ const int GRACEFUL_SHUTDOWN_INTERVAL = 1
  // a handler may only touch volatile sig_atomic_t, everything else is done by the daemon loop
  static volatile sig_atomic_t g_PendingSignals[NSIG] = {};
- 
+
 +#ifdef __OpenBSD__
 +// Blocked before service threads are created; consumed only by run().
 +static sigset_t daemonSignals;
@@ -44,11 +44,11 @@ Index: daemon/UnixDaemon.cpp
  	int savedErrno = errno;
 @@ -210,8 +235,29 @@ namespace i2p
  			gracefulShutdownInterval = 0; // not specified
- 
+
  			// handle signal TSTP
 -			bool handleTSTP; i2p::config::GetOption("unix.handle_sigtstp", handleTSTP);
 +			bool handleTSTP = false; i2p::config::GetOption("unix.handle_sigtstp", handleTSTP);
- 
+
 +#ifdef __OpenBSD__
 +			// ReloadConfig() can stop and join destination threads. Never run
 +			// it from an asynchronous handler on an arbitrary service thread.
@@ -76,7 +76,7 @@ Index: daemon/UnixDaemon.cpp
 @@ -229,13 +275,148 @@ namespace i2p
  				sigaction(SIGCONT, &sa, 0);
  			}
- 
+
 +#endif
 +
 +#ifdef __OpenBSD__
@@ -206,7 +206,7 @@ Index: daemon/UnixDaemon.cpp
 +
  			return Daemon_Singleton::start();
  		}
- 
+
  		bool DaemonUnix::stop()
  		{
 +#ifdef __OpenBSD__
@@ -220,7 +220,7 @@ Index: daemon/UnixDaemon.cpp
  			return Daemon_Singleton::stop();
 +#endif
  		}
- 
+
  		void DaemonUnix::run ()
 @@ -244,6 +425,36 @@ namespace i2p
  			while (running)

@@ -4,10 +4,7 @@ and reject invalid or oversized family names.
 Index: libi2pd/Family.cpp
 --- libi2pd/Family.cpp.orig
 +++ libi2pd/Family.cpp
-@@ -18,6 +18,20 @@ namespace i2p
- {
- namespace data
- {
+@@ -20,0 +21,14 @@ namespace data
 +	static int GetFamilyKeyCurve (EVP_PKEY * pkey)
 +	{
 +		if (!pkey || EVP_PKEY_base_id (pkey) != EVP_PKEY_EC) return -1;
@@ -22,13 +19,7 @@ Index: libi2pd/Family.cpp
 +#endif
 +	}
 +
- 	Families::Families ()
- 	{
- 	}
-@@ -51,15 +65,8 @@ namespace data
- 					auto pkey = X509_get_pubkey (cert);
- 					if (pkey)
- 					{	
+@@ -54,9 +68,2 @@ namespace data
 -						int curve = 0;
 -#if (OPENSSL_VERSION_NUMBER >= 0x030000000) // since 3.0.0
 -						char groupName[20];
@@ -40,24 +31,12 @@ Index: libi2pd/Family.cpp
 -						if (!curve || curve == NID_X9_62_prime256v1)
 +						int curve = GetFamilyKeyCurve (pkey);
 +						if (curve == NID_X9_62_prime256v1)
- 						{	
- 							if (!m_SigningKeys.emplace (cn, std::make_pair(pkey, (int)m_SigningKeys.size () + 1)).second)
- 							{
-@@ -68,7 +75,10 @@ namespace data
- 							}
- 						}
- 						else
+@@ -70,0 +78,2 @@ namespace data
 +						{
 +							EVP_PKEY_free (pkey);
- 							LogPrint (eLogWarning, "Family: elliptic curve ", curve, " is not supported");
+@@ -71,0 +81 @@ namespace data
 +						}
- 					}	
- 				}
- 			}
-@@ -156,15 +166,8 @@ namespace data
- 		{
- 			SSL * ssl = SSL_new (ctx);
- 			EVP_PKEY * pkey = SSL_get_privatekey (ssl);
+@@ -159,9 +169,2 @@ namespace data
 -			int curve = 0;
 -#if (OPENSSL_VERSION_NUMBER >= 0x030000000) // since 3.0.0
 -			char groupName[20];
@@ -69,6 +48,3 @@ Index: libi2pd/Family.cpp
 -			if ((!curve || curve == NID_X9_62_prime256v1) && family.length () + 32 <= 100)
 +			int curve = GetFamilyKeyCurve (pkey);
 +			if (curve == NID_X9_62_prime256v1 && family.length () + 32 <= 100)
- 			{
- 				uint8_t buf[100], sign[72], signature[64];
- 				size_t len = family.length ();

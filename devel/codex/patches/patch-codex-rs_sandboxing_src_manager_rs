@@ -5,8 +5,8 @@ restricted command without isolation.
 Index: codex-rs/sandboxing/src/manager.rs
 --- codex-rs/sandboxing/src/manager.rs.orig
 +++ codex-rs/sandboxing/src/manager.rs
-@@ -402,6 +402,31 @@ impl SandboxManager {
-             request.runtime_readable_paths,
+@@ -411,6 +411,31 @@ impl SandboxManager {
+             &self.operation,
          )
          .map_err(SandboxTransformError::InvalidPolicy)?;
 +        // OpenBSD has no upstream sandbox backend. Never interpret a missing

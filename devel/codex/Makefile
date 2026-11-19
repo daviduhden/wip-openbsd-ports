@@ -10,7 +10,7 @@ COMMENT =		OpenAI terminal-based coding agent
 
 DPB_PROPERTIES =	parallel
 
-V =			0.169.0
+V =			0.170.0
 GH_ACCOUNT =		openai
 GH_PROJECT =		codex
 GH_TAGNAME =		rust-v${V}
@@ -20,7 +20,7 @@ PKGNAME =		codex-${V}
 # Only build the Rust workspace (the upstream tree also contains JS tooling).
 WRKSRC =		${WRKDIST}/codex-rs
 
-DIST_TUPLE += github nornagon crossterm ed1cdab335221515706178d68495bba2aed1924f ./crossterm
+DIST_TUPLE += github openai-oss-forks crossterm ed1cdab335221515706178d68495bba2aed1924f ./crossterm
 DIST_TUPLE += github transact-rs sqlx 10462fa4414c6c7f1ed1d39bb31678e3b726878c ./sqlx
 DIST_TUPLE += github openai-oss-forks tokio-tungstenite 7447c427513cfe685f236e1ac0513c4ea3dd9c0b ./tokio-tungstenite
 DIST_TUPLE += github openai-oss-forks tungstenite-rs bc589d684755a8c02da0fc7e58d0861cbfc306f1 ./tungstenite

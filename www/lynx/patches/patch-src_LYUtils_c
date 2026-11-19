@@ -4,82 +4,43 @@ Do not expose shared directory contents to the sandboxed browser.
 Index: src/LYUtils.c
 --- src/LYUtils.c.orig
 +++ src/LYUtils.c
-@@ -5179,10 +5179,11 @@ const char *Home_Dir(void)
- 	    /*
- 	     * One could use getlogin() and getpwnam() here instead.
- 	     */
+@@ -5182 +5182 @@ const char *Home_Dir(void)
 -	    struct passwd *pw = getpwuid(geteuid());
 +	    char *home;
-
+@@ -5184,2 +5184,3 @@ const char *Home_Dir(void)
 -	    if (pw && pw->pw_dir) {
 -		StrAllocCopy(HomeDir, pw->pw_dir);
 +	    home = getenv("HOME");
 +	    if (home && *home) {
 +		StrAllocCopy(HomeDir, home);
- 	    } else
- #endif
- 	    {
-@@ -6072,8 +6073,13 @@ FILE *LYOpenTemp(char *result,
-
- 	if (lstat(lynx_temp_space, &sb) == 0
- 	    && S_ISDIR(sb.st_mode)) {
+@@ -6074,0 +6076,4 @@ FILE *LYOpenTemp(char *result,
 +#ifdef __OpenBSD__
 +	    if (sb.st_uid != getuid()
 +		|| (sb.st_mode & (S_IRWXG | S_IRWXO)) != 0) {
 +#else
- 	    if (sb.st_uid != getuid()
- 		|| (sb.st_mode & (S_IWOTH | S_IWGRP)) != 0) {
+@@ -6076,0 +6082 @@ FILE *LYOpenTemp(char *result,
 +#endif
- 		make_it = TRUE;
- 		CTRACE((tfp,
- 			"lynx_temp_space is not our directory %s owner %d mode %03o\n",
-@@ -7055,7 +7061,7 @@ int LYCopyFile(char *src,
-     int code;
-     const char *program;
-
+@@ -7058 +7064 @@ int LYCopyFile(char *src,
 -    if ((program = HTGetProgramPath(ppCOPY)) != NULL) {
 +    if (!no_exec && (program = HTGetProgramPath(ppCOPY)) != NULL) {
- 	char *the_command = NULL;
-
- 	HTAddParam(&the_command, COPY_COMMAND, 1, program);
-@@ -7135,6 +7141,11 @@ int LYSystem(char *command)
-     int code;
-     int do_free = 0;
-
+@@ -7137,0 +7144,5 @@ int LYSystem(char *command)
 +    if (no_exec) {
 +	HTAlert(EXECUTION_DISABLED);
 +	return -1;
 +    }
 +
- #if defined(HAVE_SIGACTION) && defined(SIGTSTP) && !defined(USE_SLANG)
-     struct sigaction saved_sigtstp_act;
-     BOOLEAN sigtstp_saved = FALSE;
-@@ -7666,7 +7677,11 @@ void get_clip_release(void)
-
- static int clip_grab(void)
- {
+@@ -7669 +7680,5 @@ static int clip_grab(void)
 -    char *cmd = LYGetEnv("RL_PASTE_CMD");
 +    char *cmd;
 +
 +    if (no_exec)
 +	return 0;
 +    cmd = LYGetEnv("RL_PASTE_CMD");
-
-     if (paste_handle)
- 	pclose(paste_handle);
-@@ -7716,10 +7731,14 @@ char *get_clip_grab(void)
-
- int put_clip(const char *s)
- {
+@@ -7719 +7734 @@ int put_clip(const char *s)
 -    char *cmd = LYGetEnv("RL_CLCOPY_CMD");
 +    char *cmd;
-     FILE *fh;
-     size_t l = strlen(s), res;
-
+@@ -7721,0 +7737,4 @@ int put_clip(const char *s)
++
 +    if (no_exec)
 +	return -1;
 +    cmd = LYGetEnv("RL_CLCOPY_CMD");
-+
-     if (!cmd)
- 	return -1;
-

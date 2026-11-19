@@ -4,15 +4,9 @@ launcher, retaining sudo diagnostics on other platforms.
 Index: Main/UserInterface.cpp
 --- Main/UserInterface.cpp.orig
 +++ Main/UserInterface.cpp
-@@ -42,7 +42,11 @@ namespace VeraCrypt
- 		public:
- 		virtual void operator() (string &str)
- 		{
+@@ -44,0 +45,3 @@ namespace VeraCrypt
 +#ifdef TC_OPENBSD
 +			throw ElevationFailed (SRC_POS, "doas", 1, "");
 +#else
- 			throw ElevationFailed (SRC_POS, "sudo", 1, "");
+@@ -45,0 +49 @@ namespace VeraCrypt
 +#endif
- 		}
- 	};
-

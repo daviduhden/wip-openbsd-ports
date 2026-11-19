@@ -1,6 +1,8 @@
 COMMENT =	platform independent file lock
 
-MODPY_DISTV =	4.2.10
+MODPY_DISTV =	4.2.12
+# LiteLLM's compatible LTS series requires filelock <5.
+PORTROACH =	limit:^4\.
 DISTNAME =	filelock-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME}
 CATEGORIES =	sysutils

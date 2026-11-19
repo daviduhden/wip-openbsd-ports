@@ -20,7 +20,7 @@ Index: pyproject.toml
  build.targets.sdist.include = [
    "/docs",
    "/src",
-@@ -318,9 +316,6 @@ standalone.lazy-exclude-modules = [
+@@ -316,9 +314,6 @@ standalone.lazy-exclude-modules = [
    "sqlite3",
  ]
 

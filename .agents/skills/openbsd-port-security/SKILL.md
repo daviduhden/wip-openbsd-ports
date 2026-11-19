@@ -13,6 +13,11 @@ Read the selected port's Makefile, patches, configuration, `pkg/README`, `pkg/DE
 
 ## Procedure
 
+Review client-triggered server startup separately from explicit service
+startup. Missing keys or launch records must not silently select an insecure
+mode. Require an explicit administrator choice, and check descriptor-repair
+errors before installing hooks, parsing configuration or starting workers.
+
 1. Map initialization, configuration loading, certificate/key reads, DNS, network listeners, inherited descriptors, fork/exec helpers, privilege changes, reload, and shutdown. Include optional features and negative paths. Inspect native APIs before replacing Linux-specific assumptions about procfs, signals, terminals, authentication, device ioctls, or shared libraries.
 2. For LibreSSL, inspect actual API availability and return semantics. Do not identify OpenSSL 3 support solely through `OPENSSL_VERSION_NUMBER`; examine `LIBRESSL_VERSION_NUMBER` where relevant. Keep validation, authentication-tag checks, size conversions, and error handling intact. `net/i2pd` demonstrates backend guards and checked EVP operations; a build alone does not validate cryptographic behavior.
 3. Use dedicated service accounts and minimal directory permissions appropriate to real state/key paths. Reconcile IDs with both `user.list` and the official `infrastructure/db/user.list`. Review listener addresses and authentication individually: confettysh exposes a public demonstration service by default, while soft-serve restricts selected endpoints. Keep secrets out of process arguments and logs.

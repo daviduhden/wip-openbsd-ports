@@ -7,6 +7,13 @@ description: Analyze or refresh OpenBSD port dependencies, including generated C
 
 ## Scope and prerequisites
 
+For a compatibility-capped update, inspect published maintenance releases
+instead of freezing the installed version after rejecting the latest branch.
+Check external dependency versions against the same official snapshot used
+for the port comparison; an unmaintained dependency cannot be assumed newer.
+Follow the source-selection procedure in
+[openbsd-port-update](../openbsd-port-update/SKILL.md).
+
 Use for missing dependencies, version constraints, native library linkage, or regenerated dependency manifests. For a release update, coordinate with [openbsd-port-update](../openbsd-port-update/SKILL.md). This skill does not authorize installing packages, changing system configuration, or changing unrelated ports. Do not use it for ordinary application dependency installation outside ports.
 
 Read the target Makefile, inherited `Makefile.inc`, generated includes, upstream lockfiles and build metadata. Use a matching OpenBSD base system, ports tree, and package repository for execution; a foreign host supports static inspection only. Read [module procedures](references/modules.md) for the ecosystem involved and the installed module source before running its targets.

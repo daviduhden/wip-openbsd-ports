@@ -46,6 +46,9 @@ update. The minimum policy is:
    When a port pins a commit, prefer a newly published stable tag and its
    manifest version. Check the matching port in official OpenBSD `-current`
    even when the local copy looks newer.
+   Classify alpha, beta and release-candidate names against the project's
+   documented release channel even when an API marks them as non-prereleases.
+   Recheck earlier prerelease classifications; publishers can promote a tag.
 3. Compare upstream, official and local sources file by file. Integrate the
    official maintainer fixes that remain valid, and keep local behavior that
    upstream or official changes do not make obsolete. Record every declined
@@ -309,6 +312,9 @@ When maintaining it:
 10. Use independent read-only subagents for upstream, Cargo, native,
     architecture, security and packaging questions.
 11. Separate static findings from real OpenBSD build/runtime evidence.
+    Compare public source features and on-disk formats with upstream binary
+    release notes; private build inputs do not become part of this port.
+    Client autostart must not infer `--insecure` from a missing admin key.
 12. Run tests package-scoped to `xerj-server` with a writable `HOME`;
     workspace-wide tests also compile `xerj-autoindex` tests that still
     reference the Linux-only `RLIMIT_AS`.

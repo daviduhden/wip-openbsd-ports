@@ -47,6 +47,20 @@ in `SUBST_VARS`. A port can use several at once.
    Cross-check release listings with tags and the project's changelog or
    download page: a latest-release endpoint can omit newer stable tags.
    Conversely, a numeric tag alone does not establish release stability.
+   A release API's `prerelease: false` is also insufficient when its name
+   contains an alpha, beta or release-candidate suffix. Check the documented
+   channel and exclude development releases unless that port intentionally
+   follows one. Recheck tags previously marked as prereleases: upstream may
+   promote the same tag, making local warnings obsolete without a version
+   change. Compare public source manifests and storage formats with release
+   notes describing prebuilt binaries; document private-tree features or
+   incompatible formats rather than implying source-package parity.
+   When the newest release exceeds a dependency bound, inspect published
+   maintenance releases too. A latest-release field can hide a newer patch
+   on the compatible branch. Compare each candidate's actual requirements
+   with maintained reverse consumers and official external dependencies;
+   update coupled exact pins together and record why newer branches remain
+   excluded.
    Identify removed or renamed binaries, configuration keys, data formats,
    services, licenses, and dependencies. Check for security fixes that make a
    local patch obsolete. When an official ports update exists, inspect its
@@ -90,9 +104,9 @@ in `SUBST_VARS`. A port can use several at once.
 5. Regenerate any dependency manifest with the module's own procedure in
    [openbsd-port-dependencies](../openbsd-port-dependencies/SKILL.md). Write
    generator output to a temporary file, verify exit status and contents, then
-   replace the tracked include. `cabal.inc` handling differs between
-   `devel/fourmolu` (stdout) and the SimpleX ports (their target writes the
-   file); read the recipe. A new upstream `source-repository-package` fork
+   replace the tracked include. Read each `cabal-inc` recipe: the fourmolu
+   and SimpleX helpers replace the manifest themselves, so never redirect
+   target output over the include. A new upstream `source-repository-package` fork
    needs a `DIST_TUPLE` pin in the port and a local cabal package path; pin
    each git submodule as a separate entry because GitHub archive downloads
    omit them.

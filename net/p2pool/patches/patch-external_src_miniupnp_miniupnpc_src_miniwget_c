@@ -102,5 +102,5 @@ Index: external/src/miniupnp/miniupnpc/src/miniwget.c
 +	*size = -1;
 +	return NULL;
  }
- 
+
  /* miniwget3() :

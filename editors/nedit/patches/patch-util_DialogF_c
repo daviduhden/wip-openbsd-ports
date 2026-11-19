@@ -5,16 +5,10 @@ Keep the legacy formatter on platforms without a known vsnprintf API.
 Index: util/DialogF.c
 --- util/DialogF.c.orig
 +++ util/DialogF.c
-@@ -249,7 +249,12 @@ unsigned DialogF(int dialog_type, Widget
-        hold one file name (MAXPATHLEN). Therefore, DF_MAX_MSG_LENGTH must be
-        sufficiently larger than MAXPATHLEN.
-     */
+@@ -251,0 +252,4 @@ unsigned DialogF(int dialog_type, Widget
 +#ifdef __OpenBSD__
 +    if (vsnprintf(msgstr_vsp, sizeof(msgstr_vsp), msgstr, var) < 0)
 +        strcpy(msgstr_vsp, "Unable to format dialog message");
 +#else
-     vsprintf (msgstr_vsp, msgstr, var);
+@@ -252,0 +257 @@ unsigned DialogF(int dialog_type, Widget
 +#endif
-     va_end(var);
-     
-     strncpy(&titleCopy[0], title, MAX_TITLE_LEN);

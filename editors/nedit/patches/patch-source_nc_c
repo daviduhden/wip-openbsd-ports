@@ -4,10 +4,7 @@ conversion.
 Index: source/nc.c
 --- source/nc.c.orig
 +++ source/nc.c
-@@ -110,15 +110,15 @@ static const char cmdLineHelp[] =
- #ifdef VMS
- "[Sorry, no on-line help available.]\n"; /* Why is that ? */
- #else
+@@ -113,9 +113,9 @@ static const char cmdLineHelp[] =
 -"Usage:  nc [-read] [-create]\n"
 -"           [-line n | +n] [-do command] [-lm languagemode]\n"
 -"           [-svrname name] [-svrcmd command]\n"
@@ -26,31 +23,15 @@ Index: source/nc.c
 +"            [-V | -version] [-h|-help]\n"
 +"            [-xrm resourcestring] [-display [host]:server[.screen]]\n"
 +"            [--] [file...]\n";
- #endif /*VMS*/
-
- /* Structure to hold X Resource values */
-@@ -740,10 +740,10 @@ static void parseCommandLine(int argc, c
-                The "long" cast on strlen() is necessary because size_t
-                is 64 bit on Alphas, and 32-bit on most others.  There is
-                no printf format specifier for "size_t", thanx, ANSI. */
+@@ -743 +743 @@ static void parseCommandLine(int argc, c
 -    	    sprintf(outPtr, "%d %d %d %d %d %ld %ld %ld %ld\n%n", lineNum,
 +    	    charsWritten = sprintf(outPtr, "%d %d %d %d %d %ld %ld %ld %ld\n", lineNum,
- 		    read, create, iconic, isTabbed, (long) strlen(path), 
- 		    (long) strlen(toDoCommand), (long) strlen(langMode),
+@@ -746 +746 @@ static void parseCommandLine(int argc, c
 -		    (long) strlen(geometry), &charsWritten);
 +		    (long) strlen(geometry));
-     	    outPtr += charsWritten;
-     	    strcpy(outPtr, path);
-     	    outPtr += strlen(path);
-@@ -778,9 +778,9 @@ static void parseCommandLine(int argc, c
-      * iconic state (and optional language mode and geometry).
-      */
-     if (toDoCommand[0] != '\0' || fileCount == 0) {
+@@ -781 +781 @@ static void parseCommandLine(int argc, c
 -	sprintf(outPtr, "0 0 0 %d %d 0 %ld %ld %ld\n\n%n", iconic, tabbed,
 +	charsWritten = sprintf(outPtr, "0 0 0 %d %d 0 %ld %ld %ld\n\n", iconic, tabbed,
- 		(long) strlen(toDoCommand),
+@@ -783 +783 @@ static void parseCommandLine(int argc, c
 -		(long) strlen(langMode), (long) strlen(geometry), &charsWritten);
 +		(long) strlen(langMode), (long) strlen(geometry));
- 	outPtr += charsWritten;
- 	strcpy(outPtr, toDoCommand);
- 	outPtr += strlen(toDoCommand);

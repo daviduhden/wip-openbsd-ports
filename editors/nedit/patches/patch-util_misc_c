@@ -4,35 +4,21 @@ sprintf return values to advance the output pointer instead.
 Index: util/misc.c
 --- util/misc.c.orig
 +++ util/misc.c
-@@ -1488,25 +1488,25 @@ void CreateGeometryString(char *string,
-     int nChars;
-     
-     if (bitmask & WidthValue) {
+@@ -1491 +1491 @@ void CreateGeometryString(char *string,
 -    	sprintf(ptr, "%d%n", width, &nChars);
 +    	nChars = sprintf(ptr, "%d", width);
- 	ptr += nChars;
-     }
-     if (bitmask & HeightValue) {
+@@ -1495 +1495 @@ void CreateGeometryString(char *string,
 -	sprintf(ptr, "x%d%n", height, &nChars);
 +	nChars = sprintf(ptr, "x%d", height);
- 	ptr += nChars;
-     }
-     if (bitmask & XValue) {
- 	if (bitmask & XNegative)
+@@ -1500 +1500 @@ void CreateGeometryString(char *string,
 -    	    sprintf(ptr, "-%d%n", -x, &nChars);
 +    	    nChars = sprintf(ptr, "-%d", -x);
- 	else
+@@ -1502 +1502 @@ void CreateGeometryString(char *string,
 -    	    sprintf(ptr, "+%d%n", x, &nChars);
 +    	    nChars = sprintf(ptr, "+%d", x);
- 	ptr += nChars;
-     }
-     if (bitmask & YValue) {
- 	if (bitmask & YNegative)
+@@ -1507 +1507 @@ void CreateGeometryString(char *string,
 -    	    sprintf(ptr, "-%d%n", -y, &nChars);
 +    	    nChars = sprintf(ptr, "-%d", -y);
- 	else
+@@ -1509 +1509 @@ void CreateGeometryString(char *string,
 -    	    sprintf(ptr, "+%d%n", y, &nChars);
 +    	    nChars = sprintf(ptr, "+%d", y);
- 	ptr += nChars;
-     }
-     *ptr = '\0';

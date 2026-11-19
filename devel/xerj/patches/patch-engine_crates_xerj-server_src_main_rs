@@ -1,13 +1,73 @@
-Dispatch spreadsheet workers before Unicode argument normalization.
-Accept native file names just like PDF workers, before Tokio starts.
+Dispatch spreadsheet workers before Unicode argv processing and Tokio.
+Refuse OpenBSD startup if repairing closed standard descriptors fails.
+Keep later files and sockets from silently replacing standard streams.
 
 Index: engine/crates/xerj-server/src/main.rs
 --- engine/crates/xerj-server/src/main.rs.orig
 +++ engine/crates/xerj-server/src/main.rs
-@@ -3075,6 +3075,14 @@ fn main() -> Result<()> {
+@@ -3025,7 +3025,7 @@ fn raise_nofile_limit() {
+ /// has no fd 2. The next file the node opens (a segment, a socket, the WAL)
+ /// takes the lowest free number, so every later `stderr` write would land
+ /// in that file. `/dev/null` holds the slot instead.
+-#[cfg(unix)]
++#[cfg(all(unix, not(target_os = "openbsd")))]
+ fn ensure_std_fds_open() {
+     for fd in 0..3 {
+         // SAFETY: `fcntl(F_GETFD)` only queries the descriptor table.
+@@ -3049,6 +3049,37 @@ fn ensure_std_fds_open() {
+     }
+ }
+
++#[cfg(target_os = "openbsd")]
++fn ensure_std_fds_open() -> std::io::Result<()> {
++    for fd in 0..3 {
++        // SAFETY: inspect descriptor state before starting any worker threads.
++        if unsafe { libc::fcntl(fd, libc::F_GETFD) } != -1 {
++            continue;
++        }
++        let error = std::io::Error::last_os_error();
++        if error.raw_os_error() != Some(libc::EBADF) {
++            return Err(error);
++        }
++        // SAFETY: the path is a static C string and all results are checked.
++        let null = unsafe { libc::open(c"/dev/null".as_ptr(), libc::O_RDWR) };
++        if null == -1 {
++            return Err(std::io::Error::last_os_error());
++        }
++        if null != fd {
++            if unsafe { libc::dup2(null, fd) } == -1 {
++                let error = std::io::Error::last_os_error();
++                // The process exits on this error; preserve the dup2 errno.
++                unsafe { libc::close(null) };
++                return Err(error);
++            }
++            if unsafe { libc::close(null) } == -1 {
++                return Err(std::io::Error::last_os_error());
++            }
++        }
++    }
++    Ok(())
++}
++
+ /// `xerj --detach …` (#3267): start this same command without `--detach` as
+ /// a detached child, wait until it serves, print where it is, and return the
+ /// exit code.
+@@ -3510,8 +3541,10 @@ fn main() -> Result<()> {
+     // fast paths inside `parse_args`. A node that dies must say so: the
+     // allocation hook, the panic hook, and SIGABRT/SIGSEGV/SIGBUS/SIGILL
+     // each write a FATAL line. SIGKILL still cannot be reported.
+-    #[cfg(unix)]
++    #[cfg(all(unix, not(target_os = "openbsd")))]
+     ensure_std_fds_open();
++    #[cfg(target_os = "openbsd")]
++    ensure_std_fds_open()?;
+     install_fatal_reporter();
+     #[cfg(unix)]
+     restore_default_sigpipe();
+@@ -3527,6 +3560,14 @@ fn main() -> Result<()> {
          std::process::exit(xerj_autoindex::extract::pdf::run_worker_cli());
      }
- 
+
 +    // Like PDF workers, dispatch before Unicode argv processing and Tokio.
 +    // A native workbook path is not required to be valid UTF-8.
 +    if std::env::args_os().nth(1).as_deref()
@@ -19,10 +79,10 @@ Index: engine/crates/xerj-server/src/main.rs
      // `xerj --url URL corpus index name` used to die here as an unknown
      // server flag. Move those flags behind the subcommand before any
      // dispatch reads argv.
-@@ -3083,19 +3091,6 @@ fn main() -> Result<()> {
+@@ -3535,19 +3576,6 @@ fn main() -> Result<()> {
          is_top_level_command,
      ));
- 
+
 -    // The isolated legacy-`.xls` BIFF reader. calamine 0.26.1 panics on crafted
 -    // records (short `Lbl`/`ExternSheet`) and the release profile is
 -    // `panic = abort`, so the read runs here, in a short-lived rlimit-capped
@@ -36,6 +96,6 @@ Index: engine/crates/xerj-server/src/main.rs
 -        std::process::exit(xerj_autoindex::extract::xls::run_worker_cli());
 -    }
 -
-     // `xerj mcp` — MCP stdio server (newline-delimited JSON-RPC on
-     // stdin/stdout), proxying to an already-running XERJ node.
-     //
+     // `xerj --detach …` (#3267): start the node in the background, detached
+     // from this terminal, wait until it serves, print where it is, exit.
+     if !xerj_common::argv::subcommand().is_some_and(|c| is_top_level_command(&c))

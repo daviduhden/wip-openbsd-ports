@@ -5,7 +5,7 @@ certificate, including for remote or redirected endpoints.
 Index: engine/crates/xerj-autoindex/src/esclient.rs
 --- engine/crates/xerj-autoindex/src/esclient.rs.orig
 +++ engine/crates/xerj-autoindex/src/esclient.rs
-@@ -1272,7 +1272,6 @@ impl Es {
+@@ -1344,7 +1344,6 @@ impl Es {
          // URL keeps them, including NO_PROXY. Same rule as `xerj mcp`.
          let http = node_blocking_builder(url)
              .timeout(Duration::from_secs(300))

@@ -65,9 +65,20 @@ This is not a memory sandbox. Automatic total/available RAM and RSS probes
 are also unavailable on OpenBSD. Set memory and worker budgets explicitly
 rather than assuming that a memory-derived limit is enforced.
 
-The package version follows the upstream rc.102 tag, and the Cargo
-workspace declares the same version, so --version reports 1.0.0-rc.102.
+The package version follows the upstream rc.104 tag, and the Cargo
+workspace declares the same version, so --version reports 1.0.0-rc.104.
 The port preserves upstream's source metadata.
+
+This package builds the public source tree and uses index format 3.
+Upstream's rc.104 binary release uses private components and format 4;
+this source build rejects those data directories. Keep separate data
+directories and backups when moving between the two distributions.
+
+Clients can automatically restart a local node from its recorded launch
+configuration. On OpenBSD, a missing or invalid record requires starting
+the server explicitly; it never implicitly selects `--insecure`. Protect
+the data directory and HOME-dependent pointer and launch records from
+other users. Set `XERJ_NO_AUTOSTART=1` to disable automatic startup.
 
 No rc.d service or dedicated user is installed in this initial port.
 Runtime permissions, HOME-dependent pointer files, signal handling and

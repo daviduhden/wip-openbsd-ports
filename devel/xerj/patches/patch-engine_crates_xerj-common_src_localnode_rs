@@ -1,0 +1,21 @@
+Require a recorded explicit server configuration for OpenBSD autostart.
+Do not infer --insecure from a missing key or invalid record.
+That would silently disable authentication and TLS during client use.
+
+Index: engine/crates/xerj-common/src/localnode.rs
+--- engine/crates/xerj-common/src/localnode.rs.orig
++++ engine/crates/xerj-common/src/localnode.rs
+@@ -517,6 +517,13 @@ fn start_for_url_in(
+     }
+
+     let record = read_launch_record(&data_dir);
++    #[cfg(target_os = "openbsd")]
++    if record.is_none() {
++        return Err(format!(
++            "cannot safely restart {} without a valid launch record; start the node explicitly",
++            data_dir.display()
++        ));
++    }
+     let args = restart_args(record.as_ref(), &data_dir, port);
+     let cwd = record
+         .as_ref()

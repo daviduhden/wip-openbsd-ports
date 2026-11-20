@@ -1,10 +1,18 @@
-Make the shared X.509 configuration portable to LibreSSL too, so new
-callers of the credential-generation helper cannot accidentally restore
-the unsupported ED448 default.
+Use LibreSSL's Ed25519 default and avoid shell parsing of file paths.
+Pass certificate-generation arguments directly to the openssl process.
 
 Index: src/Simplex/Messaging/Server/CLI.hs
 --- src/Simplex/Messaging/Server/CLI.hs.orig
 +++ src/Simplex/Messaging/Server/CLI.hs
+@@ -85,7 +85,7 @@ import System.Environment (lookupEnv)
+ import System.Exit (exitFailure)
+ import System.FilePath (combine)
+ import System.IO (IOMode (..), hFlush, hGetLine, stdout, withFile)
+-import System.Process (readCreateProcess, shell)
++import System.Process (proc, readCreateProcess)
+ import Text.Read (readMaybe)
+
+ exitError :: String -> IO a
 @@ -117,7 +117,7 @@ defaultX509Config :: X509Config
  defaultX509Config =
    X509Config
@@ -14,3 +22,37 @@ Index: src/Simplex/Messaging/Server/CLI.hs
        caKeyFile = "ca.key",
        caCrtFile = "ca.crt",
        serverKeyFile = "server.key",
+@@ -154,16 +154,27 @@ createServerX509_ createCA cfgPath x509c
+   -- CA certificate (identity/offline)
+   when createCA $ do
+     createOpensslCaConf
+-    run $ "openssl genpkey -algorithm " <> alg <> " -out " <> c caKeyFile
+-    run $ "openssl req -new -x509 -days 999999 -config " <> c opensslCaConfFile <> " -extensions v3 -key " <> c caKeyFile <> " -out " <> c caCrtFile
++    run ["genpkey", "-algorithm", alg, "-out", c caKeyFile]
++    run
++      [ "req", "-new", "-x509", "-days", "999999",
++        "-config", c opensslCaConfFile, "-extensions", "v3",
++        "-key", c caKeyFile, "-out", c caCrtFile
++      ]
+   -- server certificate (online)
+   createOpensslServerConf
+-  run $ "openssl genpkey -algorithm " <> alg <> " -out " <> c serverKeyFile
+-  run $ "openssl req -new -config " <> c opensslServerConfFile <> " -reqexts v3 -key " <> c serverKeyFile <> " -out " <> c serverCsrFile
+-  run $ "openssl x509 -req -days 999999 -extfile " <> c opensslServerConfFile <> " -extensions v3 -in " <> c serverCsrFile <> " -CA " <> c caCrtFile <> " -CAkey " <> c caKeyFile <> " -CAcreateserial -out " <> c serverCrtFile
++  run ["genpkey", "-algorithm", alg, "-out", c serverKeyFile]
++  run
++    [ "req", "-new", "-config", c opensslServerConfFile,
++      "-reqexts", "v3", "-key", c serverKeyFile, "-out", c serverCsrFile
++    ]
++  run
++    [ "x509", "-req", "-days", "999999", "-extfile", c opensslServerConfFile,
++      "-extensions", "v3", "-in", c serverCsrFile, "-CA", c caCrtFile,
++      "-CAkey", c caKeyFile, "-CAcreateserial", "-out", c serverCrtFile
++    ]
+   saveFingerprint
+   where
+-    run cmd = void $ readCreateProcess (shell cmd) ""
++    run args = void $ readCreateProcess (proc "openssl" args) ""
+     c = combine cfgPath . ($ x509cfg)
+     createOpensslCaConf =
+       writeFile

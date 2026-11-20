@@ -43,3 +43,8 @@ storage. See the upstream CHANGELOG for the migration commands.
 The OpenBSD port defaults XFTP certificate generation to ED25519 because
 LibreSSL does not provide ED448.  ED448 can still be selected explicitly
 when using a compatible openssl(1) implementation.
+
+Certificate initialization invokes openssl through PATH with separate
+arguments. Configuration paths are passed literally, without shell
+expansion. Run initialization with a trusted PATH; this helper is not
+confined by an application sandbox.

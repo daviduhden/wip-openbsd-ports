@@ -1,7 +1,7 @@
 COMMENT =		coding agent with a rich terminal UI
 
 MODGO_MODNAME =		github.com/charmbracelet/crush
-MODGO_VERSION =		v0.101.0
+MODGO_VERSION =		v0.102.0
 
 DISTNAME =		crush-${MODGO_VERSION}
 WRKDIST = 		${WRKDIR}/${MODGO_MODNAME}@${MODGO_VERSION}
@@ -17,6 +17,9 @@ WANTLIB += c pthread
 
 MODULES =		lang/go
 
+# go.mod declares this compiler minimum; keep GOTOOLCHAIN=local.
+BUILD_DEPENDS +=		lang/go>=1.27.4
+
 # The grep and glob agent tools use ripgrep when it is available and fall
 # back to a pure-Go implementation otherwise. ripgrep is built with Rust,
 # which is unavailable on armv7 and i386, so use the "rust" property.
@@ -26,8 +29,8 @@ RUN_DEPENDS =		textproc/ripgrep
 .endif
 
 # goreleaser embeds internal/version.Version from {{.Version}}, which is the
-# tag with its leading "v" stripped, so the release binaries report the numeric
-# form ("0.101.0"). Strip the prefix the same way here.
+# tag with its leading "v" stripped, so release binaries report the numeric
+# form. Strip the prefix the same way here.
 MODGO_LDFLAGS +=	-X github.com/charmbracelet/crush/internal/version.Version=${MODGO_VERSION:S/^v//}
 
 .include "modules.inc"

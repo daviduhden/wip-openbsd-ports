@@ -68,6 +68,22 @@ Read the target Makefile, inherited `Makefile.inc`, generated includes, upstream
    pin against the available OpenBSD ports toolchain.
 5. Update `LIB_DEPENDS` for native libraries and `WANTLIB` for actual linkage; language source manifests do not replace either. Preserve compiler modules and justified bundled-library exceptions. Validate from a fresh work directory after generation; ordinary configure/build must use fetched, checksummed inputs without new network dependency resolution.
 
+### Go compiler requirements
+
+Compare the selected source's `go` directive, including its patch component,
+with `lang/go` in the same official snapshot. This is a compiler minimum;
+the separate `toolchain` directive can express a preferred newer compiler.
+Read the module's `GOTOOLCHAIN` setting before judging compatibility. With
+`GOTOOLCHAIN=local`, a higher `go` minimum is a real blocker: normally retain
+the highest compatible release and record the needed compiler update. When
+the user requests preparing the newer release despite that known blocker,
+declare its minimum as a versioned build dependency and mark the preparation
+as blocked for native build/package validation until that compiler exists.
+The module's default unversioned compiler dependency does not encode this
+minimum. Never lower the directive or enable an implicit compiler download
+to hide the blocker, and do not expand the task into a compiler port update
+without reviewing that additional scope.
+
 ### Python entry points and optional dependencies
 
 Read the exact selected source's console entry points as well as its base

@@ -1,0 +1,11 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+Crush executes shell commands and configured MCP servers with the invoking
+user's permissions. This port does not provide an OpenBSD command sandbox.
+
+The local server uses a per-user Unix socket with owner-only permissions.
+The optional TCP API has no authentication. Its Host, Origin and browser
+request checks do not authenticate clients; do not expose it to untrusted
+users or networks.

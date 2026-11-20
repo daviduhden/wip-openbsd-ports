@@ -3,7 +3,7 @@ COMMENT =	lightweight image viewer and browser for Unix/X11 Motif
 DISTNAME =	ximaging-src-1.9.3
 PKGNAME =	ximaging-1.9.3
 
-REVISION =	0
+REVISION =	1
 
 CATEGORIES =	graphics x11
 HOMEPAGE =	https://fastestcode.org/ximaging.html

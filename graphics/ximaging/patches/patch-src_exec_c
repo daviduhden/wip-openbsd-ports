@@ -1,29 +1,85 @@
-Reserve space for the terminating argv pointer on every growth.
-Check allocation and parse cleanup; classify bytes as unsigned chars.
+Preserve argument ownership and reject an empty helper command.
+Spawn piped image converters with checked file actions on OpenBSD.
+Close pipe descriptors on failure without vfork-shared error state.
 
 Index: src/exec.c
 --- src/exec.c.orig
 +++ src/exec.c
-@@ -40,0 +41 @@ int exec_file(const char *cmd_spec,
+@@ -14,0 +15,44 @@
++#ifdef __OpenBSD__
++#include <fcntl.h>
++#include <spawn.h>
++
++extern char **environ;
++
++static int spawn_piped(char *const argv[], FILE **pipe_ret)
++{
++	posix_spawn_file_actions_t actions;
++	pid_t pid;
++	int fd[2];
++	int rv, cleanup;
++
++	if(pipe2(fd, O_CLOEXEC) == -1)
++		return errno;
++	rv = posix_spawn_file_actions_init(&actions);
++	if(!rv) {
++		rv = posix_spawn_file_actions_addclose(&actions, fd[0]);
++		if(!rv)
++			rv = posix_spawn_file_actions_adddup2(&actions,
++				fd[1], STDOUT_FILENO);
++		if(!rv && fd[1] != STDOUT_FILENO)
++			rv = posix_spawn_file_actions_addclose(&actions, fd[1]);
++		if(!rv)
++			rv = posix_spawnp(&pid, argv[0], &actions, NULL,
++				argv, environ);
++		cleanup = posix_spawn_file_actions_destroy(&actions);
++		if(!rv) rv = cleanup;
++	}
++	close(fd[1]);
++	if(rv) {
++		close(fd[0]);
++		return rv;
++	}
++	*pipe_ret = fdopen(fd[0], "r");
++	if(*pipe_ret == NULL) {
++		rv = errno;
++		close(fd[0]);
++		return rv;
++	}
++	return 0;
++}
++#endif
++
+@@ -40,0 +85 @@ int exec_file(const char *cmd_spec,
 +	if(!str) return ENOMEM;
-@@ -48 +49 @@ int exec_file(const char *cmd_spec,
+@@ -48 +93 @@ int exec_file(const char *cmd_spec,
 -			while(*p && isblank((int)*p)) p++;
 +			while(*p && isblank((unsigned char)*p)) p++;
-@@ -75 +76 @@ int exec_file(const char *cmd_spec,
+@@ -75 +120 @@ int exec_file(const char *cmd_spec,
 -				if(isblank((int)p[1])) p++; else *p = ' ';
 +				if(isblank((unsigned char)p[1])) p++; else *p = ' ';
-@@ -83,0 +85 @@ int exec_file(const char *cmd_spec,
+@@ -83,0 +129 @@ int exec_file(const char *cmd_spec,
 +						free(str);
-@@ -92 +94 @@ int exec_file(const char *cmd_spec,
+@@ -92 +138 @@ int exec_file(const char *cmd_spec,
 -		if(isblank((int)*p) || *p == '\0'){
 +		if(isblank((unsigned char)*p) || *p == '\0'){
-@@ -94 +96 @@ int exec_file(const char *cmd_spec,
+@@ -94 +140 @@ int exec_file(const char *cmd_spec,
 -			if(argv_size < (argc + 1)){
 +			if(argv_size < (argc + 2)){
-@@ -117 +119,5 @@ int exec_file(const char *cmd_spec,
+@@ -117 +163,5 @@ int exec_file(const char *cmd_spec,
 -	if(!argc) return EINVAL;
 +	if(!argc) {
 +		free(str);
 +		free(argv);
 +		return EINVAL;
 +	}
+@@ -118,0 +169,9 @@ int exec_file(const char *cmd_spec,
++
++#ifdef __OpenBSD__
++	if(pipe_ret) {
++		int rv = spawn_piped(argv, pipe_ret);
++		free(str);
++		free(argv);
++		return rv;
++	}
++#endif

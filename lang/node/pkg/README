@@ -20,8 +20,14 @@ The SNI pinning and session-binding paths added for CVE-2026-123872 and
 the certificate-store mitigation for CVE-2026-123867 are therefore not
 compiled in this build. Server-side SNI and session configurations need
 a native security review before they are exposed to untrusted clients.
-The port's LibreSSL re-read path also calls ClearOut() from DoWrite();
-nested-write re-entry needs native review against the new cycle guard.
+LibreSSL write retries retain their input and use a deferred TLS cycle
+so read callbacks run after the write request has been accepted. TLS 1.3
+handshake progress, nested writes and destruction still need native checks.
+
+This full-featured Node build retains V8 JIT and the wxneeded setting.
+Its 64-bit code-range setup requests memory that is writable and
+executable at the same time. RW-to-RX transitions elsewhere do not remove
+that requirement. Native OpenBSD mapping and ELF checks remain pending.
 
 The header archive supplied for node-gyp is copied from upstream without
 this port's compatibility patches. Native addon builds need separate checks

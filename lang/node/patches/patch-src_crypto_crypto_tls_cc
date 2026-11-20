@@ -1,5 +1,6 @@
 Adapt TLS callbacks, tickets and reads to LibreSSL.
-Drain application data left buffered after a TLS 1.3 handshake.
+Drain buffered TLS records through the deferred state-machine cycle.
+Keep JavaScript read callbacks outside an unfinished DoWrite request.
 
 Index: src/crypto/crypto_tls.cc
 --- src/crypto/crypto_tls.cc.orig
@@ -69,44 +70,21 @@ Index: src/crypto/crypto_tls.cc
        default:
          return;
      }
-@@ -1203,6 +1224,18 @@ int TLSWrap::DoWrite(WriteWrap* w,
-       SSLLibraryCallScope ssl_library_call_scope(this);
-       written = SSL_write(ssl_.get(), bs->Data(), length);
-     }
-+    if (written == -1 && ssl_ != nullptr) {
-+      int err = SSL_get_error(ssl_.get(), written);
-+      if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE) {
-+        // LibreSSL can require pending handshake data to be consumed before
-+        // it accepts the first application record after a TLS 1.3 handshake.
-+        ClearOut();
-+        if (ssl_ != nullptr) {
-+          SSLLibraryCallScope ssl_library_call_scope(this);
-+          written = SSL_write(ssl_.get(), bs->Data(), length);
-+        }
-+      }
-+    }
-   } else {
-     // Only one buffer: try to write directly, only store if it fails
-     uv_buf_t* buf = &bufs[nonempty_i];
-@@ -1212,6 +1245,17 @@ int TLSWrap::DoWrite(WriteWrap* w,
-       written = SSL_write(ssl_.get(), buf->base, buf->len);
-     }
+@@ -1239,6 +1260,13 @@ int TLSWrap::DoWrite(WriteWrap* w,
+     CHECK(!pending_cleartext_input_ ||
+           pending_cleartext_input_->ByteLength() == 0);
+     pending_cleartext_input_ = std::move(bs);
++#ifdef LIBRESSL_VERSION_NUMBER
++    // Finish DoWrite() before reading handshake data: ClearOut() can invoke
++    // JavaScript that destroys SSL or completes the current write request.
++    // Cycle() retries this owned buffer after draining pending TLS records.
++    if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
++      ScheduleDeferredCycle();
++#endif
+   }
 
-+    if (written == -1 && ssl_ != nullptr) {
-+      int err = SSL_get_error(ssl_.get(), written);
-+      if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE) {
-+        ClearOut();
-+        if (ssl_ != nullptr) {
-+          SSLLibraryCallScope ssl_library_call_scope(this);
-+          written = SSL_write(ssl_.get(), buf->base, buf->len);
-+        }
-+      }
-+    }
-+
-     if (written == -1) {
-       bs = ArrayBuffer::NewBackingStore(
-           env()->isolate(),
-@@ -1465,7 +1509,15 @@ void TLSWrap::Destroy() {
+   // Write any encrypted/handshake output that may be ready.
+@@ -1465,7 +1493,15 @@ void TLSWrap::Destroy() {
  void TLSWrap::EnableCertCb(const FunctionCallbackInfo<Value>& args) {
    TLSWrap* wrap;
    ASSIGN_OR_RETURN_UNWRAP(&wrap, args.This());
@@ -122,7 +100,7 @@ Index: src/crypto/crypto_tls.cc
  }
 
  void TLSWrap::WaitForCertCb(CertCb cb, void* arg) {
-@@ -1577,10 +1629,15 @@ bool TLSWrap::BindSessionsToServerName(s
+@@ -1577,10 +1613,15 @@ bool TLSWrap::BindSessionsToServerName(s
  }
 
  int TLSWrap::SetCACerts(SecureContext* sc) {
@@ -138,7 +116,7 @@ Index: src/crypto/crypto_tls.cc
 
    STACK_OF(X509_NAME)* list =
        SSL_dup_CA_list(SSL_CTX_get_client_CA_list(sc->ctx().get()));
-@@ -2085,6 +2142,10 @@ void TLSWrap::GetSharedSigalgs(const Fun
+@@ -2085,6 +2126,10 @@ void TLSWrap::GetSharedSigalgs(const Fun
    TLSWrap* w;
    ASSIGN_OR_RETURN_UNWRAP(&w, args.This());
 
@@ -149,7 +127,7 @@ Index: src/crypto/crypto_tls.cc
    SSL* ssl = w->ssl_.get();
    int nsig = SSL_get_shared_sigalgs(ssl, 0, nullptr, nullptr, nullptr, nullptr,
                                      nullptr);
-@@ -2156,6 +2217,7 @@ void TLSWrap::GetSharedSigalgs(const Fun
+@@ -2156,6 +2201,7 @@ void TLSWrap::GetSharedSigalgs(const Fun
    }
 
    args.GetReturnValue().Set(ret_arr.ToArray());
@@ -157,7 +135,7 @@ Index: src/crypto/crypto_tls.cc
  }
 
  void TLSWrap::ExportKeyingMaterial(const FunctionCallbackInfo<Value>& args) {
-@@ -2222,6 +2284,12 @@ void TLSWrap::GetTLSTicket(const Functio
+@@ -2222,6 +2268,12 @@ void TLSWrap::GetTLSTicket(const Functio
    if (sess == nullptr)
      return;
 
@@ -170,7 +148,7 @@ Index: src/crypto/crypto_tls.cc
    const unsigned char* ticket;
    size_t length;
    SSL_SESSION_get0_ticket(sess, &ticket, &length);
-@@ -2231,6 +2299,7 @@ void TLSWrap::GetTLSTicket(const Functio
+@@ -2231,6 +2283,7 @@ void TLSWrap::GetTLSTicket(const Functio
          Buffer::Copy(env, reinterpret_cast<const char*>(ticket), length)
              .FromMaybe(Local<Object>()));
    }

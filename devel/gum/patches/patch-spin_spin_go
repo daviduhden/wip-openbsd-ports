@@ -1,0 +1,45 @@
+Serialize shared command-output buffers and copy snapshots under lock.
+Keep spinner rendering from reading buffers while copy threads write.
+
+Index: spin/spin.go
+--- spin/spin.go.orig
++++ spin/spin.go
+@@ -21,6 +21,7 @@ import (
+ 	"os"
+ 	"os/exec"
+ 	"runtime"
++	"sync"
+ 	"syscall"
+
+ 	"charm.land/bubbles/v2/spinner"
+@@ -48,10 +49,27 @@ type model struct {
+ 	err        error
+ }
+
++type capturedBuffer struct {
++	mu   sync.Mutex
++	data bytes.Buffer
++}
++
++func (out *capturedBuffer) Write(p []byte) (int, error) {
++	out.mu.Lock()
++	defer out.mu.Unlock()
++	return out.data.Write(p)
++}
++
++func (out *capturedBuffer) String() string {
++	out.mu.Lock()
++	defer out.mu.Unlock()
++	return string(out.data.Bytes())
++}
++
+ var (
+-	bothbuf bytes.Buffer
+-	outbuf  bytes.Buffer
+-	errbuf  bytes.Buffer
++	bothbuf capturedBuffer
++	outbuf  capturedBuffer
++	errbuf  capturedBuffer
+
+ 	executing *exec.Cmd
+ )

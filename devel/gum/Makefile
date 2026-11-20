@@ -2,6 +2,7 @@ COMMENT =		tool for glamorous shell scripts
 
 MODGO_MODNAME =		charm.land/gum/v2
 MODGO_VERSION =		v2.0.2
+REVISION =		0
 
 DISTNAME =		gum-${MODGO_VERSION}
 

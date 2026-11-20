@@ -1,0 +1,257 @@
+Use loopback test authorities and cover browser-request rejection.
+Check refusal before sessions or tools, same-origin success, and the
+explicit remote-bind authentication policy. These tests need execution.
+
+Index: tests/test_a2a_server.py
+--- tests/test_a2a_server.py.orig
++++ tests/test_a2a_server.py
+@@ -145,7 +145,7 @@ def client(server):
+     """Starlette TestClient wrapping the server's ASGI app."""
+     from starlette.testclient import TestClient
+
+-    return TestClient(server.app)
++    return TestClient(server.app, base_url="http://127.0.0.1")
+
+
+ # ---------------------------------------------------------------------------
+@@ -363,7 +363,7 @@ class TestTTLExpiry:
+         )
+         from starlette.testclient import TestClient
+
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+
+         ctx = str(uuid.uuid4())
+         resp1 = _send_message(tc, "Hello", context_id=ctx)
+@@ -446,7 +446,7 @@ class TestAuth:
+         )
+         from starlette.testclient import TestClient
+
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+
+         resp = tc.post(
+             "/",
+@@ -473,7 +473,7 @@ class TestAuth:
+         )
+         from starlette.testclient import TestClient
+
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+
+         resp = tc.post(
+             "/",
+@@ -499,7 +499,7 @@ class TestAuth:
+         )
+         from starlette.testclient import TestClient
+
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+
+         resp = tc.post(
+             "/",
+@@ -526,7 +526,7 @@ class TestAuth:
+         )
+         from starlette.testclient import TestClient
+
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+         resp = tc.get("/.well-known/agent-card.json")
+         assert resp.status_code == 200
+
+@@ -890,7 +890,7 @@ class TestLRUEviction:
+         )
+         from starlette.testclient import TestClient
+
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+
+         # Fill to capacity
+         resp1 = _send_message(tc, "Q1", context_id="ctx-1")
+@@ -977,7 +977,7 @@ class TestCancelTask:
+             host="127.0.0.1",
+             port=0,
+         )
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+
+         # Start a task in a thread
+         result_holder = {}
+@@ -1136,7 +1136,7 @@ class TestSendStreamingMessage:
+         )
+         from starlette.testclient import TestClient
+
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+         resp = _send_streaming_message(tc, "do something")
+         events = _parse_sse_events(resp.text)
+
+@@ -1170,7 +1170,7 @@ class TestRateLimiting:
+             session_kwargs={"base_dir": str(tmp_path)},
+             max_requests_per_minute=2,
+         )
+-        with TestClient(srv.app) as client:
++        with TestClient(srv.app, base_url="http://127.0.0.1") as client:
+             statuses = [
+                 client.post(
+                     "/", json=_jsonrpc("ListTasks", {}), headers=headers
+@@ -1208,7 +1208,7 @@ class TestRateLimiting:
+         )
+         from starlette.testclient import TestClient
+
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+
+         # Send 3 requests (within limit)
+         for _ in range(3):
+@@ -1266,7 +1266,7 @@ class TestRequestSizeValidation:
+         )
+         from starlette.testclient import TestClient
+
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+
+         # Build a request larger than 100 bytes
+         big_text = "x" * 200
+@@ -1304,7 +1304,7 @@ class TestConcurrencyLimit:
+             port=0,
+             max_concurrent=2,
+         )
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+
+         results = []
+
+@@ -1486,7 +1486,7 @@ class TestStreamingConcurrencyLimit:
+             max_concurrent=1,
+             heartbeat_interval=0.05,
+         )
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+
+         results = []
+
+@@ -1533,7 +1533,7 @@ class TestNoDuplicateArtifact:
+             port=0,
+             heartbeat_interval=0.05,
+         )
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+         resp = _send_streaming_message(tc, "hello")
+         events = _parse_sse_events(resp.text)
+
+@@ -1565,7 +1565,7 @@ class TestNoDuplicateArtifact:
+             port=0,
+             heartbeat_interval=0.05,
+         )
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+         resp = _send_streaming_message(tc, "hello")
+         events = _parse_sse_events(resp.text)
+
+@@ -1616,7 +1616,7 @@ class TestStatusUpdateMetadata:
+             port=0,
+             heartbeat_interval=0.05,
+         )
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+         resp = _send_streaming_message(tc, "hello")
+         events = _parse_sse_events(resp.text)
+
+@@ -1836,7 +1836,7 @@ class TestDisconnectFinalizesTask:
+             port=0,
+             heartbeat_interval=0.05,
+         )
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+
+         resp = _send_streaming_message(tc, "hello")
+         events = _parse_sse_events(resp.text)
+@@ -1981,7 +1981,7 @@ class TestActiveContextProtection:
+         srv._get_or_create_session("ctx-occupied")
+         srv._active_contexts.add("ctx-occupied")
+
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+         resp = _send_message(tc, "hello")
+         body = resp.json()
+         assert "error" in body
+@@ -2017,7 +2017,7 @@ class TestActiveContextProtection:
+         srv._get_or_create_session("ctx-occupied")
+         srv._active_contexts.add("ctx-occupied")
+
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+         resp = _send_streaming_message(tc, "hello")
+         body = resp.json()
+         # Should be a normal JSON-RPC error, not an SSE stream
+@@ -2058,9 +2058,68 @@ class TestActiveContextProtection:
+             host="127.0.0.1",
+             port=0,
+         )
+-        tc = TestClient(srv.app)
++        tc = TestClient(srv.app, base_url="http://127.0.0.1")
+         resp = _send_message(tc, "hello")
+         assert resp.json()["result"]["status"]["state"] == "completed"
+
+         # _finalize_task was called while context was still active
+         assert finalize_order == [True]
++
++
++@pytest.mark.parametrize(
++    "headers",
++    [
++        {"host": "attacker.example"},
++        {"host": "attacker.example@127.0.0.1"},
++        {"host": "127.0.0.1:invalid"},
++        {"origin": "https://attacker.example"},
++        {"origin": "null"},
++        {"sec-fetch-site": "cross-site"},
++    ],
++)
++def test_browser_request_rejected_before_session(client, server, headers):
++    params = {"message": {"role": "user", "parts": [{"type": "text", "text": "run"}]}}
++    response = client.post("/", json=_jsonrpc("SendMessage", params), headers=headers)
++    assert response.status_code == 403
++    assert server._sessions == {}
++    assert server._tasks == {}
++
++
++@pytest.mark.parametrize("content_type", ["text/plain", "application/x-www-form-urlencoded"])
++def test_simple_post_cannot_start_session(client, server, content_type):
++    params = {"message": {"role": "user", "parts": [{"type": "text", "text": "run"}]}}
++    response = client.post(
++        "/",
++        content=json.dumps(_jsonrpc("SendMessage", params)),
++        headers={"content-type": content_type},
++    )
++    assert response.status_code == 403
++    assert server._sessions == {}
++    assert server._tasks == {}
++
++
++def test_same_origin_json_request_is_retained(client):
++    response = client.post(
++        "/", json=_jsonrpc("ListTasks", {}), headers={"origin": "http://127.0.0.1"}
++    )
++    assert response.status_code == 200
++
++
++def test_explicit_remote_bind_keeps_administrator_policy(_patch_session):
++    from starlette.testclient import TestClient
++
++    remote = A2aServer(
++        session_kwargs={"provider": "lmstudio", "base_dir": "/tmp"},
++        host="0.0.0.0",
++        auth_token="configured-token",
++    )
++    with TestClient(remote.app, base_url="https://agent.example") as client:
++        response = client.post(
++            "/",
++            json=_jsonrpc("ListTasks", {}),
++            headers={
++                "origin": "https://ui.example",
++                "authorization": "Bearer configured-token",
++            },
++        )
++        assert response.status_code == 200

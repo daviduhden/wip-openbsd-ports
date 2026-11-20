@@ -11,3 +11,15 @@ LiteLLM is pinned to a packaged bugfix release in the same LTS series as
 Swival's upstream pin. Swival uses LiteLLM's internal APIs; keep both
 packages aligned when upgrading. The port retains a JSON nesting limit in
 the Python bridge to bound decoder recursion.
+
+The optional A2A server listens on 127.0.0.1 by default. An explicit
+--serve-host can expose it remotely; configure --serve-auth-token and a
+trusted TLS endpoint before doing so. Remote requests can invoke this
+agent's tools with the server user's permissions. The host backend does
+not confine those tools or filter inherited credential variables.
+
+Loopback-bound A2A listeners reject foreign Host and Origin headers,
+cross-site browser requests, and non-JSON content types. These checks are
+not authentication. Use a bearer token when local clients or web content
+are untrusted. An explicit remote bind retains its configured host policy;
+its administrator must protect it with authentication and trusted TLS.

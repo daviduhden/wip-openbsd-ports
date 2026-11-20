@@ -1,0 +1,17 @@
+Listen on loopback by default for the tool-capable A2A agent server.
+Keep explicit host overrides available for reviewed remote deployments.
+
+Index: swival/agent.py
+--- swival/agent.py.orig
++++ swival/agent.py
+@@ -7857,8 +7857,8 @@ def build_parser():
+     server_group.add_argument(
+         "--serve-host",
+         type=str,
+-        default="0.0.0.0",
+-        help="Host for the A2A server (default: 0.0.0.0). Only used with --serve.",
++        default="127.0.0.1",
++        help="Host for the A2A server (default: 127.0.0.1). Only used with --serve.",
+     )
+     server_group.add_argument(
+         "--serve-port",

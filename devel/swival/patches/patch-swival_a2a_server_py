@@ -1,0 +1,74 @@
+Default the tool-capable A2A server to loopback. Reject browser calls
+with foreign Host or Origin values and require JSON content types.
+Keep explicit remote binds available for administrator-selected policy.
+
+Index: swival/a2a_server.py
+--- swival/a2a_server.py.orig
++++ swival/a2a_server.py
+@@ -20,6 +20,7 @@ import uuid
+ from pathlib import Path
+ from dataclasses import dataclass, field
+ from typing import Any
++from urllib.parse import urlsplit
+
+ from starlette.applications import Starlette
+ from starlette.requests import Request
+@@ -281,7 +282,7 @@ class A2aServer:
+     def __init__(
+         self,
+         session_kwargs: dict,
+-        host: str = "0.0.0.0",
++        host: str = "127.0.0.1",
+         port: int = 8080,
+         auth_token: str | None = None,
+         ttl: int = DEFAULT_TTL,
+@@ -514,6 +515,36 @@ class A2aServer:
+     # Auth
+     # ------------------------------------------------------------------
+
++    def _check_request_source(self, request: Request) -> str | None:
++        """Reject browser cross-origin calls to a loopback-bound agent."""
++        content_type = request.headers.get("content-type", "").split(";", 1)[0]
++        if content_type.strip().lower() != "application/json":
++            return "JSON-RPC requests require application/json"
++        if self.host not in ("127.0.0.1", "::1", "localhost"):
++            # An explicit remote bind keeps its administrator-selected policy.
++            return None
++        authority = request.headers.get("host", "").lower()
++        try:
++            host = urlsplit("//" + authority)
++            if (
++                host.hostname not in ("127.0.0.1", "::1", "localhost")
++                or host.username is not None
++                or host.password is not None
++                or host.path
++                or host.query
++                or host.fragment
++                or (host.port is not None and self.port not in (0, host.port))
++            ):
++                return "Invalid Host for a loopback agent"
++        except ValueError:
++            return "Invalid Host for a loopback agent"
++        origin = request.headers.get("origin")
++        if origin is not None and origin.lower() != f"{request.url.scheme}://{authority}":
++            return "Cross-origin calls to a loopback agent are forbidden"
++        if request.headers.get("sec-fetch-site", "").lower() == "cross-site":
++            return "Cross-site calls to a loopback agent are forbidden"
++        return None
++
+     def _check_auth(self, request: Request) -> str | None:
+         """Check bearer auth if configured. Returns error message or None."""
+         if not self.auth_token:
+@@ -1005,6 +1036,12 @@ class A2aServer:
+         self, request: Request
+     ) -> JSONResponse | StreamingResponse:
+         """Handle JSON-RPC 2.0 requests at POST /."""
++        source_err = self._check_request_source(request)
++        if source_err:
++            return JSONResponse(
++                _jsonrpc_error(None, -32000, source_err), status_code=403
++            )
++
+         # Auth check
+         auth_err = self._check_auth(request)
+         if auth_err:

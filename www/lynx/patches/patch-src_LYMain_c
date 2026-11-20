@@ -1,6 +1,8 @@
-Cover the LibreSSL default CA file and the legacy bundle name.
-Without either path, HTTPS fails closed unless an environment or
-configuration override supplies the trust store.
+Constrain Lynx to exact state files and private temporary/save roots.
+Reject root and invalid HOME, disable external programs, and lock the
+in-process unveil policy before installing an exec-free pledge policy.
+Do not let a current-directory rule expose HOME through an ancestor.
+Cover both LibreSSL default CA bundle names and configured identities.
 
 Index: src/LYMain.c
 --- src/LYMain.c.orig
@@ -437,8 +439,8 @@ Index: src/LYMain.c
 +
 +	/*
 +	 * Local browsing is limited to the current directory.  Do not
-+	 * turn HOME, / or an ancestor of HOME into a writable tree: the
-+	 * individual files Lynx owns are unveiled below.
++	 * turn HOME, its ancestors or descendants into a readable tree:
++	 * the individual files Lynx owns are unveiled below.
 +	 */
 +	home_real = non_empty(LYGetEnv("HOME"))
 +	    ? realpath(Home_Dir(), NULL)
@@ -457,8 +459,7 @@ Index: src/LYMain.c
 +	if (cwd_real != NULL) {
 +	    size_t hlen = strlen(home_real);
 +
-+	    if (!strcmp(cwd_real, "/") ||
-+		!strcmp(cwd_real, home_real) ||
++	    if (unveil_covers_home(cwd_real, home_real) ||
 +		(!strncmp(cwd_real, home_real, hlen) &&
 +		 cwd_real[hlen] == '/'))
 +		allow_cwd = 0;
@@ -531,7 +532,8 @@ Index: src/LYMain.c
 +	    LYAddPathToHome(userpath, sizeof(userpath), "Downloads");
 +	    unveil_home_downloads(userpath, home_real);
 +	    LYAddPathToHome(userpath, sizeof(userpath), ".terminfo");
-+	    unveil_path(userpath, "r", 0);
++	    if (!unveil_covers_home(userpath, home_real))
++		unveil_path(userpath, "r", 0);
 +	}
 +	/* TLS reads these configured CA and client identity files. */
 +	unveil_file(SSL_cert_file, "r", 0);

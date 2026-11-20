@@ -1,0 +1,57 @@
+Synchronize PTY output writes and return independent byte snapshots.
+Do not wait for descendants that retain the PTY after the child exits.
+
+Index: exec.go
+--- exec.go.orig
++++ exec.go
+@@ -6,6 +6,7 @@ import (
+ 	"io"
+ 	"os"
+ 	"os/exec"
++	"sync"
+
+ 	"github.com/charmbracelet/x/term"
+ 	"github.com/charmbracelet/x/xpty"
+@@ -16,6 +17,23 @@ const (
+ 	defaultHeight = 24
+ )
+
++type capturedOutput struct {
++	mu   sync.Mutex
++	data bytes.Buffer
++}
++
++func (out *capturedOutput) Write(p []byte) (int, error) {
++	out.mu.Lock()
++	defer out.mu.Unlock()
++	return out.data.Write(p)
++}
++
++func (out *capturedOutput) snapshot() []byte {
++	out.mu.Lock()
++	defer out.mu.Unlock()
++	return bytes.Clone(out.data.Bytes())
++}
++
+ //nolint:wrapcheck
+ func executeCommand(ctx context.Context, args []string) ([]byte, error) {
+ 	width, height, err := term.GetSize(os.Stdout.Fd())
+@@ -37,15 +55,13 @@ func executeCommand(ctx context.Context,
+ 		return nil, err
+ 	}
+
+-	var out bytes.Buffer
+-	var errorOut bytes.Buffer
++	var out capturedOutput
+ 	go func() {
+ 		_, _ = io.Copy(&out, pty)
+-		errorOut.Write(out.Bytes())
+ 	}()
+
+ 	if err := xpty.WaitProcess(ctx, cmd); err != nil {
+-		return errorOut.Bytes(), err //nolint: wrapcheck
++		return out.snapshot(), err //nolint: wrapcheck
+ 	}
+-	return out.Bytes(), nil
++	return out.snapshot(), nil
+ }

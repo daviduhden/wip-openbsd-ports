@@ -2,6 +2,7 @@ COMMENT =		human-readable ANSI escape sequence inspector
 
 MODGO_MODNAME =		github.com/charmbracelet/sequin
 MODGO_VERSION =		v0.3.1
+REVISION =		0
 
 DISTNAME =		sequin-${MODGO_VERSION}
 

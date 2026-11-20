@@ -2,7 +2,7 @@ COMMENT =	utilities for Enhanced Motif Window Manager
 
 DISTNAME =	emwm-utils-src-2.0
 PKGNAME =	emwm-utils-2.0
-REVISION =       1
+REVISION =       2
 
 CATEGORIES =	x11
 HOMEPAGE =	https://fastestcode.org/emwm.html
@@ -14,7 +14,7 @@ DISTFILES =	${DISTNAME}${EXTRACT_SUFX} \
 		tellmwm-src-20260721{tellmwm-src}.tar.xz \
 		app-icons-20250710{app-icons}.tar.xz \
 		xc-core-hr-20241226{xc-core-hr}.tar.xz \
-		xmdlgicons-20250717{xmdlgicons}.tar.xz \
+		xmdlgicons-20261101{xmdlgicons}.tar.xz \
 		gtk-configs.tar.xz
 DISTFILES.misc =	Xresources-sample
 DIST_SUBDIR =	emwm-utils
@@ -23,7 +23,7 @@ EXTRACT_ONLY =	emwm-utils-src-2.0.tar.xz \
 		tellmwm-src-20260721.tar.xz \
 		app-icons-20250710.tar.xz \
 		xc-core-hr-20241226.tar.xz \
-		xmdlgicons-20250717.tar.xz \
+		xmdlgicons-20261101.tar.xz \
 		gtk-configs.tar.xz
 
 # emwm-utils: MIT; tellmwm: permissive; artwork: CC BY-SA 3.0;

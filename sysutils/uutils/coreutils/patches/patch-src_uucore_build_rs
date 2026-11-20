@@ -1,0 +1,20 @@
+Create the test fixture root atomically with private Unix permissions.
+Refuse pre-existing paths instead of following a temporary symlink.
+
+Index: src/uucore/build.rs
+--- src/uucore/build.rs.orig
++++ src/uucore/build.rs
+@@ -463,6 +463,13 @@ mod tests {
+     #[test]
+     fn consumer_lock_file_found_above_target_dir() {
+         let tmp = std::env::temp_dir().join(format!("uucore-build-{}", std::process::id()));
++        let mut directory = std::fs::DirBuilder::new();
++        #[cfg(unix)]
++        {
++            use std::os::unix::fs::DirBuilderExt;
++            directory.mode(0o700);
++        }
++        directory.create(&tmp).unwrap();
+         let out_dir = tmp.join("target/debug/build/uucore-1234/out");
+         std::fs::create_dir_all(&out_dir).unwrap();
+         assert_eq!(consumer_lock_file(Some(out_dir.as_os_str())), None);

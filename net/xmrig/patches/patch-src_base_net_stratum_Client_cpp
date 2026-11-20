@@ -1,0 +1,17 @@
+Close the pool connection when TLS setup or initial sending fails.
+Do not ignore the handshake setup error.
+
+Index: src/base/net/stratum/Client.cpp
+--- src/base/net/stratum/Client.cpp.orig
++++ src/base/net/stratum/Client.cpp
+@@ -605,7 +605,9 @@ void xmrig::Client::handshake()
+     if (isTLS()) {
+         m_expire = Chrono::steadyMSecs() + kResponseTimeout;
+
+-        m_tls->handshake(m_pool.isSNI() ? m_pool.host().data() : nullptr);
++        if (!m_tls->handshake(m_pool.isSNI() ? m_pool.host().data() : nullptr)) {
++            close();
++        }
+     }
+     else
+ #   endif

@@ -1,0 +1,100 @@
+Authenticate unpinned TLS pools with the base trust store and host.
+Keep an exact certificate fingerprint as alternative pinned trust.
+Reject trust-store setup and fatal handshake failures before login.
+
+Index: src/base/net/stratum/Tls.cpp
+--- src/base/net/stratum/Tls.cpp.orig
++++ src/base/net/stratum/Tls.cpp
+@@ -30,6 +30,7 @@
+
+ #include <cassert>
+ #include <openssl/ssl.h>
++#include <openssl/x509v3.h>
+
+
+ xmrig::Client::Tls::Tls(Client *client) :
+@@ -42,6 +43,17 @@ xmrig::Client::Tls::Tls(Client *client)
+         return;
+     }
+
++    if (m_client->m_pool.fingerprint().isNull()) {
++        if (SSL_CTX_set_default_verify_paths(m_ctx) != 1) {
++            LOG_ERR("[%s] Failed to load TLS trust store", m_client->url());
++            SSL_CTX_free(m_ctx);
++            m_ctx = nullptr;
++            return;
++        }
++
++        SSL_CTX_set_verify(m_ctx, SSL_VERIFY_PEER, nullptr);
++    }
++
+     m_write = BIO_new(BIO_s_mem());
+     m_read  = BIO_new(BIO_s_mem());
+     SSL_CTX_set_options(m_ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
+@@ -62,6 +74,10 @@ xmrig::Client::Tls::~Tls()
+
+ bool xmrig::Client::Tls::handshake(const char* servername)
+ {
++    if (m_ctx == nullptr || m_read == nullptr || m_write == nullptr) {
++        return false;
++    }
++
+     m_ssl = SSL_new(m_ctx);
+     assert(m_ssl != nullptr);
+
+@@ -108,7 +124,8 @@ void xmrig::Client::Tls::read(const char
+     if (!SSL_is_init_finished(m_ssl)) {
+         const int rc = SSL_connect(m_ssl);
+
+-        if (rc < 0 && SSL_get_error(m_ssl, rc) == SSL_ERROR_WANT_READ) {
++        const int err = SSL_get_error(m_ssl, rc);
++        if (rc <= 0 && (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)) {
+             send();
+         } else if (rc == 1) {
+             X509 *cert = SSL_get_peer_certificate(m_ssl);
+@@ -122,6 +139,8 @@ void xmrig::Client::Tls::read(const char
+             X509_free(cert);
+             m_ready = true;
+             m_client->login();
++      } else {
++          m_client->close();
+       }
+
+       return;
+@@ -162,6 +181,20 @@ bool xmrig::Client::Tls::verify(X509 *ce
+         return false;
+     }
+
++    if (m_client->m_pool.fingerprint().isNull()) {
++        const char *host = m_client->m_pool.host().data();
++        int identity = host ? X509_check_ip_asc(cert, host, 0) : 0;
++        if (identity == -2) {
++            identity = X509_check_host(cert, host, strlen(host),
++                                       X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS, nullptr);
++        }
++
++        if (SSL_get_verify_result(m_ssl) != X509_V_OK || identity != 1) {
++            LOG_ERR("[%s] Failed to verify TLS certificate chain or host", m_client->url());
++            return false;
++        }
++    }
++
+     return true;
+ }
+
+@@ -176,12 +209,13 @@ bool xmrig::Client::Tls::verifyFingerpri
+     unsigned char md[EVP_MAX_MD_SIZE];
+     unsigned int dlen = 0;
+
+-    if (X509_digest(cert, digest, md, &dlen) != 1) {
++    if (X509_digest(cert, digest, md, &dlen) != 1 || dlen != 32) {
+         return false;
+     }
+
+     Cvt::toHex(m_fingerprint, sizeof(m_fingerprint), md, 32);
+     const char *fingerprint = m_client->m_pool.fingerprint();
+
+-    return fingerprint == nullptr || strncasecmp(m_fingerprint, fingerprint, 64) == 0;
++    return fingerprint == nullptr ||
++           (strlen(fingerprint) == 64 && strncasecmp(m_fingerprint, fingerprint, 64) == 0);
+ }

@@ -6,6 +6,7 @@ GH_PROJECT =		xmrig
 GH_TAGNAME =		v${V}
 DISTNAME =		xmrig-${V}
 CATEGORIES =		net
+REVISION =		0
 HOMEPAGE =		https://github.com/xmrig/xmrig
 MAINTAINER =		David Uhden Collado <daviduhden@gmail.com>
 

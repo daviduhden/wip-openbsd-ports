@@ -1,0 +1,17 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+TLS pool connections verify the certificate chain using the base-system
+trust store and check the configured pool's DNS name or IP address. This
+identity check also applies when SNI is disabled. An explicit
+"tls-fingerprint" selects alternative trust: a matching 64-digit SHA-256
+certificate fingerprint permits a self-signed certificate. Obtain that
+fingerprint through a trusted channel. A missing fingerprint does not
+permit an unverified certificate.
+
+Run XMRig as an unprivileged user. This port does not provide a pledge or
+unveil sandbox. It keeps the secure JIT path, which changes writable code
+pages to executable pages without simultaneous write and execute access.
+The HTTP API is disabled in the sample configuration; review its listener,
+authentication and restricted-mode settings before enabling it.

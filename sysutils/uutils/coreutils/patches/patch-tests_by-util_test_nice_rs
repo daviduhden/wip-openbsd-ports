@@ -4,7 +4,7 @@ allows the priority change that an ordinary user must be denied.
 Index: tests/by-util/test_nice.rs
 --- tests/by-util/test_nice.rs.orig
 +++ tests/by-util/test_nice.rs
-@@ -20,6 +20,10 @@ fn test_get_current_niceness() {
+@@ -21,6 +21,10 @@ fn test_get_current_niceness() {
  #[cfg(unix)]
  #[cfg(not(target_os = "android"))]
  fn test_nice_adj_negative() {

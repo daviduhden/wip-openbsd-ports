@@ -4,7 +4,7 @@ matching EOPNOTSUPP when OpenBSD cannot preserve optional attributes.
 Index: src/uu/cp/src/cp.rs
 --- src/uu/cp/src/cp.rs.orig
 +++ src/uu/cp/src/cp.rs
-@@ -1403,6 +1403,11 @@ fn is_enotsup_error(error: &CpError) ->
+@@ -1419,6 +1419,11 @@ fn is_enotsup_error(error: &CpError) ->
                  return true;
              }
              raw == Some(EOPNOTSUPP)

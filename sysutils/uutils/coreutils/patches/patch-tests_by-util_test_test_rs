@@ -4,12 +4,12 @@ the privileged account owns that system file.
 Index: tests/by-util/test_test.rs
 --- tests/by-util/test_test.rs.orig
 +++ tests/by-util/test_test.rs
-@@ -948,6 +948,10 @@ fn test_nonexistent_file_not_owned_by_eu
+@@ -993,6 +993,10 @@ fn test_nonexistent_file_not_owned_by_eu
+ #[test]
  #[cfg(not(windows))]
- #[cfg_attr(wasi_runner, ignore = "WASI: no uid/gid")]
  fn test_file_not_owned_by_euid() {
 +    if uutests::util::is_root() {
-+        // The filesystem permission checks are bypassed when running as root.
++        // Root bypasses the permission denial required by this fixture.
 +        return;
 +    }
      new_ucmd!()

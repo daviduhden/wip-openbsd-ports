@@ -4,7 +4,7 @@ unreadable input fixtures.
 Index: tests/by-util/test_tail.rs
 --- tests/by-util/test_tail.rs.orig
 +++ tests/by-util/test_tail.rs
-@@ -266,6 +266,10 @@ fn test_n0_with_follow() {
+@@ -374,6 +374,10 @@ fn test_n0_with_follow() {
  #[test]
  #[cfg(unix)]
  fn test_permission_denied() {
@@ -15,7 +15,7 @@ Index: tests/by-util/test_tail.rs
      use std::os::unix::fs::PermissionsExt;
 
      let ts = TestScenario::new(util_name!());
-@@ -289,6 +293,10 @@ fn test_permission_denied() {
+@@ -397,6 +401,10 @@ fn test_permission_denied() {
  #[test]
  #[cfg(unix)]
  fn test_permission_denied_multiple() {

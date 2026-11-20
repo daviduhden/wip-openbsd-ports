@@ -4,23 +4,23 @@ the protected-file and inaccessible-parent fixtures.
 Index: tests/by-util/test_shred.rs
 --- tests/by-util/test_shred.rs.orig
 +++ tests/by-util/test_shred.rs
-@@ -135,6 +135,10 @@ fn test_shred_u() {
-
+@@ -136,6 +136,10 @@ fn test_shred_u() {
+ #[uutests::wasi_ignore(NoPermissionBits)]
  #[test]
  fn test_shred_force() {
 +    if uutests::util::is_root() {
-+        // The filesystem permission checks are bypassed when running as root.
++        // Root bypasses the permission denial required by this fixture.
 +        return;
 +    }
      let scene = TestScenario::new(util_name!());
      let at = &scene.fixtures;
 
-@@ -472,6 +476,10 @@ fn test_shred_trailing_slash_on_dir() {
+@@ -485,6 +489,10 @@ fn test_shred_trailing_slash_on_dir() {
  #[test]
  #[cfg(unix)]
  fn test_shred_inaccessible_file_reports_real_error() {
 +    if uutests::util::is_root() {
-+        // The filesystem permission checks are bypassed when running as root.
++        // Root bypasses the permission denial required by this fixture.
 +        return;
 +    }
      // A file whose parent directory lacks search permission must not be

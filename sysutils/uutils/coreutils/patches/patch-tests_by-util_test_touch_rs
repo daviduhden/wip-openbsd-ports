@@ -4,23 +4,23 @@ the real root directory when privilege would allow the test to do so.
 Index: tests/by-util/test_touch.rs
 --- tests/by-util/test_touch.rs.orig
 +++ tests/by-util/test_touch.rs
-@@ -819,6 +819,10 @@ fn test_touch_mtime_dst_fails() {
-     ignore = "WASI: guest root is a writable preopen, not the protected system root"
- )]
+@@ -825,6 +825,10 @@ fn test_touch_mtime_dst_fails() {
+ #[test]
+ #[cfg(unix)]
  fn test_touch_system_fails() {
 +    if uutests::util::is_root() {
-+        // The filesystem permission checks are bypassed when running as root.
++        // Root bypasses the permission denial required by this fixture.
 +        return;
 +    }
      let file = "/";
      new_ucmd!()
          .args(&[file])
-@@ -923,6 +927,10 @@ fn test_touch_changes_time_of_file_in_st
-     ignore = "WASI: filesystem permission errors surface as ENOENT rather than EACCES"
- )]
+@@ -956,6 +960,10 @@ fn test_touch_changes_time_of_file_in_st
+ #[test]
+ #[cfg(unix)]
  fn test_touch_permission_denied_error_msg() {
 +    if uutests::util::is_root() {
-+        // The filesystem permission checks are bypassed when running as root.
++        // Root bypasses the permission denial required by this fixture.
 +        return;
 +    }
      let (at, mut ucmd) = at_and_ucmd!();

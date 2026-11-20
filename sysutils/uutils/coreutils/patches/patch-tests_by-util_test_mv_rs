@@ -4,7 +4,7 @@ fixture despite the directory's read-only mode.
 Index: tests/by-util/test_mv.rs
 --- tests/by-util/test_mv.rs.orig
 +++ tests/by-util/test_mv.rs
-@@ -2004,6 +2004,10 @@ fn test_move_should_not_fallback_to_copy
+@@ -1875,6 +1875,10 @@ fn test_move_should_not_fallback_to_copy
  #[test]
  #[cfg(unix)]
  fn test_move_should_not_fallback_to_copy() {

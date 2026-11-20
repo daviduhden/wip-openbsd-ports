@@ -4,7 +4,7 @@ access prevents the permission errors these cases expect.
 Index: tests/by-util/test_rm.rs
 --- tests/by-util/test_rm.rs.orig
 +++ tests/by-util/test_rm.rs
-@@ -1119,6 +1119,10 @@ fn test_recursive_symlink_loop() {
+@@ -1159,6 +1159,10 @@ fn test_recursive_symlink_loop() {
  #[cfg(not(windows))]
  #[test]
  fn test_only_first_error_recursive() {
@@ -15,7 +15,7 @@ Index: tests/by-util/test_rm.rs
      let (at, mut ucmd) = at_and_ucmd!();
      at.mkdir("a");
      at.mkdir("a/b");
-@@ -1141,6 +1145,10 @@ fn test_only_first_error_recursive() {
+@@ -1181,6 +1185,10 @@ fn test_only_first_error_recursive() {
  #[cfg(not(windows))]
  #[test]
  fn test_unreadable_and_nonempty_dir() {
@@ -26,7 +26,7 @@ Index: tests/by-util/test_rm.rs
      let (at, mut ucmd) = at_and_ucmd!();
      at.mkdir_all("a/b");
      at.set_mode("a", 0o0333);
-@@ -1155,6 +1163,10 @@ fn test_unreadable_and_nonempty_dir() {
+@@ -1195,6 +1203,10 @@ fn test_unreadable_and_nonempty_dir() {
  #[cfg(not(windows))]
  #[test]
  fn test_recursive_remove_unreadable_subdir() {

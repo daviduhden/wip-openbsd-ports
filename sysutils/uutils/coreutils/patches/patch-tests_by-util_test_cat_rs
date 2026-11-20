@@ -4,12 +4,12 @@ bypasses the filesystem denial the test needs to exercise.
 Index: tests/by-util/test_cat.rs
 --- tests/by-util/test_cat.rs.orig
 +++ tests/by-util/test_cat.rs
-@@ -754,6 +754,10 @@ fn test_u_ignored() {
+@@ -804,6 +804,10 @@ fn test_u_ignored() {
+ #[test]
  #[cfg(unix)]
- #[cfg_attr(wasi_runner, ignore = "WASI: errno/error-message mismatches")]
  fn test_write_fast_read_error() {
 +    if uutests::util::is_root() {
-+        // The filesystem permission checks are bypassed when running as root.
++        // Root bypasses the permission denial required by this fixture.
 +        return;
 +    }
      use std::os::unix::fs::PermissionsExt;

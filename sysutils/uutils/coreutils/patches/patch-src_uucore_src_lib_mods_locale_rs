@@ -4,7 +4,7 @@ layout.
 Index: src/uucore/src/lib/mods/locale.rs
 --- src/uucore/src/lib/mods/locale.rs.orig
 +++ src/uucore/src/lib/mods/locale.rs
-@@ -675,6 +675,16 @@ fn resolve_locales_dir_from_exe_dir(exe_
+@@ -676,6 +676,16 @@ fn resolve_locales_dir_from_exe_dir(exe_
 
      // 2. <prefix>/share/locales/<prog>
      if let Some(prefix) = exe_dir.parent() {

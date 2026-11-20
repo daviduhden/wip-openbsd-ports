@@ -1,71 +1,63 @@
-Make the uutils test suite pass on OpenBSD. Tests that rely on the
-filesystem denying access are skipped when running as root, in case the
-suite is run with root privileges, matching the GNU coreutils test
-suite.
-
-Never let the suite reset the system clock: the `date --set` examples
-call clock_settime(2), which needs root and changes the date for every
-process on the machine, including the rest of this test run and any
-later port tests. Require an explicit opt-in
-(UUTILS_TEST_SET_SYSTEM_DATE) for those examples, in case the suite is
-run as root.
+Keep root-only clock-setting tests behind an explicit opt-in.
+Skip unreadable-file tests when root bypasses their permissions.
 
 Index: tests/by-util/test_date.rs
 --- tests/by-util/test_date.rs.orig
 +++ tests/by-util/test_date.rs
-@@ -511,10 +511,19 @@ fn test_date_format_literal() {
-     new_ucmd!().arg("+%%N").succeeds().stdout_is("%N\n");
- }
+@@ -18,6 +18,12 @@ use uutests::util::TestScenario;
+ use uutests::util::is_locale_available;
+ use uutests::{at_and_ucmd, new_ucmd, util_name};
 
-+/// Setting the system clock requires root and would leave every process on the
-+/// machine -- including the rest of this test run -- with a wrong date.  If the
-+/// suite is run as root, the `date --set` tests that call `clock_settime` are
-+/// skipped unless the operator explicitly opts in.
-+#[cfg(all(unix, not(target_vendor = "apple")))]
++// Changing the system clock requires an explicit operator opt-in.
++#[cfg(unix)]
 +fn date_set_is_allowed() -> bool {
 +    std::env::var_os("UUTILS_TEST_SET_SYSTEM_DATE").is_some()
 +}
 +
  #[test]
- #[cfg(all(unix, not(target_vendor = "apple")))]
+ fn test_invalid_arg() {
+     new_ucmd!().arg("--definitely-invalid").fails_with_code(1);
+@@ -661,7 +667,7 @@ fn test_date_format_literal() {
+ #[test]
+ #[cfg(unix)]
  fn test_date_set_valid() {
 -    if geteuid().is_root() {
 +    if geteuid().is_root() && date_set_is_allowed() {
          new_ucmd!()
              .arg("--set")
              .arg("2020-03-12 13:30:00+08:00")
-@@ -582,7 +591,7 @@ fn test_date_set_mac_unavailable() {
+@@ -767,7 +773,7 @@ fn test_date_set_unsupported_on_wasi() {
  #[test]
- #[cfg(all(unix, not(target_vendor = "apple")))]
+ #[cfg(unix)]
  fn test_date_set_valid_2() {
 -    if geteuid().is_root() {
 +    if geteuid().is_root() && date_set_is_allowed() {
          new_ucmd!()
              .arg("--set")
              .arg("Sat 20 Mar 2021 14:53:01 AWST") // spell-checker:disable-line
-@@ -604,6 +613,10 @@ fn test_date_for_invalid_file() {
+@@ -813,6 +819,10 @@ fn test_date_for_non_existing_file() {
  #[test]
  #[cfg(unix)]
  fn test_date_for_no_permission_file() {
 +    if uutests::util::is_root() {
-+        // The filesystem permission checks are bypassed when running as root.
++        // Root bypasses the permission denial required by this fixture.
 +        return;
 +    }
      use std::os::unix::fs::PermissionsExt;
      const FILE: &str = "file-no-perm-1";
 
-@@ -731,7 +744,7 @@ fn test_date_multiple_references() {
+@@ -1021,7 +1031,7 @@ fn test_date_multiple_references() {
  #[test]
- #[cfg(all(unix, not(target_vendor = "apple")))]
+ #[cfg(unix)]
  fn test_date_set_valid_3() {
 -    if geteuid().is_root() {
 +    if geteuid().is_root() && date_set_is_allowed() {
          new_ucmd!()
              .arg("--set")
              .arg("Sat 20 Mar 2021 14:53:01") // Local timezone
-@@ -743,7 +756,7 @@ fn test_date_set_valid_3() {
+@@ -1035,7 +1045,7 @@ fn test_date_set_valid_3() {
  #[test]
- #[cfg(all(unix, not(target_vendor = "apple")))]
+ #[cfg(unix)]
  fn test_date_set_valid_4() {
 -    if geteuid().is_root() {
 +    if geteuid().is_root() && date_set_is_allowed() {

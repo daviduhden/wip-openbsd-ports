@@ -4,28 +4,48 @@ privileged access defeats the failures these tests expect.
 Index: tests/by-util/test_cp.rs
 --- tests/by-util/test_cp.rs.orig
 +++ tests/by-util/test_cp.rs
-@@ -3980,0 +3981,4 @@ fn test_cp_recursive_char_device_no_perm
+@@ -4166,4 +4166,8 @@ fn test_cp_recursive_char_device(#[case]
+ #[cfg(unix)]
+ fn test_cp_recursive_char_device_no_permission(#[case] flag: &str) {
 +    if uutests::util::is_root() {
 +        // The filesystem permission checks are bypassed when running as root.
 +        return;
 +    }
-@@ -4051,0 +4056,4 @@ fn test_cp_block_device_no_permission()
+     new_ucmd!()
+         .args(&[flag, "/dev/null", "null2"])
+@@ -4231,4 +4235,8 @@ fn test_cp_recursive_block_device(#[case
+ #[cfg(unix)]
+ fn test_cp_block_device_no_permission() {
 +    if uutests::util::is_root() {
 +        // The filesystem permission checks are bypassed when running as root.
 +        return;
 +    }
-@@ -5131,0 +5140,4 @@ fn test_cp_dest_no_permissions() {
+     use nix::sys::stat::{Mode, SFlag, mknod as nix_mknod};
+     let ts = TestScenario::new(util_name!());
+@@ -5314,4 +5322,8 @@ fn test_cp_only_source_no_target() {
+ #[test]
+ fn test_cp_dest_no_permissions() {
 +    if uutests::util::is_root() {
 +        // The filesystem permission checks are bypassed when running as root.
 +        return;
 +    }
-@@ -5198,0 +5211,4 @@ fn test_cp_readonly_dest_with_existing_f
+     let ts = TestScenario::new(util_name!());
+     let at = &ts.fixtures;
+@@ -5378,4 +5390,8 @@ fn test_cp_readonly_dest_recursive() {
+ #[test]
+ fn test_cp_readonly_dest_with_existing_file() {
 +    if uutests::util::is_root() {
 +        // The filesystem permission checks are bypassed when running as root.
 +        return;
 +    }
-@@ -5236,0 +5253,4 @@ fn test_cp_readonly_source_and_dest() {
+     let ts = TestScenario::new(util_name!());
+     let at = &ts.fixtures;
+@@ -5416,4 +5432,8 @@ fn test_cp_readonly_source() {
+ #[test]
+ fn test_cp_readonly_source_and_dest() {
 +    if uutests::util::is_root() {
 +        // The filesystem permission checks are bypassed when running as root.
 +        return;
 +    }
+     let ts = TestScenario::new(util_name!());
+     let at = &ts.fixtures;

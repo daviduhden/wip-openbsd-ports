@@ -4,7 +4,7 @@ Do not report a successful empty user list for invalid input.
 Index: src/uu/users/src/users.rs
 --- src/uu/users/src/users.rs.orig
 +++ src/uu/users/src/users.rs
-@@ -12,6 +12,8 @@ use std::path::Path;
+@@ -21,6 +21,8 @@ use std::path::Path;
  use clap::builder::ValueParser;
  use clap::{Arg, Command};
  use uucore::error::UResult;
@@ -13,7 +13,7 @@ Index: src/uu/users/src/users.rs
  use uucore::format_usage;
  use uucore::translate;
 
-@@ -46,7 +48,8 @@ pub fn uumain(args: impl uucore::Args) -
+@@ -55,7 +57,8 @@ pub fn uumain(args: impl uucore::Args) -
      #[cfg(target_os = "openbsd")]
      {
          let filename = maybe_file.unwrap_or(Path::new(OPENBSD_UTMP_FILE));

@@ -3,8 +3,11 @@ COMMENT =	minimal low-level HTTP client
 MODPY_DISTV =	2.16.2
 DISTNAME =	httpcore2-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
+REVISION =	0
 
 CATEGORIES =	www
+
+HOMEPAGE =	https://httpx2.pydantic.dev/
 
 # BSD-3-Clause
 PERMIT_PACKAGE =	Yes

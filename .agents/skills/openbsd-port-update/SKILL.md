@@ -163,6 +163,12 @@ in `SUBST_VARS`. A port can use several at once.
 
 ## Static analysis with explicitly deferred generated files
 
+Compare release changes before adding module-extracted dependencies to the
+working layout. Record pristine archive roots and assembled patch roots
+separately, including every dependency identity. A file materialized only in
+the newer assembly is not evidence of an upstream addition or build script;
+compare it with the corresponding declared input in both releases first.
+
 When the task explicitly defers `distinfo`, `pkg/PLIST*`, or generated dependency
 includes such as `crates.inc`, `modules.inc`, or `cabal.inc`, do not regenerate
 them. Still inspect upstream manifests and source metadata for changed inputs,

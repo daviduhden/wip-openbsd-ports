@@ -134,6 +134,12 @@ new-file target require reconstructing the declared extraction inputs and
 `/dev/null` origin, respectively; neither is evidence that the patch is
 obsolete. Do not integrate a partly reconstructed series as a verified port.
 
+Preserve an established smaller unified-context width when it still yields
+an unambiguous, zero-fuzz replay. Save the fresh generated diff and compare
+the resulting source bytes before preserving an equivalent existing patch
+representation. Do not expand context, normalize blank context prefixes, or
+rewrite unchanged patch files merely to make regeneration visible in Git.
+
 For a security-only audit without a source version change, regenerate only
 patches requiring corrections; leave correct unchanged patches intact. This
 is distinct from the integral release-update rule above. A changed existing

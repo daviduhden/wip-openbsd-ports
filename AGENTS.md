@@ -41,6 +41,9 @@ update. The minimum policy is:
    every version carrier, local patches, README and local behavior.
    Keep the source-identity and per-file disposition ledger required by the
    update skill; matching version strings do not establish matching inputs.
+   Distinguish pristine archive contents from the module's assembled source
+   layout. Locally extracted vendor files are separate inputs, not upstream
+   additions between releases.
 2. Establish the newest stable upstream release from the project's own
    release source; do not infer it from a tag or a registry summary alone.
    When a port pins a commit, prefer a newly published stable tag and its

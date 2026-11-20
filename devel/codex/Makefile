@@ -32,7 +32,7 @@ DIST_TUPLE += github hyperium h3 e07e69412876f7e26f026bd75a48b2704d8c8283 ./h3
 
 MAINTAINER =		Kirill A. Korinsky <kirill@korins.ky>
 
-REVISION =	1
+REVISION =	2
 
 CATEGORIES =		devel
 

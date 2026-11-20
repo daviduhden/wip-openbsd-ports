@@ -43,11 +43,15 @@ separate daemon package or private manifest is installed in
 CODEX_HOME/packages.
 
 Code Mode defaults to V8 interpreter mode on OpenBSD, preserving
-JavaScript execution without runtime JIT compilation. WebAssembly was
+JavaScript execution without runtime JIT compilation. Explicit JIT
+initialization requests are rejected on OpenBSD. WebAssembly was
 already unavailable in the exposed runtime. Performance may differ from
-JIT mode. The port no longer requests WXNEEDED: the reviewed interpreter and
-builtin-loading paths use non-executable writable mappings or switch
-from RW to RX. Native OpenBSD W^X and snapshot checks remain pending.
+JIT mode. The installed Rust binaries do not request WXNEEDED in the
+reviewed linker configuration. V8's GN build still marks build helpers
+such as mksnapshot with wxneeded; they are not installed. The reviewed
+interpreter and builtin-loading paths use non-executable writable mappings
+or switch from RW to RX. Native OpenBSD ELF, W^X and snapshot-tool checks
+remain pending.
 Python and Git are runtime dependencies; repository and worktree
 features execute Git.
 OpenBSD uses its base /bin/ksh by default, so Bash is not a runtime

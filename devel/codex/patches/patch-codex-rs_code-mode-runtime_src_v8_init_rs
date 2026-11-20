@@ -1,11 +1,10 @@
-Use V8's supported interpreter mode by default on OpenBSD.
-Avoid generating writable executable code in the code-mode host.
-Other platforms retain the upstream JIT default.
+Reject explicit JIT mode before OpenBSD's interpreter initialization.
+Keep failed requests from changing the process-wide V8 mode.
 
 Index: codex-rs/code-mode-runtime/src/v8_init.rs
 --- codex-rs/code-mode-runtime/src/v8_init.rs.orig
 +++ codex-rs/code-mode-runtime/src/v8_init.rs
-@@ -19,8 +19,8 @@ static V8_INITIALIZATION: OnceLock<Resul
+@@ -19,9 +19,14 @@ static V8_INITIALIZATION: OnceLock<Resul
  ///
  /// Call this before executing any code-mode cells when JIT must be disabled.
  /// V8 cannot change JIT mode after initialization, so a later call requesting
@@ -13,12 +12,18 @@ Index: codex-rs/code-mode-runtime/src/v8_init.rs
 -/// by default when this function has not been called explicitly.
 +/// a different mode returns an error. Code mode defaults to interpreter mode
 +/// on OpenBSD and JIT mode elsewhere unless initialized explicitly.
++/// Explicit JIT mode is unsupported on OpenBSD and returns an error.
  pub fn initialize_v8(jit_mode: V8JitMode) -> Result<(), String> {
++    #[cfg(target_os = "openbsd")]
++    if jit_mode == V8JitMode::Enabled {
++        return Err("V8 JIT mode is unsupported on OpenBSD".to_string());
++    }
      match V8_INITIALIZATION.get_or_init(|| initialize_v8_with_mode(jit_mode)) {
          Ok(initialization) if initialization.jit_mode == jit_mode => Ok(()),
-@@ -33,7 +33,11 @@ pub fn initialize_v8(jit_mode: V8JitMode
+         Ok(initialization) => Err(format!(
+@@ -33,13 +38,21 @@ pub fn initialize_v8(jit_mode: V8JitMode
  }
- 
+
  pub(crate) fn ensure_v8_initialized() -> Result<(), String> {
 -    match V8_INITIALIZATION.get_or_init(|| initialize_v8_with_mode(V8JitMode::Enabled)) {
 +    #[cfg(target_os = "openbsd")]
@@ -29,3 +34,13 @@ Index: codex-rs/code-mode-runtime/src/v8_init.rs
          Ok(_) => Ok(()),
          Err(error_text) => Err(error_text.clone()),
      }
+ }
+
+ fn initialize_v8_with_mode(jit_mode: V8JitMode) -> Result<V8Initialization, String> {
++    #[cfg(target_os = "openbsd")]
++    if jit_mode == V8JitMode::Enabled {
++        return Err("V8 JIT mode is unsupported on OpenBSD".to_string());
++    }
+     v8::icu::set_common_data_78(deno_core_icudata::ICU_DATA)
+         .map_err(|error_code| format!("failed to initialize ICU data: {error_code}"))?;
+     // The pinned V8 can inline Array.prototype.sort with incompatible element kinds.

@@ -107,7 +107,10 @@ must include a static OpenBSD compatibility review using
 4. Replace Linux-only syscalls and procfs assumptions with a checked native
    path, not a stub that reports success.
 5. Treat `pledge(2)` and `unveil(2)` as separate boundaries with separate
-   inheritance rules. A parent policy does not confine an executed child.
+   inheritance rules. Verify the target kernel's fork/exec paths and concrete
+   `execpromises`; a parent policy alone does not prove child confinement.
+   Do not assume that unveil is always removed on exec: consult the
+   target-specific inheritance procedure in the security skill.
 6. Do not add the `exec` or `error` promises. Remove them from existing
    policies when an exec-free or separated design can preserve functionality.
    When it cannot, keep the limitation explicit instead of widening the

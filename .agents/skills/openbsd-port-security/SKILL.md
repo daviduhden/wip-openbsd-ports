@@ -20,9 +20,9 @@ errors before installing hooks, parsing configuration or starting workers.
 
 1. Map initialization, configuration loading, certificate/key reads, DNS, network listeners, inherited descriptors, fork/exec helpers, privilege changes, reload, and shutdown. Include optional features and negative paths. Inspect native APIs before replacing Linux-specific assumptions about procfs, signals, terminals, authentication, device ioctls, or shared libraries.
 2. For LibreSSL, inspect actual API availability and return semantics. Do not identify OpenSSL 3 support solely through `OPENSSL_VERSION_NUMBER`; examine `LIBRESSL_VERSION_NUMBER` where relevant. Keep validation, authentication-tag checks, size conversions, and error handling intact. `net/i2pd` demonstrates backend guards and checked EVP operations; a build alone does not validate cryptographic behavior.
-3. Use dedicated service accounts and minimal directory permissions appropriate to real state/key paths. Reconcile IDs with both `user.list` and the official `infrastructure/db/user.list`. Review listener addresses and authentication individually: confettysh exposes a public demonstration service by default, while soft-serve restricts selected endpoints. Keep secrets out of process arguments and logs.
+3. Use dedicated service accounts and minimal directory permissions appropriate to real state/key paths. Reconcile IDs with both `user.list` and the official `infrastructure/db/user.list`. Review listener addresses and authentication individually: confettysh is an unauthenticated demonstration whose packaged defaults bind loopback, while soft-serve restricts selected endpoints. Keep secrets out of process arguments and logs.
 4. Before proposing restrictions, study the syscall and process lifecycle. On an authorized OpenBSD test host, `trace_dir=$(mktemp -d /tmp/port-security.XXXXXXXX)` creates a private trace directory; then `ktrace -f "$trace_dir/trace" command arguments` and `kdump -f "$trace_dir/trace"` can help identify operations. Trace files may contain secrets, and traces cover only exercised behavior. Retain or remove the trace directory according to the authorized test plan. Do not trace production credentials or infer a complete policy from one startup run.
-5. Apply native restrictions at the correct lifecycle point, check return values, and lock unveil rules when appropriate. Account for DNS, TLS, Unix sockets, logs, temporary files, key rotation, workers, and reload. Avoid broad promises just to silence failures. Verify the target kernel's exec and inheritance behavior: current `unveil(2)` documents removal of unveils on exec. A constrained launcher does not establish containment of an executed child. Filesystem visibility restrictions do not establish network, descriptor, process, or full syscall isolation.
+5. Apply native restrictions at the correct lifecycle point, check return values, and lock unveil rules when appropriate. Account for DNS, TLS, Unix sockets, logs, temporary files, key rotation, workers, and reload. Avoid broad promises just to silence failures. Verify fork/exec inheritance against the exact target source as described below; a constrained launcher alone does not establish containment of an executed child. Filesystem visibility restrictions do not establish network, descriptor, process, or full syscall isolation.
    When the policy removes `proc` or `exec`, explicitly disable optional
    build-time features that fork or launch helpers; do not rely on configure
    defaults. A direct call blocked only by `pledge` may terminate the whole
@@ -109,9 +109,10 @@ errors before installing hooks, parsing configuration or starting workers.
    separately. Libraries and helpers may open files, sockets, or processes
    outside the visible call site. User-configured editors, mailcap handlers,
    sendmail, tunnels, and shell escapes are an explicit execution boundary:
-   `unveil` is removed on exec, so parent rules do not confine the helper.
-   Check `pledge` child promises independently and do not describe them as
-   filesystem containment. A launcher that retains `exec` with unset
+   trace the target kernel's conditional unveil inheritance rather than
+   assuming that all parent rules survive or disappear. Check `pledge` child
+   promises independently and do not describe them as filesystem containment.
+   A launcher that retains `exec` with unset
    `execpromises` lets OpenBSD start executed children without pledge
    restrictions; do not treat that as containment and do not add it in new
    work. Do not pass `NULL` after an earlier call has already set restrictive
@@ -160,8 +161,33 @@ lock unveil before the final pledge call, then omit the `unveil` promise too.
 Keep flavor-specific `unix` only where a linked library opens a Unix socket.
 Do not grant `sendfd`/`recvfd` unless a sendmsg/recvmsg or explicit
 descriptor-passing call site exists; NeoMutt has none. Leave
-`execpromises` unset. Review pledge's exec behavior and unveil's removal on
-exec before restoring external commands.
+`execpromises` unset. Review pledge's exec behavior and the target kernel's
+conditional unveil inheritance before considering external commands; the
+ban on new `exec` and `error` promises still applies.
+
+### Target-specific process inheritance
+
+Pin the target OpenBSD source revision as well as the ports revision. Read
+the matching manuals and `sys/kern/kern_fork.c`, `kern_exec.c`,
+`kern_pledge.c`, `kern_unveil.c`, and the copied process flags. A live manual
+page or an earlier audit may describe another kernel's behavior.
+
+In the reviewed current kernel, fork copies the pledge and unveil state.
+At exec, `PS_EXECPLEDGE` selects the branch retaining unveil and applying
+the recorded exec promises; without that flag, exec clears pledge and
+destroys unveil. A successful call with a non-NULL exec-promises argument
+establishes that flag; NULL preserves an earlier setting. Reconstruct the
+entire call history, not only the last call. Recheck these branches and never
+infer child confinement from the parent's rules alone. This is an
+inheritance check, not permission to introduce `exec` or `error`.
+
+For an early standalone-command policy, include the runtime and toolchain
+startup paths. For example, Rust's `current_exe()` may use a process sysctl
+on an older toolchain but `getexecpath()` on the reviewed OpenBSD toolchain.
+Constrain the build dependency when the policy depends on that change;
+do not widen promises to hide an unreviewed runtime requirement. Keep
+process-wide restrictions out of reusable library entry points. Account
+for inherited descriptors when stating filesystem or network guarantees.
 
 ## Collection-wide static audit procedure
 
@@ -211,6 +237,39 @@ TOFU persistence write as a successful authenticated connection. Protect
 credential files before truncating or writing, check persistence errors and
 avoid replacing an unreadable existing identity with a new one.
 
+An explicitly configured CA, client certificate or key path must fail
+closed when unreadable or absent; never discard it and silently select
+built-in trust roots or another identity. Review Python and native HTTP
+backends separately. Keep an explicit verification-disable override
+distinct from default policy. A malformed nonempty PIN must likewise
+remain an error, not become an absent PIN or select another authentication
+method through a failed string conversion.
+
+Loopback binding is not authentication. A browser can submit requests to
+local tool servers or exploit DNS rebinding. Before reading request bodies
+or dispatching tools, validate the configured local Host authority, Origin,
+fetch metadata and required media type. State the remaining local-user and
+explicit remote-listener authority; do not call request guards a sandbox.
+
+Check reentrant callbacks before retrying native TLS operations. Own the
+pending buffer and request, establish asynchronous completion state, and
+retain the object before scheduling a cycle that can destroy or replace
+the TLS connection. Audit cancellation and error paths as well as success.
+Apply canonical ancestor checks to every unveil directory source, including
+default support directories and symlinks, not only cwd and user overrides.
+Create temporary fixture files exclusively and private directories
+atomically; predictable names must not allow truncating an existing file
+or following an attacker-created directory. Static changes to test sources
+do not constitute permission to execute tests.
+
+For concurrent subprocess capture, waiting for the direct child does not
+join independently spawned pipe or PTY reader tasks. Synchronize every
+shared buffer write and read, including buffers used by multiple streams,
+and copy snapshots while holding the lock. Do not expose backing slices
+after unlocking. An unbounded reader join can hang when descendants keep
+a PTY open; distinguish race removal from complete output capture and
+descendant cleanup.
+
 When disabling a JIT to preserve W^X, establish all installed entry points,
 explicit enable paths, WebAssembly exposure and allocator reachability before
 removing `USE_WXNEEDED`. Distinguish reservation maximum permissions from
@@ -219,6 +278,15 @@ and kernel behavior to native validation. Do not copy this conclusion to a
 full-featured runtime with reachable JIT paths. An extracted header patch
 also does not fix an untouched archive installed for downstream consumers;
 trace the actual packaged input and generated configuration.
+
+Trace executable-memory linker flags through the actual producer of each
+binary, including build auxiliaries. A GN-built helper can receive wxneeded
+without forwarding that option through an ar-built library to its Rust
+executable. Inspect archive commands and Cargo-emitted link directives;
+do not infer final flags from the archive type alone.
+Conversely, a full JIT runtime can reach an RWX code-range initialization
+even when a different builtins path uses RW-to-RX. Record both call paths
+and defer final ELF and kernel behavior to native validation.
 
 The final Markdown report must contain every port in a crypto/W^X/syscall/
 sandbox/patch matrix, individual compatibility and security findings, patch

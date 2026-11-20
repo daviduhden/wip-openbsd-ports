@@ -5,7 +5,7 @@ restricted command without isolation.
 Index: codex-rs/sandboxing/src/manager.rs
 --- codex-rs/sandboxing/src/manager.rs.orig
 +++ codex-rs/sandboxing/src/manager.rs
-@@ -411,6 +411,31 @@ impl SandboxManager {
+@@ -464,6 +464,33 @@ impl SandboxManager {
              &self.operation,
          )
          .map_err(SandboxTransformError::InvalidPolicy)?;
@@ -14,7 +14,9 @@ Index: codex-rs/sandboxing/src/manager.rs
 +        #[cfg(target_os = "openbsd")]
 +        {
 +            let requires_backend = match request.selection {
-+                SandboxSelection::RequirePlatform => true,
++                SandboxSelection::Platform { preference, .. } => {
++                    preference == SandboxablePreference::Require
++                }
 +                SandboxSelection::Explicit(sandbox) => sandbox != SandboxType::None,
 +            };
 +            let (file_system_policy, network_policy) =
@@ -28,7 +30,7 @@ Index: codex-rs/sandboxing/src/manager.rs
 +                || should_require_platform_sandbox(
 +                    &file_system_policy,
 +                    network_policy,
-+                    request.enforce_managed_network,
++                    enforce_managed_network,
 +                )
 +            {
 +                return Err(SandboxTransformError::SandboxUnavailable);
@@ -36,4 +38,4 @@ Index: codex-rs/sandboxing/src/manager.rs
 +        }
          let backend = match request.selection {
              SandboxSelection::Explicit(sandbox) => sandbox,
-             SandboxSelection::RequirePlatform => {
+             SandboxSelection::Platform {

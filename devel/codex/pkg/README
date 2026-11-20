@@ -25,6 +25,11 @@ or use a declared external sandbox. Without an explicit non-managed
 profile, a session that requests the default managed profile is rejected
 before hooks, MCP or shell setup run.
 
+`codex exec --remote` uses the selected app server's configuration and
+credentials. Configure permissions on that server; local execution
+overrides are rejected in this mode. Connecting remotely does not provide
+a local OpenBSD command sandbox.
+
 The daemon uses the installed executable, following the official port:
 
     codex app-server daemon start

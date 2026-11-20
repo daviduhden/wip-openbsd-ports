@@ -5,10 +5,10 @@ OpenBSD has no supported command sandbox.
 Index: codex-rs/exec-server/src/process_sandbox.rs
 --- codex-rs/exec-server/src/process_sandbox.rs.orig
 +++ codex-rs/exec-server/src/process_sandbox.rs
-@@ -113,6 +113,14 @@ pub(crate) async fn prepare_exec_request
+@@ -52,6 +52,14 @@ pub(crate) async fn prepare_exec_request
      credential_brokers: &RemoteCredentialBrokerCache,
      telemetry: &ProcessTelemetry,
- ) -> Result<PreparedExecRequest, JSONRPCErrorError> {
+ ) -> Result<(WrappedSandboxCommand, Option<NetworkProxyHandle>), JSONRPCErrorError> {
 +    // A proxy environment cannot enforce egress policy without a command
 +    // sandbox. Check before the sandbox=None native-launch shortcut too.
 +    #[cfg(target_os = "openbsd")]
@@ -17,6 +17,6 @@ Index: codex-rs/exec-server/src/process_sandbox.rs
 +            "OpenBSD cannot enforce managed command networking: no supported command sandbox is available".to_string(),
 +        ));
 +    }
-     if let Some(sandbox) = params.sandbox.as_ref()
-         && sandbox.windows_sandbox_selection == WindowsSandboxSelection::Mxc
-     {
+     let transparent_tcp = params.requests_transparent_tcp();
+     if transparent_tcp && (!cfg!(target_os = "linux") || params.sandbox.is_none()) {
+         return Err(invalid_params(

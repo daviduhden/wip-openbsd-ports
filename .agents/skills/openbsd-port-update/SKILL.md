@@ -333,6 +333,30 @@ regenerated diff still needs the exact input, generation and replay evidence.
 A registry discovery result or an unchanged version does not close the
 source-review, compatibility or patch-regeneration gates.
 
+### Repeated updates and cached evidence
+
+Start each collection update from the current HEAD and worktree, with a new
+file/hash inventory. A prior audit may have added security fixes without
+changing upstream versions; rebuild the local-patched baseline using the
+current patches rather than reusing an older patched tree. Preserve those
+fixes explicitly when comparing the next release.
+
+Refresh primary release evidence even when cached source archives remain
+usable. Cached HTML and search results can lag a newly published release;
+reconcile a fresh project feed, the release's own page and the selected
+source identity. For a cached archive, verify its recorded digest and the
+immutable selected commit or published artifact hash before extracting it
+again. Resolve annotated tags to their commit: a tag-object ID is not the
+source commit. Keep pristine extraction and assembled dependencies separate.
+Old application logs prove only their recorded source and patch baseline.
+
+Regenerate retained patches for this task even when the selected version is
+unchanged. Record fresh generation and complete-series replay separately
+from byte changes, so an identical result is distinguishable from a skipped
+regeneration. When upstream changes a platform cfg, check every caller of a
+retained helper against that new cfg; applying a patch does not establish
+that its helper remains defined on every supported target.
+
 ### XERJ (`devel/xerj`)
 
 `devel/xerj` pins a prerelease tag and builds only the `xerj-server`

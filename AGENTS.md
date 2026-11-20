@@ -44,6 +44,9 @@ update. The minimum policy is:
    Distinguish pristine archive contents from the module's assembled source
    layout. Locally extracted vendor files are separate inputs, not upstream
    additions between releases.
+   For a repeated update, rebuild this baseline from the current checkout;
+   follow the update skill's cache checks so recent fixes are not lost to an
+   older patched work tree or release listing.
 2. Establish the newest stable upstream release from the project's own
    release source; do not infer it from a tag or a registry summary alone.
    When a port pins a commit, prefer a newly published stable tag and its

@@ -1,0 +1,29 @@
+Keep explicitly configured CA bundles authoritative when unreadable.
+Propagate their loader errors instead of falling back to broader roots.
+
+Index: litellm/llms/custom_httpx/http_handler.py
+--- litellm/llms/custom_httpx/http_handler.py.orig
++++ litellm/llms/custom_httpx/http_handler.py
+@@ -366,7 +366,7 @@ def get_ssl_verify(
+     # If SSL verification is enabled, check for SSL_CERT_FILE override
+     if ssl_verify is True:
+         ssl_cert_file: Final = os.getenv("SSL_CERT_FILE")
+-        if ssl_cert_file and os.path.exists(ssl_cert_file):
++        if ssl_cert_file:
+             return ssl_cert_file
+
+     return ssl_verify if ssl_verify is not None else True
+@@ -411,11 +411,11 @@ def get_ssl_configuration(
+     ssl_ecdh_curve: Final = os.getenv("SSL_ECDH_CURVE", litellm.ssl_ecdh_curve)
+
+     cafile = None
+-    if isinstance(ssl_verify, str) and os.path.exists(ssl_verify):
++    if isinstance(ssl_verify, str):
+         cafile = ssl_verify
+     if not cafile:
+         ssl_cert_file: Final = os.getenv("SSL_CERT_FILE")
+-        if ssl_cert_file and os.path.exists(ssl_cert_file):
++        if ssl_cert_file:
+             cafile = ssl_cert_file
+         else:
+             cafile = certifi.where()

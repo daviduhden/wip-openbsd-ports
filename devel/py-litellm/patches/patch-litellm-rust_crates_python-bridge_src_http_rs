@@ -1,0 +1,24 @@
+Keep explicitly configured CA bundles authoritative when unreadable.
+Propagate their loader errors instead of falling back to broader roots.
+
+Index: litellm-rust/crates/python-bridge/src/http.rs
+--- litellm-rust/crates/python-bridge/src/http.rs.orig
++++ litellm-rust/crates/python-bridge/src/http.rs
+@@ -1,6 +1,6 @@
+ use std::{
+     collections::{BTreeSet, HashSet},
+-    path::{Path, PathBuf},
++    path::PathBuf,
+     sync::{Arc, LazyLock, Mutex, PoisonError},
+ };
+
+@@ -108,8 +108,7 @@ pub(crate) fn call_config(
+             Some(snapshot) => configured(&snapshot)?,
+             None => HttpSettingsLayer::default(),
+         },
+-    ])
+-    .without_missing_files(&|path: &Path| path.exists());
++    ]);
+     let resolution = Resolution::from(&settings);
+     for unsupported in unreported(&REPORTED_UNSUPPORTED, resolution.unsupported) {
+         crate::logger::capture(py).scope(|| litellm_tracing::warn!("{unsupported}"));

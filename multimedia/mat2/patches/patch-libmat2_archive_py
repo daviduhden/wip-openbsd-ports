@@ -1,0 +1,55 @@
+Keep archive members inside the temporary extraction directory.
+Compare canonical path components and apply tar's data filter in both
+metadata inspection and cleaning, including links and special files.
+
+Index: libmat2/archive.py
+--- libmat2/archive.py.orig
++++ libmat2/archive.py
+@@ -9,7 +9,6 @@ import tempfile
+ import os
+ import logging
+ import shutil
+-import sys
+ from typing import Pattern, Union, Any
+
+ from . import abstract, UnknownMemberPolicy, parser_factory
+@@ -150,13 +149,18 @@ class ArchiveBasedAbstractParser(abstrac
+                     continue  # don't keep empty folders
+
+                 full_path = os.path.join(temp_folder, member_name)
+-                if not os.path.abspath(full_path).startswith(temp_folder):
++                if (os.path.isabs(member_name) or
++                        os.path.commonpath((temp_folder, os.path.realpath(full_path)))
++                        != temp_folder):
+                     logging.error("%s contains a file (%s) pointing outside (%s) of its root.",
+                         self.filename, member_name, full_path)
+                     break
+
+                 try:
+-                    zin.extract(member=item, path=temp_folder)
++                    if isinstance(zin, tarfile.TarFile):
++                        zin.extract(member=item, path=temp_folder, filter='data')
++                    else:
++                        zin.extract(member=item, path=temp_folder)
+                 except OSError as e:
+                     logging.error("Unable to extraxt %s from %s: %s", item, self.filename, e)
+
+@@ -203,14 +207,16 @@ class ArchiveBasedAbstractParser(abstrac
+                     continue  # don't keep empty folders
+
+                 full_path = os.path.join(temp_folder, member_name)
+-                if not os.path.abspath(full_path).startswith(temp_folder):
++                if (os.path.isabs(member_name) or
++                        os.path.commonpath((temp_folder, os.path.realpath(full_path)))
++                        != temp_folder):
+                     logging.error("%s contains a file (%s) pointing outside (%s) of its root.",
+                             self.filename, member_name, full_path)
+                     abort = True
+                     break
+
+
+-                if (zin is tarfile.TarFile) and sys.version_info < (3, 12):
++                if isinstance(zin, tarfile.TarFile):
+                     zin.extract(member=item, path=temp_folder, filter='data')
+                 else:
+                     zin.extract(member=item, path=temp_folder)

@@ -1,0 +1,25 @@
+Report traversal entries rejected by unpack_in as extraction failures.
+Do not return success after silently skipping an unsafe archive path.
+
+Index: src/uu/tar/src/operations/extract.rs
+--- src/uu/tar/src/operations/extract.rs.orig
++++ src/uu/tar/src/operations/extract.rs
+@@ -55,10 +55,17 @@ pub fn extract_archive(
+         }
+
+         // Unpack the entry
+-        entry.unpack_in(".").map_err(|e| TarError::CannotExtract {
++        let unpacked = entry.unpack_in(".").map_err(|e| TarError::CannotExtract {
+             path: path.clone(),
+             source: e,
+         })?;
++        if !unpacked {
++            return Err(TarError::CannotExtract {
++                path,
++                source: io::Error::new(io::ErrorKind::InvalidData, "unsafe archive entry path"),
++            }
++            .into());
++        }
+     }
+
+     out.flush().map_err(TarError::Io)?;

@@ -1,0 +1,15 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+This port follows the pinned prerelease source and has no pledge or unveil
+policy. Run it with the permissions and destination directory appropriate
+for the archive being processed; there is no process sandbox.
+
+The tar library skips entries containing parent-directory components.
+The port reports those skipped unsafe paths as extraction errors rather
+than returning success for an incomplete extraction. This does not make
+extraction transactional: earlier entries may already have been written.
+
+Archive paths, links, file permissions and extraction into directories
+writable by other users still require native regression validation.

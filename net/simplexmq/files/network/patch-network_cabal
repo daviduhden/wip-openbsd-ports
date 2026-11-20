@@ -6,10 +6,10 @@ Index: network.cabal
 +++ network.cabal
 @@ -50,7 +50,7 @@ description:
      >   build-depends: network-uri-flag
- 
+
  category:           Network
 -build-type:         Configure
 +build-type:         Simple
- 
+
  extra-doc-files:
      README.md

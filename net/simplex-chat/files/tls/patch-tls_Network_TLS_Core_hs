@@ -9,7 +9,7 @@ Index: Network/TLS/Core.hs
 @@ -27,6 +27,8 @@ module Network.TLS.Core (
      requestCertificate,
  ) where
- 
+
 +import Control.Concurrent (forkIO)
 +import Control.Concurrent.MVar
  import qualified Control.Exception as E
@@ -57,7 +57,7 @@ Index: Network/TLS/Core.hs
 +                        modifyTLS13State ctx $ \st -> st{tls13stPendingRecv = NoPendingRecv}
 +                        E.throwIO err
 +                    _ -> return ()
- 
+
  rttFactor :: Int
  rttFactor = 3
 @@ -118,7 +148,7 @@ bye ctx = liftIO $ do
@@ -96,11 +96,11 @@ Index: Network/TLS/Core.hs
 +    tryRecvHS13 :: Int -> IO Bool -> IO ()
 +    tryRecvHS13 rtt chk =
 +        void $ tryWithReadLock ctx $ timeout rtt $ recvHS13 ctx chk
- 
+
  bye_ :: MonadIO m => Context -> m ()
  bye_ ctx = liftIO $ do
 @@ -240,15 +290,20 @@ recvData12 ctx = do
- 
+
  recvData13 :: Context -> IO ByteString
  recvData13 ctx = do
 -    mdat <- tls13stPendingRecvData <$> getTLS13State ctx

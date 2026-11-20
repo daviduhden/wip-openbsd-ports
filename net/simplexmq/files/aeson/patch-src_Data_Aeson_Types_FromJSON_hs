@@ -19,10 +19,10 @@ Index: src/Data/Aeson/Types/FromJSON.hs
 +    msg req = "found a number with exponent " ++ show exp10 ++ ", but it must not be " ++ req
  withBoundedScientific_ whenFail _ v =
      whenFail (typeMismatch "Number" v)
- 
+
 @@ -1727,14 +1729,7 @@ instance FromJSONKey Float where
          _      -> Scientific.toRealFloat <$> parseScientificText t
- 
+
  instance (FromJSON a, Integral a) => FromJSON (Ratio a) where
 -    parseJSON (Number x)
 -      | exp10 <= 1024

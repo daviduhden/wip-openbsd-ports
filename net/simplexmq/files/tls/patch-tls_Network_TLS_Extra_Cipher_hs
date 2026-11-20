@@ -7,7 +7,7 @@ Index: Network/TLS/Extra/Cipher.hs
 --- Network/TLS/Extra/Cipher.hs.orig
 +++ Network/TLS/Extra/Cipher.hs
 @@ -692,7 +692,7 @@ noFail = throwCryptoError
- 
+
  chacha20poly1305 :: BulkDirection -> BulkKey -> BulkAEAD
  chacha20poly1305 BulkEncrypt key nonce =
 -    let st = noFail (ChaChaPoly1305.nonce12 nonce >>= ChaChaPoly1305.initialize key)

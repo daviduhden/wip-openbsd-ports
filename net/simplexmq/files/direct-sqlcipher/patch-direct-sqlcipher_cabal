@@ -5,7 +5,7 @@ Index: direct-sqlcipher.cabal
 +++ direct-sqlcipher.cabal
 @@ -78,7 +78,8 @@ library
    ghc-options:      -Wall -fwarn-tabs
- 
+
    if flag(systemlib)
 -    extra-libraries: sqlite3
 +    extra-libraries: sqlcipher

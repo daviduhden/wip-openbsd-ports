@@ -14,4 +14,4 @@ Index: src/Crypto/Store/CMS/Algorithms.hs
 +    CryptoPassed k -> return (addAAD (ChaChaPoly1305.initialize k nonce))
      CryptoFailed e -> Left (CryptoError e)
    where addAAD = ChaChaPoly1305.finalizeAAD . ChaChaPoly1305.appendAAD aad
- 
+

@@ -10,7 +10,7 @@ Index: src/Data/Aeson/KeyMap.hs
 @@ -101,6 +101,8 @@ import Prelude ((.), ($))
  import Prelude (Functor(fmap), Monad(..))
  import Prelude (Show, showsPrec, showParen, shows, showString)
- 
+
 +import Prelude (fst, snd)
 +
  import Control.Applicative (Applicative)
@@ -19,7 +19,7 @@ Index: src/Data/Aeson/KeyMap.hs
 @@ -690,21 +692,28 @@ instance WI.TraversableWithIndex Key Key
  -- semialign
  -------------------------------------------------------------------------------
- 
+
 +-- Unzip must come first: Semialign depends on Unzip in semialign >= 1.3.
 +instance SA.Unzip KeyMap where
 +    unzip (KeyMap m) = (KeyMap (fmap fst m), KeyMap (fmap snd m))
@@ -33,18 +33,18 @@ Index: src/Data/Aeson/KeyMap.hs
 +
  instance SA.Zip KeyMap where
      zipWith = intersectionWith
- 
+
 +-- ZipWithIndex depends on Zip.
  instance SAI.ZipWithIndex Key KeyMap where
      izipWith = intersectionWithKey
- 
+
 -instance SA.Semialign KeyMap where
 -    alignWith = alignWith
 -
 +-- SemialignWithIndex depends on Semialign.
  instance SAI.SemialignWithIndex Key KeyMap where
      ialignWith = alignWithKey
- 
+
 -instance SA.Align KeyMap where
 -    nil = empty
 -

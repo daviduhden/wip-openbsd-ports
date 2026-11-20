@@ -16,7 +16,7 @@ Index: test/Run.hs
      byeBye,
  ) where
 @@ -326,16 +328,32 @@ debug = False
- 
+
  withPairContext
      :: (ClientParams, ServerParams) -> ((Context, Context) -> IO ()) -> IO ()
 -withPairContext params body =
@@ -33,7 +33,7 @@ Index: test/Run.hs
 +        (newPairContextWith wrapBackends params)
          (\((t1, t2), _) -> killThread t1 >> killThread t2)
          (\(_, ctxs) -> body ctxs)
- 
+
  newPairContext
      :: (ClientParams, ServerParams)
      -> IO ((ThreadId, ThreadId), (Context, Context))
@@ -52,13 +52,13 @@ Index: test/Run.hs
      tids <- runPipe pipe
      let noFlush = return ()
 @@ -343,8 +361,8 @@ newPairContext (cParams, sParams) = do
- 
+
      let cBackend = Backend noFlush noClose (writePipeC pipe) (readPipeC pipe)
      let sBackend = Backend noFlush noClose (writePipeS pipe) (readPipeS pipe)
 -    cCtx' <- contextNew cBackend cParams
 -    sCtx' <- contextNew sBackend sParams
 +    cCtx' <- contextNew (wrapCBackend cBackend) cParams
 +    sCtx' <- contextNew (wrapSBackend sBackend) sParams
- 
+
      contextHookSetLogging cCtx' (logging "client: ")
      contextHookSetLogging sCtx' (logging "server: ")

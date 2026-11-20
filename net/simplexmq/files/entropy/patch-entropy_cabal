@@ -9,16 +9,16 @@ Index: entropy.cabal
 @@ -17,7 +17,7 @@ homepage:       https://github.com/TomMD
  bug-reports:    https://github.com/TomMD/entropy/issues
  stability:      stable
- 
+
 -build-type:     Custom
 +build-type:     Simple
- 
+
  tested-with:
    GHC == 9.14.1
 @@ -47,13 +47,6 @@ Flag DoNotGetEntropy
    Default: False
    Manual: True
- 
+
 -custom-setup
 -  setup-depends: Cabal >= 1.10 && < 3.17
 -               , base < 5

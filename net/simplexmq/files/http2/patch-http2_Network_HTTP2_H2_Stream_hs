@@ -17,9 +17,9 @@ Index: Network/HTTP2/H2/Stream.hs
 +import Data.Maybe (fromMaybe, isJust)
  import Network.Control
  import Network.HTTP.Semantics.IO
- 
+
 @@ -98,8 +98,18 @@ closeAllStreams ovar evar mErr = do
- 
+
  nextForStreaming
      :: TBQueue StreamingChunk
 -    -> DynaNext

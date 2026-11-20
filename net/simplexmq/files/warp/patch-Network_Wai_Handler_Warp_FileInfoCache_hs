@@ -6,7 +6,7 @@ Index: Network/Wai/Handler/Warp/FileInfoCache.hs
 +++ Network/Wai/Handler/Warp/FileInfoCache.hs
 @@ -61,8 +61,8 @@ getInfoNaive = getInfo
  ----------------------------------------------------------------
- 
+
  getAndRegisterInfo :: FileInfoCache -> FilePath -> IO FileInfo
 -getAndRegisterInfo reaper@Reaper{..} path = do
 -    cache <- reaperRead
@@ -17,7 +17,7 @@ Index: Network/Wai/Handler/Warp/FileInfoCache.hs
          Just (Positive x) -> return x
 @@ -70,14 +70,14 @@ getAndRegisterInfo reaper@Reaper{..} pat
                                 `UnliftIO.onException` negative reaper path
- 
+
  positive :: FileInfoCache -> FilePath -> IO FileInfo
 -positive Reaper{..} path = do
 +positive reaper path = do
@@ -25,12 +25,12 @@ Index: Network/Wai/Handler/Warp/FileInfoCache.hs
 -    reaperAdd (path, Positive info)
 +    reaperAdd reaper (path, Positive info)
      return info
- 
+
  negative :: FileInfoCache -> FilePath -> IO FileInfo
 -negative Reaper{..} path = do
 -    reaperAdd (path, Negative)
 +negative reaper path = do
 +    reaperAdd reaper (path, Negative)
      UnliftIO.throwIO (userError "FileInfoCache:negative")
- 
+
  ----------------------------------------------------------------

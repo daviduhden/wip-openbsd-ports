@@ -1,0 +1,20 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+The uu-grep executable checks pledge before processing arguments or input.
+It permits stdio, rpath and tty for input files, localization, output and
+terminal detection. It cannot start programs, open ordinary files for
+writing or create network connections after that call.
+
+There is no unveil policy: recursive and user-selected paths remain readable
+under the user's normal permissions. Stdio also permits I/O on inherited
+descriptors. This is a syscall boundary, not complete filesystem or network
+isolation. The embedding Rust library does not change the caller's policy.
+
+The port requires the current OpenBSD Rust package, whose current_exe()
+implementation uses getexecpath(). Older Rust implementations may require
+additional system calls and have not been validated with this policy.
+
+Native validation of locale/help output, terminals, SIGPIPE, input paths and
+denied operations is still required. No native runtime guarantee is claimed.

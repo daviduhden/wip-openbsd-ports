@@ -1,0 +1,34 @@
+Restrict only the standalone OpenBSD executable to reading and stdio.
+Keep the embedding library free of process-wide policy changes.
+
+Index: src/main.rs
+--- src/main.rs.orig
++++ src/main.rs
+@@ -3,4 +3,26 @@
+ // For the full copyright and license information, please view the LICENSE
+ // file that was distributed with this source code.
+
+-uucore::bin!(uu_grep);
++mod program {
++    uucore::bin!(uu_grep);
++}
++
++fn main() {
++    #[cfg(target_os = "openbsd")]
++    {
++        unsafe extern "C" {
++            fn pledge(
++                promises: *const std::ffi::c_char,
++                execpromises: *const std::ffi::c_char,
++            ) -> std::ffi::c_int;
++        }
++
++        // Read inputs and terminal state; output uses inherited descriptors.
++        if unsafe { pledge(c"stdio rpath tty".as_ptr(), std::ptr::null()) } == -1 {
++            eprintln!("grep: pledge: {}", std::io::Error::last_os_error());
++            std::process::exit(2);
++        }
++    }
++
++    program::main();
++}

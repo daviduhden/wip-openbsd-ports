@@ -23,6 +23,11 @@ a native security review before they are exposed to untrusted clients.
 The port's LibreSSL re-read path also calls ClearOut() from DoWrite();
 nested-write re-entry needs native review against the new cycle guard.
 
+The header archive supplied for node-gyp is copied from upstream without
+this port's compatibility patches. Native addon builds need separate checks
+against base LibreSSL and the OpenBSD compiler and linker flags; a working
+Node runtime does not establish addon compatibility.
+
 Compilation, generated package contents, V8, TLS, pledge/unveil and the
 complete regression suite still require validation on a native OpenBSD
 host. Static patch review is not runtime evidence.

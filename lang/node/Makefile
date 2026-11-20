@@ -13,6 +13,7 @@ DIST_TUPLE =		codeberg qbit node-pledge 1.1.4 \
 DISTNAME =		node-${NODE_VERSION}
 WRKDIST =		${WRKDIR}/${DISTNAME}
 PKGNAME =		${DISTNAME:S/v//g}
+REVISION =		0
 EPOCH =			0
 
 CATEGORIES =		lang devel

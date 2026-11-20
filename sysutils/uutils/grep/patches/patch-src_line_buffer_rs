@@ -1,0 +1,16 @@
+Create fixture files exclusively instead of truncating existing paths.
+A predictable temporary name must not overwrite a symlink target.
+
+Index: src/line_buffer.rs
+--- src/line_buffer.rs.orig
++++ src/line_buffer.rs
+@@ -206,8 +206,7 @@ mod tests {
+         let mut file = std::fs::OpenOptions::new()
+             .read(true)
+             .write(true)
+-            .create(true)
+-            .truncate(true)
++            .create_new(true)
+             .open(&path)
+             .unwrap();
+         file.write_all(content).unwrap();

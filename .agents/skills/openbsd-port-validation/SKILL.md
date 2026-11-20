@@ -233,6 +233,10 @@ source report. If the update has been committed, replace provisional Git
 references with the final revision and record the commit range and validation
 results. Retain the selected version for every inventory row and the immutable
 official reference so the queue stays interpretable without deleted tables.
+When later work changes a port's source selection, retain that latest decision
+instead of reviving an earlier rejected-candidate status. Record selection
+and native readiness separately: preparing a newer source does not resolve
+its outstanding compiler, generated-file, build or runtime blockers.
 Do not preserve obsolete claims that source archives or logs remain available.
 After updating the handoff, record its hash, delete only
 non-retained immediate children of the audit root without following symlinks,

@@ -1,4 +1,6 @@
 Use native libfido2 for the CLI.
+Reject malformed PIN strings instead of selecting built-in verification.
+Keep explicitly empty PINs available for the device UV flow.
 
 Index: token2-piv-gui/src-tauri/src/fido.rs
 --- token2-piv-gui/src-tauri/src/fido.rs.orig
@@ -7,76 +9,102 @@ Index: token2-piv-gui/src-tauri/src/fido.rs
 +#[cfg(feature = "gui")]
 @@ -53,0 +55 @@ extern "C" {
 +    #[cfg(feature = "gui")]
-@@ -212,0 +215 @@ static INIT: std::sync::Once = std::sync
+@@ -200,2 +202,5 @@ fn pin_or_uv(pin: &str) -> R<Option<CStr
+-fn opt_pin(pin: &Option<String>) -> Option<CString> {
+-    pin.as_ref().filter(|p| !p.is_empty()).and_then(|p| CString::new(p.as_str()).ok())
++fn opt_pin(pin: &Option<String>) -> R<Option<CString>> {
++    match pin {
++        Some(pin) => pin_or_uv(pin),
++        None => Ok(None),
++    }
+@@ -212,0 +218 @@ static INIT: std::sync::Once = std::sync
 +#[cfg(feature = "gui")]
-@@ -302,0 +306 @@ pub struct FidoState(pub Mutex<FidoSessi
+@@ -302,0 +309 @@ pub struct FidoState(pub Mutex<FidoSessi
 +#[cfg(feature = "gui")]
-@@ -320 +324 @@ pub struct FidoDevice {
+@@ -320 +327 @@ pub struct FidoDevice {
 -#[tauri::command]
 +#[cfg_attr(feature = "gui", tauri::command)]
-@@ -459,0 +464 @@ fn read_info(dev: *mut fido_dev_t, path:
+@@ -459,0 +467 @@ fn read_info(dev: *mut fido_dev_t, path:
 +#[cfg(feature = "gui")]
-@@ -487,0 +493 @@ pub async fn fido_connect(state: State<'
+@@ -487,0 +496 @@ pub async fn fido_connect(state: State<'
 +#[cfg(feature = "gui")]
-@@ -495,0 +502 @@ pub fn fido_disconnect(state: State<Fido
+@@ -495,0 +505 @@ pub fn fido_disconnect(state: State<Fido
 +#[cfg(feature = "gui")]
-@@ -502,0 +510 @@ pub async fn fido_info(state: State<'_,
+@@ -502,0 +513 @@ pub async fn fido_info(state: State<'_,
 +#[cfg(feature = "gui")]
-@@ -509,0 +518 @@ pub async fn fido_set_pin(state: State<'
+@@ -506 +517 @@ pub async fn fido_set_pin(state: State<'
+-    let o = opt_pin(&old_pin);
++    let o = opt_pin(&old_pin)?;
+@@ -509,0 +521 @@ pub async fn fido_set_pin(state: State<'
 +#[cfg(feature = "gui")]
-@@ -515,0 +525 @@ pub async fn fido_set_min_pin_len(state:
+@@ -515,0 +528 @@ pub async fn fido_set_min_pin_len(state:
 +#[cfg(feature = "gui")]
-@@ -521,0 +532 @@ pub async fn fido_force_pin_change(state
+@@ -521,0 +535 @@ pub async fn fido_force_pin_change(state
 +#[cfg(feature = "gui")]
-@@ -544,0 +556 @@ pub async fn fido_toggle_always_uv(state
+@@ -544,0 +559 @@ pub async fn fido_toggle_always_uv(state
 +#[cfg(feature = "gui")]
-@@ -680,0 +693 @@ fn run_cli(args: &[&std::ffi::OsStr], pi
+@@ -680,0 +696 @@ fn run_cli(args: &[&std::ffi::OsStr], pi
 +#[cfg(feature = "gui")]
-@@ -701,0 +715 @@ fn with_cli_reader<T>(state: &State<Fido
+@@ -701,0 +718 @@ fn with_cli_reader<T>(state: &State<Fido
 +#[cfg(feature = "gui")]
-@@ -725,0 +740 @@ pub async fn fido_note_get(state: State<
+@@ -725,0 +743 @@ pub async fn fido_note_get(state: State<
 +#[cfg(feature = "gui")]
-@@ -743,0 +759 @@ pub async fn fido_note_set(state: State<
+@@ -743,0 +762 @@ pub async fn fido_note_set(state: State<
 +#[cfg(feature = "gui")]
-@@ -779,0 +796 @@ pub struct PasskeyInventory {
+@@ -779,0 +799 @@ pub struct PasskeyInventory {
 +#[cfg(feature = "gui")]
-@@ -862,0 +880 @@ unsafe fn list_passkeys_ptr(d: *mut fido
+@@ -862,0 +883 @@ unsafe fn list_passkeys_ptr(d: *mut fido
 +#[cfg(feature = "gui")]
-@@ -881,0 +900 @@ pub async fn fido_update_passkey(state:
+@@ -881,0 +903 @@ pub async fn fido_update_passkey(state:
 +#[cfg(feature = "gui")]
-@@ -901,0 +921 @@ pub struct BioInfo {
+@@ -901,0 +924 @@ pub struct BioInfo {
 +#[cfg(feature = "gui")]
-@@ -952,0 +973 @@ fn template_with_id(id_hex: &str, name:
+@@ -952,0 +976 @@ fn template_with_id(id_hex: &str, name:
 +#[cfg(feature = "gui")]
-@@ -962,0 +984 @@ pub async fn fido_rename_bio(state: Stat
+@@ -962,0 +987 @@ pub async fn fido_rename_bio(state: Stat
 +#[cfg(feature = "gui")]
-@@ -1020,0 +1043 @@ fn enroll_step(s: &FidoSession) -> R<Enr
+@@ -1020,0 +1046 @@ fn enroll_step(s: &FidoSession) -> R<Enr
 +#[cfg(feature = "gui")]
-@@ -1042,0 +1066 @@ pub async fn fido_enroll_begin(state: St
+@@ -1042,0 +1069 @@ pub async fn fido_enroll_begin(state: St
 +#[cfg(feature = "gui")]
-@@ -1071,0 +1096 @@ pub async fn fido_enroll_continue(state:
+@@ -1071,0 +1099 @@ pub async fn fido_enroll_continue(state:
 +#[cfg(feature = "gui")]
-@@ -1082,0 +1108 @@ pub async fn fido_enroll_cancel(state: S
+@@ -1082,0 +1111 @@ pub async fn fido_enroll_cancel(state: S
 +#[cfg(feature = "gui")]
-@@ -1104,0 +1131 @@ pub struct ReaderProbe {
+@@ -1104,0 +1134 @@ pub struct ReaderProbe {
 +#[cfg(feature = "gui")]
-@@ -1160,0 +1188 @@ pub struct KeyCapabilities {
+@@ -1160,0 +1191 @@ pub struct KeyCapabilities {
 +#[cfg(feature = "gui")]
-@@ -1182,0 +1211 @@ fn transmit_apdu(card: &pcsc::Card, apdu
+@@ -1182,0 +1214 @@ fn transmit_apdu(card: &pcsc::Card, apdu
 +#[cfg(feature = "gui")]
-@@ -1354,0 +1384 @@ const TOKEN2_VID: u16 = 0x349e;
+@@ -1354,0 +1387 @@ const TOKEN2_VID: u16 = 0x349e;
 +#[cfg(feature = "gui")]
-@@ -1360,0 +1391 @@ fn has_token2_vid() -> bool {
+@@ -1360,0 +1394 @@ fn has_token2_vid() -> bool {
 +#[cfg(feature = "gui")]
-@@ -1402,0 +1434 @@ pub fn presence() -> Presence {
+@@ -1402,0 +1437 @@ pub fn presence() -> Presence {
 +#[cfg(feature = "gui")]
-@@ -1423,0 +1456 @@ fn pcscd_available() -> bool {
+@@ -1423,0 +1459 @@ fn pcscd_available() -> bool {
 +#[cfg(feature = "gui")]
-@@ -1449,0 +1483 @@ fn pcsc_unavailable_hint() -> String {
+@@ -1449,0 +1486 @@ fn pcsc_unavailable_hint() -> String {
 +#[cfg(feature = "gui")]
-@@ -1503,0 +1538 @@ pub async fn fido_connect_ccid(state: St
+@@ -1503,0 +1541 @@ pub async fn fido_connect_ccid(state: St
 +#[cfg(feature = "gui")]
-@@ -1526,0 +1562 @@ pub fn is_elevated() -> bool {
+@@ -1526,0 +1565 @@ pub fn is_elevated() -> bool {
 +#[cfg(feature = "gui")]
-@@ -1619,0 +1656 @@ pub fn capabilities_debug() -> String {
+@@ -1619,0 +1659 @@ pub fn capabilities_debug() -> String {
 +#[cfg(feature = "gui")]
+@@ -1712 +1752,4 @@ impl FidoSession {
+-        let o = old_pin.filter(|p| !p.is_empty()).and_then(|p| CString::new(p).ok());
++        let o = match old_pin {
++            Some(pin) => pin_or_uv(pin)?,
++            None => None,
++        };
+@@ -1716 +1759 @@ impl FidoSession {
+-        let p = opt_pin(&Some(pin.to_string()));
++        let p = opt_pin(&Some(pin.to_string()))?;
+@@ -1720 +1763 @@ impl FidoSession {
+-        let p = opt_pin(&Some(pin.to_string()));
++        let p = opt_pin(&Some(pin.to_string()))?;
+@@ -1745 +1788 @@ impl FidoSession {
+-        let p = opt_pin(&Some(pin.to_string()));
++        let p = opt_pin(&Some(pin.to_string()))?;

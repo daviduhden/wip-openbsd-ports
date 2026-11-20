@@ -14,6 +14,12 @@ Read [UPDATE.md](../../../docs/UPDATE.md) and the port's Makefile, existing patc
 ## Procedure
 
 1. Explain each patch's purpose and check upstream history for an equivalent fix. A patch can still apply after its underlying problem has been fixed; successful application alone does not justify retaining it.
+   For zero-context hunks, reconstruct the intended function and statement
+   from the previous pristine source. Locate that operation in the selected
+   source before inserting the change. Old line numbers can apply cleanly
+   inside another function or a method chain, even with zero fuzz and no
+   offset. Inspect the surrounding syntax and ownership before regenerating;
+   replay against an equally misplaced edited tree cannot detect this error.
 2. Prefer a supported Makefile setting for paths, flags, dependencies, and installation. Keep necessary source changes small and specific. Separate portability fixes from packaging policy so the former can be proposed upstream.
 3. On OpenBSD, run `make extract` and `make patch` for a fresh working source tree. A failed patch may leave a partially modified tree: inspect rejects and logs before retrying. Preserve needed source edits before any scoped `make clean`; never delete CVS metadata.
 4. Edit the intended source file and preserve the original as required by `make update-patches`; check the matching `bsd.port.mk(5)` target before using options. Run `make update-patches` and inspect every output file, including unexpected changes and deleted patches. Do not generate patches from an already patched file as if it were upstream's original.

@@ -46,7 +46,8 @@ update. The minimum policy is:
    additions between releases.
    For a repeated update, rebuild this baseline from the current checkout;
    follow the update skill's cache checks so recent fixes are not lost to an
-   older patched work tree or release listing.
+   older patched work tree or release listing. Include pending changes and
+   non-ignored untracked port files in that baseline.
 2. Establish the newest stable upstream release from the project's own
    release source; do not infer it from a tag or a registry summary alone.
    When a port pins a commit, prefer a newly published stable tag and its
@@ -58,9 +59,12 @@ update. The minimum policy is:
 3. Compare upstream, official and local sources file by file. Integrate the
    official maintainer fixes that remain valid, and keep local behavior that
    upstream or official changes do not make obsolete. Record every declined
-   official change with its reason.
-4. Resolve cross-port dependency bounds before choosing a version. When a
-   maintained port requires an older major (for example a capped
+   official change with its reason. For a repeated update, verify which
+   comparisons the new official revision affects before carrying forward
+   earlier decisions.
+4. Resolve cross-port dependency bounds and check the official versions of
+   prerequisites outside the overlay in the same snapshot before choosing a
+   version. When a maintained port requires an older major (for example a capped
    `importlib-metadata`, `filelock`, `huggingface-hub`, `google-genai` or
    `websockets`), select the highest release inside that bound, keep the
    `PORTROACH` limit accurate, and document the excluded upstream release.
@@ -75,13 +79,13 @@ update. The minimum policy is:
    explicit user-selected `REVISION = 0` and record the package-name collision
    risk instead of overriding it. Use `EPOCH` only when version ordering
    genuinely moves backwards.
-6. Rebase every retained patch against a pristine extraction of the exact new
-   source with `diff -u -p`, one target per `Index:` header, and a specific
-   rationale whose lines are at most 72 columns. Delete patches that upstream
-   incorporated, that another retained change replaces, or that no longer
-   apply. Verify the whole series in sorted order with zero fuzz. A previous
-   review does not carry over to a new tag, even a patch release; re-run the
-   series check against the selected archive.
+6. Regenerate every retained patch in an integral update, even for unchanged
+   releases. Use a pristine extraction of the selected source, `diff -u -p`,
+   one target per `Index:` header and a rationale of at most 72 columns per
+   line. Delete patches that upstream incorporated, that another retained
+   change replaces, or that no longer apply. Verify the whole series in
+   sorted order with zero fuzz. Re-run that check against each selected
+   archive, including patch releases.
 7. Review the port `Makefile` and installed `pkg/README` after each update:
    dependencies, `WANTLIB`, services, configuration, security notes and
    obsolete version statements must match the new source.

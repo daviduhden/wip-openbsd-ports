@@ -270,6 +270,12 @@ cap a major version even when the dependency itself has moved on.
 - When the newest upstream release cannot be selected, list it, the blocking
   requirement and the source of that requirement in the final report. Do not
   silently pin an old version and call the collection current.
+- Recheck official prerequisites outside the overlay at the pinned
+  `-current` revision. A dependency can move between collection updates even
+  if the consumer's upstream release is unchanged. Record the prerequisite's
+  port path, available version and the exact bound from the candidate
+  manifest. Reopen a previously blocked selection when the new version
+  satisfies that bound.
 - Re-check optional extras separately from runtime requirements; an upper
   bound that appears only in an extra does not block a runtime update.
 - When a port pins a commit, check whether upstream has published a stable
@@ -304,6 +310,13 @@ the overlay, so a missing official patch is not evidence that a local patch
 is unnecessary. When official `-current` matches the local version, compare
 the files anyway and adopt new maintainer fixes without changing the version;
 a matching version does not mean the official port is unchanged.
+
+For a repeated update, compare the two pinned official snapshots at the
+resolved counterpart paths, shared port files and prerequisites used in
+the selection. Record which paths changed. An official revision can
+advance because of unrelated ports. Carry forward a prior file disposition
+only when its official and local inputs still match and the selected
+upstream source is the same.
 
 ### Required collection record
 
@@ -340,11 +353,16 @@ file/hash inventory. A prior audit may have added security fixes without
 changing upstream versions; rebuild the local-patched baseline using the
 current patches rather than reusing an older patched tree. Preserve those
 fixes explicitly when comparing the next release.
+Inventory tracked files and non-ignored untracked port files, including
+patches from an earlier pass. Separate the initial worktree changes from
+changes made in this pass when reconciling the final diff and report.
 
 Refresh primary release evidence even when cached source archives remain
 usable. Cached HTML and search results can lag a newly published release;
 reconcile a fresh project feed, the release's own page and the selected
-source identity. For a cached archive, verify its recorded digest and the
+source identity. If a latest-release redirect disagrees with the release
+index, inspect the candidate's own publication and stability status before
+changing the selection. For a cached archive, verify its recorded digest and the
 immutable selected commit or published artifact hash before extracting it
 again. Resolve annotated tags to their commit: a tag-object ID is not the
 source commit. Keep pristine extraction and assembled dependencies separate.

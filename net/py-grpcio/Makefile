@@ -1,6 +1,6 @@
 COMMENT =		HTTP/2-based RPC framework
 
-MODPY_DISTV =	1.85.3
+MODPY_DISTV =	1.85.4
 DISTNAME =	grpcio-${MODPY_DISTV}
 PKGNAME =		py-${DISTNAME}
 CATEGORIES =		net

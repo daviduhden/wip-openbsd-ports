@@ -1,6 +1,6 @@
 COMMENT =	Status proto mapping for gRPC
 
-MODPY_DISTV =	1.85.3
+MODPY_DISTV =	1.85.4
 DISTNAME =	grpcio_status-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
 
@@ -15,7 +15,7 @@ MODPY_PYBUILD =	setuptools
 
 RUN_DEPENDS =	devel/py-protobuf>=6.33.5,<8.0.0 \
 		net/py-googleapis-common-protos>=1.5.5 \
-		net/py-grpcio>=1.85.3
+		net/py-grpcio>=1.85.4
 
 # No tests in the PyPI sdist.
 NO_TEST =	Yes

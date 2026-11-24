@@ -1,4 +1,6 @@
 Check argument storage and detach helpers without unsafe vfork state.
+Reap all exited children when SIGCHLD notifications coalesce.
+Preserve errno and retry interrupted waits.
 
 Index: src/tbmain.c
 --- src/tbmain.c.orig
@@ -80,3 +82,14 @@ Index: src/tbmain.c
 @@ -1232 +1287 @@ static void report_exec_error(const char
 -	if(!err_msg){
 +	if(!buffer){
+@@ -1441,2 +1496,8 @@ static void sigchld_handler(int sig)
+-	int status;
+-	waitpid(-1, &status, WNOHANG);
++	int saved_errno = errno;
++	pid_t pid;
++
++	do {
++		pid = waitpid(-1, NULL, WNOHANG);
++	} while(pid > 0 || (pid < 0 && errno == EINTR));
++
++	errno = saved_errno;

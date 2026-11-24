@@ -1,4 +1,6 @@
 Fail closed on credential reset and use checked process attributes.
+Reap all exited children when SIGCHLD notifications coalesce.
+Preserve errno and retry interrupted waits.
 
 Index: src/smmain.c
 --- src/smmain.c.orig
@@ -139,3 +141,14 @@ Index: src/smmain.c
 +		setuid(getuid());
 @@ -1172,0 +1272 @@ static void process_sessionetc(void)
 +#endif
+@@ -1666,2 +1766,8 @@ static void sigchld_handler(int sig)
+-	int status;
+-	waitpid(-1, &status, WNOHANG);
++	int saved_errno = errno;
++	pid_t pid;
++
++	do {
++		pid = waitpid(-1, NULL, WNOHANG);
++	} while(pid > 0 || (pid < 0 && errno == EINTR));
++
++	errno = saved_errno;

@@ -5,7 +5,7 @@ OpenBSD. An explicit user setting still overrides the default.
 Index: codex-rs/core/src/config/mod.rs
 --- codex-rs/core/src/config/mod.rs.orig
 +++ codex-rs/core/src/config/mod.rs
-@@ -445,6 +445,13 @@ impl Permissions {
+@@ -446,6 +446,13 @@ impl Permissions {
          &mut self,
          snapshot: PermissionProfileSnapshot,
      ) -> ConstraintResult<()> {
@@ -19,7 +19,7 @@ Index: codex-rs/core/src/config/mod.rs
          let permission_profile = Constrained::allow_only(snapshot.permission_profile().clone());
          self.permission_profile_state =
              PermissionProfileState::from_constrained_snapshot(permission_profile, snapshot)?;
-@@ -4441,7 +4448,7 @@ impl Config {
+@@ -4518,7 +4525,7 @@ impl Config {
          let compact_prompt = compact_prompt.or(file_compact_prompt);
          let review_model = override_review_model.or(cfg.review_model);
 

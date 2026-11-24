@@ -5,7 +5,7 @@ OpenBSD has no supported command sandbox.
 Index: codex-rs/exec-server/src/process_sandbox.rs
 --- codex-rs/exec-server/src/process_sandbox.rs.orig
 +++ codex-rs/exec-server/src/process_sandbox.rs
-@@ -52,6 +52,14 @@ pub(crate) async fn prepare_exec_request
+@@ -50,6 +50,14 @@ pub(crate) async fn prepare_exec_request
      credential_brokers: &RemoteCredentialBrokerCache,
      telemetry: &ProcessTelemetry,
  ) -> Result<(WrappedSandboxCommand, Option<NetworkProxyHandle>), JSONRPCErrorError> {

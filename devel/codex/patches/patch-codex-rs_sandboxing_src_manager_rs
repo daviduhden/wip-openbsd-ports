@@ -5,7 +5,7 @@ restricted command without isolation.
 Index: codex-rs/sandboxing/src/manager.rs
 --- codex-rs/sandboxing/src/manager.rs.orig
 +++ codex-rs/sandboxing/src/manager.rs
-@@ -464,6 +464,33 @@ impl SandboxManager {
+@@ -491,6 +491,33 @@ impl SandboxManager {
              &self.operation,
          )
          .map_err(SandboxTransformError::InvalidPolicy)?;

@@ -9,7 +9,7 @@ Index: pyproject.toml
  ]
  dependencies = [
 -    "litellm==1.108.4",
-+    "litellm==1.108.13",
++    "litellm==1.108.16",
      "tiktoken>=0.14.0",
      "html-to-markdown>=3.22.0,<4",
      "rich>=15.0.0",

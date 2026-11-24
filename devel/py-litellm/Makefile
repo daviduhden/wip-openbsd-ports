@@ -2,7 +2,7 @@ COMMENT =	uniform API for multiple LLM providers
 
 # 1.109.0 requires anyio>=4.14; the ports tree still ships 4.10.
 # Select the newest release before that dependency floor.
-MODPY_DISTV =	1.108.13
+MODPY_DISTV =	1.108.16
 PORTROACH =	limit:^1\.108\.
 DISTNAME =	litellm-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME}

@@ -3,6 +3,7 @@ COMMENT =	next-generation HTTP client
 MODPY_DISTV =	2.16.2
 DISTNAME =	httpx2-${MODPY_DISTV}
 PKGNAME =	py-${DISTNAME:S/_/-/}
+REVISION =	1
 
 CATEGORIES =	www
 

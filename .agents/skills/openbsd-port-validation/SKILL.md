@@ -198,6 +198,30 @@ untracked files as well as the full Git diff. Check that reserved `distinfo`,
 A complete individual source review can coexist with unresolved hardening;
 report those two conclusions separately and name every remaining blocker.
 
+### Shell and Perl maintenance checks
+
+When the maintainer validators are available, run `validate-shell --check .`
+and `validate-perl --check .` from the overlay root. Inspect their reported
+logs for formatter differences, linter findings and skipped tools.
+Limit formatting changes to repository scripts, then rerun both checks.
+When correcting Perl return warnings, check list-context callers for
+argument shifting and keep file permission masks explicitly octal.
+
+### Collection tooling and stage evidence
+
+Use an explicitly selected, isolated checkout for collection builds. Start
+with the read-only port preflight and account for each reported blocker.
+Verification uses the recorded checksums and packages into the selected
+build environment. Request dependency regeneration, packing-list updates,
+CVS refresh and package installation as distinct operations. Native make
+may still prepare dependencies for a package build, so keep the package
+environment isolated and record its snapshot.
+
+Report the first failed prerequisite for each blocked port. Treat dry-run
+output as a plan. Keep performance measurements comparable by holding the
+snapshot, selected ports, cache state and job count constant. See
+[BUILDING.md](../../../docs/BUILDING.md) for the measurement procedure.
+
 ### Native regeneration backlog
 
 When maintaining `audit/generated-manifests.txt`, reconcile its rows with

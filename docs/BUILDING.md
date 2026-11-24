@@ -85,17 +85,45 @@ make patch
 make configure
 make build
 make fake
-make update-plist
 make port-lib-depends-check
 make package
 ```
 
 Not every target is always useful for every port, but this is the
-standard order when you are validating an existing version. Use
+standard order when you are validating an existing version. Run
+`make update-plist` separately when the staged package inventory has changed
+and the packing list is intentionally being regenerated. Use
 `make makesum` only when the downloaded inputs changed and the new
 checksums have been reviewed; it rewrites `distinfo` instead of
 verifying it. `make test` runs the framework test target after preparing
 `TEST_DEPENDS`; `make do-test` invokes the port target directly.
+
+## Collection tools
+
+Use an explicitly selected OpenBSD checkout and package environment for
+collection verification. A matching base, ports snapshot and package
+repository are prerequisites.
+
+```sh
+perl tools/port-preflight.pl --official-tree /path/to/ports net/simplexmq
+perl tools/bulk-build.pl --ports /path/to/ports --only net/simplexmq
+perl tools/gen-manifests-and-test.pl --ports /path/to/ports --only net/simplexmq
+```
+
+`bulk-build.pl` overlays the selected ports. `gen-manifests-and-test.pl`
+expects the overlay to be present already. In a native tree its `--all`
+selection means the overlay inventory. Both tools verify the recorded digests
+and default to the `package` target. OpenBSD make can install prerequisites
+during a build, so use an isolated native package environment.
+Select `--regenerate` only after reviewing changed download inputs. Select
+`--update-plist` to run fake and regenerate packing lists before packaging.
+CVS refresh and installation of the resulting port are explicit actions.
+Dry runs write planning logs and label simulated stages.
+
+`detect-new-versions.pl` reports published GitHub releases and eligible
+registry versions. A missing in-range candidate or failed lookup needs
+manual review. Use the source-selection procedure in [UPDATE.md](UPDATE.md)
+before changing a port.
 
 ## Updating Ports
 
@@ -446,3 +474,17 @@ For SimpleXMQ servers, run
 `doas -u _simplexmq /usr/local/bin/smp-server init` and then
 `doas rcctl start smp_server`. For the SimpleX Chat client, run
 `/usr/local/bin/simplex-chat` directly.
+
+
+## Measuring build performance
+
+Use one OpenBSD snapshot, the matching ports tree and a fixed port selection
+covering Cargo, Go, Cabal and C/C++. Record the architecture, memory, CPU,
+storage, cache state, source revision and job count. Record native stage
+times separately for dependency resolution, fetch, extract/patch, build,
+fake and package. Compare a cold run with a warm run on equivalent inputs.
+Use native `time -l` for elapsed time, CPU time and peak memory, and compare
+the existing serial workflow with the same repeated selection before
+changing scheduling. If compilation dominates, evaluate `dpb` on the same
+selection in an isolated environment. If discovery dominates, first measure
+the effect of sharing inventory and dependency queries.

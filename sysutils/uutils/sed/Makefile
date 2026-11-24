@@ -2,6 +2,7 @@ COMMENT =	alternative implementation of GNU sed
 
 GH_PROJECT =	sed
 GH_TAGNAME =	0.3.0
+REVISION =	0
 
 WANTLIB += ${MODCARGO_WANTLIB}
 

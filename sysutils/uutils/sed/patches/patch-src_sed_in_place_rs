@@ -1,0 +1,29 @@
+Set permissions and write through the original temporary file handle.
+Propagate errors when duplicating the handle for in-place output.
+
+Index: src/sed/in_place.rs
+--- src/sed/in_place.rs.orig
++++ src/sed/in_place.rs
+@@ -92,19 +92,15 @@ impl InPlace {
+         let temp_file = NamedTempFile::new_in(dir)
+             .map_err_context(|| format!("error creating temporary file in {}", dir.quote()))?;
+ 
+-        // TODO: On Unix use fchown(metadata.{uid,dig}) and fchmod(mode)
+-        // on let fd = temp_file.as_file().as_raw_fd() when uucore::libc
+-        // support them.
++        // TODO: Preserve the original owner and group on Unix.
+         #[cfg(unix)]
+         {
+             let mode = metadata.mode() & 0o7777;
+             let perms = fs::Permissions::from_mode(mode);
+-            fs::set_permissions(temp_file.path(), perms)?;
++            temp_file.as_file().set_permissions(perms)?;
+         }
+ 
+-        let output = OutputBuffer::new(Box::new(
+-            temp_file.reopen().expect("reopening NamedTempFile"),
+-        ));
++        let output = OutputBuffer::new(Box::new(temp_file.as_file().try_clone()?));
+         self.output = output;
+         self.temp_file = Some(temp_file);
+         self.original_path = Some(file_name.to_path_buf());

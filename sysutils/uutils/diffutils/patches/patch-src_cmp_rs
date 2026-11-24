@@ -1,0 +1,41 @@
+Use an owned duplicate for the stdout metadata probe.
+Keep stdout open even when the optimization cannot inspect it.
+
+Index: src/cmp.rs
+--- src/cmp.rs.orig
++++ src/cmp.rs
+@@ -12,7 +12,7 @@ use std::process::ExitCode;
+ use std::{cmp, fs, io};
+ 
+ #[cfg(unix)]
+-use std::os::fd::{AsRawFd, FromRawFd};
++use std::os::fd::AsFd;
+ 
+ #[cfg(unix)]
+ use std::os::unix::fs::MetadataExt;
+@@ -49,20 +49,14 @@ fn is_stdout_dev_null() -> bool {
+         return false;
+     };
+ 
+-    let stdout_fd = io::stdout().lock().as_raw_fd();
+-
+-    // SAFETY: we have exclusive access to stdout right now.
+-    let stdout_file = unsafe { fs::File::from_raw_fd(stdout_fd) };
+-    let Ok(stdout) = stdout_file.metadata() else {
++    let Ok(stdout_fd) = io::stdout().as_fd().try_clone_to_owned() else {
++        return false;
++    };
++    let Ok(stdout) = fs::File::from(stdout_fd).metadata() else {
+         return false;
+     };
+ 
+-    let is_dev_null = stdout.dev() == dev_null.dev() && stdout.ino() == dev_null.ino();
+-
+-    // Don't let File close the fd. It's unfortunate that File doesn't have a leak_fd().
+-    std::mem::forget(stdout_file);
+-
+-    is_dev_null
++    stdout.dev() == dev_null.dev() && stdout.ino() == dev_null.ino()
+ }
+ 
+ #[cfg(not(any(unix, target_os = "windows")))]

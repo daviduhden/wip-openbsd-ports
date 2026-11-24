@@ -1,0 +1,31 @@
+Reap all exited children when SIGCHLD notifications coalesce.
+Preserve errno and retry interrupted waits.
+
+Index: src/main.c
+--- src/main.c.orig
++++ src/main.c
+@@ -729,2 +729,3 @@ static void sigchld_handler(int sig)
+ {
++	int saved_errno = errno;
+ 	pid_t pid;
+@@ -732,10 +733,15 @@ static void sigchld_handler(int sig)
+
+-	pid = waitpid(-1, &status, WNOHANG);
++	for(;;) {
++		pid = waitpid(-1, &status, WNOHANG);
++		if(pid < 0 && errno == EINTR) continue;
++		if(pid <= 0) break;
+
+-	if(pid > 0 && !read_proc_sigchld(pid, status)) {
+-		if(mount_proc_sigchld(pid, status) ||
+-			fs_proc_sigchld(pid, status) ) {
+-				XtNoticeSignal(sigchld_sigid);
++		if(!read_proc_sigchld(pid, status)) {
++			if(mount_proc_sigchld(pid, status) ||
++				fs_proc_sigchld(pid, status) ) {
++					XtNoticeSignal(sigchld_sigid);
++			}
+ 		}
+ 	}
++	errno = saved_errno;
+ }

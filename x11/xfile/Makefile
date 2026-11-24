@@ -1,6 +1,6 @@
 COMMENT =	compact file manager for Unix/X11 Motif
 
-REVISION =	0
+REVISION =	1
 
 DISTNAME =	xfile-src-1.2.1
 PKGNAME =	xfile-1.2.1

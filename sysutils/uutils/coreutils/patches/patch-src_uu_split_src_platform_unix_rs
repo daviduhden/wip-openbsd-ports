@@ -1,0 +1,40 @@
+Create the split regression fixture in a private temporary directory.
+Keep existing files and directories out of the fixture setup.
+
+Index: src/uu/split/src/platform/unix.rs
+--- src/uu/split/src/platform/unix.rs.orig
++++ src/uu/split/src/platform/unix.rs
+@@ -158,22 +158,12 @@ mod tests {
+     use super::instantiate_current_writer;
+     use std::fs;
+     use std::os::unix::fs::symlink;
+-    use std::time::{SystemTime, UNIX_EPOCH};
+ 
+     #[test]
+     fn reopened_writer_rejects_symlink_swapped_to_input() {
+-        let tmp = std::env::temp_dir().join(format!(
+-            "uutils-split-{}-{}",
+-            std::process::id(),
+-            SystemTime::now()
+-                .duration_since(UNIX_EPOCH)
+-                .expect("system time before unix epoch")
+-                .as_nanos()
+-        ));
+-        fs::create_dir_all(&tmp).expect("failed to create temp dir");
+-
+-        let input = tmp.join("input.txt");
+-        let output = tmp.join("xaa");
++        let tmp = tempfile::tempdir().expect("failed to create temp dir");
++        let input = tmp.path().join("input.txt");
++        let output = tmp.path().join("xaa");
+         fs::write(&input, b"input\n").expect("failed to write input");
+         symlink(&input, &output).expect("failed to create output symlink");
+ 
+@@ -188,6 +178,6 @@ mod tests {
+             "unexpected error: {err}"
+         );
+ 
+-        fs::remove_dir_all(&tmp).expect("failed to cleanup temp dir");
++        tmp.close().expect("failed to cleanup temp dir");
+     }
+ }

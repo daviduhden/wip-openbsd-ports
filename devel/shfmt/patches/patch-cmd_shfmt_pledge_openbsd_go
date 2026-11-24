@@ -1,0 +1,20 @@
+Limit the standalone formatter to local input and terminal output.
+Allow pathname writes only for the explicit in-place editing mode.
+Keep process-wide restrictions out of the parsing library.
+
+Index: cmd/shfmt/pledge_openbsd.go
+--- /dev/null
++++ cmd/shfmt/pledge_openbsd.go
+@@ -0,0 +1,12 @@
++package main
++
++import "golang.org/x/sys/unix"
++
++// Restrict the standalone formatter, not the reusable parsing library.
++func restrictProcess(writeFiles bool) error {
++	promises := "stdio rpath tty"
++	if writeFiles {
++		promises += " wpath cpath fattr"
++	}
++	return unix.PledgePromises(promises)
++}

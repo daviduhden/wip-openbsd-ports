@@ -1,0 +1,13 @@
+Preserve formatter startup on systems without the OpenBSD policy.
+
+Index: cmd/shfmt/pledge_other.go
+--- /dev/null
++++ cmd/shfmt/pledge_other.go
+@@ -0,0 +1,7 @@
++//go:build !openbsd
++
++package main
++
++func restrictProcess(writeFiles bool) error {
++	return nil
++}

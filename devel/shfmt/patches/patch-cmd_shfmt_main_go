@@ -1,0 +1,18 @@
+Install the OpenBSD formatter policy before reading source or config.
+Refuse startup if the restriction cannot be installed.
+
+Index: cmd/shfmt/main.go
+--- cmd/shfmt/main.go.orig
++++ cmd/shfmt/main.go
+@@ -155,6 +155,11 @@ For more information and to report bugs,
+ 	}
+ 	flag.Parse()
+ 
++	if err := restrictProcess(write.val); err != nil {
++		fmt.Fprintf(os.Stderr, "shfmt: pledge: %v\n", err)
++		os.Exit(1)
++	}
++
+ 	if versionFlag.val {
+ 		version := "(unknown)"
+ 		if info, ok := debug.ReadBuildInfo(); ok {

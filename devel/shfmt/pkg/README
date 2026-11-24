@@ -1,0 +1,12 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+The shfmt command uses pledge(2) before reading source files or
+EditorConfig settings. In-place editing with -w also permits creating,
+replacing and setting permissions on output files. The command exits if
+it cannot install the policy.
+
+The policy permits reading input and configuration paths and using
+inherited file descriptors. The parsing library leaves the policy of an
+embedding application to its caller.

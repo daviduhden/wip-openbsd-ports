@@ -1,0 +1,19 @@
+Reap every exited converter when SIGCHLD notifications coalesce.
+Retry interrupted waits and preserve the interrupted code errno.
+
+Index: src/main.c
+--- src/main.c.orig
++++ src/main.c
+@@ -422,4 +422,10 @@ void sigchld_handler(int sig)
+ {
+-	int status;
+-	waitpid(-1, &status, WNOHANG);
++	int saved_errno = errno;
++	pid_t pid;
++
++	do {
++		pid = waitpid(-1, NULL, WNOHANG);
++	} while(pid > 0 || (pid < 0 && errno == EINTR));
++
++	errno = saved_errno;
+ }

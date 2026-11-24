@@ -108,11 +108,11 @@ sub commit_fixture {
 }
 
 sub run_validator {
-    my ( $fixture, @arguments )         = @_;
-    my ( $stdout_handle, $stdout_file ) = tempfile();
-    my ( $stderr_handle, $stderr_file ) = tempfile();
-    my $cwd = $fixture->{cwd} || $fixture->{repo};
-    my $pid = fork();
+    my ( $fixture, @arguments ) = @_;
+    my ($stdout_handle) = tempfile( DIR => $fixture->{temporary}, UNLINK => 1 );
+    my ($stderr_handle) = tempfile( DIR => $fixture->{temporary}, UNLINK => 1 );
+    my $cwd             = $fixture->{cwd} || $fixture->{repo};
+    my $pid             = fork();
     die "fork: $!" unless defined $pid;
     if ( !$pid ) {
         open STDOUT, '>&', $stdout_handle or exit 127;
@@ -748,6 +748,94 @@ sub update_agent {
         $result->{stdout},
         qr/\[FAIL\] AK005/,
         'invalid fnmatch range is not an execution error'
+    );
+}
+
+# 41. The committed head controls the configuration and instruction tree.
+{
+    my $fixture = new_fixture();
+    write_in_fixture( $fixture, 'src/example.txt', "VALUE = 2\n" );
+    write_in_fixture(
+        $fixture,
+        '.agent-knowledge-validator.toml',
+        "[validator]\ninstruction_globs = [\"operations.md\"]\n"
+    );
+    write_in_fixture( $fixture, 'operations.md',
+"Document repository operation through the [runbook](docs/runbook.md).\n"
+    );
+    write_in_fixture( $fixture, 'docs/runbook.md', "Operations runbook.\n" );
+    commit_fixture( $fixture, 'source and committed instructions' );
+    git_command( $fixture->{repo}, 'checkout', '--detach', $fixture->{base} );
+    write_in_fixture(
+        $fixture,
+        '.agent-knowledge-validator.toml',
+        "invalid local configuration\n"
+    );
+    write_in_fixture( $fixture, 'AGENTS.md', "invalid local instructions\n" );
+    my $result = run_validator( $fixture, '--scope', 'range',
+        '--base', $fixture->{base}, '--head', 'main' );
+    is( $result->{status}, 0,
+        'range reads head configuration, guidance and link target' );
+    like( $result->{stdout}, qr/operations\.md/,
+        'new instruction present only in head counts' );
+}
+
+# 42. A local file cannot repair a broken link in the committed range.
+{
+    my $fixture = new_fixture();
+    write_in_fixture( $fixture, 'AGENTS.md',
+        $AGENT_TEXT
+          . "\nSee the [operations runbook](docs/runbook.md) before release.\n"
+    );
+    commit_fixture( $fixture,
+        'committed instructions referencing an absent target' );
+    write_in_fixture( $fixture, 'docs/runbook.md', "Local notes.\n" );
+    my $result = run_validator( $fixture, '--scope', 'range',
+        '--base', $fixture->{base}, '--head', 'HEAD' );
+    is( $result->{status}, 1,
+        'range rejects link resolved only in the working tree' );
+    like(
+        $result->{stdout},
+        qr/\[FAIL\] AK003/,
+        'the committed link is the failing check'
+    );
+}
+
+# 43. Range links can follow relative symlinks inside the head tree.
+{
+    my $fixture = new_fixture();
+    write_in_fixture( $fixture, 'docs/runbook.md', "Committed runbook.\n" );
+    symlink( 'docs/runbook.md',
+        File::Spec->catfile( $fixture->{repo}, 'runbook.md' ) )
+      or die "symlink: $!";
+    write_in_fixture( $fixture, 'AGENTS.md',
+        $AGENT_TEXT
+          . "\nUse the [operations runbook](runbook.md) before release.\n" );
+    commit_fixture( $fixture, 'committed link to the runbook' );
+    unlink File::Spec->catfile( $fixture->{repo}, 'runbook.md' )
+      or die "unlink: $!";
+    my $result = run_validator( $fixture, '--scope', 'range',
+        '--base', $fixture->{base}, '--head', 'HEAD' );
+    is( $result->{status}, 0, 'range resolves symlink using committed target' );
+}
+
+# 44. Ignored untracked instructions are outside worktree discovery.
+{
+    my $fixture = new_fixture();
+    write_in_fixture( $fixture, '.gitignore', "scratch/\n" );
+    commit_fixture( $fixture, 'ignore local scratch tree' );
+    write_in_fixture( $fixture, 'scratch/example/SKILL.md',
+        "invalid local instruction\n" );
+    my $result = run_validator( $fixture, '--scope', 'worktree' );
+    is( $result->{status}, 0,
+        'ignored untracked instructions do not fail checks' );
+    write_in_fixture( $fixture, 'notes/example/SKILL.md',
+        "invalid new instruction\n" );
+    $result = run_validator( $fixture, '--scope', 'worktree' );
+    like(
+        $result->{stdout},
+        qr/\[FAIL\] AK002/,
+        'non-ignored untracked instructions are checked'
     );
 }
 

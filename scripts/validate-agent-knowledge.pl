@@ -80,7 +80,7 @@ sub is_toml_string {
 
 sub toml_string {
     my ($value) = @_;
-    return undef unless is_toml_string($value);
+    return unless is_toml_string($value);
     return $value->value;
 }
 
@@ -268,7 +268,7 @@ sub _fnmatch_regex {
 # ---------------------------------------------------------------------------
 # Git integration (never through a shell)
 
-sub run_git {
+sub run_git_raw {
     my ( $root, @arguments ) = @_;
     my ( $writer, $reader, $error_handle );
     my $error_symbol = gensym;
@@ -297,11 +297,18 @@ sub run_git {
             }
         }
     }
-    $stdout = decode( 'UTF-8', $stdout, FB_DEFAULT );
-    $stderr = decode( 'UTF-8', $stderr, FB_DEFAULT );
     waitpid( $pid, 0 );
     my $status = $? >> 8;
     return ( $status, $stdout, $stderr );
+}
+
+sub run_git {
+    my ( $status, $stdout, $stderr ) = run_git_raw(@_);
+    return (
+        $status,
+        decode( 'UTF-8', $stdout, FB_DEFAULT ),
+        decode( 'UTF-8', $stderr, FB_DEFAULT )
+    );
 }
 
 sub run_git_checked {
@@ -328,7 +335,8 @@ sub find_repository_root {
 sub resolve_commit {
     my ( $root, $revision ) = @_;
     my ( $status, $stdout ) =
-      run_git( $root, 'rev-parse', '--verify', $revision . '^{commit}' );
+      run_git( $root, 'rev-parse', '--verify', '--end-of-options',
+        $revision . '^{commit}' );
     if ( $status != 0 ) {
         validation_error("revision does not resolve to a commit: $revision");
     }
@@ -373,16 +381,9 @@ sub discover_changes {
           grep { length } split /\0/, $untracked;
         return deduplicate_changes( \@changes );
     }
-    validation_error('range scope requires a base and a head')
-      unless defined $base && defined $head;
-    my $base_commit = resolve_commit( $root, $base );
-    my $head_commit = resolve_commit( $root, $head );
-    my $merge_base =
-      run_git_checked( $root, 'merge-base', $base_commit, $head_commit );
-    $merge_base =~ s/^\s+|\s+$//g;
     my $raw =
       run_git_checked( $root, 'diff', '--name-status', '-z', '--no-renames',
-        $merge_base, $head_commit );
+        $base, $head );
     return deduplicate_changes( parse_name_status($raw) );
 }
 
@@ -403,25 +404,100 @@ sub try_read_text {
     return ( 1, $text );
 }
 
-sub changed_content {
-    my ( $root, $scope, $base, $head, $path ) = @_;
-    my $diff;
-    if ( $scope eq 'range' ) {
-        validation_error('range scope requires a base and a head')
-          unless defined $base && defined $head;
-        my $base_commit = resolve_commit( $root, $base );
-        my $head_commit = resolve_commit( $root, $head );
-        my $merge_base =
-          run_git_checked( $root, 'merge-base', $base_commit, $head_commit );
-        $merge_base =~ s/^\s+|\s+$//g;
-        $diff = run_git_checked( $root, 'diff', '--no-ext-diff', '--unified=0',
-            $merge_base, $head_commit, '--', $path );
+sub git_tree {
+    my ( $root, $commit ) = @_;
+    my $listing =
+      run_git_checked( $root, 'ls-tree', '-rtz', '--full-tree', $commit );
+    my %entries = ( '' => ['040000'] );
+    for my $line ( grep { length } split /\0/, $listing ) {
+        my ( $metadata, $path ) = split /\t/, $line, 2;
+        my ( $mode, undef, $oid ) = split / /, $metadata;
+        $entries{$path} = [ $mode, $oid ];
     }
-    else {
-        $diff = run_git_checked( $root, 'diff', '--no-ext-diff', '--unified=0',
-            'HEAD', '--', $path );
+    return \%entries;
+}
+
+sub tree_blob {
+    my ( $root, $entry ) = @_;
+    return @$entry[ 2, 3 ] if @$entry > 2;
+    my ( $status, $raw ) =
+      run_git_raw( $root, 'cat-file', 'blob', $entry->[1] );
+    return ( 0, undef ) if $status != 0;
+    my $text = eval { decode( 'UTF-8', $raw, FB_CROAK ) };
+    push @$entry, $@ ? ( 0, undef ) : ( 1, $text );
+    return @$entry[ 2, 3 ];
+}
+
+sub regular_source_file {
+    my ( $root, $tree, $path ) = @_;
+    if ( defined $tree ) {
+        return
+          exists( $tree->{$path} ) && $tree->{$path}[0] =~ /\A100(?:644|755)\z/;
+    }
+    my $file = $root;
+    for my $part ( path_parts($path) ) {
+        $file = File::Spec->catfile( $file, $part );
+        return 0 if -l $file;
+    }
+    return -f $file;
+}
+
+sub read_source_text {
+    my ( $root, $tree, $path ) = @_;
+    return try_read_text( File::Spec->catfile( $root, $path ) )
+      unless defined $tree;
+    return ( 0, undef ) unless regular_source_file( $root, $tree, $path );
+    return tree_blob( $root, $tree->{$path} );
+}
+
+sub tree_path_status {
+    my ( $root, $tree, $path ) = @_;
+    my @parts = split m{/}, $path, -1;
+    my @resolved;
+    my $links = 0;
+    while (@parts) {
+        my $part = shift @parts;
+        next if $part eq '' || $part eq '.';
+        if ( $part eq '..' ) {
+            return 'escape' unless @resolved;
+            pop @resolved;
+            next;
+        }
+        my $entry = $tree->{ join( '/', @resolved, $part ) };
+        return 'missing' unless defined $entry;
+        if ( $entry->[0] eq '120000' ) {
+            return 'missing' if ++$links > 40;
+            my ( $ok, $target ) = tree_blob( $root, $entry );
+            return 'missing' unless $ok && length($target);
+            return 'escape' if is_absolute_posix($target);
+            unshift @parts, split m{/}, $target, -1;
+            next;
+        }
+        return 'missing' if @parts && $entry->[0] ne '040000';
+        push @resolved, $part;
+    }
+    return 'present';
+}
+
+sub changed_content {
+    my ( $root, $base_tree, $head_tree, $path ) = @_;
+    if ( defined $head_tree ) {
+        my @content;
+        for my $tree ( $head_tree, $base_tree ) {
+            my ( $ok, $text ) = read_source_text( $root, $tree, $path );
+            my @lines =
+              $ok
+              ? grep { length }
+              map    { normalize_knowledge_line($_) } split_lines($text)
+              : ();
+            push @content, \@lines;
+        }
+        return @content;
     }
 
+    my $diff =
+      run_git_checked( $root, '--literal-pathspecs', 'diff', '--no-ext-diff',
+        '--unified=0', 'HEAD', '--', $path );
     my ( @added, @removed );
     for my $line ( split_lines($diff) ) {
         next if $line =~ /\A(?:\+\+\+|---)/;
@@ -435,23 +511,16 @@ sub changed_content {
         }
     }
 
-    if ( $scope eq 'worktree' && $diff eq '' ) {
-        my $discovered = discover_changes( $root, $scope, $base, $head );
-        my ($is_present) = grep { $_->{path} eq $path } @$discovered;
-        if ($is_present) {
-            my $candidate = File::Spec->catfile( $root, $path );
-            if ( -f $candidate ) {
-                my ($status) =
-                  run_git( $root, 'ls-files', '--error-unmatch', '--', $path );
-                if ( $status != 0 ) {
-                    my ( $ok, $text ) = try_read_text($candidate);
-                    if ($ok) {
-                        for my $line ( split_lines($text) ) {
-                            my $normalized = normalize_knowledge_line($line);
-                            push @added, $normalized if length $normalized;
-                        }
-                    }
-                }
+    if ( $diff eq '' ) {
+        my ($status) =
+          run_git( $root, '--literal-pathspecs', 'ls-files', '--error-unmatch',
+            '--', $path );
+        if ( $status != 0 ) {
+            my ( $ok, $text ) = read_source_text( $root, undef, $path );
+            if ($ok) {
+                my @lines =
+                  map { normalize_knowledge_line($_) } split_lines($text);
+                push @added, grep { length } @lines;
             }
         }
     }
@@ -514,31 +583,17 @@ sub substantive_update {
 }
 
 sub discover_instruction_files {
-    my ( $root, $extra_globs ) = @_;
-    my @found;
-    my $walk;
-    $walk = sub {
-        my ( $directory, $relative ) = @_;
-        opendir my $handle, $directory or return;
-        my @entries = sort grep { $_ ne '.' && $_ ne '..' } readdir $handle;
-        closedir $handle;
-        for my $name (@entries) {
-            next if $name eq '.git';
-            my $absolute = File::Spec->catfile( $directory, $name );
-            my $path     = length($relative) ? "$relative/$name" : $name;
-            my @stat     = lstat($absolute);
-            next unless @stat;
-            next if -l _;
-            if ( -d _ ) {
-                $walk->( $absolute, $path );
-            }
-            elsif ( -f _ && is_instruction( $path, $extra_globs ) ) {
-                push @found, $path;
-            }
-        }
-    };
-    $walk->( $root, '' );
-    return [ sort @found ];
+    my ( $root, $tree, $extra_globs ) = @_;
+    my @paths = defined($tree) ? keys %$tree : split /\0/,
+      run_git_checked( $root, 'ls-files', '--cached', '--others',
+        '--exclude-standard', '-z' );
+    return sorted_unique(
+        grep {
+                 length($_)
+              && is_instruction( $_, $extra_globs )
+              && regular_source_file( $root, $tree, $_ )
+        } @paths
+    );
 }
 
 sub is_instruction {
@@ -853,7 +908,7 @@ sub parse_toml {
 }
 
 sub parse_config {
-    my ($root)   = @_;
+    my ( $root, $tree ) = @_;
     my $path     = File::Spec->catfile( $root, $CONFIG_NAME );
     my %defaults = (
         exclude_paths            => [],
@@ -865,9 +920,10 @@ sub parse_config {
         inline_path_checks       => 0,
         minimum_changed_lines    => 1,
     );
-    return \%defaults unless -e $path;
+    return \%defaults
+      unless defined($tree) ? exists( $tree->{$CONFIG_NAME} ) : -e $path;
 
-    my ( $ok, $text ) = try_read_text($path);
+    my ( $ok, $text ) = read_source_text( $root, $tree, $CONFIG_NAME );
     validation_error("$CONFIG_NAME: cannot read UTF-8 configuration")
       unless $ok;
     my $value = eval { parse_toml($text) };
@@ -952,7 +1008,8 @@ sub parse_config {
         $parsed{$key} = \%validated;
     }
 
-    my $known = discover_instruction_files( $root, $parsed{instruction_globs} );
+    my $known =
+      discover_instruction_files( $root, $tree, $parsed{instruction_globs} );
     my %known_paths = map { $_ => 1 } @$known;
     for my $key (qw(required_headings required_phrases)) {
         my @unknown_paths =
@@ -1036,7 +1093,7 @@ sub parse_config {
 sub parse_frontmatter_fields {
     my ($text)  = @_;
     my ($block) = $text =~ /\A---\s*\n(.*?)\n---\s*(?:\n|\z)/s;
-    return undef unless defined $block;
+    return unless defined $block;
     my %fields;
     for my $line ( split_lines($block) ) {
         if ( $line =~ /\A([A-Za-z0-9_-]+):\s*(.*?)\s*\z/ ) {
@@ -1055,11 +1112,10 @@ sub has_heading {
 }
 
 sub validate_structure {
-    my ( $root, $paths, $required_headings, $required_phrases ) = @_;
+    my ( $root, $tree, $paths, $required_headings, $required_phrases ) = @_;
     my @errors;
     for my $relative (@$paths) {
-        my $path = File::Spec->catfile( $root, $relative );
-        my ( $ok, $text ) = try_read_text($path);
+        my ( $ok, $text ) = read_source_text( $root, $tree, $relative );
         if ( !$ok ) {
             push @errors, [ $relative, 'cannot read UTF-8 instruction file' ];
             next;
@@ -1168,11 +1224,10 @@ sub validate_structure {
 }
 
 sub validate_extensions {
-    my ( $root, $paths, $config, $skill_names ) = @_;
+    my ( $root, $tree, $paths, $config, $skill_names ) = @_;
     my @errors;
     for my $relative (@$paths) {
-        my ( $ok, $text ) =
-          try_read_text( File::Spec->catfile( $root, $relative ) );
+        my ( $ok, $text ) = read_source_text( $root, $tree, $relative );
         next unless $ok;
         for my $pattern ( sort keys %{ $config->{strict_text} } ) {
             next unless fnmatch_case( $relative, $pattern );
@@ -1215,8 +1270,7 @@ sub validate_extensions {
     if (@$prefixes) {
         for my $relative (@$paths) {
             next unless $relative =~ /\.agent\.md\z/;
-            my ( $ok, $text ) =
-              try_read_text( File::Spec->catfile( $root, $relative ) );
+            my ( $ok, $text ) = read_source_text( $root, $tree, $relative );
             next unless $ok;
             while ( $text =~ /`([^`]+)`/g ) {
                 my $reference = $1;
@@ -1232,8 +1286,7 @@ sub validate_extensions {
     if ( $config->{inline_path_checks} ) {
         my %suffixes = map { $_ => 1 } qw(.md .pl .pm .t .8 .ignore);
         for my $relative (@$paths) {
-            my ( $ok, $text ) =
-              try_read_text( File::Spec->catfile( $root, $relative ) );
+            my ( $ok, $text ) = read_source_text( $root, $tree, $relative );
             next unless $ok;
             while ( $text =~ /`([^`]+)`/g ) {
                 my $target = $1;
@@ -1243,10 +1296,16 @@ sub validate_extensions {
                   unless $suffixes{$suffix}
                   || $target eq 'Makefile'
                   || $target eq 'LICENSE';
-                my $parent = File::Spec->catdir( $root, dirname($relative) );
-                my $first  = File::Spec->catfile( $parent, $target );
-                my $second = File::Spec->catfile( $root,   $target );
-                if ( !-e $first && !-e $second ) {
+                my $relative_target = dirname($relative) . '/' . $target;
+                my $exists =
+                  defined($tree)
+                  ? ( tree_path_status( $root, $tree, $relative_target ) eq
+                      'present'
+                      || tree_path_status( $root, $tree, $target ) eq
+                      'present' )
+                  : (    -e File::Spec->catfile( $root, $relative_target )
+                      || -e File::Spec->catfile( $root, $target ) );
+                if ( !$exists ) {
                     push @errors,
                       [
                         $relative,
@@ -1260,12 +1319,11 @@ sub validate_extensions {
 }
 
 sub validate_references {
-    my ( $root, $paths ) = @_;
+    my ( $root, $tree, $paths ) = @_;
     my @errors;
-    my $root_resolved = abs_path($root);
+    my $root_resolved = defined($tree) ? undef : abs_path($root);
     for my $relative (@$paths) {
-        my $file_path = File::Spec->catfile( $root, $relative );
-        my ( $ok, $text ) = try_read_text($file_path);
+        my ( $ok, $text ) = read_source_text( $root, $tree, $relative );
         next unless $ok;
         while ( $text =~ /$LINK_RE/g ) {
             my $target = $1;
@@ -1281,17 +1339,30 @@ sub validate_references {
             next if $local eq '';
             $local = percent_decode($local);
             next if $local eq '';
-            my $candidate;
+            my $target_path;
 
             if ( is_absolute_posix($local) ) {
-                my $stripped = $local;
-                $stripped =~ s{\A/+}{};
-                $candidate = File::Spec->catfile( $root, $stripped );
+                $target_path = $local =~ s{\A/+}{}r;
             }
             else {
-                $candidate = File::Spec->catfile(
-                    File::Spec->catdir( $root, dirname($relative) ), $local );
+                $target_path = dirname($relative) . '/' . $local;
             }
+            if ( defined $tree ) {
+                my $status = tree_path_status( $root, $tree, $target_path );
+                if ( $status eq 'escape' ) {
+                    push @errors,
+                      [
+                        $relative,
+                        "local reference escapes repository: $destination"
+                      ];
+                }
+                elsif ( $status eq 'missing' ) {
+                    push @errors,
+                      [ $relative, "broken local reference: $destination" ];
+                }
+                next;
+            }
+            my $candidate  = File::Spec->catfile( $root, $target_path );
             my $normalized = resolve_lenient($candidate);
             if ( !within_root( $normalized, $root_resolved ) ) {
                 push @errors,
@@ -1311,12 +1382,11 @@ sub validate_references {
 }
 
 sub find_duplicate_or_conflicting {
-    my ( $root, $paths ) = @_;
+    my ( $root, $tree, $paths ) = @_;
     my ( @duplicates, @conflicts );
     my %by_content;
     for my $relative (@$paths) {
-        my ( $ok, $text ) =
-          try_read_text( File::Spec->catfile( $root, $relative ) );
+        my ( $ok, $text ) = read_source_text( $root, $tree, $relative );
         next unless $ok;
         my $normalized = $text;
         $normalized =~ s/\s+/ /g;
@@ -1386,15 +1456,22 @@ sub is_infrastructure_only {
 
 sub run_validation {
     my ( $arguments, $cwd ) = @_;
-    my ( $root, $config, $changes, $instruction_paths );
+    my ( $root, $config, $changes, $instruction_paths, $base_tree, $head_tree );
     my $ok = eval {
-        $root   = find_repository_root($cwd);
-        $config = parse_config($root);
-        $changes =
-          discover_changes( $root, $arguments->{scope}, $arguments->{base},
-            $arguments->{head} );
-        $instruction_paths =
-          discover_instruction_files( $root, $config->{instruction_globs} );
+        $root = find_repository_root($cwd);
+        my ( $base, $head );
+        if ( $arguments->{scope} eq 'range' ) {
+            $base = resolve_commit( $root, $arguments->{base} );
+            $head = resolve_commit( $root, $arguments->{head} );
+            $base = run_git_checked( $root, 'merge-base', $base, $head );
+            chomp $base;
+            $base_tree = git_tree( $root, $base );
+            $head_tree = git_tree( $root, $head );
+        }
+        $config  = parse_config( $root, $head_tree );
+        $changes = discover_changes( $root, $arguments->{scope}, $base, $head );
+        $instruction_paths = discover_instruction_files( $root, $head_tree,
+            $config->{instruction_globs} );
         1;
     };
     if ( !$ok ) {
@@ -1430,8 +1507,8 @@ sub run_validation {
 
     my ( @knowledge_changes, @project_changes );
     for my $change (@considered) {
-        if ( is_instruction( $change->{path}, $config->{instruction_globs} )
-            && -f File::Spec->catfile( $root, $change->{path} ) )
+        if (   is_instruction( $change->{path}, $config->{instruction_globs} )
+            && regular_source_file( $root, $head_tree, $change->{path} ) )
         {
             push @knowledge_changes, $change->{path};
         }
@@ -1445,8 +1522,7 @@ sub run_validation {
     my ( @substantive_files, @suspicious_files );
     for my $path (@knowledge_changes) {
         my ( $added, $removed ) =
-          changed_content( $root, $arguments->{scope}, $arguments->{base},
-            $arguments->{head}, $path );
+          changed_content( $root, $base_tree, $head_tree, $path );
         if (
             substantive_update(
                 $added, $removed, $config->{minimum_changed_lines}
@@ -1480,7 +1556,7 @@ sub run_validation {
     }
 
     my $structure_errors = validate_structure(
-        $root, $instruction_paths,
+        $root, $head_tree, $instruction_paths,
         $config->{required_headings},
         $config->{required_phrases}
     );
@@ -1503,7 +1579,7 @@ sub run_validation {
     for my $relative (@$instruction_paths) {
         next unless path_name($relative) eq 'SKILL.md';
         my ( $ok_read, $text ) =
-          try_read_text( File::Spec->catfile( $root, $relative ) );
+          read_source_text( $root, $head_tree, $relative );
         next unless $ok_read;
         my $fields = parse_frontmatter_fields($text);
         if ( $fields && defined( $fields->{name} ) && $fields->{name} =~ /\S/ )
@@ -1515,7 +1591,8 @@ sub run_validation {
     }
 
     my $extension_errors =
-      validate_extensions( $root, $instruction_paths, $config, \%skill_names );
+      validate_extensions( $root, $head_tree, $instruction_paths, $config,
+        \%skill_names );
     my $extension;
     if (@$extension_errors) {
         $extension = make_result(
@@ -1531,7 +1608,8 @@ sub run_validation {
             'Configured repository-specific validations passed' );
     }
 
-    my $reference_errors = validate_references( $root, $instruction_paths );
+    my $reference_errors =
+      validate_references( $root, $head_tree, $instruction_paths );
     my $references;
     if (@$reference_errors) {
         $references = make_result(
@@ -1575,7 +1653,7 @@ sub run_validation {
         'Validator configuration and execution valid' );
 
     my ( $duplicates, $conflicts ) =
-      find_duplicate_or_conflicting( $root, $instruction_paths );
+      find_duplicate_or_conflicting( $root, $head_tree, $instruction_paths );
     my $conflict_result;
     if ( @$duplicates || @$conflicts ) {
         my @files;

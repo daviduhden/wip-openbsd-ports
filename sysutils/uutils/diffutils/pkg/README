@@ -1,0 +1,12 @@
++-----------------------------------------------------------------------
+| Running ${PKGSTEM} on OpenBSD
++-----------------------------------------------------------------------
+
+The uu-diff and uu-cmp commands use pledge(2) after resolving the
+executable path and before reading input. The policy permits reading
+files, including timezone data, and writing to inherited file
+descriptors. The commands exit with status 2 if they cannot install the
+policy.
+
+The library entry points leave the policy of an embedding application
+to its caller.

@@ -7,6 +7,7 @@ WANTLIB += ${MODCARGO_WANTLIB}
 
 GH_PROJECT =	diffutils
 GH_TAGNAME =	v$V
+REVISION =	0
 
 # Build diff and cmp as separate executables instead of the multicall
 # diffutils binary.  patch-src_main_rs makes the argv[0] dispatch accept

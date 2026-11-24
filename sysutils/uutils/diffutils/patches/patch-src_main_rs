@@ -1,17 +1,37 @@
-Dispatch on the uu- prefixed binary name used by the OpenBSD packages in
-addition to the upstream names.
+Keep uu- dispatch and restrict the OpenBSD command before input I/O.
+Leave library callers under their own process policy.
 
 Index: src/main.rs
 --- src/main.rs.orig
 +++ src/main.rs
-@@ -66,7 +66,9 @@ fn main() -> ExitCode {
-             .cloned()
-             .unwrap_or_else(|| second_arg_error(exe_name))
+@@ -58,2 +58,23 @@ fn main() -> ExitCode {
+     let exe_path = binary_path(&mut args);
++
++    #[cfg(target_os = "openbsd")]
++    {
++        unsafe extern "C" {
++            fn pledge(
++                promises: *const std::ffi::c_char,
++                execpromises: *const std::ffi::c_char,
++            ) -> std::ffi::c_int;
++        }
++
++        // Inputs and timezone data are read-only; output uses inherited FDs.
++        if unsafe { pledge(c"stdio rpath".as_ptr(), std::ptr::null()) } == -1 {
++            eprintln!(
++                "{}: pledge: {}",
++                exe_path.display(),
++                std::io::Error::last_os_error()
++            );
++            return ExitCode::from(2);
++        }
++    }
++
+     let exe_name = name(&exe_path);
+@@ -68,3 +89,5 @@ fn main() -> ExitCode {
      } else {
 -        OsString::from(exe_name)
 +        // OpenBSD installs the utilities with a uu- prefix.
 +        let s = exe_name.to_string_lossy();
 +        OsString::from(s.strip_prefix("uu-").unwrap_or_else(|| s.as_ref()))
      };
-
-     match util_name.as_encoded_bytes() {

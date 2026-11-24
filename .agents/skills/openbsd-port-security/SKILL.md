@@ -20,6 +20,10 @@ errors before installing hooks, parsing configuration or starting workers.
 
 1. Map initialization, configuration loading, certificate/key reads, DNS, network listeners, inherited descriptors, fork/exec helpers, privilege changes, reload, and shutdown. Include optional features and negative paths. Inspect native APIs before replacing Linux-specific assumptions about procfs, signals, terminals, authentication, device ioctls, or shared libraries.
 2. For LibreSSL, inspect actual API availability and return semantics. Do not identify OpenSSL 3 support solely through `OPENSSL_VERSION_NUMBER`; examine `LIBRESSL_VERSION_NUMBER` where relevant. Keep validation, authentication-tag checks, size conversions, and error handling intact. `net/i2pd` demonstrates backend guards and checked EVP operations; a build alone does not validate cryptographic behavior.
+   Trace new callers to the transport they actually use. A new protocol or
+   endpoint can make a previously separate TLS client reachable without
+   touching the established, patched client. Review trust roots, peer
+   identity, pin handling and failure paths for each reachable transport.
 3. Use dedicated service accounts and minimal directory permissions appropriate to real state/key paths. Reconcile IDs with both `user.list` and the official `infrastructure/db/user.list`. Review listener addresses and authentication individually: confettysh is an unauthenticated demonstration whose packaged defaults bind loopback, while soft-serve restricts selected endpoints. Keep secrets out of process arguments and logs.
 4. Before proposing restrictions, study the syscall and process lifecycle. On an authorized OpenBSD test host, `trace_dir=$(mktemp -d /tmp/port-security.XXXXXXXX)` creates a private trace directory; then `ktrace -f "$trace_dir/trace" command arguments` and `kdump -f "$trace_dir/trace"` can help identify operations. Trace files may contain secrets, and traces cover only exercised behavior. Retain or remove the trace directory according to the authorized test plan. Do not trace production credentials or infer a complete policy from one startup run.
 5. Apply native restrictions at the correct lifecycle point, check return values, and lock unveil rules when appropriate. Account for DNS, TLS, Unix sockets, logs, temporary files, key rotation, workers, and reload. Avoid broad promises just to silence failures. Verify fork/exec inheritance against the exact target source as described below; a constrained launcher alone does not establish containment of an executed child. Filesystem visibility restrictions do not establish network, descriptor, process, or full syscall isolation.
@@ -188,6 +192,26 @@ Constrain the build dependency when the policy depends on that change;
 do not widen promises to hide an unreviewed runtime requirement. Keep
 process-wide restrictions out of reusable library entry points. Account
 for inherited descriptors when stating filesystem or network guarantees.
+
+For local HTTP listeners, classify the configured bind using the target
+resolver and IP-literal semantics separately from the accepted Host or
+Origin values. Recognizing more loopback binds must not widen the HTTP
+authorities accepted for other instances.
+
+## Resource ownership and pathname operations
+
+Trace resource ownership across success, early return and cleanup, especially
+when wrapping inherited descriptors or transferring objects to a library.
+Use a borrowed descriptor or make a checked owned duplicate before using an
+API that takes ownership. For temporary outputs, prefer operating through the
+open handle for writes and permission changes. Review final rename, persist
+and removal separately: descriptor-based I/O does not validate a later
+pathname lookup in a mutable directory.
+
+For SIGCHLD handlers, account for coalesced notifications. Drain available
+statuses with nonblocking waits, handle EINTR and restore errno. Check which
+code owns each wait status before using a broad wait, including any synchronous
+waiters. Keep signal-handler work async-signal-safe.
 
 ## Collection-wide static audit procedure
 

@@ -124,6 +124,8 @@ must include a static OpenBSD compatibility review using
    policy. `proc` alone never grants execution.
 7. Prefer privilege separation and pre-opened resources over granting a
    helper broader access to the same files, network, or credentials.
+   Track descriptor ownership and pathname operations separately using the
+   security skill's resource-ownership review.
 8. Compare with current official ports before editing and preserve justified
    local behavior. Record obsolete local patches instead of copying official
    ones blindly.

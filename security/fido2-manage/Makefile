@@ -1,12 +1,11 @@
 COMMENT =	FIDO2 authenticator management CLI
 
-V =		0.2.2
+V =		0.2.3
 DISTNAME =	fido2-manage-${V}
 GH_ACCOUNT =	token2
 GH_PROJECT =	fido2-manage
 GH_TAGNAME =	${V}
 CATEGORIES =	security
-REVISION =	0
 HOMEPAGE =	https://github.com/token2/fido2-manage
 
 # BSD 2-Clause

@@ -26,7 +26,7 @@ if ( $operation eq 'write' ) {
     my $path = shift @ARGV // die "usage: write PATH\n";
     open my $handle, '>', $path or die "open $path: $!\n";
     print {$handle} 'changed' or die "write $path: $!\n";
-    close $handle            or die "close $path: $!\n";
+    close $handle             or die "close $path: $!\n";
     exit 0;
 }
 
@@ -46,14 +46,14 @@ if ( $operation eq 'fchown' ) {
     open my $handle, '+<', 'allowed' or die "open: $!\n";
     my $gid = ( split / /, $) )[0];
     chown $<, $gid, $handle or die "fchown: $!\n";
-    close $handle              or die "close: $!\n";
+    close $handle or die "close: $!\n";
     exit 0;
 }
 
 if ( $operation eq 'connect' ) {
     require IO::Socket::INET;
-    my $host = shift @ARGV // die "usage: connect HOST PORT\n";
-    my $port = shift @ARGV // die "usage: connect HOST PORT\n";
+    my $host   = shift @ARGV // die "usage: connect HOST PORT\n";
+    my $port   = shift @ARGV // die "usage: connect HOST PORT\n";
     my $socket = IO::Socket::INET->new(
         PeerAddr => $host,
         PeerPort => $port,

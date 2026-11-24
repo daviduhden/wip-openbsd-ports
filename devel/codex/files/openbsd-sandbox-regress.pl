@@ -11,15 +11,15 @@ use File::Basename qw(dirname);
 use File::Spec;
 use File::Temp   qw(tempdir tempfile);
 use Getopt::Long qw(GetOptions);
-use POSIX       qw(WNOHANG setpgid _exit);
-use Time::HiRes qw(time sleep);
+use POSIX        qw(WNOHANG setpgid _exit);
+use Time::HiRes  qw(time sleep);
 use constant {
-    COMMAND_TIMEOUT   => 120,
-    SETUP_FAILURE     => 125,
+    COMMAND_TIMEOUT     => 120,
+    SETUP_FAILURE       => 125,
     SANDBOX_UNAVAILABLE => 77,
-    SIGNAL_EXIT_BASE  => 128,
-    TERMINATION_GRACE => 0.2,
-    POLL_INTERVAL     => 0.05,
+    SIGNAL_EXIT_BASE    => 128,
+    TERMINATION_GRACE   => 0.2,
+    POLL_INTERVAL       => 0.05,
 };
 
 sub write_file {
@@ -32,7 +32,7 @@ sub write_file {
 
 sub read_file {
     my ($path) = @_;
-    return undef unless -e $path;
+    return unless -e $path;
     open my $fh, '<', $path or die "open $path: $!\n";
     binmode $fh;
     local $/ = undef;
@@ -126,7 +126,8 @@ sub capture {
 # Startup failures, signals and timeouts never demonstrate policy rejection.
 sub managed_rejection_passed {
     my ( $exit, $timed_out, $output, $marker_exists ) = @_;
-    return !$timed_out
+    return
+         !$timed_out
       && !$marker_exists
       && $exit > 0
       && $exit < SIGNAL_EXIT_BASE
@@ -144,11 +145,10 @@ sub main {
     my $usage = "Usage: $0 [--quick] [/absolute/path/to/codex]\n";
     GetOptions( 'quick' => \$quick ) or die $usage;
     die $usage if @ARGV > 1;
-    my $codex = find_executable( $ARGV[0] // 'codex' );
-    my $perl  = find_executable($^X);
-    my $probe_source = File::Spec->catfile(
-        dirname( abs_path($0) ), 'openbsd-sandbox-probe.pl'
-    );
+    my $codex        = find_executable( $ARGV[0] // 'codex' );
+    my $perl         = find_executable($^X);
+    my $probe_source = File::Spec->catfile( dirname( abs_path($0) ),
+        'openbsd-sandbox-probe.pl' );
     die "Probe not found: $probe_source\n" unless -f $probe_source;
     my $base =
       tempdir( 'codex-openbsd-regress-XXXXXX', TMPDIR => 1, CLEANUP => 1 );
@@ -156,7 +156,7 @@ sub main {
     my $work = "$base/workspace";
     mkdir $work or die "mkdir $work: $!\n";
     my $probe = "$work/sandbox-probe.pl";
-    write_file( $probe, read_file($probe_source) );
+    write_file( $probe, scalar read_file($probe_source) );
     chmod 0644, $probe or die "chmod $probe: $!\n";
     mkdir "$base/home" or die "mkdir $base/home: $!\n";
     local $ENV{CODEX_HOME} = "$base/home";
@@ -166,21 +166,21 @@ sub main {
           . "[permissions.openbsd-workspace]\nextends=\":workspace\"\n"
           . "[permissions.openbsd-workspace.network]\nenabled=true\n" );
     my @failures;
+
     for my $mode ( ':read-only', ':workspace',
         'openbsd-read', 'openbsd-workspace' )
     {
         my $marker = "$work/rejected-" . scalar(@failures) . "-$mode";
-        my $ok = eval {
+        my $ok     = eval {
             my @args = (
                 $codex, 'sandbox', '--permission-profile', $mode, '--',
-                $perl, $probe, 'write', $marker
+                $perl,  $probe,    'write', $marker
             );
             my ( $exit, $timed_out, $output ) = capture( $base, $work, \@args );
-            my $passed = managed_rejection_passed(
-                $exit, $timed_out, $output, -e $marker || -l $marker
-            );
+            my $passed = managed_rejection_passed( $exit, $timed_out, $output,
+                -e $marker || -l $marker );
             print( ( $passed ? 'PASS' : 'FAIL' )
-                  . " $mode rejected before execution (exit $exit)\n" )
+                . " $mode rejected before execution (exit $exit)\n" )
               or die "write stdout: $!\n";
             print $output if !$passed;
             $passed;
@@ -191,7 +191,7 @@ sub main {
 
     # Execute the identical child in explicitly unrestricted mode. This checks
     # that absent markers above are not merely a broken probe or executable.
-    my $marker = "$work/full-access-marker";
+    my $marker     = "$work/full-access-marker";
     my $control_ok = eval {
         my @args = (
             $codex, 'sandbox', '--permission-profile', ':danger-full-access',
@@ -199,10 +199,13 @@ sub main {
         );
         my ( $exit, $timed_out, $output ) = capture( $base, $work, \@args );
         my $contents = read_file($marker);
-        my $passed = !$timed_out && $exit == 0
-          && defined($contents) && $contents eq 'changed';
+        my $passed =
+            !$timed_out
+          && $exit == 0
+          && defined($contents)
+          && $contents eq 'changed';
         print( ( $passed ? 'PASS' : 'FAIL' )
-              . " explicit full-access control (exit $exit)\n" )
+            . " explicit full-access control (exit $exit)\n" )
           or die "write stdout: $!\n";
         print $output if !$passed;
         $passed;
@@ -211,12 +214,13 @@ sub main {
     push @failures, 'full-access control' unless $control_ok;
     if (@failures) {
         print {*STDERR} scalar(@failures)
-          . ' failed: ' . join( ', ', @failures ) . "\n"
+          . ' failed: '
+          . join( ', ', @failures ) . "\n"
           or die "write stderr: $!\n";
         return 1;
     }
     print {*STDERR}
-      "UNSUPPORTED: OpenBSD command sandbox unavailable; rejection checks passed\n"
+"UNSUPPORTED: OpenBSD command sandbox unavailable; rejection checks passed\n"
       or die "write stderr: $!\n";
     return SANDBOX_UNAVAILABLE;
 }

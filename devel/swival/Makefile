@@ -4,7 +4,7 @@ MODPY_DISTV =		1.9.4
 GH_ACCOUNT =		swival
 GH_PROJECT =		swival
 GH_TAGNAME =		${MODPY_DISTV}
-REVISION =		3
+REVISION =		4
 
 CATEGORIES =		devel
 HOMEPAGE =		https://swival.dev/

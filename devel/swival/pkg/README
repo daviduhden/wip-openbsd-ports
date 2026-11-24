@@ -23,3 +23,12 @@ cross-site browser requests, and non-JSON content types. These checks are
 not authentication. Use a bearer token when local clients or web content
 are untrusted. An explicit remote bind retains its configured host policy;
 its administrator must protect it with authentication and trusted TLS.
+
+Loopback bind classification recognizes IP literals (including mapped
+loopback IPv4 addresses in IPv6 form) and OpenBSD's reserved localhost
+names. Request Host values retain the standard loopback allowlist plus
+the configured local name or address. Unrelated localhost subdomains
+are not trusted. These checks do not resolve DNS or enable unsupported
+binds. Other configured hostname aliases retain the administrator's
+remote-bind policy even if name service resolves them to loopback.
+Configure a bearer token for those aliases.

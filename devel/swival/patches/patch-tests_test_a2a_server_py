@@ -1,6 +1,6 @@
-Use loopback test authorities and cover browser-request rejection.
-Check refusal before sessions or tools, same-origin success, and the
-explicit remote-bind authentication policy. These tests need execution.
+Cover refusal before sessions or tools for browser request headers.
+Exercise configured loopback spellings without trusting unrelated hosts.
+Preserve explicit remote-bind policy; tests still need native execution.
 
 Index: tests/test_a2a_server.py
 --- tests/test_a2a_server.py.orig
@@ -185,7 +185,7 @@ Index: tests/test_a2a_server.py
          resp = _send_streaming_message(tc, "hello")
          body = resp.json()
          # Should be a normal JSON-RPC error, not an SSE stream
-@@ -2058,9 +2058,68 @@ class TestActiveContextProtection:
+@@ -2058,9 +2058,110 @@ class TestActiveContextProtection:
              host="127.0.0.1",
              port=0,
          )
@@ -253,5 +253,47 @@ Index: tests/test_a2a_server.py
 +                "origin": "https://ui.example",
 +                "authorization": "Bearer configured-token",
 +            },
++        )
++        assert response.status_code == 200
++
++
++@pytest.mark.parametrize(
++    "bind_host, authority",
++    [
++        ("LOCALHOST", "localhost"),
++        ("localhost.", "localhost."),
++        ("agent.localhost", "agent.localhost"),
++        ("127.0.0.2", "127.0.0.2"),
++        ("0:0:0:0:0:0:0:1", "[0:0:0:0:0:0:0:1]"),
++        ("::ffff:127.0.0.1", "[::ffff:127.0.0.1]"),
++    ],
++)
++def test_loopback_alias_guard_before_session(_patch_session, bind_host, authority):
++    from starlette.testclient import TestClient
++
++    local = A2aServer(
++        session_kwargs={"provider": "lmstudio", "base_dir": "/tmp"},
++        host=bind_host,
++    )
++    with TestClient(local.app, base_url=f"http://{authority}") as client:
++        for headers in (
++            {"host": "attacker.example"},
++            {"host": "unconfigured.localhost"},
++            {"host": "127.0.0.3"},
++            {"host": "localhost.attacker.example"},
++            {"host": "127.0.0.1.attacker.example"},
++            {"host": "[::ffff:192.0.2.1]"},
++            {"host": "127.1"},
++            {"origin": "https://attacker.example"},
++            {"sec-fetch-site": "cross-site"},
++        ):
++            response = client.post("/", json=_jsonrpc("ListTasks", {}), headers=headers)
++            assert response.status_code == 403
++            assert local._sessions == {}
++            assert local._tasks == {}
++        response = client.post(
++            "/",
++            json=_jsonrpc("ListTasks", {}),
++            headers={"origin": str(client.base_url).rstrip("/")},
 +        )
 +        assert response.status_code == 200

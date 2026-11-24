@@ -1,11 +1,10 @@
 COMMENT =		SSE plugin for Starlette
 
-MODPY_DISTV =	3.7.0
+MODPY_DISTV =	3.7.1
 
 DISTNAME =	sse_starlette-${MODPY_DISTV}
 PKGNAME =		py-${DISTNAME}
 
-REVISION =	1
 
 CATEGORIES =		www
 

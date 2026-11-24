@@ -1,6 +1,6 @@
 COMMENT =	platform independent file lock
 
-MODPY_DISTV =	4.2.12
+MODPY_DISTV =	4.3.1
 # LiteLLM's compatible LTS series requires filelock <5.
 PORTROACH =	limit:^4\.
 DISTNAME =	filelock-${MODPY_DISTV}
@@ -23,7 +23,7 @@ BUILD_DEPENDS =	devel/py-hatch-fancy-pypi-readme>=25.1 \
 # disable failing tests with a long timeout
 MODPY_PYTEST_ARGS = -v \
 		-k 'not test_threaded_shared_lock_obj and not test_threaded_lock_different_lock_obj' \
-		--ignore tests/test_virtualenv.py
+		--ignore tests/test_installed_package.py
 
 TEST_DEPENDS =	devel/py-test-asyncio \
 		devel/py-test-cov \

@@ -14,13 +14,35 @@ Find the actual users with `git ls-files '*/crates.inc' '*/modules.inc'
 '*/cabal.inc'`; do not rely on a static port list in this document.
 
 The generated file lists every dependency the build is allowed to use.
-It is derived from upstream metadata, never edited by hand, and always
-committed together with `distinfo`.
+It is derived from upstream metadata and regenerated with the matching
+module. Review the generated include and `distinfo` together. Commit each
+changed artifact after confirming that its contents match the selected inputs.
 
 Regenerating the file requires network access. The regular build must
 stay offline and must reproduce the build from `distinfo` alone.
 
 ## Common Steps
+
+### Static preflight for native validation
+
+Run the overlay preflight with Perl 5.36+ and `ksh` before a native build.
+Pass zero or more paths from the inventory to select ports. Optionally pass
+the matching official tree to compare directly declared Go compiler
+minimums with its Go recipe.
+
+```sh
+perl tools/port-preflight.pl --official-tree /usr/ports devel/codex devel/crush
+```
+
+The tab-separated report marks missing artifacts as `MISSING`, known
+toolchain conflicts against the supplied tree as `BLOCKED`, and archive
+name or README packing-list candidates as `REVIEW`. It returns status 1
+when an artifact is missing or a supported toolchain check is blocked.
+`STATIC_OK` means the checks above found no issue. Expanded make variables,
+flavors, checksums against archives, dependencies and package contents
+require validation with the matching OpenBSD framework. The preflight
+reads the overlay and official Makefiles, writes its report to stdout,
+and does no regeneration, network access or build.
 
 ### Required source and official-port review
 
@@ -80,8 +102,8 @@ were actually run on OpenBSD.
 4. Regenerate the dependency file with the module target described
    below. The per-module section shows where `make makesum` sits in
    the sequence.
-5. Make sure `distinfo` covers every new file. The generated file and
-   `distinfo` must always change together.
+5. Make sure `distinfo` covers every new file. Compare both files with the
+   baseline. A regenerated artifact can be byte-identical.
 6. Refresh the patches under `patches/` and, for the cabal ports, the
    dependency patches under `files/`. Keep the repository convention:
    one target file per patch, `diff -u -p` output, an `Index:` header,
@@ -240,6 +262,30 @@ Notes:
 ## Cabal Ports
 
 Examples: `devel/fourmolu`, `net/simplexmq` and `net/simplex-chat`.
+
+`perl tools/check-simplex-parity.pl`, from the overlay root, compares
+the shared source pins, patch targets and hunks, and Cabal helper behavior
+before either SimpleX port is copied to the official tree. It allows the
+Perl::Tidy end-of-block comments in the merge helper. Chat-only client
+patches and MQ-only server patches, including the Warp patch directory,
+are outside that shared comparison. The test also leaves each port's
+generation script and build/test targets independent.
+
+When regenerating the SimpleX manifests on OpenBSD, record the exact
+GHC and cabal-install versions used and the effective Hackage index-state
+from the solver or configuration. If the solver used the latest index
+without a resolved timestamp, record that fact and the observed index
+identity separately. A wall-clock timestamp alone is not an index-state.
+The following optional report prints this provenance and fingerprints of
+the current recipe, manifest, and checksums to standard output. Substitute
+the evidence from the actual generation, rather than the current host's
+versions if these differ.
+
+```sh
+perl tools/check-simplex-parity.pl \
+    --ghc-version "$ghc_version" --cabal-version "$cabal_version" \
+    --index-state "$effective_index_state"
+```
 
 `cabal.inc` records `MODCABAL_MANIFEST`, the Hackage dependency set.
 Each port has its own `cabal-inc` target. `net/simplexmq` and

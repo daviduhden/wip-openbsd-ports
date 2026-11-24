@@ -114,6 +114,18 @@ never hand-edit reserved manifests to conceal their mismatch.
 
 ## Acceptance and diagnosis
 
+Start native handoffs with the static preflight documented in
+[UPDATE.md](../../../docs/UPDATE.md#static-preflight-for-native-validation).
+Treat archive-name and package README candidates as prompts for native
+inspection. Static absence checks alone cannot verify a make-expanded
+dependency graph or whether an existing manifest is current.
+
+For SimpleX, use the shared pin and patch parity check described in
+[UPDATE.md](../../../docs/UPDATE.md#cabal-ports). Compare common dependency
+behavior while keeping the ports independently usable in an official tree.
+Record the actual solver index-state and toolchain versions alongside
+the generated manifest fingerprints on the native handoff.
+
 The dependency graph resolves for the selected architecture and subpackages, generated manifests match upstream metadata and local replacements, and `distinfo` covers every fetched source. Run the relevant checks in [openbsd-port-validation](../openbsd-port-validation/SKILL.md), including `make port-lib-depends-check` after `fake`. Report what was inspected and executed separately.
 
 - Missing dependency: compare upstream metadata, module-added dependencies, query output, and repository package availability; do not invent a package path.

@@ -33,22 +33,28 @@ Read [BUILDING.md](../../../docs/BUILDING.md) and inspect [fetch-ports.ksh](../.
    doas ./fetch-ports.ksh --copy-only /usr/ports net/simplexmq net/simplex-chat
    ```
 
-   Without port arguments this copies every local port. It replaces each selected port, so stale patches disappear. Existing ports are saved under `TREE/.wip-backups/<label>.XXXXXXXX/port`; nested CVS directories are preserved. The label is the parent path with slashes changed to underscores, followed by `-<port>`, for example `sysutils_uutils-awk`.
-4. Retain `.wip-backups` and inspect `.wip-changes/<label>.created.txt`, `.deleted.txt`, and `.created-dirs.txt`. Lists describe the latest replacement relative to that port, exclude CVS metadata, and do not register CVS changes. Repeated copies overwrite these lists, so preserve the initial lists or recompute against the recorded CVS baseline when preparing a cumulative submission.
-5. Inspect the account registry diff. The helper merges entries for the
-   **selected ports** (all local installable ports only when no port list is
-   given) into `infrastructure/db/user.list`; it preserves upstream entries
-   and rejects conflicting IDs/names. Never overwrite that registry with the
-   repository snapshot. An account conflict can occur after ports have already
-   been copied: inspect the partial result before retrying.
+   Without port arguments this copies every local port. Check the full
+   selection before invoking it. Include shared group files in the review.
+4. Retain the transaction under `TREE/.wip-backups/overlay.XXXXXXXX`, which
+   preserves displaced paths under `old/`. Inspect the latest
+   `.wip-changes/<label>.created.txt`, `.deleted.txt`, and
+   `.created-dirs.txt`. These lists exclude CVS metadata and apply only to
+   the latest replacement. Preserve or recompute the original baseline for a
+   cumulative submission.
+5. The helper stages the merged registry before publishing the selection.
+   Resolve account conflicts against the official registry before retrying.
+   Keep the destination on one filesystem. Exclude concurrent CVS/Git
+   updates. In an interrupted run use the journal and the recovery procedure
+   in [BUILDING.md](../../../docs/BUILDING.md).
 6. Review the destination and validate the copied sources with [openbsd-port-validation](../openbsd-port-validation/SKILL.md). Copy reviewed, tested source changes back to the matching Git paths explicitly, including manifests, checksums, patches, package files, and necessary shared parent files. Review removals as well as additions; copying files over an old directory alone leaves stale patches. Exclude CVS metadata, work directories, packages, backups, and change lists. Do not run a broad reverse overlay over unrelated changes.
 7. Compare the Git version with the actual tested tree and inspect Git status/diff. If they differ, synchronize and repeat the affected validation; record which tree and revision were tested.
 
 ## Important boundaries
 
-The helper backs up replaced **port directories**. It copies shared parent files directly, without equivalent backups or per-port change lists; preserve and review these separately. It changes copied permissions so the ports build user can read sources.
-
-The default interactive helper removes the existing `/usr/ports` contents, checks out CVS, installs a package, changes shell/ports configuration, and may create accounts and configure `doas`. `--no-provision` only skips user creation and `doas` setup: it still replaces the checkout and changes configuration. Neither invocation is authorized by an ordinary synchronization request; destructive or global system changes require explicit authorization. `--copy-only` does not provision the host or create daemon accounts.
+The helper preserves existing port, shared and registry paths in one
+transaction and preserves nested CVS metadata. It makes copied port sources
+readable by the ports build user. Use `--bootstrap NEW_TREE` for an explicit
+checkout into a previously unused path. Configure the host separately.
 
 ## Acceptance and diagnosis
 

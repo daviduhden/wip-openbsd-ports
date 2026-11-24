@@ -36,36 +36,32 @@ doas ./fetch-ports.ksh --copy-only /usr/ports net/simplexmq net/simplex-chat
 doas ./fetch-ports.ksh --copy-only /usr/ports
 ```
 
-Each port is copied to its existing category, never over the complete
-category directory. Replaced ports are saved under
-`TREE/.wip-backups/category-port.XXXXXXXX/port` (the category slashes are
-replaced by underscores for a nested subport); nested CVS metadata is
-preserved. Before the swap the script records the files that are about to
-be removed and added in `TREE/.wip-changes/category-port.created.txt`,
-`TREE/.wip-changes/category-port.deleted.txt`, and
-`TREE/.wip-changes/category-port.created-dirs.txt` (one path per line,
-relative to the port root, CVS metadata excluded), so `cvs add`,
-`cvs remove` and a later `cvs diff` can be driven from them. Copying a
-nested subport also installs the files its group shares with the
-subports, for example `Makefile.inc`, without touching any sibling port.
-Existing shared files are saved under
-`TREE/.wip-backups/<label>.shared.XXXXXXXX/`; they are not part of the
-child port's change lists. Stale patches are not carried into the new
-copy. Paths that name categories, traverse parents or use symlinked port
-roots are rejected. The local account entries from `user.list` for the
-selected ports are merged as well. Files become readable by the ports
-build user even when the Git checkout is private. Top-level `audit/` and
-`logs/` directories inside a port are not copied.
+The helper stages the complete selection, including shared group files and
+the merged account registry, before publishing any port. It serializes copies
+to the same tree with `.wip-overlay.lock`. Use a tree on one filesystem and
+exclude concurrent updates by CVS, Git or other maintenance tools.
 
-Without arguments the script retains its interactive OpenBSD bootstrap
-workflow, which replaces the ports checkout and configures the host.
-Use `--copy-only` when you already have a checkout. Use `--no-provision`
-to keep the interactive workflow but skip creating the `user` account
-and configuring doas:
+The transaction directory is `TREE/.wip-backups/overlay.XXXXXXXX`.
+Its `old/` subtree retains prior files at their tree-relative paths. Nested
+CVS metadata is carried forward. The latest CVS change lists remain in
+`TREE/.wip-changes/`. They omit CVS metadata and describe each replaced port
+relative to its own root. Shared group files are backed up separately from
+port contents. The helper preserves unrelated sibling ports and rejects
+account conflicts before publication.
 
-```sh
-doas ./fetch-ports.ksh --no-provision
-```
+On a handled failure the helper attempts to restore the prior tree.
+After an abrupt interruption, inspect the transaction's `started`,
+`created-dirs`, `old/`, `new/` and `committed` marker. Keep the lock and
+transaction until recovery is complete and the other invocation has exited.
+Work from the started paths in reverse order. If the new slot is absent,
+move the published path back to the new slot, then restore any old slot.
+Remove only empty directories listed in `created-dirs`, in reverse order.
+
+The default invocation prints usage. To obtain an official checkout in a
+previously unused destination, run `ksh fetch-ports.ksh --bootstrap NEW_TREE`
+from a trusted parent directory. Host configuration and accounts are managed
+separately. The overlay source is the directory containing the script unless
+`WIP_OPENBSD_PORTS_DIR` specifies another directory.
 
 Every patch has one target file, one `Index:` header with a relative
 path, and a short comment above the header wrapped to 72 columns. Patches

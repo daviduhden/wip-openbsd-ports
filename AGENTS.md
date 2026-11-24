@@ -234,8 +234,7 @@ helper layout and the current port-specific exceptions.
    tree. Static inspection, a successful `bmake -n`, and a green parser test
    are not build or runtime evidence.
 10. Do not run destructive or host-wide operations without explicit
-    authorization. This includes the default `fetch-ports.ksh` bootstrap,
-    `--no-provision`, `clean=all` on user work, package upgrades, `pkg_delete`,
+    authorization. This includes an explicit host bootstrap or replacement, `clean=all` on user work, package upgrades, `pkg_delete`,
     service activation, and filesystem or firewall changes.
 
 ## Working in this repository
@@ -260,8 +259,8 @@ helper layout and the current port-specific exceptions.
 - `fetch-ports.ksh --copy-only TREE [port ...]` is the safe overlay. With no
   port arguments it copies every port. It replaces selected port directories,
   keeps nested CVS metadata, and writes recovery data under `.wip-backups/`
-  and `.wip-changes/`. Review those artifacts; they are aids, not a CVS
-  inventory.
+  and `.wip-changes/`. Review the transaction journal, account merge, and
+  scope of the CVS change lists before publication or recovery.
 - Use subagents for separable analysis (build systems, patches, packaging,
   security, CVS) when they are available. Give each a read-only scope, require
   file/line evidence, and reconcile contradictions before editing.

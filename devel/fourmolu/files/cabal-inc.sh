@@ -26,9 +26,9 @@ env HOME="$CABAL_INC_HOME" CABAL_DIR="$CABAL_INC_HOME/.cabal" \
 	LC_ALL=en_US.UTF-8 \
 	"$LOCALBASE/bin/cabal-bundler" --openbsd \
 	"$MODCABAL_STEM-$MODCABAL_VERSION" \
-	> "$WRKDIR/cabal.inc.raw"
+	>"$WRKDIR/cabal.inc.raw"
 
 sed -e '/^MODCABAL_STEM[[:space:]]*=/d' \
 	-e '/^MODCABAL_VERSION[[:space:]]*=/d' \
-	"$WRKDIR/cabal.inc.raw" > "$WRKDIR/cabal.inc.new"
+	"$WRKDIR/cabal.inc.raw" >"$WRKDIR/cabal.inc.new"
 mv "$WRKDIR/cabal.inc.new" "$PORTDIR/cabal.inc"

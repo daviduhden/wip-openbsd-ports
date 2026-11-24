@@ -65,7 +65,7 @@ install_data "$WRKSRC/xfind/xfind.xpm" "$PREFIX/share/pixmaps/xfind_48x48.xpm"
 # xfile-xdgsvc (XDG/freedesktop D-Bus file manager shim)
 install_data_dir "$PREFIX/share/dbus-1/services"
 sed "s|^Exec=.*\$|Exec=$TRUEPREFIX/bin/xfile-xdgsvc|" \
-	"$WRKSRC/xfile-xdgsvc/xfile.service" > "$WRKSRC/xfile.service"
+	"$WRKSRC/xfile-xdgsvc/xfile.service" >"$WRKSRC/xfile.service"
 install_data "$WRKSRC/xfile.service" \
 	"$PREFIX/share/dbus-1/services/xfile.service"
 

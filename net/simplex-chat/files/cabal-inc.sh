@@ -41,7 +41,7 @@ build)
 		--plan dist-newstyle/cache/plan.json \
 		--executable simplex-chat \
 		"$MODCABAL_STEM-$MODCABAL_VERSION" \
-		> "$WRKDIR/simplex-chat.raw.inc"
+		>"$WRKDIR/simplex-chat.raw.inc"
 	;;
 test)
 	# Test builds need simplexmq to expose the server modules imported by
@@ -61,7 +61,7 @@ merge)
 		perl "$FILESDIR/cabal-deps-merge.pl" \
 		"$WRKDIR/simplex-chat.raw.inc" \
 		"$WRKDIR/simplex-chat.test.plan.json" \
-		> "$WRKDIR/cabal.inc.new"
+		>"$WRKDIR/cabal.inc.new"
 	mv "$WRKDIR/cabal.inc.new" "$PORTDIR/cabal.inc"
 	;;
 *)

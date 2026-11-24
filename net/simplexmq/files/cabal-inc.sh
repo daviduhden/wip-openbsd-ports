@@ -44,12 +44,12 @@ build)
 		--plan dist-newstyle/cache/plan.json \
 		--executable smp-server \
 		"$MODCABAL_STEM-$MODCABAL_VERSION" \
-		> "$WRKDIR/simplexmq.smp.inc"
+		>"$WRKDIR/simplexmq.smp.inc"
 	run_bundler \
 		--plan dist-newstyle/cache/plan.json \
 		--executable xftp-server \
 		"$MODCABAL_STEM-$MODCABAL_VERSION" \
-		> "$WRKDIR/simplexmq.xftp.inc"
+		>"$WRKDIR/simplexmq.xftp.inc"
 	;;
 test)
 	cd "$WRKBUILD"
@@ -65,7 +65,7 @@ merge)
 		perl "$FILESDIR/cabal-deps-merge.pl" \
 		"$WRKDIR/simplexmq.smp.inc" "$WRKDIR/simplexmq.xftp.inc" \
 		"$WRKDIR/simplexmq.test.plan.json" \
-		> "$WRKDIR/cabal.inc.new"
+		>"$WRKDIR/cabal.inc.new"
 	mv "$WRKDIR/cabal.inc.new" "$PORTDIR/cabal.inc"
 	;;
 *)

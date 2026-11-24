@@ -5,7 +5,7 @@ That would silently disable authentication and TLS during client use.
 Index: engine/crates/xerj-common/src/localnode.rs
 --- engine/crates/xerj-common/src/localnode.rs.orig
 +++ engine/crates/xerj-common/src/localnode.rs
-@@ -517,6 +517,13 @@ fn start_for_url_in(
+@@ -557,6 +557,13 @@ fn start_for_url_in(
      }
 
      let record = read_launch_record(&data_dir);

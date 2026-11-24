@@ -5,7 +5,7 @@ Keep later files and sockets from silently replacing standard streams.
 Index: engine/crates/xerj-server/src/main.rs
 --- engine/crates/xerj-server/src/main.rs.orig
 +++ engine/crates/xerj-server/src/main.rs
-@@ -3025,7 +3025,7 @@ fn raise_nofile_limit() {
+@@ -3143,7 +3143,7 @@ fn raise_nofile_limit() {
  /// has no fd 2. The next file the node opens (a segment, a socket, the WAL)
  /// takes the lowest free number, so every later `stderr` write would land
  /// in that file. `/dev/null` holds the slot instead.
@@ -14,7 +14,7 @@ Index: engine/crates/xerj-server/src/main.rs
  fn ensure_std_fds_open() {
      for fd in 0..3 {
          // SAFETY: `fcntl(F_GETFD)` only queries the descriptor table.
-@@ -3049,6 +3049,37 @@ fn ensure_std_fds_open() {
+@@ -3167,6 +3167,37 @@ fn ensure_std_fds_open() {
      }
  }
 
@@ -52,7 +52,7 @@ Index: engine/crates/xerj-server/src/main.rs
  /// `xerj --detach …` (#3267): start this same command without `--detach` as
  /// a detached child, wait until it serves, print where it is, and return the
  /// exit code.
-@@ -3510,8 +3541,10 @@ fn main() -> Result<()> {
+@@ -3628,8 +3659,10 @@ fn main() -> Result<()> {
      // fast paths inside `parse_args`. A node that dies must say so: the
      // allocation hook, the panic hook, and SIGABRT/SIGSEGV/SIGBUS/SIGILL
      // each write a FATAL line. SIGKILL still cannot be reported.
@@ -64,7 +64,7 @@ Index: engine/crates/xerj-server/src/main.rs
      install_fatal_reporter();
      #[cfg(unix)]
      restore_default_sigpipe();
-@@ -3527,6 +3560,14 @@ fn main() -> Result<()> {
+@@ -3645,6 +3678,15 @@ fn main() -> Result<()> {
          std::process::exit(xerj_autoindex::extract::pdf::run_worker_cli());
      }
 
@@ -73,15 +73,16 @@ Index: engine/crates/xerj-server/src/main.rs
 +    if std::env::args_os().nth(1).as_deref()
 +        == Some(std::ffi::OsStr::new(xerj_autoindex::extract::xls::WORKER_ARG))
 +    {
++        shutdown::restore_default_dispositions();
 +        std::process::exit(xerj_autoindex::extract::xls::run_worker_cli());
 +    }
 +
      // `xerj --url URL corpus index name` used to die here as an unknown
      // server flag. Move those flags behind the subcommand before any
      // dispatch reads argv.
-@@ -3535,19 +3576,6 @@ fn main() -> Result<()> {
-         is_top_level_command,
-     ));
+@@ -3656,19 +3698,6 @@ fn main() -> Result<()> {
+         shutdown::restore_default_dispositions();
+     }
 
 -    // The isolated legacy-`.xls` BIFF reader. calamine 0.26.1 panics on crafted
 -    // records (short `Lbl`/`ExternSheet`) and the release profile is

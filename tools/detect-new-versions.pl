@@ -7,7 +7,7 @@
 # fetches its source:
 #   * Go modules  -> https://proxy.golang.org/<module>/@v/list
 #   * PyPI        -> https://pypi.org/pypi/<project>/json
-#   * GitHub      -> https://api.github.com/repos/<owner>/<repo>/tags
+#   * GitHub      -> https://api.github.com/repos/<owner>/<repo>/releases
 # Ports that fetch from anywhere else are reported as 'manual'.
 #
 # A port that carries "PORTROACH = limit:<regex>" only tracks the versions
@@ -26,7 +26,9 @@ use warnings;
 use Getopt::Long   qw(GetOptions);
 use File::Basename qw(dirname basename);
 use File::Path     qw(make_path);
-use File::Find     qw(find);
+use FindBin        qw($RealBin);
+use lib $RealBin;
+use PortTools qw(inventory);
 use File::Spec;
 use File::Temp qw(tempdir);
 use POSIX      qw(strftime);
@@ -37,6 +39,7 @@ my $WIP  = dirname( dirname($self) );    # <wip>/tools/detect-new-versions.pl
 my $LOGDIR;
 my $ONLY   = '';
 my $DRYRUN = 0;
+my $helper = "$RealBin/../fetch-ports.ksh";
 my $UA     = 'wip-newversions/1.0';
 
 GetOptions(
@@ -94,52 +97,83 @@ sub out {
 sub fetch_command {
     my (@command) = @_;
     my $pid = open( my $pipe, '-|' );
-    return undef unless defined $pid;
+    return unless defined $pid;
     if ( !$pid ) {
         open( STDERR, '>', '/dev/null' ) or POSIX::_exit(127);
         exec { $command[0] } @command    or POSIX::_exit(127);
     }
     my $body = do { local $/ = undef; <$pipe> };
-    return undef unless close $pipe;
+    return unless close $pipe;
     return defined $body && length $body ? $body : undef;
 }
 
 sub fetch {
     my ($url) = @_;
-    return undef if $DRYRUN;
-    my $body;
+    return ( 'dry-run', undef ) if $DRYRUN;
     if ( eval { require HTTP::Tiny; 1 } ) {
-        my $r = HTTP::Tiny->new( agent => $UA, timeout => 30, verify_SSL => 1 )
-          ->get($url);
-        $body = $r->{content} if $r->{success};
+        my $http =
+          HTTP::Tiny->new( agent => $UA, timeout => 30, verify_SSL => 1 );
+        my $tries = 0;
+        while (1) {
+            my $r = $http->get($url);
+            return ( 'ok', $r->{content} ) if $r->{success};
+            my $status = $r->{status} // 599;
+            return ( 'absent', undef ) if $status == 404 || $status == 410;
+            if (
+                $status == 429
+                || ( $status == 403
+                    && ( $r->{headers}{'x-ratelimit-remaining'} // '' ) eq '0' )
+              )
+            {
+                my $wait = $r->{headers}{'retry-after'} // '';
+                return ( 'rate-limited', undef )
+                  unless !$tries++ && $wait =~ /^[012]$/;
+                sleep $wait;
+                next;
+            }
+            if ( $status == 502 || $status == 503 || $status == 504 ) {
+                return ( 'lookup-error', undef ) if $tries++;
+                sleep 1;
+                next;
+            }
+            return ( 'lookup-error', undef ) unless $status == 599;
+
+            # OpenBSD's ftp can provide TLS when Perl lacks IO::Socket::SSL.
+            last;
+        }
     }
-    if ( !defined $body && -x '/usr/bin/ftp' ) {
-        $body = fetch_command( '/usr/bin/ftp', '-o', '-', '-V', $url );
-        $body = undef if defined $body && $body eq '';
+    for my $client ( [ '/usr/bin/ftp', '-o', '-', '-V' ],
+        [ '/usr/bin/curl', '-fsSL', '--max-time', '30' ] )
+    {
+        next unless -x $client->[0];
+        my $body = fetch_command( @$client, $url );
+        return ( 'ok', $body ) if defined $body;
     }
-    if ( !defined $body && -x '/usr/bin/curl' ) {
-        $body =
-          fetch_command( '/usr/bin/curl', '-fsSL', '--max-time', '30', $url );
-        $body = undef if defined $body && $body eq '';
-    }
-    return $body;
+    return ( 'lookup-error', undef );
 }
 
 sub jget {
     my ($url) = @_;
-    my $body = fetch($url);
-    return undef unless defined $body;
-    return eval { decode_json($body) };
+    my ( $status, $body ) = fetch($url);
+    return ( $status, undef ) unless $status eq 'ok';
+    my $json = eval { decode_json($body) };
+    return ( 'lookup-error', undef ) if $@ || !defined $json;
+    return ( 'ok',           $json );
 }
 
 sub pvar {
     my ( $text, $name ) = @_;
-    return $text =~ /^\Q$name\E[ \t]*=[ \t]*(.*)$/m ? $1 : undef;
+    if ( $text =~ /^\Q$name\E[ \t]*[:?]?=[ \t]*(.*)$/m ) {
+        my $value = $1;
+        $value =~ s/[ \t]+(?:#.*)?\z//;
+        return $value;
+    }
+    return;
 }
 
 sub expand {
     my ( $s, $vals ) = @_;
-    return undef unless defined $s;
+    return unless defined $s;
     if ( defined $vals->{V} ) {
         my $vr = $vals->{V};
         $vr =~ s/\.[^.]*$// for ( 1 .. 2 );
@@ -152,6 +186,7 @@ sub expand {
         $prev = $s;
         $s =~
 s/\$\{([A-Za-z0-9_]+)\}/defined $vals->{$1} ? $vals->{$1} : "\${$1}"/ge;
+        $s =~ s/\$([A-Za-z_])/defined $vals->{$1} ? $vals->{$1} : "\$$1"/ge;
     } while ( $s ne $prev );
     return $s;
 }
@@ -179,7 +214,7 @@ sub vcmp {
 
 sub vmax {
     my (@v) = @_;
-    return undef unless @v;
+    return unless @v;
     my @s = sort { vcmp( $a, $b ) } @v;
     return $s[-1];
 }
@@ -198,104 +233,82 @@ sub in_limits {
     return 0;
 }
 
-# each fetcher returns ($latest_within_limits, $overall_latest)
+# Each backend returns the highest eligible version, the overall stable
+# version, and a status that distinguishes an empty result from a failure.
+sub select_versions {
+    my ( $versions, $limits ) = @_;
+    my $overall = vmax(@$versions);
+    return ( undef, undef, 'no-release' ) unless defined $overall;
+    my $eligible = vmax( grep { in_limits( $_, @$limits ) } @$versions );
+    return ( $eligible, $overall, defined $eligible ? 'ok' : 'no-eligible' );
+}
 
 sub go_versions {
     my ( $mod, @lims ) = @_;
-    my $j = jget( 'https://proxy.golang.org/' . esc_mod($mod) . '/@latest' );
-    my $overall = ref $j eq 'HASH' && $j->{Version} ? $j->{Version} : undef;
-    my $latest  = $overall;
-    if (@lims) {
-        my $body =
-          fetch( 'https://proxy.golang.org/' . esc_mod($mod) . '/@v/list' );
-        my @v = defined $body
-          ? grep { /^v?\d+(?:\.\d+)*$/ } split /\s+/, $body
-          : ();
-        $latest = vmax( grep { in_limits( $_, @lims ) } @v ) // $overall;
-    }
-    return ( $latest, $overall );
+    my ( $status, $body ) =
+      fetch( 'https://proxy.golang.org/' . esc_mod($mod) . '/@v/list' );
+    return ( undef, undef, $status ) unless $status eq 'ok';
+    my @versions = grep { /^v\d+\.\d+\.\d+(?:\+incompatible)?$/ } split /\s+/,
+      $body;
+    return select_versions( \@versions, \@lims );
 }
 
 sub pypi_versions {
-    my ( $name, @lims ) = @_;
-    my $j = jget("https://pypi.org/pypi/$name/json");
-    return ( undef, undef ) unless ref $j eq 'HASH' && ref $j->{info} eq 'HASH';
-    my $overall = $j->{info}{version};
-    my @v       = grep { /^v?\d+(?:\.\d+)*$/ }
-      keys %{ ref $j->{releases} eq 'HASH' ? $j->{releases} : {} };
-    my $latest = @lims ? vmax( grep { in_limits( $_, @lims ) } @v ) : $overall;
-    $latest //= $overall;
-    return ( $latest, $overall );
+    my ( $name,   @lims ) = @_;
+    my ( $status, $j )    = jget("https://pypi.org/pypi/$name/json");
+    return ( undef, undef, $status ) unless $status eq 'ok';
+    return ( undef, undef, 'lookup-error' )
+      unless ref $j eq 'HASH' && ref $j->{releases} eq 'HASH';
+    my @versions = grep {
+        my $files = $j->{releases}{$_};
+        /^\d+(?:\.\d+)*$/
+          && ref $files eq 'ARRAY'
+          && grep { ref $_ eq 'HASH' && !$_->{yanked} } @$files;
+    } keys %{ $j->{releases} };
+    return select_versions( \@versions, \@lims );
 }
 
 sub gh_versions {
     my ( $acc, $proj, $tagpat, @lims ) = @_;
-    my $j = jget("https://api.github.com/repos/$acc/$proj/tags?per_page=100");
-    return ( undef, undef ) unless ref $j eq 'ARRAY';
-    my $prefix = '';
-    if ( defined $tagpat ) { ($prefix) = $tagpat =~ /^([^0-9]*)/; }
-    $prefix = '' unless defined $prefix;
-    my @v;
-    for my $t ( map { $_->{name} }
-        grep { ref $_ eq 'HASH' && defined $_->{name} && !ref $_->{name} } @$j )
-    {
-        next if length $prefix && index( $t, $prefix ) != 0;
-        ( my $rest = $t ) =~ s/^\Q$prefix\E//;
-        next unless $rest =~ /^v?\d+(?:\.\d+)*$/;
-        push @v, $t;
-    }
-    my $overall = vmax(@v);
-    my $latest  = @lims ? vmax( grep { in_limits( $_, @lims ) } @v ) : $overall;
-    return ( $latest, $overall );
-}
-
-sub find_ports {
-    my @ports;
-    opendir( my $dh, $WIP ) or die "$WIP: $!";
-    for my $cat ( sort readdir $dh ) {
-        next if $cat =~ /^\./;
-        next
-          if $cat eq 'logs'
-          || $cat eq 'tools'
-          || $cat eq 'audit'
-          || $cat eq 'infrastructure';
-        my $catdir = File::Spec->catdir( $WIP, $cat );
-        next unless -d $catdir;
-        find(
-            {
-                wanted => sub {
-                    return unless basename($_) eq 'Makefile';
-                    return
-                      if $File::Find::name =~
-                      m{/(CVS|files|patches|audit|logs)/};
-                    open( my $fh, '<', $_ ) or die "$_: $!";
-                    my $t = do { local $/ = undef; <$fh> // q{} };
-                    close $fh or die "close $_: $!";
-                    return if $t =~ /bsd\.port\.subdir\.mk/;
-                    my $rel = File::Spec->abs2rel( $File::Find::name, $WIP );
-                    ( my $dir = dirname($rel) ) =~ s{^\./}{};
-                    push @ports, $dir;
-                },
-                no_chdir => 1,
-            },
-            $catdir
+    my $prefix = $tagpat // '';
+    $prefix =~ s/\d.*//;
+    return ( undef, undef, 'manual' ) if $prefix =~ /\$/;
+    my @versions;
+    for my $page ( 1 .. 20 ) {
+        my ( $status, $j ) = jget(
+"https://api.github.com/repos/$acc/$proj/releases?per_page=100&page=$page"
         );
+        return ( undef, undef, $status )        unless $status eq 'ok';
+        return ( undef, undef, 'lookup-error' ) unless ref $j eq 'ARRAY';
+        for my $release (@$j) {
+            next
+              unless ref $release eq 'HASH'
+              && !$release->{draft}
+              && !$release->{prerelease};
+            my $tag = $release->{tag_name};
+            next
+              unless defined $tag && !ref $tag && index( $tag, $prefix ) == 0;
+            my $version = substr( $tag, length $prefix );
+            push @versions, $tag if $version =~ /^v?\d+(?:\.\d+)*$/;
+        }
+        return select_versions( \@versions, \@lims ) if @$j < 100;
     }
-    closedir $dh or die "closedir: $!";
-    return sort @ports;
+    return ( undef, undef, 'lookup-error' );
 }
 
 # ---------------------------------------------------------------- main
 
-my @ports = find_ports();
+my @ports = inventory( $helper, $WIP );
 @ports = grep { $_ eq $ONLY } @ports if length $ONLY;
 die "--only $ONLY does not name an installable port\n"
   if length($ONLY) && !@ports;
-out( "# new versions report - " . strftime( '%Y-%m-%d %H:%M:%S', localtime ) );
+out(    "# new versions report - "
+      . strftime( '%Y-%m-%d %H:%M:%S', localtime )
+      . ( $DRYRUN ? ' (dry-run)' : '' ) );
 out("# collection: $WIP");
 out("");
 
-my ( @outdated, @pinned, @unknown );
+my ( @outdated, @pinned, @unknown, @failed );
 for my $p (@ports) {
     my $mk = File::Spec->catfile( $WIP, split( m{/}, $p ), 'Makefile' );
     open( my $fh, '<', $mk ) or next;
@@ -309,16 +322,17 @@ for my $p (@ports) {
     $vals{$_} = expand( $vals{$_}, \%vals ) for keys %vals;
     my @lims = limits_from( pvar( $text, 'PORTROACH' ) );
 
-    my ( $kind, $cur, $latest, $overall );
+    my ( $kind, $cur, $latest, $overall, $lookup );
     if ( defined $vals{MODGO_MODNAME} && length $vals{MODGO_MODNAME} ) {
         $kind = 'go';
         $cur  = $vals{MODGO_VERSION};
-        ( $latest, $overall ) = go_versions( $vals{MODGO_MODNAME}, @lims );
+        ( $latest, $overall, $lookup ) =
+          go_versions( $vals{MODGO_MODNAME}, @lims );
     }
     elsif ( defined $vals{GH_ACCOUNT} && defined $vals{GH_PROJECT} ) {
         $kind = 'gh';
         $cur  = $vals{GH_TAGNAME};
-        ( $latest, $overall ) =
+        ( $latest, $overall, $lookup ) =
           gh_versions( $vals{GH_ACCOUNT}, $vals{GH_PROJECT}, $vals{GH_TAGNAME},
             @lims );
     }
@@ -330,20 +344,21 @@ for my $p (@ports) {
         $name = $vals{GH_PROJECT} // basename($p) unless defined $name;
         $name =~ s/[-_.]+/-/g;
         $name = lc $name;
-        ( $latest, $overall ) = pypi_versions( $name, @lims );
+        ( $latest, $overall, $lookup ) = pypi_versions( $name, @lims );
     }
     else {
-        $kind = 'manual';
-        $cur  = $vals{V} // $vals{VERSION};
+        $kind   = 'manual';
+        $lookup = 'manual';
+        $cur    = $vals{V} // $vals{VERSION};
     }
 
-    my $status = '??';
-    if ( defined $latest && defined $cur ) {
+    my $status = $lookup // 'manual';
+    if ( defined $latest && defined $cur && $status eq 'ok' ) {
         my $c = vnorm($cur);
         my $l = vnorm($latest);
         $c =~ s/^[A-Za-z-]*v//;
         $l =~ s/^[A-Za-z-]*v//;
-        if ( $c eq $l ) {
+        if ( vcmp( $c, $l ) == 0 ) {
             my $o = defined $overall ? vnorm($overall) : undef;
             $o =~ s/^[A-Za-z-]*v// if defined $o;
             if ( defined $o && vcmp( $o, $c ) > 0 ) {
@@ -360,9 +375,10 @@ for my $p (@ports) {
             $status = 'AHEAD';
         }
     }
-    elsif ( $kind eq 'manual' ) {
+    elsif ( $status eq 'manual' ) {
         push @unknown, $p;
     }
+    push @failed, $p if $status eq 'lookup-error' || $status eq 'rate-limited';
     out(
         sprintf(
             "%-9s %-6s %-42s %-18s -> %s",
@@ -379,7 +395,9 @@ out(    "outdated: "
       . "   pinned: "
       . scalar(@pinned)
       . "   manual: "
-      . scalar(@unknown) );
+      . scalar(@unknown)
+      . "   lookup failures: "
+      . scalar(@failed) );
 out("report: $REPORT");
 close STDOUT or die "close stdout: $!";
-exit( @outdated ? 1 : 0 );
+exit( @failed ? 2 : @outdated ? 1 : 0 );

@@ -1,52 +1,37 @@
 #!/usr/bin/env perl
 #
-# bulk-build.pl - build every port of this wip collection against a clean
-# OpenBSD ports tree checked out from CVS.
-#
-# For each port the script
-#   1. refreshes a clean ports tree (CVS) and overlays the wip ports on it,
-#   2. regenerates the generated manifests: distinfo ('make makesum') and, when
-#      the port carries one, the module manifest (modules.inc via
-#      'make modgo-gen-modules', crates.inc via 'make modcargo-gen-crates' or
-#      cabal.inc via 'make cabal-inc'); with --update-plist an empty pkg/PLIST
-#      is regenerated too,
-#   3. installs the dependencies that are not part of this collection as
-#      binary packages with 'pkg_add -u -Dsnap',
-#   4. builds the ports in dependency order ('make install' by default), and
-#   5. runs the port test target when the port has one ('make test').
-#
-# Every command's output is written to a per-port log and the run summary to
-# $LOGDIR/summary.txt, both under /tmp by default.
-#
-# Usage: bulk-build.pl [--wip DIR] [--ports /usr/ports] [--jobs N]
-#                      [--tests|--no-tests] [--update-plist] [--build install]
-#                      [--only cat/port] [--skip-cvs|--no-refresh] [--dry-run]
-#
+# Verify and package the overlay against an OpenBSD ports checkout.
+# Source regeneration, CVS refresh, and installation are opt-in.
+
 use strict;
 use warnings;
 use Getopt::Long   qw(GetOptions);
-use File::Basename qw(dirname basename);
+use File::Basename qw(dirname);
 use File::Path     qw(make_path);
-use File::Find     qw(find);
+use FindBin        qw($RealBin);
+use lib $RealBin;
+use PortTools qw(inventory capture_command shell_quote dependency_specs
+  dependency_path package_name generated_files prepare_manifests);
 use File::Spec;
 use File::Temp qw(tempdir);
 use POSIX      qw(strftime);
 
-my $self    = File::Spec->rel2abs($0);
-my $WIP     = dirname( dirname($self) );             # <wip>/tools/bulk-build.pl
-my $PORTS   = '/usr/ports';
+my $self = File::Spec->rel2abs($0);
+my $WIP  = dirname( dirname($self) );    # <wip>/tools/bulk-build.pl
+my $PORTS;
 my $CVSROOT = 'anoncvs@anoncvs.ca.openbsd.org:/cvs';
 my $LOGDIR;
-my $PKG_ADD  = 'pkg_add -u -Dsnap';
-my $MAKE     = 'make';
-my $JOBS     = 1;
-my $TESTS    = 1;
-my $PLIST    = 0;
-my $REFRESH  = 1;
-my $SKIPCVS  = 0;
-my $BUILDTGT = 'install';
-my $ONLY     = '';
-my $DRYRUN   = 0;
+my $PKG_ADD    = '';
+my $MAKE       = 'make';
+my $JOBS       = 1;
+my $TESTS      = 1;
+my $PLIST      = 0;
+my $REFRESH    = 0;
+my $REGENERATE = 0;
+my $SKIPCVS    = 0;
+my $BUILDTGT   = 'package';
+my $ONLY       = '';
+my $DRYRUN     = 0;
 
 GetOptions(
     'wip=s'         => \$WIP,
@@ -59,6 +44,7 @@ GetOptions(
     'tests!'        => \$TESTS,
     'update-plist!' => \$PLIST,
     'refresh!'      => \$REFRESH,
+    'regenerate'    => \$REGENERATE,
     'skip-cvs'      => \$SKIPCVS,
     'build=s'       => \$BUILDTGT,
     'only=s'        => \$ONLY,
@@ -68,6 +54,11 @@ GetOptions(
 
 $WIP = File::Spec->rel2abs($WIP);
 die "--jobs must be a positive integer\n" if $JOBS <= 0;
+die "--ports must name an explicit disposable OpenBSD tree\n"
+  if !$DRYRUN && !defined $PORTS;
+die "--build must be a single make target\n"
+  if $BUILDTGT !~ /\A[a-zA-Z][\w-]*\z/;
+$PORTS //= '/usr/ports';
 $PORTS = File::Spec->rel2abs($PORTS);
 $LOGDIR //=
   tempdir( 'wip-bulk-' . strftime( '%Y%m%d-%H%M%S', localtime ) . '-XXXXXX',
@@ -75,6 +66,7 @@ $LOGDIR //=
 make_path($LOGDIR) unless -d $LOGDIR;
 my $MASTER  = "$LOGDIR/bulk-build.log";
 my $SUMMARY = "$LOGDIR/summary.txt";
+my $helper  = "$RealBin/../fetch-ports.ksh";
 my $ENVM    = $JOBS > 1 ? "MAKE_JOBS=$JOBS " : "";
 
 sub usage {
@@ -83,19 +75,21 @@ sub usage {
 bulk-build.pl - overlay the wip ports on a clean ports tree and bulk-build them
 
   --wip DIR         wip ports collection (default: parent of this script's dir)
-  --ports DIR       ports tree to build in (default: /usr/ports)
+  --ports DIR       explicitly selected disposable OpenBSD ports tree
   --cvsroot ROOT    CVS root (default: $CVSROOT)
   --logdir DIR      log directory (default: /tmp/wip-bulk-<timestamp>-<random>)
   --pkg-add CMD     command used for dependencies outside the collection
-                    (default: "pkg_add -u -Dsnap")
+                    (default: let ports resolve dependencies)
   --jobs N          pass MAKE_JOBS=N to make (default: 1)
   --tests           run "make test" when the port has tests (default)
   --no-tests        do not run the port tests
   --update-plist    regenerate an empty pkg/PLIST with "make update-plist"
-  --no-refresh      do not refresh the CVS tree before overlaying
+  --regenerate      refresh dependency metadata and digests (checksums only by default)
+  --refresh         explicitly check out or refresh the CVS tree
   --skip-cvs        never touch CVS (use the tree as it is)
-  --build TARGET    make target to build the ports (default: install)
-  --only CAT/PORT   build only this port (no dependency ordering)
+  --build TARGET    make target to build the ports (default: package)
+                    native make may install prerequisites
+  --only CAT/PORT   build only this port
   --dry-run         log the commands without running them
   --help            this message
 USAGE
@@ -114,7 +108,7 @@ sub logmsg {
 
 # run a shell command, appending all its output to $log; returns the exit code
 sub sh {
-    my ( $log, $cmd ) = @_;
+    my ( $log, $cmd, $output ) = @_;
     logmsg("run: $cmd");
     return 0 if $DRYRUN;
     my $pid = fork();
@@ -123,7 +117,10 @@ sub sh {
         open( STDOUT, '>>', $log )     or die "open $log: $!";
         open( STDERR, '>&', \*STDOUT ) or die "dup: $!";
         print {*STDOUT} "\n=== $cmd\n" or die "write $log: $!";
-        exec( '/bin/sh', '-c', $cmd )  or POSIX::_exit(127);
+        if ($output) {
+            open STDOUT, '>&', $output or POSIX::_exit(125);
+        }
+        exec( '/bin/sh', '-c', $cmd ) or POSIX::_exit(127);
     }
     my $waited;
     do { $waited = waitpid( $pid, 0 ); } while $waited == -1 && $!{EINTR};
@@ -134,133 +131,21 @@ sub sh {
     return $rc;
 }
 
-# capture a command's stdout (for "make show=VAR")
-# Commands are intentional shell templates (--make/--pkg-add); data is quoted.
-sub shell_quote {
-    my ($value) = @_;
-    $value =~ s/'/'"'"'/g;
-    return "'$value'";
-}
-
-sub cap {
-    my ($cmd) = @_;
-    return '' if $DRYRUN;
-    open( my $pipe, '-|', '/bin/sh', '-c', "$cmd 2>/dev/null" )
-      or die "capture command: $!";
-    my $out = do { local $/ = undef; <$pipe> };
-    return '' unless close $pipe;
-    chomp $out if defined $out;
-    return defined $out ? $out : '';
-}
-
-sub portlog {
-    my ($p) = @_;
-    ( my $n = $p ) =~ s{/}{-}g;
-    return "$LOGDIR/$n.log";
-}
-
-sub show_var {
-    my ( $dir, $var ) = @_;
-    my $qdir = shell_quote($dir);
-    return cap("cd $qdir && $MAKE show=$var");
-}
-
-# Run a generator that must produce one include file. Write to a sibling
-# temporary file so a failed or interrupted run cannot truncate the include
-# that make is currently reading; replace the destination only on success.
-sub regenerate_include {
-    my ( $log, $dir, $target, $command ) = @_;
-    my $qdir  = shell_quote($dir);
-    my $tmp   = "$dir/.$target.$$";
-    my $qtmp  = shell_quote($tmp);
-    my $qdest = shell_quote("$dir/$target");
-    my $rc    = sh( $log, "cd $qdir && $command > $qtmp" );
-    if ($rc) {
-        unlink $tmp;
-        return $rc;
-    }
-    if ( !-s $tmp ) {
-        unlink $tmp;
-        logmsg("  generator produced an empty $target");
-        return 1;
-    }
-    if ( !rename( $tmp, "$dir/$target" ) ) {
-        my $err = $!;
-        unlink $tmp;
-        logmsg("  cannot replace $target: $err");
-        return 1;
-    }
-    return 0;
-}
-
-# every directory under the collection that carries a Makefile is a port
-sub find_ports {
-    my @ports;
-    opendir( my $dh, $WIP ) or die "$WIP: $!";
-    for my $cat ( sort readdir $dh ) {
-        next if $cat =~ /^\./;
-        next
-          if $cat eq 'logs'
-          || $cat eq 'tools'
-          || $cat eq 'audit'
-          || $cat eq 'infrastructure';
-        my $catdir = File::Spec->catdir( $WIP, $cat );
-        next unless -d $catdir;
-        find(
-            {
-                wanted => sub {
-                    return unless basename($_) eq 'Makefile';
-                    return
-                      if $File::Find::name =~
-                      m{/(CVS|files|patches|audit|logs)/};
-                    open( my $fh, '<', $_ ) or die "$_: $!";
-                    my $t = do { local $/ = undef; <$fh> // q{} };
-                    close $fh or die "close $_: $!";
-                    return if $t =~ /bsd\.port\.subdir\.mk/;
-                    my $rel = File::Spec->abs2rel( $File::Find::name, $WIP );
-                    ( my $dir = dirname($rel) ) =~ s{^\./}{};
-                    push @ports, $dir;
-                },
-                no_chdir => 1,
-            },
-            $catdir
-        );
-    }
-    closedir $dh or die "closedir: $!";
-    return sort @ports;
-}
-
-# dependencies of a port as port paths (cat/port), from the framework so that
-# module-added dependencies are included
-sub port_deps {
-    my ($dir) = @_;
-    my %deps;
-    for my $var (qw(BUILD_DEPENDS LIB_DEPENDS RUN_DEPENDS TEST_DEPENDS)) {
-        for my $tok ( split /\s+/, show_var( $dir, $var ) ) {
-            $deps{$1} = 1
-              if $tok =~
-              m{^([A-Za-z0-9_.+-]+/[A-Za-z0-9_.+-]+(?:/[A-Za-z0-9_.+-]+)?)};
-        }
-    }
-    return sort keys %deps;
-}
-
 sub ensure_tree {
-    return if $SKIPCVS;
-    if ($DRYRUN) {
-        logmsg("dry-run: not creating or refreshing $PORTS");
-        return;
-    }
+    return if !$REFRESH || $SKIPCVS || $DRYRUN;
     my $qports   = shell_quote($PORTS);
     my $qcvsroot = shell_quote($CVSROOT);
-    if ( !-d "$PORTS/CVS" ) {
-        make_path($PORTS) unless -d $PORTS;
-        logmsg("checking out a clean ports tree into $PORTS");
-        sh( $MASTER, "cvs -qd $qcvsroot co -P -d $qports ports" ) == 0
+    if ( !-e $PORTS && !-l $PORTS ) {
+        my $script = shell_quote($helper);
+        sh( $MASTER, "CVSROOT=$qcvsroot ksh $script --bootstrap $qports" ) == 0
           or die "CVS checkout failed\n";
     }
-    elsif ($REFRESH) {
-        logmsg("refreshing the CVS ports tree in $PORTS");
+    else {
+        die "cannot refresh a non-CVS or symlinked ports tree: $PORTS\n"
+          if -l $PORTS
+          || !-d "$PORTS/CVS"
+          || !-f "$PORTS/Makefile"
+          || !-d "$PORTS/infrastructure";
         sh( $MASTER, "cd $qports && cvs -qd $qcvsroot up -PAd" ) == 0
           or die "CVS update failed\n";
     }
@@ -270,162 +155,134 @@ sub ensure_tree {
 sub sync_ports {
     my (@ports) = @_;
     return if $DRYRUN;
-    my $has_rsync = length cap('command -v rsync');
-    for my $p (@ports) {
-        my $src = File::Spec->catdir( $WIP,   split m{/}, $p );
-        my $dst = File::Spec->catdir( $PORTS, split m{/}, $p );
-        make_path($dst) unless -d $dst;
-        my $qsrc          = shell_quote("$src/");
-        my $qsrc_contents = shell_quote("$src/.");
-        my $qdst          = shell_quote("$dst/");
-        # Preserve the destination's CVS metadata. The source tree is a Git
-        # overlay and may also contain ignored audit/log material that must
-        # not be copied into a ports checkout.
-        my $cmd =
-          $has_rsync
-          ? "rsync -a --delete --exclude=CVS --exclude=audit --exclude=logs $qsrc $qdst"
-          : "find $qdst -mindepth 1 -maxdepth 1 ! -name CVS -exec rm -rf -- {} + && cp -Rp $qsrc_contents $qdst";
-        sh( $MASTER, $cmd ) == 0 or die "port overlay failed: $p\n";
-    }
+    my $source = shell_quote($WIP);
+    my $script = shell_quote($helper);
+    my $target = shell_quote($PORTS);
+    my $paths  = join ' ', map { shell_quote($_) } @ports;
+    sh( $MASTER,
+        "WIP_OPENBSD_PORTS_DIR=$source ksh $script --copy-only $target $paths" )
+      == 0
+      or die "port overlay failed\n";
     return;
 }
 
 sub topo_order {
-    my (@ports) = @_;
-    my %wip = map { $_ => 1 } @ports;
-    my %deps;
-    for my $p (@ports) {
-        $deps{$p} = [ grep { $wip{$_} } port_deps("$PORTS/$p") ];
-    }
+    my ( $deps, @ports ) = @_;
+    my %selected = map { $_ => 1 } @ports;
     my ( %state, @order );
     my $visit;
     $visit = sub {
-        my ($p) = @_;
-        return if ( $state{$p} // 0 ) == 2;
-        if ( ( $state{$p} // 0 ) == 1 ) {
-            logmsg("dependency cycle at $p");
-            return;
+        my ($port) = @_;
+        return                            if ( $state{$port} // 0 ) == 2;
+        die "dependency cycle at $port\n" if ( $state{$port} // 0 ) == 1;
+        $state{$port} = 1;
+        for my $dep ( @{ $deps->{$port} } ) {
+            my $path = dependency_path($dep);
+            $visit->($path) if $path ne $port && $selected{$path};
         }
-        $state{$p} = 1;
-        $visit->($_) for @{ $deps{$p} || [] };
-        $state{$p} = 2;
-        push @order, $p;
+        $state{$port} = 2;
+        push @order, $port;
     };
     $visit->($_) for @ports;
     return @order;
 }
 
-# ---------------------------------------------------------------- main
-
 logmsg("wip collection: $WIP");
 logmsg("ports tree:     $PORTS");
 logmsg("logs:           $LOGDIR");
 
-my @all_ports = find_ports();
-die "no ports found under $WIP\n" unless @all_ports;
-my %wip   = map                  { $_ => 1 } @all_ports;
-my @ports = length($ONLY) ? grep { $_ eq $ONLY } @all_ports : @all_ports;
-die "--only $ONLY does not name an installable port\n"
-  if length($ONLY) && !@ports;
-logmsg( "ports to build: " . scalar(@ports) );
-
+my @all_ports = inventory( $helper, $WIP );
+my %wip       = map                 { $_ => 1 } @all_ports;
+my @ports     = length $ONLY ? grep { $_ eq $ONLY } @all_ports : @all_ports;
+die "no matching installable ports\n" unless @ports;
 ensure_tree();
 sync_ports(@ports);
 
-my @order = length($ONLY) ? @ports : topo_order(@ports);
-my ( %installed, %result );
-
-for my $p (@order) {
-    my $dir  = "$PORTS/$p";
-    my $plog = portlog($p);
-    my $qdir = shell_quote($dir);
-    logmsg("=== $p");
-    my $r = { manifests => '-', deps => '-', build => '-', test => 'skip' };
-
-    # 1. generated manifests
-    my $mrc = 0;
-    $mrc |= sh( $plog, "cd $qdir && $ENVM$MAKE makesum" );
-    if ( -e "$dir/modules.inc" ) {
-        $mrc |= regenerate_include( $plog, $dir, 'modules.inc',
-            "$MAKE modgo-gen-modules" );
-    }
-    if ( -e "$dir/crates.inc" ) {
-        $mrc |= regenerate_include( $plog, $dir, 'crates.inc',
-            "{ $MAKE modcargo-gen-crates-licenses || $MAKE modcargo-gen-crates; }"
-        );
-    }
-    if ( -e "$dir/cabal.inc" ) {
-        $mrc |= sh( $plog, "cd $qdir && $MAKE cabal-inc" );
-    }
-    if ( $PLIST && !-s "$dir/pkg/PLIST" ) {
-        $mrc |= sh( $plog, "cd $qdir && $MAKE update-plist" );
-    }
-    $r->{manifests} = $mrc ? "FAIL($mrc)" : 'ok';
-
-    # 2. dependencies: pkg_add the ones outside the collection
-    my $drc = 0;
-    for my $dep ( port_deps($dir) ) {
-        next if $wip{$dep};
-        next unless -d "$PORTS/$dep";
-        next if $installed{$dep};
-        my $pkg = show_var( "$PORTS/$dep", 'PKGNAME' );
-        next unless length $pkg;
-        my $qdep   = shell_quote("$PORTS/$dep");
-        my $qpkg   = shell_quote($pkg);
-        my $dep_rc = sh( $plog, "cd $qdep && $PKG_ADD $qpkg" );
-        $drc |= $dep_rc;
-        $installed{$dep} = 1 unless $dep_rc;
-    }
-    $r->{deps} = $drc ? "FAIL($drc)" : 'ok';
-
-    # 3. build
-    my $brc = 0;
-    $brc = sh( $plog, "cd $qdir && $MAKE clean" )
-      if length $BUILDTGT && $BUILDTGT ne 'build';
-    $brc ||= sh( $plog, "cd $qdir && $ENVM$MAKE $BUILDTGT" );
-    $r->{build} = $brc ? "FAIL($brc)" : 'ok';
-
-    # 4. tests, only after a successful build
-    if ( $TESTS && !$brc ) {
-        my $no_test = show_var( $dir, 'NO_TEST' );
-        if ( $no_test eq 'Yes' ) {
-            $r->{test} = 'skip (NO_TEST)';
-        }
-        else {
-            my $trc = sh( $plog, "cd $qdir && $ENVM$MAKE test" );
-            $r->{test} = $trc ? "FAIL($trc)" : 'ok';
-        }
-    }
-    $result{$p} = $r;
-    logmsg(
-        sprintf(
-            "   manifests=%s deps=%s build=%s test=%s",
-            $r->{manifests}, $r->{deps}, $r->{build}, $r->{test}
-        )
-    );
+my ( %result, %deps, %installed );
+my $capture = sub { $DRYRUN ? ( 0, '' ) : capture_command(@_) };
+for my $port (@ports) {
+    my $dir = $DRYRUN ? "$WIP/$port" : "$PORTS/$port";
+    ( my $label = $port ) =~ s{/}{-}g;
+    my $log = "$LOGDIR/$label.log";
+    my $run = sub { sh( $log, @_ ) };
+    my $r   = $result{$port} = {
+        manifests => 'blocked',
+        deps      => 'blocked',
+        build     => 'blocked',
+        test      => 'skip',
+        log       => $log,
+    };
+    my %includes = map { $_ => 1 } generated_files($dir);
+    my $rc =
+      prepare_manifests( $run, $dir, $MAKE, \%includes, $REGENERATE, $DRYRUN );
+    $r->{manifests} = $rc ? "FAIL($rc)" : $DRYRUN ? 'dry-run' : 'ok';
+    ( $rc, my $specs ) =
+      $rc
+      ? ( $rc, [] )
+      : dependency_specs( $capture, $dir, $MAKE, $TESTS );
+    $deps{$port} = $specs;
+    next if $r->{manifests} =~ /^FAIL/;
+    $r->{deps} = $rc ? "FAIL($rc)" : $DRYRUN ? 'dry-run' : 'ok';
 }
 
-# summary
-{
-    open( my $fh, '>', $SUMMARY ) or die "open $SUMMARY: $!";
-    print {$fh} "port\tmanifests\tdeps\tbuild\ttest\n"
+for my $port ( topo_order( \%deps, @ports ) ) {
+    my $r = $result{$port};
+    next if $r->{manifests} =~ /^FAIL/ || $r->{deps} =~ /^FAIL/;
+    my $dir    = shell_quote("$PORTS/$port");
+    my $run    = sub { sh( $r->{log}, "cd $dir && $_[0]" ) };
+    my $dep_rc = 0;
+    for my $spec ( @{ $deps{$port} } ) {
+        my $path = dependency_path($spec);
+        if (   $path ne $port
+            && exists $result{$path}
+            && $result{$path}{build} !~ /^(?:ok|dry-run)$/ )
+        {
+            logmsg("blocked $port: prerequisite $spec did not build");
+            $r->{deps} = 'blocked';
+            last;
+        }
+        next if !$PKG_ADD || $wip{$path} || $installed{$spec};
+        my ( $name_rc, $pkg ) = package_name( $capture, $PORTS, $MAKE, $spec );
+        $dep_rc = $name_rc || sh( $r->{log}, "$PKG_ADD " . shell_quote($pkg) );
+        last if $dep_rc;
+        $installed{$spec} = 1;
+    }
+    next if $r->{deps} eq 'blocked';
+    if ($dep_rc) {
+        $r->{deps} = "FAIL($dep_rc)";
+        next;
+    }
+    my $rc = $PLIST ? $run->("$ENVM$MAKE fake") : 0;
+    $rc ||= $run->("$MAKE update-plist") if $PLIST;
+    $rc ||= $run->("$ENVM$MAKE $BUILDTGT");
+    $r->{build} = $rc ? "FAIL($rc)" : $DRYRUN ? 'dry-run' : 'ok';
+    next unless $TESTS && !$rc;
+    my ( $query_rc, $no_test ) = $capture->("cd $dir && $MAKE show=NO_TEST");
+    if ($query_rc) {
+        $r->{test} = "FAIL($query_rc)";
+    }
+    elsif ( lc($no_test) ne 'yes' ) {
+        my $test_rc = $run->("$ENVM$MAKE test");
+        $r->{test} = $test_rc ? "FAIL($test_rc)" : $DRYRUN ? 'dry-run' : 'ok';
+    }
+}
+
+open my $summary, '>', $SUMMARY or die "open $SUMMARY: $!";
+print {$summary} "port\tmanifests\tdeps\tbuild\ttest\n"
+  or die "write $SUMMARY: $!";
+my @failed;
+for my $port ( sort keys %result ) {
+    my $r      = $result{$port};
+    my @status = @$r{qw(manifests deps build test)};
+    print {$summary} join( "\t", $port, @status ), "\n"
       or die "write $SUMMARY: $!";
-    for my $p ( sort keys %result ) {
-        my $r = $result{$p};
-        print {$fh}
-          join( "\t", $p, $r->{manifests}, $r->{deps}, $r->{build},
-            $r->{test} ), "\n"
-          or die "write $SUMMARY: $!";
-    }
-    close $fh or die "close file: $!";
+    logmsg(
+"$port manifests=$r->{manifests} deps=$r->{deps} build=$r->{build} test=$r->{test}"
+    );
+    push @failed, $port if grep { /^(?:FAIL|blocked)/ } @status;
 }
+close $summary or die "close $SUMMARY: $!";
 logmsg("summary: $SUMMARY");
-my @failed = grep {
-         $result{$_}{manifests} =~ /^FAIL/
-      || $result{$_}{deps} =~ /^FAIL/
-      || $result{$_}{build} ne 'ok'
-      || $result{$_}{test} =~ /^FAIL/
-} sort keys %result;
 logmsg( "ports with failures: " . ( @failed ? join( ' ', @failed ) : 'none' ) );
 close STDOUT or die "close stdout: $!";
 exit( @failed ? 1 : 0 );

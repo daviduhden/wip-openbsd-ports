@@ -29,6 +29,13 @@ sub get_file {
     return $text;
 }
 
+sub native_fixture {
+    my ($dir) = @_;
+    make_path( "$dir/cat", "$dir/infrastructure/db" );
+    put_file( "$dir/Makefile",                    "# ports tree fixture\n" );
+    put_file( "$dir/infrastructure/db/user.list", "# user registry fixture\n" );
+}
+
 sub run_script {
     my ( $script, @args ) = @_;
     my $log = "$tmp/output-" . ++$sequence;
@@ -106,6 +113,7 @@ for my $port (qw(simplex-chat simplexmq)) {
 my $ports = "$tmp/ports";
 make_path("$ports/cat/demo/pkg");
 put_file( "$ports/cat/demo/Makefile", "V = 1.0\n" );
+put_file( "$ports/user.list",         "# overlay registry fixture\n" );
 for my $tool (qw(bulk-build gen-manifests-and-test detect-new-versions)) {
     my $tree_option = $tool eq 'gen-manifests-and-test' ? '--ports' : '--wip';
     my @args =
@@ -115,6 +123,7 @@ for my $tool (qw(bulk-build gen-manifests-and-test detect-new-versions)) {
     my ( $status, $out ) = run_script( "tools/$tool.pl", @args );
     is( $status, 0, "$tool fixture dry run succeeds without builds/network" );
     like( $out, qr{cat/demo}, "$tool discovers fixture port" );
+    like( $out, qr/dry-run/,  "$tool identifies the simulation" );
 }
 
 if ( !$ENV{PERL_AUDIT_BASELINE} ) {
@@ -130,6 +139,7 @@ if ( !$ENV{PERL_AUDIT_BASELINE} ) {
     }
 
     my $quoted = "$tmp/ports 'quoted";
+    native_fixture($quoted);
     make_path("$quoted/cat/demo/pkg");
     put_file( "$quoted/cat/demo/Makefile",  "V = 1.0\n" );
     put_file( "$quoted/cat/demo/distinfo",  "fixture\n" );
@@ -140,14 +150,15 @@ if ( !$ENV{PERL_AUDIT_BASELINE} ) {
         use strict;
         use warnings;
         if (grep { /^show=/ } @ARGV) { exit 0; }
+        if (grep { /-dir-depends$/ } @ARGV) { exit 0; }
         print "mock make executed\n";
         exit 0;
     }
     );
     chmod 0700, $make or die "chmod: $!";
     my ( $status, $out ) = run_script( 'tools/gen-manifests-and-test.pl',
-        '--ports', $quoted, '--logdir', "$tmp/quoted-logs", '--make', $make,
-        '--all' );
+        '--ports',  $quoted, '--wip', $ports,
+        '--logdir', "$tmp/quoted-logs", '--make', $make, '--all' );
     is( $status, 0, 'shell data paths with apostrophes stay literal' );
     like(
         get_file("$tmp/quoted-logs/cat-demo.log"),
@@ -165,25 +176,35 @@ if ( !$ENV{PERL_AUDIT_BASELINE} ) {
         1;
     }
     );
-    local $ENV{PERL5LIB}   = "$tmp/lib";
-    local $ENV{AUDIT_JSON} = '[null, 42, {"name":"v2.0"}]';
+    local $ENV{PERL5LIB} = "$tmp/lib";
+    local $ENV{AUDIT_JSON} =
+'[null, 42, {"name":"v9.0"}, {"tag_name":"v8.0","prerelease":true},{"tag_name":"v2.0"}]';
     put_file( "$ports/cat/demo/Makefile",
         "V = 1.0\nGH_ACCOUNT = example\nGH_PROJECT = demo\nGH_TAGNAME = v1.0\n"
     );
     ( $status, $out ) = run_script( 'tools/detect-new-versions.pl',
         '--wip', $ports, '--logdir', "$tmp/json-logs" );
-    is( $status >> 8,
-        1, 'valid tag among malformed API entries is still reported outdated' );
+    is( $status >> 8, 1,
+        'published stable release is still reported outdated' );
     like(
         $out,
         qr/OUTDATED.*cat\/demo.*v2[.]0/,
-        'malformed tag entries do not crash registry parsing'
+        'bare tags and prereleases cannot replace the stable release'
     );
+    put_file( "$ports/cat/demo/Makefile",
+"V = 1.0\nGH_ACCOUNT = example\nGH_PROJECT = demo\nGH_TAGNAME = v1.0\nPORTROACH = limit:^v1[.]\n"
+    );
+    ( $status, $out ) = run_script( 'tools/detect-new-versions.pl',
+        '--wip', $ports, '--logdir', "$tmp/constrained-logs" );
+    is( $status, 0, 'empty constraint result is not an update' );
+    like( $out, qr/no-eligible.*cat\/demo/,
+        'out-of-limit releases do not provide a fallback' );
 
     # The shell itself can die by signal. Shifting $? used to report success.
     ( $status, $out ) = run_script(
         'tools/gen-manifests-and-test.pl', '--ports',
-        $quoted,                           '--logdir',
+        $quoted,                           '--wip',
+        $ports,                            '--logdir',
         "$tmp/signal-logs",                '--all',
         '--no-tests',                      '--make',
         'kill -TERM $$; :'
@@ -197,11 +218,12 @@ if ( !$ENV{PERL_AUDIT_BASELINE} ) {
         $failing_make, "#!$^X\n" . q{
         use strict;
         use warnings;
-        exit 3 if grep { $_ eq 'makesum' } @ARGV;
+        exit 3 if grep { $_ eq 'checksum' } @ARGV;
         exit 0;
     }
     );
     chmod 0700, $failing_make or die "chmod: $!";
+    native_fixture("$tmp/overlay");
     ( $status, $out ) = run_script(
         'tools/bulk-build.pl',     '--wip',
         $ports,                    '--ports',
@@ -210,10 +232,72 @@ if ( !$ENV{PERL_AUDIT_BASELINE} ) {
         '--no-tests',              '--make',
         $failing_make
     );
-    isnt( $status, 0, 'failed manifest generation fails the bulk summary' );
-    like( $out, qr/manifests=FAIL[(]3[)]/, 'manifest failure is recorded' );
+    isnt( $status, 0, 'failed checksum fails the bulk summary' );
+    like(
+        $out,
+        qr/manifests=FAIL[(]3[)] deps=blocked build=blocked/,
+        'failed checksum blocks later stages'
+    );
+    unlike(
+        $out,
+        qr/run: .* (makesum|package|install)\b/,
+        'default verifier skips mutation after a checksum failure'
+    );
+
+    put_file( "$quoted/cat/demo/Makefile", ".include \"modules.inc\"\n" );
+    my $go_make = "$tmp/go-make";
+    put_file(
+        $go_make, "#!$^X\n" . q{
+        use strict;
+        use warnings;
+        if ($ARGV[0] eq 'modgo-gen-modules') {
+            print "MODGO_MODULES = sample\n";
+        }
+        elsif ($ARGV[0] eq 'makesum') {
+            open my $f, '<', 'modules.inc' or exit 11;
+            exit 12 unless <$f> =~ /sample/;
+        }
+        elsif ($ARGV[0] eq 'build-dir-depends') {
+            print "cat/demo cat/dependency,-docs,zstd\n";
+        }
+        elsif ($ARGV[0] eq 'show=FULLPKGNAME-docs') {
+            exit 13 unless ($ENV{SUBPACKAGE} // '') eq '-docs'
+              && ($ENV{FLAVOR} // '') eq 'zstd';
+            print "dependency-docs-1.0-zstd\n";
+        }
+    }
+    );
+    chmod 0700, $go_make or die "chmod: $!";
+    make_path("$quoted/cat/dependency");
+    ( $status, $out ) = run_script(
+        'tools/gen-manifests-and-test.pl', '--ports',
+        $quoted,                           '--wip',
+        $ports,                            '--all',
+        '--regenerate',                    '--update-plist',
+        '--no-tests',                      '--make',
+        $go_make,                          '--pkg-add',
+        'echo',                            '--logdir',
+        "$tmp/go-logs"
+    );
+    is( $status, 0, 'Go manifest regeneration accepts full dependency specs' );
+    is(
+        get_file("$quoted/cat/demo/modules.inc"),
+        "MODGO_MODULES = sample\n",
+        'generator output is published before the final makesum'
+    );
+    like(
+        $out,
+        qr/echo 'dependency-docs-1\.0-zstd'/,
+'optional package resolution selects the requested flavor and subpackage'
+    );
+    like(
+        $out,
+        qr/run: .* fake.*run: .* update-plist.*run: .* package/s,
+        'explicit packing-list refresh occurs before packaging'
+    );
 
     make_path( "$tmp/bin", "$tmp/cvs-tree/CVS" );
+    native_fixture("$tmp/cvs-tree");
     put_file(
         "$tmp/bin/cvs", "#!$^X\n" . q{
         use strict;
@@ -235,7 +319,8 @@ if ( !$ENV{PERL_AUDIT_BASELINE} ) {
             "$tmp/cvs-tree",       '--logdir',
             "$tmp/cvs-logs",       '--no-tests',
             '--make',              $make,
-            '--cvsroot',           "root'quoted"
+            '--cvsroot',           "root'quoted",
+            '--refresh'
         );
         is( $status, 0, 'mock CVS refresh succeeds' );
         like(
@@ -249,7 +334,8 @@ if ( !$ENV{PERL_AUDIT_BASELINE} ) {
             $ports,                '--ports',
             "$tmp/cvs-tree",       '--logdir',
             "$tmp/cvs-fail-logs",  '--no-tests',
-            '--make',              $make
+            '--refresh',           '--make',
+            $make
         );
         isnt( $status, 0, 'failed CVS refresh aborts before overlay/build' );
     }
@@ -272,8 +358,8 @@ if ( !$ENV{PERL_AUDIT_BASELINE} ) {
         ok( defined $directory,
             "default log run $run_number reports its directory" );
         if ( defined $directory ) {
-            is( ( stat($directory) )[2] & 0777,
-                0700, 'default log directory is private' );
+            is( ( stat($directory) )[2] & oct("777"),
+                oct("700"), 'default log directory is private' );
             push @default_logs, $directory;
         }
     }
@@ -295,8 +381,7 @@ if ( !$ENV{PERL_AUDIT_BASELINE} ) {
     die "load sandbox helpers: " . ( $@ || $! ) unless defined $loaded;
     my ( $exit, $timed_out, $output ) =
       capture( $tmp, $tmp,
-        [ $^X, "$root/tools/t/fixtures/capture-output.pl" ],
-        5 );
+        [ $^X, "$root/tools/t/fixtures/capture-output.pl" ], 5 );
     is( $exit, 0, 'capture preserves successful exit' );
     ok( !$timed_out, 'successful capture does not time out' );
     is( length($output), 100_013,
@@ -317,23 +402,34 @@ if ( !$ENV{PERL_AUDIT_BASELINE} ) {
     isnt( $exit, 0, 'timed-out target is terminated and reaped' );
 
     my $diagnostic = 'OpenBSD has no supported command sandbox';
-    ok( managed_rejection_passed( 1, 0, $diagnostic, 0 ),
-        'managed profile refusal requires the backend diagnostic' );
+    ok(
+        managed_rejection_passed( 1, 0, $diagnostic, 0 ),
+        'managed profile refusal requires the backend diagnostic'
+    );
     for my $bad_exit ( 0, 125, 126, 127, 128, 143, 255 ) {
-        ok( !managed_rejection_passed( $bad_exit, 0, $diagnostic, 0 ),
-            "status $bad_exit cannot prove managed profile rejection" );
+        ok(
+            !managed_rejection_passed( $bad_exit, 0, $diagnostic, 0 ),
+            "status $bad_exit cannot prove managed profile rejection"
+        );
     }
-    ok( !managed_rejection_passed( 1, 1, $diagnostic, 0 ),
-        'timeout cannot prove managed profile rejection' );
-    ok( !managed_rejection_passed( 1, 0, $diagnostic, 1 ),
-        'an executed child invalidates managed profile rejection' );
+    ok(
+        !managed_rejection_passed( 1, 1, $diagnostic, 0 ),
+        'timeout cannot prove managed profile rejection'
+    );
+    ok(
+        !managed_rejection_passed( 1, 0, $diagnostic, 1 ),
+        'an executed child invalidates managed profile rejection'
+    );
     for my $wrong_diagnostic (
-        '', 'network isolation is unavailable',
+        '',
+        'network isolation is unavailable',
         'unveil rules are discarded by execve'
       )
     {
-        ok( !managed_rejection_passed( 1, 0, $wrong_diagnostic, 0 ),
-            'unrelated failure cannot prove missing-backend rejection' );
+        ok(
+            !managed_rejection_passed( 1, 0, $wrong_diagnostic, 0 ),
+            'unrelated failure cannot prove missing-backend rejection'
+        );
     }
 }
 

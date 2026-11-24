@@ -1,6 +1,6 @@
 COMMENT =		high performance Monero CPU miner
 
-V =			6.26.0
+V =			6.27.0
 GH_ACCOUNT =		xmrig
 GH_PROJECT =		xmrig
 GH_TAGNAME =		v${V}

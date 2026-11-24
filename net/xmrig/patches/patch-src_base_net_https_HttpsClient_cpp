@@ -1,0 +1,113 @@
+Authenticate HTTPS daemon requests with the base trust store and host.
+Keep exact certificate pins as alternative trust and reject TLS errors.
+Release untransferred BIOs when TLS setup cannot complete.
+
+Index: src/base/net/https/HttpsClient.cpp
+--- src/base/net/https/HttpsClient.cpp.orig
++++ src/base/net/https/HttpsClient.cpp
+@@ -21,3 +21,5 @@
+ #include <cassert>
++#include <climits>
+ #include <openssl/ssl.h>
++#include <openssl/x509v3.h>
+ #include <uv.h>
+@@ -45,2 +47,12 @@ xmrig::HttpsClient::HttpsClient(const ch
+
++    if (this->req().fingerprint.isNull()) {
++        if (SSL_CTX_set_default_verify_paths(m_ctx) != 1) {
++            SSL_CTX_free(m_ctx);
++            m_ctx = nullptr;
++            return;
++        }
++
++        SSL_CTX_set_verify(m_ctx, SSL_VERIFY_PEER, nullptr);
++    }
++
+     m_write = BIO_new(BIO_s_mem());
+@@ -59,2 +71,5 @@ xmrig::HttpsClient::~HttpsClient()
+         SSL_free(m_ssl);
++    } else {
++        BIO_free(m_read);
++        BIO_free(m_write);
+     }
+@@ -77,2 +92,6 @@ void xmrig::HttpsClient::handshake()
+ {
++    if (m_ctx == nullptr || m_read == nullptr || m_write == nullptr) {
++        return close(UV_EPROTO);
++    }
++
+     m_ssl = SSL_new(m_ctx);
+@@ -81,3 +100,3 @@ void xmrig::HttpsClient::handshake()
+     if (!m_ssl) {
+-        return;
++        return close(UV_EPROTO);
+     }
+@@ -86,5 +105,11 @@ void xmrig::HttpsClient::handshake()
+     SSL_set_bio(m_ssl, m_read, m_write);
+-    SSL_set_tlsext_host_name(m_ssl, host());
++    if (SSL_set_tlsext_host_name(m_ssl, host()) != 1) {
++        return close(UV_EPROTO);
++    }
+
+-    SSL_do_handshake(m_ssl);
++    const int rc = SSL_do_handshake(m_ssl);
++    const int err = SSL_get_error(m_ssl, rc);
++    if (rc <= 0 && err != SSL_ERROR_WANT_READ && err != SSL_ERROR_WANT_WRITE) {
++        return close(UV_EPROTO);
++    }
+
+@@ -96,3 +121,13 @@ void xmrig::HttpsClient::read(const char
+ {
+-    BIO_write(m_read, data, size);
++    if (size == 0) {
++        return;
++    }
++
++    if (m_ssl == nullptr) {
++        return close(UV_EPROTO);
++    }
++
++    if (size > INT_MAX || BIO_write(m_read, data, static_cast<int>(size)) != static_cast<int>(size)) {
++        return close(UV_EPROTO);
++    }
+
+@@ -101,3 +136,4 @@ void xmrig::HttpsClient::read(const char
+
+-        if (rc < 0 && SSL_get_error(m_ssl, rc) == SSL_ERROR_WANT_READ) {
++        const int err = SSL_get_error(m_ssl, rc);
++        if (rc <= 0 && (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)) {
+             flush(false);
+@@ -118,2 +154,4 @@ void xmrig::HttpsClient::read(const char
+             HttpClient::handshake();
++      } else {
++          close(UV_EPROTO);
+       }
+@@ -164,2 +202,17 @@ bool xmrig::HttpsClient::verify(X509 *ce
+
++    if (req().fingerprint.isNull()) {
++        int identity = host() ? X509_check_ip_asc(cert, host(), 0) : 0;
++        if (identity == -2) {
++            identity = X509_check_host(cert, host(), strlen(host()),
++                                       X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS, nullptr);
++        }
++
++        if (SSL_get_verify_result(m_ssl) != X509_V_OK || identity != 1) {
++            if (!isQuiet()) {
++                LOG_ERR("[%s:%d] Failed to verify TLS certificate chain or host", host(), port());
++            }
++            return false;
++        }
++    }
++
+     return true;
+@@ -178,3 +231,3 @@ bool xmrig::HttpsClient::verifyFingerpri
+
+-    if (X509_digest(cert, digest, md, &dlen) != 1) {
++    if (X509_digest(cert, digest, md, &dlen) != 1 || dlen != 32) {
+         return false;
+@@ -184,3 +237,4 @@ bool xmrig::HttpsClient::verifyFingerpri
+
+-    return req().fingerprint.isNull() || strncasecmp(m_fingerprint, req().fingerprint.data(), 64) == 0;
++    return req().fingerprint.isNull() ||
++           (req().fingerprint.size() == 64 && strncasecmp(m_fingerprint, req().fingerprint.data(), 64) == 0);
+ }

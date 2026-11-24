@@ -4,7 +4,7 @@
 Index: src/crypto/common/VirtualMemory_unix.cpp
 --- src/crypto/common/VirtualMemory_unix.cpp.orig
 +++ src/crypto/common/VirtualMemory_unix.cpp
-@@ -86,7 +86,7 @@ bool xmrig::VirtualMemory::isHugepagesAv
+@@ -91,7 +91,7 @@ bool xmrig::VirtualMemory::isHugepagesAv
  {
  #   ifdef XMRIG_OS_LINUX
      return std::ifstream("/proc/sys/vm/nr_hugepages").good() || std::ifstream("/sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages").good();
@@ -13,7 +13,7 @@ Index: src/crypto/common/VirtualMemory_unix.cpp
      return false;
  #   else
      return true;
-@@ -158,6 +158,8 @@ void *xmrig::VirtualMemory::allocateExec
+@@ -165,6 +165,8 @@ void *xmrig::VirtualMemory::allocateExec
      }
  #   elif defined(XMRIG_OS_HAIKU)
      void *mem = mmap(0, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -22,7 +22,7 @@ Index: src/crypto/common/VirtualMemory_unix.cpp
  #   else
 
      void *mem = nullptr;
-@@ -182,7 +184,7 @@ void *xmrig::VirtualMemory::allocateLarg
+@@ -189,7 +191,7 @@ void *xmrig::VirtualMemory::allocateLarg
      void *mem = mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, VM_FLAGS_SUPERPAGE_SIZE_2MB, 0);
  #   elif defined(XMRIG_OS_FREEBSD)
      void *mem = mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_ALIGNED_SUPER | MAP_PREFAULT_READ, -1, 0);

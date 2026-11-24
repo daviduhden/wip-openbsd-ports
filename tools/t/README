@@ -51,4 +51,5 @@ instruction diffs, then checks skill frontmatter, required maintenance headings,
 and local Markdown link targets. It uses Perl core modules and Git only. It
 cannot assess semantic relevance, so reviewers must still confirm the changed
 instructions teach reusable, accurate knowledge. Run `prove -v
-tools/t/perl-tools.t` when changing Perl tools, including this checker.
+tests/agent_knowledge_validator` for changes to the validator contract and
+`prove -v tools/t` for the repository tools and overlay fixtures.

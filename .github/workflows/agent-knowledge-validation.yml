@@ -2,6 +2,11 @@ name: Agent Knowledge Validation
 
 on:
   workflow_dispatch:
+    inputs:
+      base:
+        description: Base commit SHA, branch, or tag to compare with the selected ref
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -24,5 +29,21 @@ jobs:
         run: perl -c scripts/validate-agent-knowledge.pl
       - name: Run canonical contract tests
         run: prove -v tests/agent_knowledge_validator
-      - name: Run canonical worktree validation
-        run: perl scripts/validate-agent-knowledge.pl --scope worktree
+      - name: Run canonical range validation
+        env:
+          BASE_REF: ${{ inputs.base }}
+        run: |
+          base=$(git rev-parse --verify --end-of-options "$BASE_REF^{commit}")
+          head=$(git rev-parse --verify 'HEAD^{commit}')
+          common=$(git merge-base "$base" "$head")
+          if [ "$common" = "$head" ]; then
+            echo 'Select a base that leaves commits to review.' >&2
+            exit 1
+          fi
+          perl scripts/validate-agent-knowledge.pl --scope range --base "$base" --head "$head"
+      - name: Install Korn shell for the inventory fixture
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y ksh
+      - name: Run offline tools and inventory tests
+        run: prove -v tools/t

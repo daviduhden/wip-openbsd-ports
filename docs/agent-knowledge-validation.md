@@ -30,11 +30,19 @@ codes are unchanged. `contract_version` in `.agent-knowledge-validator.toml`
 must be `2.0.0`; a repository still on the Python 1.0.0 validator must update
 both the configuration and its CI invocation before adopting the Perl files.
 
-`worktree` includes staged and unstaged tracked changes, untracked non-ignored
-files, renames, and deletions. `range` compares the merge base of `BASE_REF`
-and `HEAD_REF` with `HEAD_REF`. For a pull request, fetch sufficient history
-and pass the PR base and head commit SHAs; the validator resolves their common
-ancestor itself.
+`worktree` compares the current files with `HEAD`, including additions,
+renames, and deletions. It discovers instruction files among tracked and
+non-ignored untracked files. The result describes the net working tree
+content, which can differ from the staged content.
+
+`range` compares the merge base of `BASE_REF` and `HEAD_REF` with
+`HEAD_REF`. It reads the configuration, instructions and repository-relative
+link targets from the committed head tree, so the current checkout can be
+dirty or point at another commit. Relative symbolic links can resolve inside
+that tree. For a pull request, fetch sufficient history and pass the PR base
+and head commit SHAs. The manually dispatched GitHub workflow requires a base
+ref or SHA, uses the selected workflow ref as the head, and runs the
+canonical contract suite and the offline tools and inventory suites.
 
 Exit codes are consistent across repositories: `0` means no policy errors,
 `1` means a policy violation, and `2` means invalid arguments, configuration,

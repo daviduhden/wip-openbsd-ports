@@ -292,6 +292,11 @@ cap a major version even when the dependency itself has moved on.
   match, record the verified no-op instead of inventing a version or package
   revision. If the requested tag is marked prerelease, report that status
   while honoring the explicit selection.
+  When the SimpleXMQ pin changes, compare the pinned commit's submodule
+  object IDs with both ports' `DIST_TUPLE` entries. Rebase common patches
+  on the same pristine MQ commit and verify both series separately.
+  If upstream moves an operation into a store transaction, preserve that
+  transaction while adapting local guards and worker notification behavior.
 - When a port vendors a sibling's upstream through `DIST_TUPLE` and its own
   `files/<dependency>/` patches, advance both pins in the same change and
   copy the sibling's rebased patches back into the vendored directory. Drop

@@ -28,7 +28,7 @@ Index: src/Simplex/Messaging/Transport/Client.hs
 +  -- TLS.bye has its own receive deadline. UnliftIO.bracket would run this
 +  -- finalizer under uninterruptibleMask_, disabling that deadline.
 +  CE.bracket (set CHSocket $ connectTCP port) (\_ -> closeConn h) $ \sock -> do
-     mapM_ (setSocketKeepAlive sock) tcpKeepAlive `catchAll` \e -> logError ("Error setting TCP keep-alive " <> tshow e)
+     mapM_ (setSocketKeepAlive sock) tcpKeepAlive `catchOwn` \e -> logError ("Error setting TCP keep-alive " <> tshow e)
      let tCfg = clientTransportConfig cfg
      -- No TLS timeout to avoid failing connections via SOCKS
 @@ -183,7 +186,7 @@ runTLSTransportClient tlsParams caStore_

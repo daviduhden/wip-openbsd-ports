@@ -97,7 +97,7 @@ Index: tests/AgentTests/SQLiteTests.hs
          it "should getPendingQueueMsg" testGetPendingQueueMsg
          it "should getPendingServerCommand" testGetPendingServerCommand
          it "should getNextRcvChunkToDownload" testGetNextRcvChunkToDownload
-@@ -879,6 +903,8 @@ testGetNextSndChunkToUpload st = do
+@@ -880,6 +904,8 @@ testGetNextSndChunkToUpload st = do
      -- create file 2
      Right fId2 <- createSndFile db g 1 (CryptoFile "filepath" Nothing) 1 "filepath" testFileSbKey testFileCbNonce Nothing Nothing
      updateSndFileEncrypted db 2 (FileDigest "abc") [(XFTPChunkSpec "filepath" 1 1, FileDigest "ghi")]

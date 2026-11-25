@@ -140,7 +140,7 @@ Index: tests/SMPProxyTests.hs
                huh -> fail (show huh)
        bSender <- async $ forM_ msgs $ runExceptT' . A.sendMessage bob aliceId pqEnc noMsgFlags
        aRecipient <-
-@@ -440,7 +440,15 @@ agentViaProxyRetryNoSession = do
+@@ -438,7 +438,15 @@ agentViaProxyRetryNoSession = do
            pure ()
    where
      withServer2 = withSmpServerConfigOn (transport @TLS) proxyCfgS2 testPort2

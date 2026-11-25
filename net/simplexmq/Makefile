@@ -4,11 +4,10 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplexmq
-# Match the SimpleXMQ source selected by SimpleX Chat v7.1.4.
-GH_COMMIT = fdbcb24d86460977382e1237591cd505c3b37fa1
+# Match the SimpleXMQ source selected by SimpleX Chat v7.1.5.
+GH_COMMIT = 76c2bd113ea7f27c304e021ecbca5f06d2d0df80
 
-V = 7.1.0.18
-REVISION = 0
+V = 7.1.1.0
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -44,7 +43,7 @@ WANTLIB = c crypto ffi gmp iconv m pthread sqlcipher util z zstd
 
 MODULES = devel/cabal
 MODCABAL_STEM = simplexmq
-MODCABAL_VERSION = 7.1.0.18
+MODCABAL_VERSION = 7.1.1.0
 MODCABAL_EXECUTABLES = smp-server xftp-server
 
 .if ${DEBUG} == 1

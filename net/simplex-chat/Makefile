@@ -4,10 +4,9 @@ DEBUG ?= 0
 
 GH_ACCOUNT = simplex-chat
 GH_PROJECT = simplex-chat
-GH_TAGNAME = v7.1.4
+GH_TAGNAME = v7.1.5
 
-V = 7.1.4
-REVISION = 0
+V = 7.1.5
 DISTNAME = ${GH_PROJECT}-${V}
 DISTFILES = ${GH_DISTFILE}
 SITES = ${SITES_GITHUB}
@@ -17,7 +16,7 @@ ONLY_FOR_ARCHS = amd64 arm64
 
 # Match the exact upstream Cabal pin and the standalone simplexmq port.
 DIST_TUPLE += github simplex-chat simplexmq \
-		fdbcb24d86460977382e1237591cd505c3b37fa1 ../simplexmq
+		76c2bd113ea7f27c304e021ecbca5f06d2d0df80 ../simplexmq
 DIST_TUPLE += github supranational blst \
 		db3defd0d501cc2bb1cdd59cb955d1a421821441 ../simplexmq/cbits/blst
 DIST_TUPLE += github simplex-chat libbbs \
@@ -64,7 +63,7 @@ WANTLIB = c crypto ffi gmp iconv m pthread sqlcipher util z zstd
 
 MODULES = devel/cabal
 MODCABAL_STEM = simplex-chat
-MODCABAL_VERSION = 7.1.4.0
+MODCABAL_VERSION = 7.1.5.0
 MODCABAL_EXECUTABLES = simplex-chat
 
 .if ${DEBUG} == 1

@@ -66,7 +66,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      runRight,
      runRight_,
      inAnyOrder,
-@@ -66,6 +68,8 @@ where
+@@ -67,6 +69,8 @@ where
  import AgentTests.ConnectionRequestTests (connReqData, queueAddr, testE2ERatchetParams12)
  import AgentTests.EqInstances ()
  import Control.Concurrent (forkIO, killThread, threadDelay)
@@ -75,7 +75,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
  import Control.Monad
  import Control.Monad.Except
  import Control.Monad.Reader
-@@ -77,6 +81,7 @@ import Data.ByteString.Char8 (ByteString
+@@ -78,6 +82,7 @@ import Data.ByteString.Char8 (ByteString
  import qualified Data.ByteString.Char8 as B
  import Data.Either (isRight, partitionEithers)
  import Data.Int (Int64)
@@ -83,7 +83,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
  import Data.List (find, isInfixOf, isPrefixOf, isSuffixOf)
  import Data.List.NonEmpty (NonEmpty (..))
  import qualified Data.Map as M
-@@ -85,7 +90,7 @@ import qualified Data.Set as S
+@@ -86,7 +91,7 @@ import qualified Data.Set as S
  import qualified Data.Text as T
  import Data.Text.Encoding (decodeLatin1)
  import qualified Data.Text.IO as T
@@ -92,7 +92,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
  import Data.Time.Clock.System (SystemTime (..), getSystemTime)
  import Data.Tuple (swap)
  import Data.Type.Equality (testEquality, (:~:) (Refl))
-@@ -96,7 +101,8 @@ import SMPClient
+@@ -97,7 +102,8 @@ import SMPClient
  import Simplex.Messaging.Agent hiding (acceptContact, createConnection, deleteConnection, deleteConnections, getConnShortLink, joinConnection, sendMessage, setConnShortLink, subscribeConnection, suspendConnection)
  import qualified Simplex.Messaging.Agent as A
  import Simplex.Messaging.Agent.Client (AgentOpState (..), ProtocolTestFailure (..), ProtocolTestStep (..), ServerQueueInfo (..), UserNetworkInfo (..), UserNetworkType (..), sendAgentMessage, waitForUserNetwork)
@@ -102,7 +102,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
  import Simplex.Messaging.Agent.Protocol hiding (CON, CONF, INFO, REQ, SENT)
  import qualified Simplex.Messaging.Agent.Protocol as A
  import Simplex.Messaging.Agent.Store (Connection' (..), SomeConn' (..), StoredRcvQueue (..), StoredSndQueue (..))
-@@ -201,14 +207,19 @@ pGet c = pGet' c True
+@@ -202,14 +208,19 @@ pGet c = pGet' c True
  pGet' :: forall m. MonadIO m => AgentClient -> Bool -> m ATransmission
  pGet' c skipWarn = do
    t@(_, _, AEvt _ cmd) <- atomically (readTBQueue $ subQ c)
@@ -128,9 +128,9 @@ Index: tests/AgentTests/FunctionalAPITests.hs
 +  SFWARN {} -> skipWarn
 +  _ -> False
 
- pattern CONF :: ConfirmationId -> [SMPServer] -> ConnInfo -> AEvent e
- pattern CONF conId srvs connInfo <- A.CONF conId PQSupportOn srvs connInfo
-@@ -360,7 +371,7 @@ functionalAPITests ps = do
+ waitDisconnected :: HasCallStack => AgentClient -> IO ()
+ waitDisconnected c =
+@@ -368,7 +379,7 @@ functionalAPITests ps = do
    describe "Duplex connection - delivery stress test" $ do
      describe "one way (50)" $ testMatrix2Stress ps $ runAgentClientStressTestOneWay 50
      describe "one way (200)" $ testMatrix2Stress ps $ runAgentClientStressTestOneWay 200
@@ -139,7 +139,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      describe "two way concurrently (200)" $ testMatrix2Stress ps $ runAgentClientStressTestConc 200
    describe "Establishing duplex connection, different PQ settings" $ do
      testPQMatrix2 ps $ runAgentClientTestPQ True
-@@ -442,6 +453,7 @@ functionalAPITests ps = do
+@@ -450,6 +461,7 @@ functionalAPITests ps = do
      describe "Via contact" $ do
        it "should connect after errors" $ testContactErrors ps False
        it "should connect after errors with client restarts" $ testContactErrors ps True
@@ -147,7 +147,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
    describe "Short connection links" $ do
      describe "should connect via 1-time short link" $ testProxyMatrix ps testInvitationShortLink
      describe "should connect via 1-time short link with async join" $ testProxyMatrix ps testInvitationShortLinkAsync
-@@ -530,8 +542,9 @@ functionalAPITests ps = do
+@@ -542,8 +554,9 @@ functionalAPITests ps = do
      it "should send messages queued after file is sent before agent is suspended" $
        testSuspendingAgentCompleteSendingFile ps
    describe "Batching SMP commands" $ do
@@ -159,7 +159,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      it "should subscribe to multiple (6) subscriptions with batching" $
        testBatchedSubscriptions 6 3 ps
      it "should subscribe to multiple connections with pending messages" $
-@@ -564,7 +577,7 @@ functionalAPITests ps = do
+@@ -576,7 +589,7 @@ functionalAPITests ps = do
          testWaitDeliveryAUTHErr ps
        it "should delete connection by timeout even if message wasn't delivered" $
          testWaitDeliveryTimeout ps
@@ -168,7 +168,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
          testWaitDeliveryTimeout2 ps
    describe "Users" $ do
      it "should create and delete user with connections" $
-@@ -631,7 +644,7 @@ functionalAPITests ps = do
+@@ -643,7 +656,7 @@ functionalAPITests ps = do
      let srv1 :: HasTestEnv => SMPServer
          srv1 = testSMPServer2 {keyHash = "1234"}
      it "should fail with incorrect fingerprint" $ do
@@ -177,7 +177,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      describe "server with password" $ do
        let auth = Just "abcd"
            srv :: HasTestEnv => Maybe BasicAuth -> SMPServerWithAuth
-@@ -896,14 +909,14 @@ runAgentClientStressTestConc n pqSupport
+@@ -913,14 +926,14 @@ runAgentClientStressTestConc n pqSupport
    amId <- newTVarIO 0
    bmId <- newTVarIO 0
    finished <- newTVarIO (0 :: Int)
@@ -199,7 +199,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        ] :: [ExceptT AgentErrorType IO ()]
      )
    liftIO $ noMessagesIngoreQCONT alice "nothing else should be delivered to alice"
-@@ -914,20 +927,34 @@ runAgentClientStressTestConc n pqSupport
+@@ -931,20 +944,34 @@ runAgentClientStressTestConc n pqSupport
      message i = "message " <> bshow i
      send :: AgentClient -> ConnId -> [Int64] -> ExceptT AgentErrorType IO ()
      send a bId = mapM_ $ \i -> void $ A.sendMessage a bId pqEnc SMP.noMsgFlags (message i)
@@ -245,7 +245,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
              Just evt -> case evt of
                ("", c, A.SENT _mId srv) -> do
                  liftIO $ c == bId && srv == proxySrv `shouldBe` True
-@@ -940,20 +967,28 @@ runAgentClientStressTestConc n pqSupport
+@@ -957,20 +984,28 @@ runAgentClientStressTestConc n pqSupport
                  -- tests that mId increases
                  liftIO $ (mId >) <$> atomically (swapTVar mIdVar mId) `shouldReturn` True
                  liftIO $ c == bId && pq == pqEnc && ("message " `B.isPrefixOf` msg) `shouldBe` True
@@ -279,7 +279,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
 
  testJoinUsedInvitation :: (HasCallStack, HasTestEnv) => IO ()
  testJoinUsedInvitation =
-@@ -1733,7 +1768,7 @@ testAsyncBothOffline = do
+@@ -1756,7 +1791,7 @@ testAsyncBothOffline = do
      liftIO $ disposeAgentClient bob'
 
  testAsyncServerOffline :: (HasCallStack, HasTestEnv) => (ASrvTransport, AStoreType) -> IO ()
@@ -288,7 +288,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
    -- create connection and shutdown the server
    (bobId, cReq) <- withSmpServerStoreLogOn ps testPort $ \_ ->
      runRight $ createConnection alice 1 True SCMInvitation Nothing SMSubscribe
-@@ -1748,7 +1783,9 @@ testAsyncServerOffline ps = withAgentCli
+@@ -1771,7 +1806,9 @@ testAsyncServerOffline ps = withAgentCli
      liftIO $ do
        srv1 `shouldBe` testSMPServer
        conns1 `shouldBe` [bobId]
@@ -299,7 +299,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      (aliceId, sqSecured) <- joinConnection bob 1 True cReq "bob's connInfo" SMSubscribe
      liftIO $ sqSecured `shouldBe` True
      ("", _, CONF confId _ "bob's connInfo") <- get alice
-@@ -1759,10 +1796,10 @@ testAsyncServerOffline ps = withAgentCli
+@@ -1782,10 +1819,10 @@ testAsyncServerOffline ps = withAgentCli
      exchangeGreetings alice bobId bob aliceId
 
  testAllowConnectionClientRestart :: (HasCallStack, HasTestEnv) => (ASrvTransport, AStoreType) -> IO ()
@@ -313,7 +313,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
    withSmpServerStoreLogOn ps testPort $ \_ -> do
      (aliceId, bobId, confId) <-
        withSmpServerConfigOn t (cfgS2QS qsType) testPort2 $ \_ -> do
-@@ -1784,7 +1821,7 @@ testAllowConnectionClientRestart ps@(t,
+@@ -1807,7 +1844,7 @@ testAllowConnectionClientRestart ps@(t,
      disposeAgentClient alice
      threadDelay 250000
 
@@ -322,7 +322,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      runRight_ $ subscribeConnection alice2 bobId
      threadDelay 500000
      withSmpServerConfigOn t (cfgS2QS qsType) testPort2 $ \_ -> do
-@@ -1798,9 +1835,9 @@ testAllowConnectionClientRestart ps@(t,
+@@ -1819,9 +1856,9 @@ testAllowConnectionClientRestart ps@(t,
      disposeAgentClient bob
 
  testInvitationErrors :: (HasCallStack, HasTestEnv) => (ASrvTransport, AStoreType) -> Bool -> IO ()
@@ -335,7 +335,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
    (bId, cReq) <- withServer1 ps $ runRight $ createConnection a 1 True SCMInvitation Nothing SMSubscribe
    ("", "", DOWN _ [_]) <- nGet a
    (aId, _) <- runRight $ A.prepareConnectionToJoin b 1 True cReq PQSupportOn
-@@ -1822,7 +1859,7 @@ testInvitationErrors ps restart = do
+@@ -1843,7 +1880,7 @@ testInvitationErrors ps restart = do
            BROKER srv' (NETWORK _) <- runLeft $ A.joinConnection b NRMInteractive 1 aId True cReq "bob's connInfo" PQSupportOn SMSubscribe
            unless (testPort `isSuffixOf` srv') $ putStrLn "retrying create" >> threadDelay 200000 >> loopCreate
      loopCreate
@@ -344,8 +344,8 @@ Index: tests/AgentTests/FunctionalAPITests.hs
    ("", "", DOWN _ [_]) <- nGet b'
    n <- withServer1 ps $ do
      ("", "", UP _ [_]) <- nGet a
-@@ -1868,23 +1905,26 @@ restartAgent_ getAgent restart c cIds
-   | otherwise = pure c
+@@ -1901,23 +1938,26 @@ waitAck c connId = do
+   when (qiSize > 0) $ threadDelay 20000 >> waitAck c connId
 
  testContactErrors :: (HasCallStack, HasTestEnv) => (ASrvTransport, AStoreType) -> Bool -> IO ()
 -testContactErrors ps restart = do
@@ -376,7 +376,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
    ("", "", DOWN _ [_]) <- nGet b''
    invId <- withServer1 ps $ do
      ("", "", UP _ [_]) <- nGet a
-@@ -1914,35 +1954,47 @@ testContactErrors ps restart = do
+@@ -1948,30 +1988,45 @@ testContactErrors ps restart = do
            BROKER srv2' (NETWORK _) <- runLeft $ acceptContact a 1 bId True invId "alice's connInfo" PQSupportOn SMSubscribe
            unless (testPort2 `isSuffixOf` srv2') $ putStrLn "retrying create" >> threadDelay 200000 >> loopCreate
      loopCreate
@@ -392,10 +392,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
 -            Left _ -> putStrLn "retrying accept confirm" >> threadDelay 200000 >> loopConfirm (n + 1)
 -    n <- loopConfirm 1
 -    ("", _, A.CONF confId PQSupportOn _ "alice's connInfo") <- get b''
--    let waitAck = do
--          ServerQueueInfo {info = QueueInfo {qiSize}} <- runRight $ getConnectionQueueInfo b'' NRMInteractive aId
--          when (qiSize > 0) $ threadDelay 20000 >> waitAck
--    waitAck
+-    waitAck b'' aId
 -    pure (n, confId)
 -  ("", "", DOWN _ [_]) <- nGet b''
 -  runRight_ $ allowConnection b'' aId confId "bob's connInfo"
@@ -420,9 +417,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
 +      get b'' ##> ("allow", aId, OK)
 +    else runRight_ $ allowConnection b'' aId confId "bob's connInfo"
    withServer1 ps $ do
-     ("", "", UP _ [_, _]) <- nGet a'
-     get a' ##> ("", bId, A.INFO PQSupportOn "bob's connInfo")
-     get a' ##> ("", bId, A.CON PQEncOn)
+     getUpInfoCon a' [contactId, bId] bId "bob's connInfo"
      get b'' ##> ("", aId, A.CON PQEncOn) -- note that server 2 is down, this event is delivered when HELLO is sent to server 1
 -    a'' <- restartAgentA restart a' [contactId, bId]
 +    a'' <- restartAgent_ (session getAgentA) restart a' [contactId, bId]
@@ -442,7 +437,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
 
  getAgentA :: HasTestEnv => IO AgentClient
  getAgentA = getSMPAgentClient' 1 agentCfg initAgentServers testDB
-@@ -1950,6 +2002,21 @@ getAgentA = getSMPAgentClient' 1 agentCf
+@@ -1979,6 +2034,21 @@ getAgentA = getSMPAgentClient' 1 agentCf
  getAgentB :: HasTestEnv => IO AgentClient
  getAgentB = getSMPAgentClient' 2 agentCfg (initAgentServers {smp = userServers [testSMPServer2]}) testDB2
 
@@ -464,7 +459,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
  withServer1 :: HasTestEnv => (ASrvTransport, AStoreType) -> IO a -> IO a
  withServer1 ps = withSmpServerStoreLogOn ps testPort . const
 
-@@ -3900,16 +3967,19 @@ testWaitDeliveryTimeout2 ps =
+@@ -3986,16 +4056,19 @@ testWaitDeliveryTimeout2 ps =
          liftIO $ noMessages alice "nothing else should be delivered to alice"
          liftIO $ noMessages bob "nothing else should be delivered to bob"
 
@@ -493,7 +488,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
          liftIO $ noMessages alice "nothing else should be delivered to alice"
          liftIO $ noMessages bob "nothing else should be delivered to bob"
    where
-@@ -4627,7 +4697,7 @@ testDeliveryReceiptsConcurrent (t, msTyp
+@@ -4772,7 +4845,7 @@ testDeliveryReceiptsConcurrent (t, msTyp
        t1 <- liftIO getCurrentTime
        concurrently_ (runClient "a" a bId) (runClient "b" b aId)
        t2 <- liftIO getCurrentTime
@@ -502,7 +497,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        liftIO $ noMessages a "nothing else should be delivered to alice"
        liftIO $ noMessages b "nothing else should be delivered to bob"
    where
-@@ -4666,7 +4736,8 @@ testDeliveryReceiptsConcurrent (t, msTyp
+@@ -4811,7 +4884,8 @@ testDeliveryReceiptsConcurrent (t, msTyp
            receiveLoop (n - 1)
          getWithTimeout :: ExceptT AgentErrorType IO (AEntityTransmission 'AEConn)
          getWithTimeout = do
@@ -512,7 +507,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
              Just r -> pure r
              _ -> error "timeout"
 
-@@ -4839,18 +4910,14 @@ testTwoUsers = withAgentClients2 $ \a b
+@@ -4984,18 +5058,14 @@ testTwoUsers = withAgentClients2 $ \a b
      a `hasClients` 1
      b `hasClients` 1
      setNetworkConfig a nc {sessionMode = TSMEntity}
@@ -533,7 +528,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      a `hasClients` 1
 
      aUserId2 <- createUser a False [noAuthSrvCfg testSMPServer] [noAuthSrvCfg testXFTPServer]
-@@ -4861,8 +4928,7 @@ testTwoUsers = withAgentClients2 $ \a b
+@@ -5006,8 +5076,7 @@ testTwoUsers = withAgentClients2 $ \a b
      a `hasClients` 2
      b `hasClients` 1
      setNetworkConfig a nc {sessionMode = TSMEntity}
@@ -543,7 +538,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
      a `hasClients` 4
      exchangeGreetingsMsgId 6 a bId1 b aId1
      exchangeGreetingsMsgId 6 a bId1' b aId1'
-@@ -4870,23 +4936,38 @@ testTwoUsers = withAgentClients2 $ \a b
+@@ -5015,23 +5084,38 @@ testTwoUsers = withAgentClients2 $ \a b
      exchangeGreetingsMsgId 4 a bId2' b aId2'
      liftIO $ threadDelay 250000
      setNetworkConfig a nc {sessionMode = TSMUser}
@@ -591,7 +586,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
 
  #if defined(dbPostgres)
  workItemReadTests :: Spec
-@@ -5392,11 +5473,11 @@ testMigrateConnectionsToService ps = do
+@@ -5537,11 +5621,11 @@ testMigrateConnectionsToService ps = do
        liftIO $ length conns `shouldBe` n
 
  getSMPAgentClient' :: Int -> AgentConfig -> InitialAgentServers -> String -> IO AgentClient
@@ -608,7 +603,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
 
  #if defined(dbPostgres)
  createStore :: String -> IO (Either MigrationError DBStore)
-@@ -5434,7 +5515,9 @@ testServerMultipleIdentities =
+@@ -5579,7 +5663,9 @@ testServerMultipleIdentities =
      exchangeGreetings alice bobId bob aliceId
      -- this saves queue with second server identity
      bob' <- liftIO $ do
@@ -619,7 +614,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        disposeAgentClient bob
        threadDelay 250000
        getSMPAgentClient' 3 agentCfg initAgentServers testDB2
-@@ -5495,23 +5578,18 @@ testDoNotResetOnlineToOffline = withAgen
+@@ -5640,23 +5726,18 @@ testDoNotResetOnlineToOffline = withAgen
      aCfg = agentCfg {userNetworkInterval = 100000, userOfflineDelay = 0.1}
 
  testResumeMultipleThreads :: HasTestEnv => IO ()
@@ -655,7 +650,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
    where
      aCfg = agentCfg {userOfflineDelay = 0}
 
-@@ -5591,7 +5669,7 @@ testServerQueueInfo = do
+@@ -5736,7 +5817,7 @@ testServerQueueInfo = do
        liftIO $ isJust r `shouldBe` True
        pure r
      checkQ c cId qiSnd' qiSubThread_ qiSize' msgType_ = do
@@ -664,7 +659,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        liftIO $ do
          qiSnd `shouldBe` qiSnd'
          qiNtf `shouldBe` False
-@@ -5600,6 +5678,19 @@ testServerQueueInfo = do
+@@ -5745,6 +5826,19 @@ testServerQueueInfo = do
          msgId_ <- forM qiMsg $ \MsgInfo {msgId, msgType} -> msgId <$ (Just msgType `shouldBe` msgType_)
          qDelivered <$> qiSub `shouldBe` Just msgId_
          pure msgId_
@@ -684,7 +679,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
 
  testClientNotice :: (HasCallStack, HasTestEnv) => (ASrvTransport, AStoreType) -> IO ()
  testClientNotice ps = do
-@@ -5612,8 +5703,8 @@ testClientNotice ps = do
+@@ -5757,8 +5851,8 @@ testClientNotice ps = do
 
      (cId', _) <- withSmpServerStoreLogOn ps testPort $ \_ -> do
        subscribedWithErrors c 1
@@ -695,7 +690,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        runRight $ A.createConnection c NRMInteractive 1 True True SCMContact Nothing Nothing IKPQOn False SMSubscribe
      ("", "", DOWN _ [_]) <- nGet c
 
-@@ -5621,10 +5712,10 @@ testClientNotice ps = do
+@@ -5766,10 +5860,10 @@ testClientNotice ps = do
 
      (cId'', _) <- withSmpServerStoreLogOn ps testPort $ \_ -> do
        subscribedWithErrors c 1
@@ -710,7 +705,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        runRight $ A.createConnection c NRMInteractive 1 True True SCMContact Nothing Nothing IKPQOn False SMSubscribe
 
      addNotice c cId'' $ Just 1
-@@ -5633,10 +5724,10 @@ testClientNotice ps = do
+@@ -5778,10 +5872,10 @@ testClientNotice ps = do
      (cId3, _) <- withSmpServerStoreLogOn ps testPort $ \_ -> do
        runRight_ $ subscribeAllConnections c False Nothing
        subscribedWithErrors c 3
@@ -725,7 +720,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
        runRight $ A.createConnection c NRMInteractive 1 True True SCMContact Nothing Nothing IKPQOn False SMSubscribe
      ("", "", DOWN _ [_]) <- nGet c
 
-@@ -5666,10 +5757,16 @@ testClientNotice ps = do
+@@ -5811,10 +5905,16 @@ testClientNotice ps = do
        forM_ errs $ \case
          (_, SMP _  (BLOCKED _)) -> pure ()
          r -> expectationFailure $ "unexpected event: " <> show r
@@ -743,7 +738,7 @@ Index: tests/AgentTests/FunctionalAPITests.hs
 
  noNetworkDelay :: AgentClient -> IO ()
  noNetworkDelay a = do
-@@ -5679,7 +5776,7 @@ noNetworkDelay a = do
+@@ -5824,7 +5924,7 @@ noNetworkDelay a = do
  networkDelay :: AgentClient -> Int64 -> IO ()
  networkDelay a d' = do
    d <- waitNetwork a

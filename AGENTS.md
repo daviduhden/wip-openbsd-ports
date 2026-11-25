@@ -86,12 +86,16 @@ update. The minimum policy is:
    change replaces, or that no longer apply. Verify the whole series in
    sorted order with zero fuzz. Re-run that check against each selected
    archive, including patch releases.
+   Account for byte-identical regenerated patches in the same evidence
+   ledger as changed patches, following the update skill.
 7. Review the port `Makefile` and installed `pkg/README` after each update:
    dependencies, `WANTLIB`, services, configuration, security notes and
    obsolete version statements must match the new source.
 8. Off OpenBSD, never regenerate `distinfo`, `pkg/PLIST*`, `crates.inc`,
    `modules.inc`, `cabal.inc` or other generated files. Name each stale file
    and the exact OpenBSD target that refreshes it in the handoff.
+   Verify that the reserved files in the starting worktree are unchanged
+   before delivering an update with native regeneration deferred.
 9. Report every inventoried port, including unchanged and blocked ones, with
    local, official and selected versions, patch dispositions, adopted and
    declined official changes, retained customizations, deferred files and

@@ -375,6 +375,13 @@ regeneration. When upstream changes a platform cfg, check every caller of a
 retained helper against that new cfg; applying a patch does not establish
 that its helper remains defined on every supported target.
 
+For a retained patch, record the original and regenerated patch digests
+alongside the full-series replay result. When regeneration is deferred to
+OpenBSD, snapshot the paths and digests of reserved build metadata before
+editing. Compare the final path set and digests with that snapshot, including
+any preexisting untracked metadata. List missing or stale files and the
+native targets needed to refresh them in the collection record.
+
 ### XERJ (`devel/xerj`)
 
 `devel/xerj` pins a prerelease tag and builds only the `xerj-server`

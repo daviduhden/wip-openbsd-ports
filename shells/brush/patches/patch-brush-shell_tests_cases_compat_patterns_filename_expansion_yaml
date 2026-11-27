@@ -4,7 +4,7 @@ where brush keeps extglob enabled and differs from the Bash oracle.
 Index: brush-shell/tests/cases/compat/patterns/filename_expansion.yaml
 --- brush-shell/tests/cases/compat/patterns/filename_expansion.yaml.orig
 +++ brush-shell/tests/cases/compat/patterns/filename_expansion.yaml
-@@ -97,6 +97,7 @@ cases:
+@@ -111,6 +111,7 @@ cases:
      stdin: "echo file\\*.txt"
 
    - name: "Pathname expansion: extglob disabled"

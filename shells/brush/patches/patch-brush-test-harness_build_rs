@@ -1,0 +1,14 @@
+Keep OpenBSD PTY test coverage with the patched ptyprocess backend.
+Match the build script's platform predicate and expectrl's Unix support.
+
+Index: brush-test-harness/build.rs
+--- brush-test-harness/build.rs.orig
++++ brush-test-harness/build.rs
+@@ -6,6 +6,6 @@
+
+ fn main() {
+     cfg_aliases::cfg_aliases! {
+-        pty: { any(target_os = "linux", target_os = "android", target_os = "macos", target_os = "freebsd") },
++        pty: { any(target_os = "linux", target_os = "android", target_os = "macos", target_os = "freebsd", target_os = "openbsd") },
+     }
+ }

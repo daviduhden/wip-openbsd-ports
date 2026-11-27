@@ -5,7 +5,7 @@ registry.
 Index: Cargo.toml
 --- Cargo.toml.orig
 +++ Cargo.toml
-@@ -117,3 +117,7 @@ panic = "abort"
+@@ -130,3 +130,7 @@ panic = "abort"
  [profile.bench]
  inherits = "release"
  strip = "debuginfo"

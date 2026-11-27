@@ -4,7 +4,7 @@ the compatibility suite honor its OpenBSD-specific case exclusions.
 Index: brush-test-harness/src/util.rs
 --- brush-test-harness/src/util.rs.orig
 +++ brush-test-harness/src/util.rs
-@@ -6,6 +6,13 @@ use descape::UnescapeExt;
+@@ -5,6 +5,13 @@ use anyhow::Result;
  /// Get the OS ID from /etc/os-release file.
  /// Returns the value of the ID field, which is the canonical OS identifier.
  /// For example: "ubuntu", "opensuse-tumbleweed", "fedora", etc.

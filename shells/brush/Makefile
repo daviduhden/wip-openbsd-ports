@@ -1,6 +1,6 @@
 COMMENT =		Bourne-compatible shell written in Rust
 
-V =			0.4.0
+V =			0.5.0
 # zhiburt/ptyprocess has no OpenBSD support yet: it has no ptsname_r and has to
 # call TIOCSCTTY on the pty slave, like FreeBSD and macOS.  Fetch the crate
 # source with DIST_TUPLE, pinned to the 0.5.0 release commit, and consume it as
@@ -14,7 +14,6 @@ GH_TAGNAME =		brush-shell-v${V}
 
 DIST_TUPLE +=		github zhiburt ptyprocess ${PTYPROCESS_COMMIT} ptyprocess
 CATEGORIES =		shells
-REVISION=	1
 
 HOMEPAGE =		https://github.com/reubeno/brush/
 
@@ -36,7 +35,7 @@ MAKE_ENV +=		BASH_PATH=${LOCALBASE}/bin/bash
 
 # brush-shell is the workspace's default member and the package upstream
 # recommends installing; the "brush" facade crate only forwards the same
-# default features (basic reedline minimal).  The experimental feature set,
+# default features (basic reedline minimal vt).  The experimental feature set,
 # which would embed uutils coreutils builtins, stays disabled.
 MODCARGO_INSTALL_TARGET_PATHS =	brush-shell
 

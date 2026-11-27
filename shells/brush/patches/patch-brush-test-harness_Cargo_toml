@@ -1,0 +1,13 @@
+Keep OpenBSD PTY test coverage with the patched ptyprocess backend.
+Match the build script's platform predicate and expectrl's Unix support.
+
+Index: brush-test-harness/Cargo.toml
+--- brush-test-harness/Cargo.toml.orig
++++ brush-test-harness/Cargo.toml
+@@ -53,5 +53,5 @@ cfg_aliases = "0.2.1"
+ # expectrl's pty support (via ptyprocess) is limited to these platforms;
+ # pty-based tests are reported as unsupported elsewhere. Keep this list in sync
+ # with the `pty` cfg in build.rs (which gates the code using this dependency).
+-[target.'cfg(any(target_os = "linux", target_os = "android", target_os = "macos", target_os = "freebsd"))'.dependencies]
++[target.'cfg(any(target_os = "linux", target_os = "android", target_os = "macos", target_os = "freebsd", target_os = "openbsd"))'.dependencies]
+ expectrl = "0.9.0"

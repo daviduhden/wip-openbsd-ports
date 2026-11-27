@@ -1,35 +1,92 @@
-Use the local libc waitid wrapper on OpenBSD as on macOS, where the nix
-wrapper is not exposed. Include OpenBSD in siginfo-to-wait-status
-conversion for stopped-child polling.
+Use OpenBSD's native waitid for non-reaping per-child stop checks.
+Keep child exit statuses available to the shell's job-control waiters.
 
 Index: brush-core/src/sys/unix/signal.rs
 --- brush-core/src/sys/unix/signal.rs.orig
 +++ brush-core/src/sys/unix/signal.rs
-@@ -92,7 +92,7 @@ pub(crate) fn poll_for_stopped_children(
-     Ok(found_stopped)
+@@ -138,7 +138,7 @@ pub(crate) fn mask_sigttou() -> Result<(
  }
 
--#[cfg(not(target_os = "macos"))]
-+#[cfg(not(any(target_os = "macos", target_os = "openbsd")))]
+ /// Returns whether the given child process has stopped, consuming its stop status, and leaving
+-/// other children's stops to whoever waits on them. On NetBSD and OpenBSD, where one child
++/// other children's stops to whoever waits on them. On NetBSD, where one child
+ /// can't be looked at (see `waitid_one`), any child's stop counts, as before.
+ ///
+ /// # Arguments
+@@ -182,7 +182,7 @@ pub(crate) fn poll_for_stopped_child(pid
+     }
+ }
+
+-#[cfg(not(any(target_os = "netbsd", target_os = "openbsd")))]
++#[cfg(not(target_os = "netbsd"))]
+ fn waitid_for(
+     pid: sys::process::ProcessId,
+     flags: nix::sys::wait::WaitPidFlag,
+@@ -190,9 +190,9 @@ fn waitid_for(
+     waitid_one(pid, flags)
+ }
+
+-// There's no looking at one child on NetBSD/OpenBSD (see `waitid_one`), so look at any
++// There's no looking at one child on NetBSD (see `waitid_one`), so look at any
+ // child, as before.
+-#[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
++#[cfg(target_os = "netbsd")]
+ fn waitid_for(
+     _pid: sys::process::ProcessId,
+     flags: nix::sys::wait::WaitPidFlag,
+@@ -211,9 +211,9 @@ fn waitid_one(
+     )
+ }
+
+-// nix does not expose `waitid` on NetBSD/OpenBSD, and `waitpid` would reap a child
++// nix does not expose `waitid` on NetBSD, and `waitpid` would reap a child
+ // that has exited, so don't look.
+-#[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
++#[cfg(target_os = "netbsd")]
+ #[allow(clippy::unnecessary_wraps, reason = "matches other platforms")]
+ const fn waitid_one(
+     _pid: sys::process::ProcessId,
+@@ -222,9 +222,9 @@ const fn waitid_one(
+     Ok(nix::sys::wait::WaitStatus::StillAlive)
+ }
+
+-// nix does not expose `waitid` on NetBSD/OpenBSD; `waitpid` for any child is
++// nix does not expose `waitid` on NetBSD; `waitpid` for any child is
+ // equivalent for the flags used here.
+-#[cfg(any(target_os = "netbsd", target_os = "openbsd"))]
++#[cfg(target_os = "netbsd")]
  fn waitid_all(
      flags: nix::sys::wait::WaitPidFlag,
  ) -> Result<nix::sys::wait::WaitStatus, nix::errno::Errno> {
-@@ -101,11 +101,11 @@ fn waitid_all(
+@@ -233,21 +233,21 @@ fn waitid_all(
 
  //
  // N.B. These functions were mostly copied from nix::sys::wait (https://github.com/nix-rust/nix, MIT license)
 -// to enable use of the `waitid` call on macOS. Ideally nix would expose it on macOS and we would
 -// remove this code.
-+// to enable use of the `waitid` call on macOS and OpenBSD. Ideally nix would expose it on those
-+// platforms and we would remove this code.
++// to enable use of the `waitid` call on macOS and OpenBSD. Ideally nix would expose it
++// on both platforms and we would remove this code.
  //
 
 -#[cfg(target_os = "macos")]
 +#[cfg(any(target_os = "macos", target_os = "openbsd"))]
- fn waitid_all(
+ fn waitid_one(
+     pid: sys::process::ProcessId,
      flags: nix::sys::wait::WaitPidFlag,
  ) -> Result<nix::sys::wait::WaitStatus, nix::errno::Errno> {
-@@ -125,7 +125,7 @@ fn waitid_all(
+     #[expect(clippy::cast_sign_loss, reason = "process IDs are positive")]
+-    waitid_macos(nix::libc::P_PID, pid as nix::libc::id_t, flags)
++    waitid_native(nix::libc::P_PID, pid as nix::libc::id_t, flags)
+ }
+
+-#[cfg(target_os = "macos")]
+-fn waitid_macos(
++#[cfg(any(target_os = "macos", target_os = "openbsd"))]
++fn waitid_native(
+     idtype: nix::libc::idtype_t,
+     id: nix::libc::id_t,
+     flags: nix::sys::wait::WaitPidFlag,
+@@ -268,7 +268,7 @@ fn waitid_macos(
      siginfo_to_wait_status(siginfo)
  }
 

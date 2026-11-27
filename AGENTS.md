@@ -56,6 +56,9 @@ update. The minimum policy is:
    Classify alpha, beta and release-candidate names against the project's
    documented release channel even when an API marks them as non-prereleases.
    Recheck earlier prerelease classifications; publishers can promote a tag.
+   If an earlier request explicitly selected a prerelease ahead of the
+   stable channel, record that state and follow the update skill before
+   changing the version or its coupled dependencies.
 3. Compare upstream, official and local sources file by file. Integrate the
    official maintainer fixes that remain valid, and keep local behavior that
    upstream or official changes do not make obsolete. Record every declined

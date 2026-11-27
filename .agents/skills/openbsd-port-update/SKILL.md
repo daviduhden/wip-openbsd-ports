@@ -373,6 +373,12 @@ again. Resolve annotated tags to their commit: a tag-object ID is not the
 source commit. Keep pristine extraction and assembled dependencies separate.
 Old application logs prove only their recorded source and patch baseline.
 
+For an existing prerelease explicitly selected by the user, record the exact
+release and current stable channel separately. A stable version below the
+port's current selection is a downgrade. Keep the explicit selection and
+its coupled dependency pins during an upgrade-only pass. Recheck the
+classification and select a newer stable release when it becomes available.
+
 Regenerate retained patches for this task even when the selected version is
 unchanged. Record fresh generation and complete-series replay separately
 from byte changes, so an identical result is distinguishable from a skipped

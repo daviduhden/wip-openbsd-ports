@@ -9,3 +9,8 @@ The local server uses a per-user Unix socket with owner-only permissions.
 The optional TCP API has no authentication. Its Host, Origin and browser
 request checks do not authenticate clients; do not expose it to untrusted
 users or networks.
+
+The workspace API accepts environment variables on creation and omits
+them from responses. When the client recreates a lost workspace, it uses
+its own environment. Debug logs record whether environments differ
+without logging their contents.

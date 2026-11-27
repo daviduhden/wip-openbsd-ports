@@ -1,0 +1,39 @@
+Keep workspace environments out of API responses and debug logs.
+Preserve incoming environment values for workspace commands.
+Backport the environment redaction from Crush 0.103.0 (PR 4391).
+
+Index: internal/backend/backend.go
+--- internal/backend/backend.go.orig
++++ internal/backend/backend.go
+@@ -1385,7 +1385,6 @@ func workspaceToProto(ws *Workspace) pro
+ 		DataDir:        cfg.Options.DataDirectory,
+ 		Debug:          cfg.Options.Debug,
+ 		Config:         cfg,
+-		Env:            ws.Env,
+ 		Version:        version.Version,
+ 	}
+ 	if ws.Skills != nil {
+@@ -1425,10 +1424,11 @@ func logFirstWinsMismatch(existing *Work
+ 	// normalized default ("normal") instead of spuriously logging.
+ 	existingMode := existing.Cfg.Overrides().PermissionMode
+ 	requestedMode := proto.ProtoModeToPermission(args.PermissionMode)
++	envDiffers := !stringSlicesEqual(existing.Env, args.Env)
+ 	if existingMode == requestedMode &&
+ 		existingCfg.Options.Debug == args.Debug &&
+ 		existingCfg.Options.DataDirectory == args.DataDir &&
+-		stringSlicesEqual(existing.Env, args.Env) &&
++		!envDiffers &&
+ 		stringSlicesEqual(existingChannels, args.Channels) &&
+ 		maps.Equal(existing.Cfg.Overrides().Prompts, args.Prompts) {
+ 		return
+@@ -1443,8 +1443,8 @@ func logFirstWinsMismatch(existing *Work
+ 		"requested_debug", args.Debug,
+ 		"existing_data_dir", existingCfg.Options.DataDirectory,
+ 		"requested_data_dir", args.DataDir,
+-		"existing_env", existing.Env,
+-		"requested_env", args.Env,
++		// Only flag the difference: the env values may hold secrets.
++		"env_differs", envDiffers,
+ 		"existing_channels", existingChannels,
+ 		"requested_channels", args.Channels,
+ 		"existing_prompts", existing.Cfg.Overrides().Prompts,

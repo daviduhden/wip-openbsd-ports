@@ -7,6 +7,7 @@ DISTNAME =		crush-${MODGO_VERSION}
 WRKDIST = 		${WRKDIR}/${MODGO_MODNAME}@${MODGO_VERSION}
 
 CATEGORIES =		devel
+REVISION =		0
 
 HOMEPAGE =		https://github.com/charmbracelet/crush
 

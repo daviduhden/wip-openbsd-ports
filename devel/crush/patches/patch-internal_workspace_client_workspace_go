@@ -1,0 +1,24 @@
+Recreate a lost workspace using the client's own environment.
+Do not depend on environment values echoed in server responses.
+Backport the coupled recovery change from Crush 0.103.0 (PR 4391).
+
+Index: internal/workspace/client_workspace.go
+--- internal/workspace/client_workspace.go.orig
++++ internal/workspace/client_workspace.go
+@@ -5,6 +5,7 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"log/slog"
++	"os"
+ 	"strings"
+ 	"sync"
+ 	"sync/atomic"
+@@ -1190,7 +1191,7 @@ func (w *ClientWorkspace) recreateArgs()
+ 		Debug:          ws.Debug,
+ 		PermissionMode: ws.PermissionMode,
+ 		Channels:       ws.Channels,
+-		Env:            ws.Env,
++		Env:            os.Environ(),
+ 		Version:        version.Version,
+ 	}
+ }

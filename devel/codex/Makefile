@@ -11,6 +11,7 @@ COMMENT =		OpenAI terminal-based coding agent
 DPB_PROPERTIES =	parallel
 
 V =			0.172.0
+REVISION =		1
 GH_ACCOUNT =		openai
 GH_PROJECT =		codex
 GH_TAGNAME =		rust-v${V}
